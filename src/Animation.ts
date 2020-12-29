@@ -4,6 +4,13 @@ import { useSpring, config as springConfig, useTransition } from "react-spring";
 type InitialValueType = number | boolean;
 type InitialConfigType = "ease" | "elastic" | undefined;
 type TargetObjectType = { value: any; immediate: boolean };
+type AnimationConfigType = {
+  duration?: number;
+  velocity?: number;
+  mass?: number;
+  friction?: number;
+  tension?: number;
+};
 
 // Boolean to binary
 const bin = (booleanValue: boolean) => {
@@ -40,21 +47,32 @@ export const useAnimatedValue = (
   const _prevValue = React.useRef<number>(_initialValue); // Get track previous value
   const _isImmediate = React.useRef<boolean>(!!config?.immediate); // Immediate actions
 
-  const animationType = config?.animationType; // Defines default animation
-  const initialConfig = getInitialConfig(animationType);
+  const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
+  const duration = config?.duration;
+  const velocity = config?.veloctiy;
+  const mass = config?.mass;
+  const friction = config?.friction;
+  const tension = config?.tension;
+
+  const initialConfig = getInitialConfig(animationType);
+  const restConfig: AnimationConfigType = {};
+
+  if (duration) restConfig.duration = duration;
+  if (velocity) restConfig.velocity = velocity;
+  if (mass) restConfig.mass = mass;
+  if (friction) restConfig.friction = friction;
+  if (tension) restConfig.tension = tension;
+
+  const _config = {
+    ...initialConfig,
+    ...restConfig,
+  };
 
   const [props, set] = useSpring(() => ({
     value: _initialValue,
-    config: {
-      ...initialConfig,
-      duration: config?.duration,
-      velocity: config?.veloctiy,
-      mass: config?.mass,
-      friction: config?.friction,
-      tension: config?.tension,
-    },
+    config: _config,
     immediate: _isImmediate.current,
   }));
 
@@ -123,33 +141,60 @@ export const useMountedValue = (
 ) => {
   const [from, enter, leave] = phases;
 
-  const animationType = config?.animationType;
-  const initialConfig = getInitialConfig(animationType);
-
   const enterDuration = config?.enterDuration;
   const exitDuration = config?.exitDuration;
+
+  const _enterConfig: any = {};
+  if (enterDuration) {
+    _enterConfig.config = { duration: enterDuration };
+  }
+
+  const _exitConfig: any = {};
+  if (exitDuration) {
+    _exitConfig.config = { duration: exitDuration };
+  }
+
+  const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
+  const duration = config?.duration;
+  const velocity = config?.veloctiy;
+  const mass = config?.mass;
+  const friction = config?.friction;
+  const tension = config?.tension;
+
+  const initialConfig = getInitialConfig(animationType);
+  const restConfig: AnimationConfigType = {};
+
+  if (duration) restConfig.duration = duration;
+  if (velocity) restConfig.velocity = velocity;
+  if (mass) restConfig.mass = mass;
+  if (friction) restConfig.friction = friction;
+  if (tension) restConfig.tension = tension;
+
+  const _config = {
+    ...initialConfig,
+    ...restConfig,
+  };
 
   const transition = useTransition(initialState, {
     from: { value: from },
-    enter: { value: enter, config: { duration: enterDuration } },
-    leave: { value: leave, config: { duration: exitDuration } },
-    config: {
-      ...initialConfig,
-      duration: config?.duration,
-      velocity: config?.veloctiy,
-      mass: config?.mass,
-      friction: config?.friction,
-      tension: config?.tension,
+    enter: {
+      value: enter,
+      ..._enterConfig,
     },
+    leave: {
+      value: leave,
+      ..._exitConfig,
+    },
+    config: _config,
     onRest: ({ value }: { value: any }) => {
       onAnimationEnd && onAnimationEnd(value);
     },
     onChange: function ({ value }: { value: number }) {
       listener && listener(value);
     },
-    immediate: config?.immediate,
+    immediate: !!config?.immediate,
   });
 
   return transition;
