@@ -9,10 +9,6 @@ import {
 } from "./Types";
 import { clamp } from "./Math";
 
-// Handles outside click of any element.
-// callback is called when user clicks outside the reference element.
-// Usage:
-// useOutsideClick(elementRef, () => {...})
 export const useOutsideClick = (
   elementRef: React.RefObject<HTMLElement>,
   callback: (event: MouseEvent) => void
@@ -45,13 +41,6 @@ export const useOutsideClick = (
   }, [callbackRef.current, elementRef]);
 };
 
-// Measure any HTMLElement renderered in DOM.
-// callback is called in first layout render & when element size is changed.
-// Usage:
-// useMeasure(({ left, top, width, height, vLeft, vTop }) => {...})
-// left and top accounts horizontal and vertical scrolled amount
-// vLeft and vTop gives relative to viewport
-// All values will be array if bound to multiple elements
 export const useMeasure = (callback: (event: MeasurementType) => void) => {
   const ref = React.useRef(null);
   const elementRefs = React.useRef([]);
@@ -161,10 +150,6 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
   }; // ...bind() or ...bind(index) for multiple
 };
 
-// Gives width and height of viewport in callback
-// Resizeobserver for watching window resize
-// Usage:
-// useWindowDimension(({width, height}) => {...})
 export const useWindowDimension = (
   callback: (event: WindowDimensionType) => void
 ) => {
@@ -204,10 +189,6 @@ export const useWindowDimension = (
   }, []);
 };
 
-// Gives scrolling measurement through callback.
-// Usage:
-// bind = useScroll(({isScrolling, scrollX, scrollY, scrollDirection}) => {...})
-// if bind() spread over any HTMLElement then element scrolling is measured else window's
 export const useScroll = (callback: (event: ScrollEventType) => void) => {
   const ref = React.useRef<HTMLElement>(null);
 
@@ -323,23 +304,6 @@ export const useScroll = (callback: (event: ScrollEventType) => void) => {
   return () => ({ ref }); // ...bind()
 };
 
-/* Handles the dragging of element.
- ** Usage:
- ** bind = useDrag(({
- **    down,
- **    movementX,
- **    movementY,
- **    offsetX,
- **    offsetY,
- **    velocityX,
- **    velocityY,
- **    distanceX,
- **    distanceY,
- **    directionX,
- **    directionY,
- **    cancel,
- ** }) => {})
- */
 export const useDrag = (callback: (event: DragEventType) => void) => {
   const _VELOCITY_LIMIT = 10;
 
