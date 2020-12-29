@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "react-spring": "^9.0.0-rc.3",
+    "resize-observer-polyfill": "^1.5.1"
+  },
   "peerDependencies": {
     "react": ">=16.13.1",
     "react-dom": ">=16.13.1"
