@@ -1,2 +1,3 @@
-# Package Config
-> Config file for package development 
+# React UI Animate
+
+> React library for gestures and animation
