@@ -1,0 +1,42 @@
+{
+  "name": "react-ui-animate",
+  "version": "1.0.0",
+  "description": "React library for gestures and animation",
+  "main": "dist/index.js",
+  "dependencies": {},
+  "peerDependencies": {
+    "react": ">=16.13.1",
+    "react-dom": ">=16.13.1"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "babel-core": "^6.26.3",
+    "babel-runtime": "^6.26.0",
+    "react": "^17.0.1",
+    "react-dom": "^17.0.1",
+    "rollup": "^2.35.1",
+    "rollup-plugin-typescript2": "^0.29.0",
+    "typescript": "^4.1.3"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "start": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dipeshrai123/react-ui-animate.git"
+  },
+  "keywords": [
+    "gesture",
+    "animation",
+    "react-ui-animate"
+  ],
+  "author": "Dipesh Rai",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dipeshrai123/react-ui-animate/issues"
+  },
+  "homepage": "https://github.com/dipeshrai123/react-ui-animate#readme"
+}
