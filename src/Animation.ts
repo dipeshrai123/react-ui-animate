@@ -1,9 +1,8 @@
 import * as React from "react";
 import { useSpring, config as springConfig, useTransition } from "react-spring";
 
-type InitialValueType = number | boolean;
+type AnimatedValueType = number | boolean;
 type InitialConfigType = "ease" | "elastic" | undefined;
-type TargetObjectType = { value: any; immediate: boolean };
 type AnimationConfigType = {
   duration?: number;
   velocity?: number;
@@ -17,8 +16,16 @@ const bin = (booleanValue: boolean) => {
   return booleanValue ? 1 : 0;
 };
 
-const getInitialValue = (initialValue: InitialValueType) => {
-  return typeof initialValue === "boolean" ? bin(initialValue) : initialValue;
+const getValue = (value: AnimatedValueType) => {
+  if (typeof value === "number") {
+    return value;
+  } else if (typeof value === "boolean") {
+    return bin(value);
+  } else {
+    throw new Error(
+      "Invalid Value! Animated value only accepts boolean or number."
+    );
+  }
 };
 
 const getInitialConfig = (animationType: InitialConfigType) => {
@@ -40,12 +47,11 @@ interface UseAnimatedValueConfig {
 }
 
 export const useAnimatedValue = (
-  initialValue: InitialValueType,
+  initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ) => {
-  const _initialValue: number = getInitialValue(initialValue);
+  const _initialValue: number = getValue(initialValue);
   const _prevValue = React.useRef<number>(_initialValue); // Get track previous value
-  const _isImmediate = React.useRef<boolean>(!!config?.immediate); // Immediate actions
 
   const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
@@ -73,58 +79,66 @@ export const useAnimatedValue = (
   const [props, set] = useSpring(() => ({
     value: _initialValue,
     config: _config,
-    immediate: _isImmediate.current,
+    immediate: !!config?.immediate,
   }));
 
-  const _update = (updatedValue: number) => {
-    set({
-      value: updatedValue,
-      onRest: ({ value }: { value: any }) => {
-        onAnimationEnd && onAnimationEnd(value);
-      },
-      onChange: function ({ value }: { value: number }) {
-        listener && listener(value);
-      },
-      immediate: _isImmediate.current,
-    });
+  const _update = ({
+    updatedValue,
+    immediate,
+  }: {
+    updatedValue?: AnimatedValueType;
+    immediate?: boolean;
+  }) => {
+    if (immediate !== undefined) {
+      set({ immediate });
+    } else if (updatedValue !== undefined) {
+      set({
+        value: getValue(updatedValue),
+        onRest: ({ value }: { value: any }) => {
+          onAnimationEnd && onAnimationEnd(value);
+        },
+        onChange: function ({ value }: { value: number }) {
+          listener && listener(value);
+        },
+      });
+    }
   };
 
   React.useEffect(() => {
     if (initialValue !== _prevValue.current) {
-      _update(_initialValue);
+      _update({ updatedValue: _initialValue });
       _prevValue.current = _initialValue;
     }
   }, [initialValue]);
 
-  const _targetObject: TargetObjectType = {
-    value: props.value,
-    immediate: false,
-  };
-  return new Proxy(_targetObject, {
-    set: function (target: TargetObjectType, key, value) {
+  return new Proxy(Object.create({}), {
+    set: function (_, key, value) {
       if (key === "value") {
-        target.value = value;
-        _update(value);
+        _update({
+          updatedValue: value,
+        });
+
         return true;
       }
 
       if (key === "immediate") {
-        _isImmediate.current = value;
+        _update({
+          immediate: value,
+        });
+
         return true;
       }
 
-      return false;
+      throw new Error("You cannot set any other property to animation node.");
     },
-    get: function (_target, key) {
+    get: function (_, key) {
       if (key === "value") {
         return props.value;
       }
 
-      if (key === "immediate") {
-        return _isImmediate.current;
-      }
-
-      return false;
+      throw new Error(
+        "You cannot access any other property from animation node."
+      );
     },
   });
 };
