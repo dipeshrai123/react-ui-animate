@@ -72,4 +72,28 @@ export { interpolate, bInterpolate } from "./Interpolation";
 /**
  * Clamp
  */
-export { clamp, mix, rubberClamp } from "./Math";
+export {
+  /**
+   * clamp(value, min, max)
+   * clamps value for min and max bounds
+   */
+  clamp,
+  /**
+   * mix(progress, a, b)
+   * linear interpolation between a and b
+   */
+  mix,
+  /**
+   * rubberClamp(value, min, max, constant?)
+   * constant is optional : default 0.15
+   * clamps the value for min and max value and
+   * extends beyond min and max values with constant
+   * factor to create elastic rubber band effect
+   */
+  rubberClamp,
+} from "./Math";
+
+/**
+ * Spring functions
+ */
+export * as SpringCore from "react-spring";
