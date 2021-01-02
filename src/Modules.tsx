@@ -1,18 +1,16 @@
 import * as React from "react";
-import { animated, AnimatedProps } from "react-spring";
+import { animated } from "react-spring";
 import { useAnimatedValue } from "./Animation";
 
+// Make any component animatable
+export function makeAnimatedComponent(
+  WrappedComponent: React.ElementType<any>
+) {
+  return animated(WrappedComponent);
+}
+
 // Animated Block - can receive all props from useAnimatedValue() hook
-export const AnimatedBlock = React.forwardRef(
-  (
-    { children, ...rest }: AnimatedProps<any>,
-    ref: React.RefObject<HTMLDivElement>
-  ) => (
-    <animated.div ref={ref} {...rest}>
-      {children}
-    </animated.div>
-  )
-);
+export const AnimatedBlock = makeAnimatedComponent("div");
 
 // TODO: REFACTOR ScrollableBlock
 // ScrollableBlock
