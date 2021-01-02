@@ -111,7 +111,12 @@ export const useAnimatedValue = (
     }
   }, [initialValue]);
 
-  return new Proxy(Object.create({}), {
+  const targetObject: { value: any; immediate: boolean } = {
+    value: props.value,
+    immediate: false,
+  };
+
+  return new Proxy(targetObject, {
     set: function (_, key, value) {
       if (key === "value") {
         _update({
