@@ -442,10 +442,12 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     };
 
     const pointerUp = () => {
-      isGestureActive.current = false;
-      velocity.current = { x: 0, y: 0 };
-      handleCallback();
-      _initEvents();
+      if (isGestureActive.current) {
+        isGestureActive.current = false;
+        velocity.current = { x: 0, y: 0 };
+        handleCallback();
+        _initEvents();
+      }
     };
 
     if (_elemRef) {
