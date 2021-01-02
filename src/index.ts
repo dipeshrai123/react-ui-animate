@@ -1,7 +1,11 @@
 /**
  * Modules
  */
-export { AnimatedBlock, ScrollableBlock } from "./Modules";
+export {
+  AnimatedBlock,
+  ScrollableBlock,
+  makeAnimatedComponent,
+} from "./Modules";
 
 /**
  * Animated Values
