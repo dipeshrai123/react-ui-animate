@@ -16,6 +16,11 @@ type AnimationConfigType = {
   tension?: number;
 };
 
+// check undefined or null
+const isDefined = <T>(value: T): boolean => {
+  return value !== undefined && value !== null;
+};
+
 // Boolean to binary
 const bin = (booleanValue: boolean) => {
   return booleanValue ? 1 : 0;
@@ -172,19 +177,19 @@ export const useMountedValue = (
   const exitDuration = config?.exitDuration;
 
   const _enterConfig: any = {};
-  if (enterDuration) {
+  if (isDefined(enterDuration)) {
     _enterConfig.config = { duration: enterDuration };
   }
 
   const _exitConfig: any = {};
-  if (exitDuration) {
+  if (isDefined(exitDuration)) {
     _exitConfig.config = { duration: exitDuration };
   }
 
   const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
-  const listener = config?.listener;
   const duration = config?.duration;
+  const listener = config?.listener;
   const velocity = config?.veloctiy;
   const mass = config?.mass;
   const friction = config?.friction;
@@ -193,11 +198,11 @@ export const useMountedValue = (
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
 
-  if (duration) restConfig.duration = duration;
-  if (velocity) restConfig.velocity = velocity;
-  if (mass) restConfig.mass = mass;
-  if (friction) restConfig.friction = friction;
-  if (tension) restConfig.tension = tension;
+  if (isDefined(duration)) restConfig.duration = duration;
+  if (isDefined(velocity)) restConfig.velocity = velocity;
+  if (isDefined(mass)) restConfig.mass = mass;
+  if (isDefined(friction)) restConfig.friction = friction;
+  if (isDefined(tension)) restConfig.tension = tension;
 
   const _config = {
     ...initialConfig,
