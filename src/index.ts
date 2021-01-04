@@ -2,8 +2,30 @@
  * Modules
  */
 export {
+  /**
+   * AnimatedBlock: Animated Div Element
+   * accepts animated node for block level elements
+   */
   AnimatedBlock,
+  /**
+   * AnimatedInline: Animated Span Element
+   * accepts animated node for inline elements
+   */
+  AnimatedInline,
+  /**
+   * AnimatedImage: Animated Img Element
+   * accepts animated node for img elements
+   */
+  AnimatedImage,
+  /**
+   * ScrollableBlock
+   * Used to animate element when enter into viewport
+   */
   ScrollableBlock,
+  /**
+   * Make any component animatable
+   * can accept any useAnimatedValue() node
+   */
   makeAnimatedComponent,
 } from "./Modules";
 

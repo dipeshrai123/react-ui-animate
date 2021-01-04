@@ -1,27 +1,29 @@
 import * as React from "react";
 import { animated } from "react-spring";
-import { useAnimatedValue } from "./Animation";
+import { useAnimatedValue, UseAnimatedValueConfig } from "./Animation";
 
-// Make any component animatable
+// Make animatable
 export function makeAnimatedComponent(
   WrappedComponent: React.ElementType<any>
 ) {
   return animated(WrappedComponent);
 }
 
-// Animated Block - can receive all props from useAnimatedValue() hook
+// Default Animated Elements
 export const AnimatedBlock = makeAnimatedComponent("div");
+export const AnimatedInline = makeAnimatedComponent("span");
+export const AnimatedImage = makeAnimatedComponent("img");
 
-// TODO: REFACTOR ScrollableBlock
-// ScrollableBlock
-interface UseAnimatedValueConfig {
-  onAnimationEnd?: (value: number) => void;
-  listener?: (value: number) => void;
-  animationType?: "ease" | "elastic";
-  duration?: number;
-  [prop: string]: any;
-}
-
+/**
+ * ScrollableBlock
+ * Used to animate element when enter into viewport
+ * Render props pattern with children accepts animation node
+ * animated value goes from 0 to 1 when appear on viewport & vice versa.
+ *
+ * Todo:
+ * Should be able to define when the animation should start.
+ * eg: 0 - 1 range value which part of vertical section on viewport.
+ */
 interface ScrollableBlockProps {
   children?: (animation: any) => React.ReactNode;
   direction?: "single" | "both";

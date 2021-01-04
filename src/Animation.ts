@@ -41,7 +41,7 @@ const getInitialConfig = (animationType: InitialConfigType) => {
     : { mass: 1, friction: 18, tension: 250 };
 };
 
-interface UseAnimatedValueConfig {
+export interface UseAnimatedValueConfig {
   animationType?: InitialConfigType;
   duration?: number;
   veloctiy?: number;
