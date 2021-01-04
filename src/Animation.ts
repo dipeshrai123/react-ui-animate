@@ -107,6 +107,7 @@ export const useAnimatedValue = (
         onChange: function ({ value }: { value: number }) {
           listener && listener(value);
         },
+        immediate: !!config?.immediate,
       });
     }
   };
