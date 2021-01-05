@@ -305,7 +305,7 @@ export const useScroll = (callback: (event: ScrollEventType) => void) => {
 };
 
 export const useDrag = (callback: (event: DragEventType) => void) => {
-  const _VELOCITY_LIMIT = 10;
+  const _VELOCITY_LIMIT = 20;
 
   const elemRef = React.useRef(null);
 
