@@ -93,7 +93,23 @@ export {
 /**
  * Interpolation
  */
-export { interpolate, bInterpolate } from "./Interpolation";
+export {
+  /**
+   * linear interpolation - both SpringValue and normal values
+   * used for mapping array of input ranges into array of output ranges
+   * interpolate(value, inputRange[], outputRange[], extrapolateConfig?)
+   * inputRange.length must be equal to outputRange.length
+   * extrapolate, extrapolateLeft or extrapolateRight can be
+   * "identity" | "extend" | "clamp"
+   */
+  interpolate,
+  /**
+   * linear interpolation - both SpringValue and normal values
+   * bInterpolate(value, outputRange[], extrapolateConfig?)
+   * inputRange is by default [0, 1]
+   */
+  bInterpolate,
+} from "./Interpolation";
 
 /**
  * Clamp
@@ -117,6 +133,12 @@ export {
    * factor to create elastic rubber band effect
    */
   rubberClamp,
+  /**
+   * snapTo(value, velocity, snapPoints[])
+   * Calculates the final snapPoint according to given current value,
+   * velocity and snapPoints array
+   */
+  snapTo,
 } from "./Math";
 
 /**

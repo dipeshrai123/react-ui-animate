@@ -1,9 +1,13 @@
-// Linear Interpolation
+/**
+ * Linear Interpolation
+ */
 export function mix(perc: number, val1: number, val2: number) {
   return val1 * (1 - perc) + val2 * perc;
 }
 
-// For clamping values
+/**
+ * Clamping
+ */
 export function clamp(value: number, lowerbound: number, upperbound: number) {
   return Math.min(Math.max(value, lowerbound), upperbound);
 }
@@ -21,7 +25,9 @@ function rubber(distanceFromEdge: number, dimension: number, constant: number) {
   );
 }
 
-// Rubber clamping
+/**
+ * Rubber clamping
+ */
 export function rubberClamp(
   value: number,
   lowerbound: number,
@@ -45,4 +51,27 @@ export function rubberClamp(
   }
 
   return value;
+}
+
+/**
+ * snapTo() function
+ * used to find most appropriate value from a given array of snapPoints
+ */
+export function snapTo(
+  value: number,
+  velocity: number,
+  snapPoints: Array<number>
+): number {
+  const finalValue = value + velocity * 0.2;
+  const getDiff = (point: number) => Math.abs(point - finalValue);
+  const deltas = snapPoints.map(getDiff);
+  const minDelta = Math.min(...deltas);
+
+  return snapPoints.reduce(function (acc, point) {
+    if (getDiff(point) === minDelta) {
+      return point;
+    } else {
+      return acc;
+    }
+  });
 }
