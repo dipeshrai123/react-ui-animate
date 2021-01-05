@@ -1,7 +1,12 @@
 import * as React from "react";
-import { useSpring, config as springConfig, useTransition } from "react-spring";
+import {
+  useSpring,
+  config as springConfig,
+  useTransition,
+  SpringValue,
+} from "react-spring";
 
-type AnimatedValueType = number | boolean;
+type AnimatedValueType = number | boolean | SpringValue;
 type InitialConfigType = "ease" | "elastic" | undefined;
 type AnimationConfigType = {
   duration?: number;
@@ -9,6 +14,11 @@ type AnimationConfigType = {
   mass?: number;
   friction?: number;
   tension?: number;
+};
+
+// check undefined or null
+const isDefined = <T>(value: T): boolean => {
+  return value !== undefined && value !== null;
 };
 
 // Boolean to binary
@@ -21,9 +31,11 @@ const getValue = (value: AnimatedValueType) => {
     return value;
   } else if (typeof value === "boolean") {
     return bin(value);
+  } else if (value instanceof SpringValue) {
+    return value;
   } else {
     throw new Error(
-      "Invalid Value! Animated value only accepts boolean or number."
+      "Invalid Value! Animated value only accepts animation value, boolean or number."
     );
   }
 };
@@ -34,7 +46,7 @@ const getInitialConfig = (animationType: InitialConfigType) => {
     : { mass: 1, friction: 18, tension: 250 };
 };
 
-interface UseAnimatedValueConfig {
+export interface UseAnimatedValueConfig {
   animationType?: InitialConfigType;
   duration?: number;
   veloctiy?: number;
@@ -50,8 +62,8 @@ export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ) => {
-  const _initialValue: number = getValue(initialValue);
-  const _prevValue = React.useRef<number>(_initialValue); // Get track previous value
+  const _initialValue: number | SpringValue = getValue(initialValue);
+  const _prevValue = React.useRef<number | SpringValue>(_initialValue); // Get track previous value
 
   const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
@@ -100,6 +112,7 @@ export const useAnimatedValue = (
         onChange: function ({ value }: { value: number }) {
           listener && listener(value);
         },
+        immediate: !!config?.immediate,
       });
     }
   };
@@ -164,19 +177,19 @@ export const useMountedValue = (
   const exitDuration = config?.exitDuration;
 
   const _enterConfig: any = {};
-  if (enterDuration) {
+  if (isDefined(enterDuration)) {
     _enterConfig.config = { duration: enterDuration };
   }
 
   const _exitConfig: any = {};
-  if (exitDuration) {
+  if (isDefined(exitDuration)) {
     _exitConfig.config = { duration: exitDuration };
   }
 
   const animationType = config?.animationType || "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
-  const listener = config?.listener;
   const duration = config?.duration;
+  const listener = config?.listener;
   const velocity = config?.veloctiy;
   const mass = config?.mass;
   const friction = config?.friction;
@@ -185,11 +198,11 @@ export const useMountedValue = (
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
 
-  if (duration) restConfig.duration = duration;
-  if (velocity) restConfig.velocity = velocity;
-  if (mass) restConfig.mass = mass;
-  if (friction) restConfig.friction = friction;
-  if (tension) restConfig.tension = tension;
+  if (isDefined(duration)) restConfig.duration = duration;
+  if (isDefined(velocity)) restConfig.velocity = velocity;
+  if (isDefined(mass)) restConfig.mass = mass;
+  if (isDefined(friction)) restConfig.friction = friction;
+  if (isDefined(tension)) restConfig.tension = tension;
 
   const _config = {
     ...initialConfig,

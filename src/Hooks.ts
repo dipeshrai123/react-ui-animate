@@ -305,9 +305,11 @@ export const useScroll = (callback: (event: ScrollEventType) => void) => {
 };
 
 export const useDrag = (callback: (event: DragEventType) => void) => {
-  const _VELOCITY_LIMIT = 10;
+  const _VELOCITY_LIMIT = 20;
 
-  const elemRef = React.useRef(null);
+  const currentIndex = React.useRef<number | undefined>(undefined);
+  const ref = React.useRef(null);
+  const elementRefs = React.useRef<Array<React.RefObject<HTMLElement>>>([]);
 
   const callbackRef = React.useRef<(event: DragEventType) => void>();
   if (!callbackRef.current) {
@@ -333,6 +335,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
   const handleCallback = () => {
     if (callbackRef.current) {
       callbackRef.current({
+        args: [currentIndex.current],
         down: isGestureActive.current,
         movementX: movement.current.x,
         movementY: movement.current.y,
@@ -352,7 +355,8 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
   };
 
   React.useEffect(() => {
-    const _elemRef = elemRef.current;
+    const _elemRef = ref.current;
+    const _refElementsMultiple = elementRefs.current;
 
     const _initEvents = () => {
       if (_elemRef) {
@@ -389,8 +393,19 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
       previousMovement.current = { x: 0, y: 0 };
       velocity.current = { x: 0, y: 0 };
 
-      if (e.target === _elemRef) {
+      // find current selected element
+      const currElem = _refElementsMultiple.find(
+        (elem) => elem.current === e.target
+      );
+
+      if (e.target === _elemRef || currElem) {
         isGestureActive.current = true;
+
+        // set args
+        if (currElem) {
+          currentIndex.current = _refElementsMultiple.indexOf(currElem);
+        }
+
         handleCallback();
       }
     };
@@ -450,7 +465,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
       }
     };
 
-    if (_elemRef) {
+    if (_elemRef || _refElementsMultiple.length > 0) {
       window.addEventListener("mousedown", pointerDown, false);
       window.addEventListener("mousemove", pointerMove, false);
       window.addEventListener("mouseup", pointerUp, false);
@@ -463,7 +478,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     cancelRef.current = _cancelEvents;
 
     return () => {
-      if (_elemRef) {
+      if (_elemRef || _refElementsMultiple.length > 0) {
         window.removeEventListener("mousedown", pointerDown, false);
         window.removeEventListener("mousemove", pointerMove, false);
         window.removeEventListener("mouseup", pointerUp, false);
@@ -475,9 +490,14 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     };
   }, []);
 
-  return () => {
-    return {
-      ref: elemRef,
-    };
+  return (index: number) => {
+    if (index === null || index === undefined) {
+      return { ref };
+    } else {
+      elementRefs.current[index] =
+        elementRefs.current[index] || React.createRef();
+
+      return { ref: elementRefs.current[index] };
+    }
   };
 };

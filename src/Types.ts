@@ -20,6 +20,7 @@ export type ScrollEventType = {
 };
 
 export type DragEventType = {
+  args: Array<number | undefined>;
   down: boolean;
   movementX: number;
   movementY: number;
