@@ -359,7 +359,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     const _refElementsMultiple = elementRefs.current;
 
     const _initEvents = () => {
-      if (_elemRef) {
+      if (_elemRef || _refElementsMultiple.length > 0) {
         window.addEventListener("mousedown", pointerDown, false);
         window.addEventListener("mousemove", pointerMove, false);
 
@@ -369,7 +369,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     };
 
     const _cancelEvents = () => {
-      if (_elemRef) {
+      if (_elemRef || _refElementsMultiple.length > 0) {
         window.removeEventListener("mousedown", pointerDown, false);
         window.removeEventListener("mousemove", pointerMove, false);
 
