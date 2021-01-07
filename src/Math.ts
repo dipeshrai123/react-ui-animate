@@ -82,10 +82,10 @@ export function snapTo(
 }
 
 /**
- * swap(array, moveIndex, toIndex)
- * swap array item from moveIndex to toIndex without array modification
+ * move(array, moveIndex, toIndex)
+ * move array item from moveIndex to toIndex without array modification
  */
-export function swap(array: Array<any>, moveIndex: number, toIndex: number) {
+export function move(array: Array<any>, moveIndex: number, toIndex: number) {
   const item = array[moveIndex];
   const length = array.length;
   const diff = moveIndex - toIndex;

@@ -145,10 +145,10 @@ export {
    */
   bin,
   /**
-   * swap(array, moveIndex, toIndex)
-   * swap array item from moveIndex to toIndex without array modification
+   * move(array, moveIndex, toIndex)
+   * move array item from moveIndex to toIndex without array modification
    */
-  swap,
+  move,
 } from "./Math";
 
 /**
