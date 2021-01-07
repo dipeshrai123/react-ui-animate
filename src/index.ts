@@ -144,6 +144,11 @@ export {
    * returns 1 if booleanValue == true and 0 if booleanValue == false
    */
   bin,
+  /**
+   * swap(array, moveIndex, toIndex)
+   * swap array item from moveIndex to toIndex without array modification
+   */
+  swap,
 } from "./Math";
 
 /**
