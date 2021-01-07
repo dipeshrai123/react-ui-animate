@@ -139,6 +139,16 @@ export {
    * velocity and snapPoints array
    */
   snapTo,
+  /**
+   * bin(booleanValue)
+   * returns 1 if booleanValue == true and 0 if booleanValue == false
+   */
+  bin,
+  /**
+   * move(array, moveIndex, toIndex)
+   * move array item from moveIndex to toIndex without array modification
+   */
+  move,
 } from "./Math";
 
 /**
