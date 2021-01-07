@@ -1,3 +1,8 @@
+// Boolean to binary
+export function bin(bool: boolean) {
+  return bool ? 1 : 0;
+}
+
 /**
  * Linear Interpolation
  */

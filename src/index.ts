@@ -139,6 +139,11 @@ export {
    * velocity and snapPoints array
    */
   snapTo,
+  /**
+   * bin(booleanValue)
+   * returns 1 if booleanValue == true and 0 if booleanValue == false
+   */
+  bin,
 } from "./Math";
 
 /**

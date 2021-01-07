@@ -5,6 +5,7 @@ import {
   useTransition,
   SpringValue,
 } from "react-spring";
+import { bin } from "./Math";
 
 type AnimatedValueType = number | boolean | SpringValue;
 type InitialConfigType = "ease" | "elastic" | undefined;
@@ -19,11 +20,6 @@ type AnimationConfigType = {
 // check undefined or null
 const isDefined = <T>(value: T): boolean => {
   return value !== undefined && value !== null;
-};
-
-// Boolean to binary
-const bin = (booleanValue: boolean) => {
-  return booleanValue ? 1 : 0;
 };
 
 const getValue = (value: AnimatedValueType) => {
