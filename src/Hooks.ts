@@ -138,7 +138,7 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
     };
   }, []);
 
-  return (index: number | undefined | null) => {
+  return (index?: number) => {
     if (index === null || index === undefined) {
       return { ref };
     } else {
@@ -490,7 +490,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     };
   }, []);
 
-  return (index: number) => {
+  return (index?: number) => {
     if (index === null || index === undefined) {
       return { ref };
     } else {
