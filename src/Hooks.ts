@@ -138,7 +138,7 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
     };
   }, []);
 
-  return (index: number) => {
+  return (index: number | undefined | null) => {
     if (index === null || index === undefined) {
       return { ref };
     } else {
