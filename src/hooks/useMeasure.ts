@@ -20,14 +20,25 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
       const { pageXOffset, pageYOffset } = window;
 
       if (callbackRef.current) {
-        callbackRef.current({
-          left: left + pageXOffset,
-          top: top + pageYOffset,
-          width,
-          height,
-          vLeft: left,
-          vTop: top,
-        });
+        if (_refElement === document.documentElement) {
+          callbackRef.current({
+            left: 0,
+            top: 0,
+            width: 0,
+            height: 0,
+            vLeft: 0,
+            vTop: 0,
+          });
+        } else {
+          callbackRef.current({
+            left: left + pageXOffset,
+            top: top + pageYOffset,
+            width,
+            height,
+            vLeft: left,
+            vTop: top,
+          });
+        }
       }
     });
 
