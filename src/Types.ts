@@ -1,10 +1,12 @@
+export type MeasurementValue = number | Array<number>;
+
 export type MeasurementType = {
-  left: number | Array<number>;
-  top: number | Array<number>;
-  width: number | Array<number>;
-  height: number | Array<number>;
-  vLeft: number | Array<number>;
-  vTop: number | Array<number>;
+  left: MeasurementValue;
+  top: MeasurementValue;
+  width: MeasurementValue;
+  height: MeasurementValue;
+  vLeft: MeasurementValue;
+  vTop: MeasurementValue;
 };
 
 export type WindowDimensionType = { width: number; height: number };
