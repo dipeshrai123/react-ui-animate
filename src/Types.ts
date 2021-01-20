@@ -1,23 +1,33 @@
+export type MeasurementValue = number | Array<number>;
+
 export type MeasurementType = {
-  left: number | Array<number>;
-  top: number | Array<number>;
-  width: number | Array<number>;
-  height: number | Array<number>;
-  vLeft: number | Array<number>;
-  vTop: number | Array<number>;
+  left: MeasurementValue;
+  top: MeasurementValue;
+  width: MeasurementValue;
+  height: MeasurementValue;
+  vLeft: MeasurementValue;
+  vTop: MeasurementValue;
 };
 
-export type WindowDimensionType = { width: number; height: number };
+export type WindowDimensionType = {
+  width: number;
+  height: number;
+  innerWidth: number;
+  innerHeight: number;
+};
 
-export type ScrollEventType = {
-  isScrolling: boolean;
-  scrollX: number;
-  scrollY: number;
+type GenericEventType = {
   velocityX: number;
   velocityY: number;
   directionX: number;
   directionY: number;
 };
+
+export type ScrollEventType = {
+  isScrolling: boolean;
+  scrollX: number;
+  scrollY: number;
+} & GenericEventType;
 
 export type DragEventType = {
   args: Array<number | undefined>;
@@ -26,13 +36,16 @@ export type DragEventType = {
   movementY: number;
   offsetX: number;
   offsetY: number;
-  velocityX: number;
-  velocityY: number;
   distanceX: number;
   distanceY: number;
-  directionX: number;
-  directionY: number;
   cancel: () => void;
-};
+} & GenericEventType;
+
+export type MouseMoveEventType = {
+  target: EventTarget | undefined | null;
+  isMoving: boolean;
+  mouseX: number;
+  mouseY: number;
+} & GenericEventType;
 
 export type Vector2 = { x: number; y: number };
