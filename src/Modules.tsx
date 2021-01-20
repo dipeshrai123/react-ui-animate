@@ -5,10 +5,10 @@ import { useAnimatedValue, UseAnimatedValueConfig } from "./Animation";
 /**
  * Make any component animatable
  */
-export function makeAnimatedComponent<T extends React.ElementType>(
-  WrappedComponent: T
+export function makeAnimatedComponent(
+  WrappedComponent: React.ElementType<any>
 ) {
-  return animated<T>(WrappedComponent);
+  return animated(WrappedComponent);
 }
 
 /**
