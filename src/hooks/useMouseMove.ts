@@ -16,11 +16,13 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
   const prevMouseXY = React.useRef<Vector2>({ x: 0, y: 0 });
   const directionXY = React.useRef<Vector2>({ x: 0, y: 0 });
   const velocityXY = React.useRef<Vector2>({ x: 0, y: 0 });
+  const currentEvent = React.useRef<MouseEvent>();
   const lastTimeStamp = React.useRef<number>(0);
 
   const handleCallback = () => {
     if (callbackRef) {
       callbackRef({
+        target: currentEvent.current?.target,
         isMoving: isMoving.current,
         mouseX: mouseXY.current.x,
         mouseY: mouseXY.current.y,
@@ -42,6 +44,7 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
       const t = deltaTime / 1000; // seconds
 
       mouseXY.current = { x: e.clientX, y: e.clientY };
+      currentEvent.current = e;
 
       if (_isMoving.current !== -1) {
         isMoving.current = true;
@@ -50,10 +53,11 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
 
       _isMoving.current = setTimeout(() => {
         isMoving.current = false;
+        directionXY.current = { x: 0, y: 0 };
         velocityXY.current = { x: 0, y: 0 };
 
         handleCallback();
-      });
+      }, 250); // Debounce 250 milliseconds
 
       const diffX = mouseXY.current.x - prevMouseXY.current.x;
       const diffY = mouseXY.current.y - prevMouseXY.current.y;
@@ -78,7 +82,7 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
     if (_refElement) {
       subscribe = attachEvents(_refElement, [["mousemove", mouseMove, false]]);
     } else {
-      subscribe = attachEvents(window, [["scroll", mouseMove, false]]);
+      subscribe = attachEvents(window, [["mousemove", mouseMove, false]]);
     }
 
     return () => subscribe && subscribe();
