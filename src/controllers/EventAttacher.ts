@@ -19,7 +19,11 @@ export function attachEvent(
 */
 export function attachEvents(
   domTarget: Window | Document,
-  events: Array<[event: string, callback: (e: any) => void, capture: boolean]>
+  events: Array<[
+    event: string, 
+    callback: (e: any) => void, 
+    capture: boolean
+  ]>
 ) {
   const subscribers: Array<() => void> = [];
 

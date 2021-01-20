@@ -1,20 +1,25 @@
 import * as React from "react";
-import { useConst } from ".";
 import { attachEvents } from "../controllers";
 
 export function useOutsideClick(
   elementRef: React.RefObject<HTMLElement>,
   callback: (event: MouseEvent) => void,
+  deps?: React.DependencyList,
 ) {
-  const callbackRef = useConst(callback);
+  const callbackRef = React.useRef<(event: MouseEvent) => void>(callback);
 
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+  }, deps);
+  
   const handleOutsideClick = React.useCallback((e: MouseEvent) => {
     if (
       !elementRef?.current?.contains(e.target as Element)
     ) {
-      callbackRef && callbackRef(e);
+      callbackRef.current && callbackRef.current(e);
     }
-  }, []);
+  }, [elementRef.current]);
 
   React.useEffect(() => {
     const subscribe = attachEvents(document, [
