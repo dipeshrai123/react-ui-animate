@@ -2,36 +2,47 @@ import * as React from "react";
 import { animated } from "react-spring";
 import { useAnimatedValue, UseAnimatedValueConfig } from "./Animation";
 
-// Make animatable
+/**
+ * Make any component animatable
+ */
 export function makeAnimatedComponent(
   WrappedComponent: React.ElementType<any>
 ) {
   return animated(WrappedComponent);
 }
 
-// Default Animated Elements
+/**
+ * AnimatedBlock : Animated Div
+ */
 export const AnimatedBlock = makeAnimatedComponent("div");
+/**
+ * AnimatedInline : Animated Span
+ */
 export const AnimatedInline = makeAnimatedComponent("span");
+/**
+ * AnimatedImage : Animated Image
+ */
 export const AnimatedImage = makeAnimatedComponent("img");
+interface ScrollableBlockProps {
+  children?: (animation: any) => React.ReactNode;
+  direction?: "single" | "both";
+  threshold?: number;
+  animationConfig?: UseAnimatedValueConfig;
+}
 
 /**
  * ScrollableBlock
  * Used to animate element when enter into viewport
  * Render props pattern with children accepts animation node
  * animated value goes from 0 to 1 when appear on viewport & vice versa.
- *
- * Todo:
- * Should be able to define when the animation should start.
- * eg: 0 - 1 range value which part of vertical section on viewport.
  */
-interface ScrollableBlockProps {
-  children?: (animation: any) => React.ReactNode;
-  direction?: "single" | "both";
-  animationConfig?: UseAnimatedValueConfig;
-}
-
 export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
-  const { children, direction = "single", animationConfig } = props;
+  const {
+    children,
+    direction = "single",
+    animationConfig,
+    threshold = 0.2,
+  } = props;
   const scrollableBlockRef = React.useRef<HTMLDivElement>(null);
   const animation = useAnimatedValue(0, animationConfig); // 0: not intersecting | 1: intersecting
 
@@ -50,8 +61,7 @@ export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
       },
       {
         root: null, // FOR VIEWPORT ONLY
-        rootMargin: "0px",
-        threshold: [0, 0.8],
+        threshold,
       }
     );
 
