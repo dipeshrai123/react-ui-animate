@@ -1,5 +1,5 @@
 /**
- * Attach single document / window event
+ * Attach single document / window event / HTMLElement
  */
 export function attachEvent(
   domTarget: Window | Document | HTMLElement,
@@ -15,7 +15,7 @@ export function attachEvent(
 }
 
 /**
- * Attach multiple document / window event
+ * Attach multiple document / window event / HTMLElement
  */
 export function attachEvents(
   domTarget: Window | Document | HTMLElement,
