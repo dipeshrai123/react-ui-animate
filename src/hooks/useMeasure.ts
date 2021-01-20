@@ -18,14 +18,7 @@ export function useMeasure(callback: (event: MeasurementType) => void) {
 
       if (callbackRef) {
         if (_refElement === document.documentElement) {
-          callbackRef({
-            left: 0,
-            top: 0,
-            width: 0,
-            height: 0,
-            vLeft: 0,
-            vTop: 0,
-          });
+          return; // no-op for document
         } else {
           callbackRef({
             left: left + pageXOffset,
