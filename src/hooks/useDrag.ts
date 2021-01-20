@@ -2,13 +2,14 @@ import * as React from "react";
 import { DragEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
 import { useConst } from ".";
+import { attachEvents } from "../controllers";
 
-export const useDrag = (callback: (event: DragEventType) => void) => {
+export function useDrag(callback: (event: DragEventType) => void) {
   const _VELOCITY_LIMIT = 20;
 
   const currentIndex = React.useRef<number | undefined>(undefined);
-  const ref = React.useRef(null);
-  const elementRefs = React.useRef<Array<React.RefObject<HTMLElement>>>([]);
+  const ref = React.useRef<any>(null);
+  const elementRefs = React.useRef<Array<any>>([]);
 
   const callbackRef = useConst<(event: DragEventType) => void>(callback);
 
@@ -54,23 +55,22 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
     const _elemRef = ref.current;
     const _refElementsMultiple = elementRefs.current;
 
+    var reSubscribe: any;
+
     const _initEvents = () => {
       if (_elemRef || _refElementsMultiple.length > 0) {
-        window.addEventListener("mousedown", pointerDown, false);
-        window.addEventListener("mousemove", pointerMove, false);
-
-        window.addEventListener("touchstart", pointerDown, false);
-        window.addEventListener("touchmove", pointerMove, false);
+        reSubscribe = attachEvents(window, [
+          ["mousedown", pointerDown, false],
+          ["mousemove", pointerMove, false],
+          ["touchstart", pointerDown, false],
+          ["touchmove", pointerMove, false],
+        ]);
       }
     };
 
     const _cancelEvents = () => {
-      if (_elemRef || _refElementsMultiple.length > 0) {
-        window.removeEventListener("mousedown", pointerDown, false);
-        window.removeEventListener("mousemove", pointerMove, false);
-
-        window.removeEventListener("touchstart", pointerDown, false);
-        window.removeEventListener("touchmove", pointerMove, false);
+      if (reSubscribe) {
+        reSubscribe();
       }
     };
 
@@ -161,29 +161,21 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
       }
     };
 
+    var subscribe: any;
     if (_elemRef || _refElementsMultiple.length > 0) {
-      window.addEventListener("mousedown", pointerDown, false);
-      window.addEventListener("mousemove", pointerMove, false);
-      window.addEventListener("mouseup", pointerUp, false);
-
-      window.addEventListener("touchstart", pointerDown, false);
-      window.addEventListener("touchmove", pointerMove, false);
-      window.addEventListener("touchend", pointerUp, false);
+      subscribe = attachEvents(window, [
+        ["mousedown", pointerDown, false],
+        ["mousemove", pointerMove, false],
+        ["mouseup", pointerUp, false],
+        ["touchstart", pointerDown, false],
+        ["touchmove", pointerMove, false],
+        ["touchend", pointerUp, false],
+      ]);
     }
 
     cancelRef.current = _cancelEvents;
 
-    return () => {
-      if (_elemRef || _refElementsMultiple.length > 0) {
-        window.removeEventListener("mousedown", pointerDown, false);
-        window.removeEventListener("mousemove", pointerMove, false);
-        window.removeEventListener("mouseup", pointerUp, false);
-
-        window.removeEventListener("touchstart", pointerDown, false);
-        window.removeEventListener("touchmove", pointerMove, false);
-        window.removeEventListener("touchend", pointerUp, false);
-      }
-    };
+    return () => subscribe();
   }, []);
 
   return (index?: number) => {
@@ -196,4 +188,4 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
       return { ref: elementRefs.current[index] };
     }
   };
-};
+}
