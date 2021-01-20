@@ -62,7 +62,7 @@ export function useScroll(callback: (event: ScrollEventType) => void) {
         // Reset Velocity
         velocity.current = { x: 0, y: 0 };
 
-        handleCallback(); // Throttle 250milliseconds
+        handleCallback(); // Debounce 250milliseconds
       }, 250);
 
       const diffX = scrollXY.current.x - previousScrollXY.current.x;
