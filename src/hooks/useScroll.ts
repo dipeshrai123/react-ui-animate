@@ -2,9 +2,10 @@ import * as React from "react";
 import { ScrollEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
 import { useConst } from ".";
+import { attachEvents } from "../controllers";
 
 export function useScroll(callback: (event: ScrollEventType) => void) {
-  const ref = React.useRef<HTMLElement>(null);
+  const ref = React.useRef<any>(null);
 
   const scrollXY = React.useRef<Vector2>({
     x: 0,
@@ -96,19 +97,16 @@ export function useScroll(callback: (event: ScrollEventType) => void) {
       scrollCallback({ x, y });
     };
 
+    var subscribe: any;
     if (_refElement) {
-      _refElement.addEventListener("scroll", scrollElementListener);
+      subscribe = attachEvents(_refElement, [
+        ["scroll", scrollElementListener, false],
+      ]);
     } else {
-      window.addEventListener("scroll", scrollListener);
+      subscribe = attachEvents(window, [["scroll", scrollListener, false]]);
     }
 
-    return () => {
-      if (_refElement) {
-        _refElement.removeEventListener("scroll", scrollElementListener);
-      } else {
-        window.removeEventListener("scroll", scrollListener);
-      }
-    };
+    return () => subscribe && subscribe();
   }, []);
 
   return () => ({ ref }); // ...bind()
