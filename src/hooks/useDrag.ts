@@ -175,7 +175,7 @@ export function useDrag(callback: (event: DragEventType) => void) {
 
     cancelRef.current = _cancelEvents;
 
-    return () => subscribe();
+    return () => subscribe && subscribe();
   }, []);
 
   return (index?: number) => {
