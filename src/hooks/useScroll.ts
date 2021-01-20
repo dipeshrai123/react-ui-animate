@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ScrollEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
-import { useConst } from ".";
+import { useConst } from "./useConst";
 import { attachEvents } from "../controllers";
 
 export function useScroll(callback: (event: ScrollEventType) => void) {

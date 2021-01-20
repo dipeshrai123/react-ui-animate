@@ -1,7 +1,7 @@
 import * as React from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { MeasurementType } from "../Types";
-import { useConst } from ".";
+import { useConst } from "./useConst";
 
 export function useMeasure(callback: (event: MeasurementType) => void) {
   const ref = React.useRef(null);

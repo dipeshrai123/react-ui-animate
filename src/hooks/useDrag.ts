@@ -1,7 +1,7 @@
 import * as React from "react";
 import { DragEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
-import { useConst } from ".";
+import { useConst } from "./useConst";
 import { attachEvents } from "../controllers";
 
 export function useDrag(callback: (event: DragEventType) => void) {
