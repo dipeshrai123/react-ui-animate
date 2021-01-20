@@ -1,33 +1,25 @@
 import * as React from "react";
+import { useConst } from ".";
 
-export const useOutsideClick = (
+export function useOutsideClick(
   elementRef: React.RefObject<HTMLElement>,
-  callback: (event: MouseEvent) => void
-) => {
-  const callbackRef = React.useRef<(e: MouseEvent) => void>();
+  callback: (event: MouseEvent) => void,
+) {
+  const callbackRef = useConst(callback);
 
-  if (!callbackRef.current) {
-    callbackRef.current = callback;
-  }
+  const handleOutsideClick = React.useCallback((e: MouseEvent) => {
+    if (
+      !elementRef?.current?.contains(e.target as Element)
+    ) {
+      callbackRef && callbackRef(e);
+    }
+  }, []);
 
   React.useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        !elementRef?.current?.contains(e.target as Element) &&
-        callbackRef.current
-      ) {
-        callbackRef.current(e);
-      }
-    };
-
-    if (callbackRef.current) {
-      document.addEventListener("click", handleOutsideClick, true);
-    }
+    document.addEventListener("click", handleOutsideClick, true);
 
     return () => {
-      if (callbackRef.current) {
-        document.addEventListener("click", handleOutsideClick, true);
-      }
+      document.addEventListener("click", handleOutsideClick, true);
     };
-  }, [callbackRef.current, elementRef]);
+  }, []);
 };
