@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useConst } from ".";
+import { attachEvents } from "../controllers";
 
 export function useOutsideClick(
   elementRef: React.RefObject<HTMLElement>,
@@ -16,10 +17,10 @@ export function useOutsideClick(
   }, []);
 
   React.useEffect(() => {
-    document.addEventListener("click", handleOutsideClick, true);
+    const subscribe = attachEvents(document, [
+      ["click", handleOutsideClick, true]
+    ]);
 
-    return () => {
-      document.addEventListener("click", handleOutsideClick, true);
-    };
+    return () => subscribe();
   }, []);
 };
