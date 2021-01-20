@@ -37,13 +37,13 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
   React.useEffect(() => {
     const _refElement = ref.current;
 
-    const mouseMove = (e: MouseEvent) => {
+    const mouseMove = ({ e, x, y }: { e: MouseEvent } & Vector2) => {
       const now: number = Date.now();
       const deltaTime = Math.min(now - lastTimeStamp.current, 64);
       lastTimeStamp.current = now;
       const t = deltaTime / 1000; // seconds
 
-      mouseXY.current = { x: e.clientX, y: e.clientY };
+      mouseXY.current = { x, y };
       currentEvent.current = e;
 
       if (_isMoving.current !== -1) {
@@ -77,12 +77,33 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
       handleCallback();
     };
 
+    const mouseMoveElementListener = (e: MouseEvent) => {
+      /** Is offsetLeft / offsetTop needed here ???
+       *  const elementOffsetLeft = _refElement?.offsetLeft || 0;
+       * const elementOffsetTop = _refElement?.offsetTop || 0;
+       */
+
+      mouseMove({
+        e,
+        x: e.clientX,
+        y: e.clientY,
+      });
+    };
+
+    const mouseMoveListener = (e: MouseEvent) => {
+      mouseMove({ e, x: e.clientX, y: e.clientY });
+    };
+
     var subscribe: any;
 
     if (_refElement) {
-      subscribe = attachEvents(_refElement, [["mousemove", mouseMove, false]]);
+      subscribe = attachEvents(_refElement, [
+        ["mousemove", mouseMoveElementListener, false],
+      ]);
     } else {
-      subscribe = attachEvents(window, [["mousemove", mouseMove, false]]);
+      subscribe = attachEvents(window, [
+        ["mousemove", mouseMoveListener, false],
+      ]);
     }
 
     return () => subscribe && subscribe();
