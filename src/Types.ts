@@ -16,15 +16,18 @@ export type WindowDimensionType = {
   innerHeight: number;
 };
 
-export type ScrollEventType = {
-  isScrolling: boolean;
-  scrollX: number;
-  scrollY: number;
+type GenericEventType = {
   velocityX: number;
   velocityY: number;
   directionX: number;
   directionY: number;
 };
+
+export type ScrollEventType = {
+  isScrolling: boolean;
+  scrollX: number;
+  scrollY: number;
+} & GenericEventType;
 
 export type DragEventType = {
   args: Array<number | undefined>;
@@ -33,13 +36,15 @@ export type DragEventType = {
   movementY: number;
   offsetX: number;
   offsetY: number;
-  velocityX: number;
-  velocityY: number;
   distanceX: number;
   distanceY: number;
-  directionX: number;
-  directionY: number;
   cancel: () => void;
-};
+} & GenericEventType;
+
+export type MouseMoveEventType = {
+  isMoving: boolean;
+  mouseX: number;
+  mouseY: number;
+} & GenericEventType;
 
 export type Vector2 = { x: number; y: number };
