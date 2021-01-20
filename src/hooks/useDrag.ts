@@ -1,6 +1,7 @@
 import * as React from "react";
 import { DragEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
+import { useConst } from ".";
 
 export const useDrag = (callback: (event: DragEventType) => void) => {
   const _VELOCITY_LIMIT = 20;
@@ -9,10 +10,7 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
   const ref = React.useRef(null);
   const elementRefs = React.useRef<Array<React.RefObject<HTMLElement>>>([]);
 
-  const callbackRef = React.useRef<(event: DragEventType) => void>();
-  if (!callbackRef.current) {
-    callbackRef.current = callback;
-  }
+  const callbackRef = useConst<(event: DragEventType) => void>(callback);
 
   const cancelRef = React.useRef<() => void>();
 
@@ -31,8 +29,8 @@ export const useDrag = (callback: (event: DragEventType) => void) => {
   const velocity = React.useRef<Vector2>({ x: 0, y: 0 });
 
   const handleCallback = () => {
-    if (callbackRef.current) {
-      callbackRef.current({
+    if (callbackRef) {
+      callbackRef({
         args: [currentIndex.current],
         down: isGestureActive.current,
         movementX: movement.current.x,

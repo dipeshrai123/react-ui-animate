@@ -42,7 +42,7 @@ export {
    * Handles outside click of any element.
    * callback is called when user clicks outside the reference element.
    * Usage:
-   * useOutsideClick(elementRef, () => {...})
+   * useOutsideClick(elementRef, () => {...}, dependencies?: [])
    * ...bind() or ...bind(index) for multiple
    */
   useOutsideClick,

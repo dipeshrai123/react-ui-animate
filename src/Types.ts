@@ -9,7 +9,12 @@ export type MeasurementType = {
   vTop: MeasurementValue;
 };
 
-export type WindowDimensionType = { width: number; height: number };
+export type WindowDimensionType = {
+  width: number;
+  height: number;
+  innerWidth: number;
+  innerHeight: number;
+};
 
 export type ScrollEventType = {
   isScrolling: boolean;

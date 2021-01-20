@@ -1,8 +1,9 @@
 import * as React from "react";
 import { ScrollEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
+import { useConst } from ".";
 
-export const useScroll = (callback: (event: ScrollEventType) => void) => {
+export function useScroll(callback: (event: ScrollEventType) => void) {
   const ref = React.useRef<HTMLElement>(null);
 
   const scrollXY = React.useRef<Vector2>({
@@ -20,15 +21,11 @@ export const useScroll = (callback: (event: ScrollEventType) => void) => {
   const lastTimeStamp = React.useRef<number>(0);
   const velocity = React.useRef<Vector2>({ x: 0, y: 0 });
 
-  const callbackRef = React.useRef<(event: ScrollEventType) => void>();
-
-  if (!callbackRef.current) {
-    callbackRef.current = callback;
-  }
+  const callbackRef = useConst<(event: ScrollEventType) => void>(callback);
 
   const handleCallback: () => void = () => {
-    if (callbackRef.current) {
-      callbackRef.current({
+    if (callbackRef) {
+      callbackRef({
         isScrolling: isScrolling.current,
         scrollX: scrollXY.current.x,
         scrollY: scrollXY.current.y,
@@ -115,4 +112,4 @@ export const useScroll = (callback: (event: ScrollEventType) => void) => {
   }, []);
 
   return () => ({ ref }); // ...bind()
-};
+}

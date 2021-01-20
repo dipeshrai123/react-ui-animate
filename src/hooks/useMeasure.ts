@@ -1,15 +1,12 @@
 import * as React from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { MeasurementType } from "../Types";
+import { useConst } from ".";
 
-export const useMeasure = (callback: (event: MeasurementType) => void) => {
+export function useMeasure(callback: (event: MeasurementType) => void) {
   const ref = React.useRef(null);
   const elementRefs = React.useRef([]);
-  const callbackRef = React.useRef<(event: MeasurementType) => void>();
-
-  if (!callbackRef.current) {
-    callbackRef.current = callback;
-  }
+  const callbackRef = useConst<(event: MeasurementType) => void>(callback);
 
   React.useEffect(() => {
     const _refElement = ref.current || document.documentElement;
@@ -19,9 +16,9 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
       const { left, top, width, height } = entry.target.getBoundingClientRect();
       const { pageXOffset, pageYOffset } = window;
 
-      if (callbackRef.current) {
+      if (callbackRef) {
         if (_refElement === document.documentElement) {
-          callbackRef.current({
+          callbackRef({
             left: 0,
             top: 0,
             width: 0,
@@ -30,7 +27,7 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
             vTop: 0,
           });
         } else {
-          callbackRef.current({
+          callbackRef({
             left: left + pageXOffset,
             top: top + pageYOffset,
             width,
@@ -69,8 +66,8 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
         vTop.push(_top);
       });
 
-      if (callbackRef.current) {
-        callbackRef.current({
+      if (callbackRef) {
+        callbackRef({
           left,
           top,
           width,
@@ -120,4 +117,4 @@ export const useMeasure = (callback: (event: MeasurementType) => void) => {
       return { ref: elementRefs.current[index] };
     }
   }; // ...bind() or ...bind(index) for multiple
-};
+}
