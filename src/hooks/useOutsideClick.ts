@@ -15,22 +15,23 @@ export function useOutsideClick(
   // Reinitiate callback when dependency change
   React.useEffect(() => {
     callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
   }, deps);
 
-  const handleOutsideClick = React.useCallback(
-    (e: MouseEvent) => {
+  React.useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
       if (!elementRef?.current?.contains(e.target as Element)) {
         callbackRef.current && callbackRef.current(e);
       }
-    },
-    [elementRef.current]
-  );
+    };
 
-  React.useEffect(() => {
     const subscribe = attachEvents(document, [
       ["click", handleOutsideClick, true],
     ]);
 
-    return () => subscribe();
+    return () => subscribe && subscribe();
   }, []);
 }
