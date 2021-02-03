@@ -63,7 +63,7 @@ export interface UseAnimatedValueConfig {
   mass?: number;
   friction?: number;
   tension?: number;
-  onAnimationEnd?: (value: number) => void;
+  onAnimationEnd?: (value: any) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
 }
@@ -101,7 +101,7 @@ export const useAnimatedValue = (
   const [props, set] = useSpring(() => ({
     value: _initialValue,
     config: _config,
-    immediate: !!config?.immediate,
+    immediate: !!config?.immediate
   }));
 
   const _update = ({
@@ -117,12 +117,12 @@ export const useAnimatedValue = (
       set({
         value: getValue(updatedValue),
         onRest: ({ value }: { value: any }) => {
-          onAnimationEnd && onAnimationEnd(value);
+          onAnimationEnd && onAnimationEnd(value.value);
         },
         onChange: function ({ value }: { value: number }) {
           listener && listener(value);
         },
-        immediate: !!config?.immediate,
+        immediate: !!config?.immediate
       });
     }
   };
