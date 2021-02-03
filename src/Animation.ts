@@ -45,10 +45,10 @@ const getInitialConfig = (animationType: InitialConfigType) : {
       return { mass: 1, friction: 18, tension: 250 };
 
     case "stiff":
-      return { mass: 1, friction: 22, tension: 350 };
+      return { mass: 1, friction: 18, tension: 350 };
 
     case "wooble":
-      return { mass: 1, friction: 14, tension: 250 };
+      return { mass: 1, friction: 8, tension: 250 };
 
     case "ease":
     default:
