@@ -1,14 +1,13 @@
 import * as React from "react";
 import {
   useSpring,
-  config as springConfig,
   useTransition,
   SpringValue,
 } from "react-spring";
 import { bin } from "./Math";
 
 type AnimatedValueType = number | boolean | SpringValue;
-type InitialConfigType = "ease" | "elastic" | undefined;
+type InitialConfigType = "ease" | "elastic" | "stiff" | "wooble" | undefined;
 type AnimationConfigType = {
   duration?: number;
   velocity?: number;
@@ -36,10 +35,25 @@ const getValue = (value: AnimatedValueType) => {
   }
 };
 
-const getInitialConfig = (animationType: InitialConfigType) => {
-  return animationType === "ease"
-    ? springConfig.default
-    : { mass: 1, friction: 18, tension: 250 };
+const getInitialConfig = (animationType: InitialConfigType) : {
+  mass: number,
+  friction: number,
+  tension: number,
+} => {
+  switch(animationType) {
+    case "elastic":
+      return { mass: 1, friction: 18, tension: 250 };
+
+    case "stiff":
+      return { mass: 1, friction: 18, tension: 350 };
+
+    case "wooble":
+      return { mass: 1, friction: 8, tension: 250 };
+
+    case "ease":
+    default:
+      return { mass: 1, friction: 26, tension: 170 };
+  }
 };
 
 export interface UseAnimatedValueConfig {
@@ -49,7 +63,7 @@ export interface UseAnimatedValueConfig {
   mass?: number;
   friction?: number;
   tension?: number;
-  onAnimationEnd?: (value: number) => void;
+  onAnimationEnd?: (value: any) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
 }
@@ -61,7 +75,7 @@ export const useAnimatedValue = (
   const _initialValue: number | SpringValue = getValue(initialValue);
   const _prevValue = React.useRef<number | SpringValue>(_initialValue); // Get track previous value
 
-  const animationType = config?.animationType || "ease"; // Defines default animation
+  const animationType = config?.animationType ?? "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
   const duration = config?.duration;
@@ -73,11 +87,11 @@ export const useAnimatedValue = (
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
 
-  if (duration) restConfig.duration = duration;
-  if (velocity) restConfig.velocity = velocity;
-  if (mass) restConfig.mass = mass;
-  if (friction) restConfig.friction = friction;
-  if (tension) restConfig.tension = tension;
+  if (isDefined(duration)) restConfig.duration = duration;
+  if (isDefined(velocity)) restConfig.velocity = velocity;
+  if (isDefined(mass)) restConfig.mass = mass;
+  if (isDefined(friction)) restConfig.friction = friction;
+  if (isDefined(tension)) restConfig.tension = tension;
 
   const _config = {
     ...initialConfig,
@@ -87,7 +101,7 @@ export const useAnimatedValue = (
   const [props, set] = useSpring(() => ({
     value: _initialValue,
     config: _config,
-    immediate: !!config?.immediate,
+    immediate: !!config?.immediate
   }));
 
   const _update = ({
@@ -103,12 +117,12 @@ export const useAnimatedValue = (
       set({
         value: getValue(updatedValue),
         onRest: ({ value }: { value: any }) => {
-          onAnimationEnd && onAnimationEnd(value);
+          onAnimationEnd && onAnimationEnd(value.value);
         },
         onChange: function ({ value }: { value: number }) {
           listener && listener(value);
         },
-        immediate: !!config?.immediate,
+        immediate: !!config?.immediate
       });
     }
   };
@@ -182,7 +196,7 @@ export const useMountedValue = (
     _exitConfig.config = { duration: exitDuration };
   }
 
-  const animationType = config?.animationType || "ease"; // Defines default animation
+  const animationType = config?.animationType ?? "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const duration = config?.duration;
   const listener = config?.listener;
