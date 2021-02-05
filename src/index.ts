@@ -37,6 +37,11 @@ export { interpolate, bInterpolate } from "./Interpolation";
 export { clamp, mix, rubberClamp, snapTo, bin, move } from "./Math";
 
 /**
+ * Easing
+ */
+export { Easing } from "./Easing";
+
+/**
  * Spring functions
  */
 export * as SpringCore from "react-spring";

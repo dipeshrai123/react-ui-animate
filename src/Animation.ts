@@ -1,9 +1,5 @@
 import * as React from "react";
-import {
-  useSpring,
-  useTransition,
-  SpringValue,
-} from "react-spring";
+import { useSpring, useTransition, SpringValue } from "react-spring";
 import { bin } from "./Math";
 
 type AnimatedValueType = number | boolean | SpringValue;
@@ -14,6 +10,7 @@ type AnimationConfigType = {
   mass?: number;
   friction?: number;
   tension?: number;
+  easing?: (t: number) => number;
 };
 
 // check undefined or null
@@ -35,12 +32,14 @@ const getValue = (value: AnimatedValueType) => {
   }
 };
 
-const getInitialConfig = (animationType: InitialConfigType) : {
-  mass: number,
-  friction: number,
-  tension: number,
+const getInitialConfig = (
+  animationType: InitialConfigType
+): {
+  mass: number;
+  friction: number;
+  tension: number;
 } => {
-  switch(animationType) {
+  switch (animationType) {
     case "elastic":
       return { mass: 1, friction: 18, tension: 250 };
 
@@ -66,6 +65,7 @@ export interface UseAnimatedValueConfig {
   onAnimationEnd?: (value: any) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
+  easing?: (t: number) => number;
 }
 
 export const useAnimatedValue = (
@@ -83,6 +83,7 @@ export const useAnimatedValue = (
   const mass = config?.mass;
   const friction = config?.friction;
   const tension = config?.tension;
+  const easing = config?.easing ?? ((t: number) => t);
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
@@ -92,6 +93,7 @@ export const useAnimatedValue = (
   if (isDefined(mass)) restConfig.mass = mass;
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
+  if (isDefined(easing)) restConfig.easing = easing;
 
   const _config = {
     ...initialConfig,
@@ -101,7 +103,7 @@ export const useAnimatedValue = (
   const [props, set] = useSpring(() => ({
     value: _initialValue,
     config: _config,
-    immediate: !!config?.immediate
+    immediate: !!config?.immediate,
   }));
 
   const _update = ({
@@ -122,7 +124,7 @@ export const useAnimatedValue = (
         onChange: function ({ value }: { value: number }) {
           listener && listener(value);
         },
-        immediate: !!config?.immediate
+        immediate: !!config?.immediate,
       });
     }
   };
@@ -204,6 +206,7 @@ export const useMountedValue = (
   const mass = config?.mass;
   const friction = config?.friction;
   const tension = config?.tension;
+  const easing = config?.easing ?? ((t: number) => t);
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
@@ -213,6 +216,7 @@ export const useMountedValue = (
   if (isDefined(mass)) restConfig.mass = mass;
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
+  if (isDefined(easing)) restConfig.easing = easing;
 
   const _config = {
     ...initialConfig,
