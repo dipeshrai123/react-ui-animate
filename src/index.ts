@@ -39,6 +39,7 @@ export { clamp, mix, rubberClamp, snapTo, bin, move } from "./Math";
 /**
  * Easing
  */
+export { Easing } from "./Easing";
 
 /**
  * Spring functions
