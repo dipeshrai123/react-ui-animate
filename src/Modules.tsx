@@ -14,15 +14,15 @@ export function makeAnimatedComponent(
 /**
  * AnimatedBlock : Animated Div
  */
-export const AnimatedBlock = makeAnimatedComponent("div");
+export const AnimatedBlock = animated("div");
 /**
  * AnimatedInline : Animated Span
  */
-export const AnimatedInline = makeAnimatedComponent("span");
+export const AnimatedInline = animated("span");
 /**
  * AnimatedImage : Animated Image
  */
-export const AnimatedImage = makeAnimatedComponent("img");
+export const AnimatedImage = animated("img");
 interface ScrollableBlockProps {
   children?: (animation: any) => React.ReactNode;
   direction?: "single" | "both";
