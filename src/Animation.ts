@@ -11,6 +11,7 @@ type AnimationConfigType = {
   friction?: number;
   tension?: number;
   easing?: (t: number) => number;
+  delay?: number;
 };
 
 // check undefined or null
@@ -66,6 +67,7 @@ export interface UseAnimatedValueConfig {
   listener?: (value: number) => void;
   immediate?: boolean;
   easing?: (t: number) => number;
+  delay?: number;
 }
 
 export const useAnimatedValue = (
@@ -84,6 +86,7 @@ export const useAnimatedValue = (
   const friction = config?.friction;
   const tension = config?.tension;
   const easing = config?.easing ?? ((t: number) => t);
+  const delay = config?.delay ?? 0;
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
@@ -94,6 +97,7 @@ export const useAnimatedValue = (
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
   if (isDefined(easing)) restConfig.easing = easing;
+  if(isDefined(delay)) restConfig.delay = delay;
 
   const _config = {
     ...initialConfig,
@@ -121,10 +125,11 @@ export const useAnimatedValue = (
         onRest: ({ value }: { value: any }) => {
           onAnimationEnd && onAnimationEnd(value.value);
         },
-        onChange: function ({ value }: { value: number }) {
+        onChange: function ({ value }: { value: any }) {
           listener && listener(value);
         },
         immediate: !!config?.immediate,
+        delay: _config.delay,
       });
     }
   };
@@ -207,6 +212,7 @@ export const useMountedValue = (
   const friction = config?.friction;
   const tension = config?.tension;
   const easing = config?.easing ?? ((t: number) => t);
+  const delay = config?.delay ?? 0;
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
@@ -217,6 +223,7 @@ export const useMountedValue = (
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
   if (isDefined(easing)) restConfig.easing = easing;
+  if (isDefined(delay)) restConfig.delay = delay;
 
   const _config = {
     ...initialConfig,
@@ -237,10 +244,11 @@ export const useMountedValue = (
     onRest: ({ value }: { value: any }) => {
       onAnimationEnd && onAnimationEnd(value);
     },
-    onChange: function ({ value }: { value: number }) {
+    onChange: function ({ value }: { value: any }) {
       listener && listener(value);
     },
     immediate: !!config?.immediate,
+    delay: _config.delay,
   });
 
   return transition;
