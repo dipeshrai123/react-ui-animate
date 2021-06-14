@@ -97,7 +97,7 @@ export const useAnimatedValue = (
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
   if (isDefined(easing)) restConfig.easing = easing;
-  if(isDefined(delay)) restConfig.delay = delay;
+  if (isDefined(delay)) restConfig.delay = delay;
 
   const _config = {
     ...initialConfig,
@@ -118,9 +118,9 @@ export const useAnimatedValue = (
     immediate?: boolean;
   }) => {
     if (immediate !== undefined) {
-      set({ immediate });
+      set.start({ immediate });
     } else if (updatedValue !== undefined) {
-      set({
+      set.start({
         value: getValue(updatedValue),
         onRest: ({ value }: { value: any }) => {
           onAnimationEnd && onAnimationEnd(value.value);

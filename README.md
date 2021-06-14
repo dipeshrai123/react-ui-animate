@@ -24,7 +24,7 @@ yarn add react-ui-animate
 `react-ui-animate` provides lots of easy to use APIs to create smooth animations and gestures.
 
 ```javascript
-import { AnimatedBlock, useAnimatedValue } from "react-uicomp";
+import { AnimatedBlock, useAnimatedValue } from "react-ui-animate";
 
 export default function () {
   const opacity = useAnimatedValue(0); // It initializes opacity object with value 0.
