@@ -1,12 +1,23 @@
 import * as React from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { MeasurementType } from "../Types";
-import { useConst } from "./useConst";
 
-export function useMeasure(callback: (event: MeasurementType) => void) {
+export function useMeasure(
+  callback: (event: MeasurementType) => void,
+  deps?: React.DependencyList
+) {
   const ref = React.useRef(null);
   const elementRefs = React.useRef([]);
-  const callbackRef = useConst<(event: MeasurementType) => void>(callback);
+  const callbackRef = React.useRef<(event: MeasurementType) => void>(callback);
+
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
+  }, deps);
 
   React.useEffect(() => {
     const _refElement = ref.current || document.documentElement;
@@ -20,7 +31,7 @@ export function useMeasure(callback: (event: MeasurementType) => void) {
         if (_refElement === document.documentElement) {
           return; // no-op for document
         } else {
-          callbackRef({
+          callbackRef.current({
             left: left + pageXOffset,
             top: top + pageYOffset,
             width,
@@ -60,7 +71,7 @@ export function useMeasure(callback: (event: MeasurementType) => void) {
       });
 
       if (callbackRef) {
-        callbackRef({
+        callbackRef.current({
           left,
           top,
           width,

@@ -1,10 +1,10 @@
 import * as React from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { WindowDimensionType } from "../Types";
-import { useConst } from "./useConst";
 
 export const useWindowDimension = (
-  callback: (event: WindowDimensionType) => void
+  callback: (event: WindowDimensionType) => void,
+  deps?: React.DependencyList
 ) => {
   const windowDimensionsRef = React.useRef<WindowDimensionType>({
     width: 0,
@@ -12,15 +12,25 @@ export const useWindowDimension = (
     innerWidth: 0,
     innerHeight: 0,
   });
-  const callbackRef = useConst<(event: WindowDimensionType) => void>(callback);
+  const callbackRef =
+    React.useRef<(event: WindowDimensionType) => void>(callback);
 
   const handleCallback: () => void = () => {
     if (callbackRef) {
-      callbackRef({
+      callbackRef.current({
         ...windowDimensionsRef.current,
       });
     }
   };
+
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
+  }, deps);
 
   React.useEffect(() => {
     const resizeObserver = new ResizeObserver(([entry]) => {

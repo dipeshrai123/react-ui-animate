@@ -1,15 +1,18 @@
 import * as React from "react";
 import { MouseMoveEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
-import { useConst } from "./useConst";
 import { attachEvents } from "../controllers";
 
-export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
+export function useMouseMove(
+  callback: (event: MouseMoveEventType) => void,
+  deps?: React.DependencyList
+) {
   const _VELOCITY_LIMIT = 20;
 
   const ref = React.useRef<any>(null);
 
-  const callbackRef = useConst<(event: MouseMoveEventType) => void>(callback);
+  const callbackRef =
+    React.useRef<(event: MouseMoveEventType) => void>(callback);
   const isMoving = React.useRef<boolean>(false);
   const _isMoving = React.useRef<number>(-1);
   const mouseXY = React.useRef<Vector2>({ x: 0, y: 0 });
@@ -21,7 +24,7 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
 
   const handleCallback = () => {
     if (callbackRef) {
-      callbackRef({
+      callbackRef.current({
         target: currentEvent.current?.target,
         isMoving: isMoving.current,
         mouseX: mouseXY.current.x,
@@ -33,6 +36,15 @@ export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
       });
     }
   };
+
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
+  }, deps);
 
   React.useEffect(() => {
     const _refElement = ref.current;
