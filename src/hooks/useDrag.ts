@@ -1,17 +1,19 @@
 import * as React from "react";
 import { DragEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
-import { useConst } from "./useConst";
 import { attachEvents } from "../controllers";
 
-export function useDrag(callback: (event: DragEventType) => void) {
+export function useDrag(
+  callback: (event: DragEventType) => void,
+  deps?: React.DependencyList
+) {
   const _VELOCITY_LIMIT = 20;
 
   const currentIndex = React.useRef<number | undefined>(undefined);
   const ref = React.useRef<any>(null);
   const elementRefs = React.useRef<Array<any>>([]);
 
-  const callbackRef = useConst<(event: DragEventType) => void>(callback);
+  const callbackRef = React.useRef<(event: DragEventType) => void>(callback);
 
   const cancelRef = React.useRef<() => void>();
 
@@ -31,7 +33,7 @@ export function useDrag(callback: (event: DragEventType) => void) {
 
   const handleCallback = () => {
     if (callbackRef) {
-      callbackRef({
+      callbackRef.current({
         args: [currentIndex.current],
         down: isGestureActive.current,
         movementX: movement.current.x,
@@ -50,6 +52,15 @@ export function useDrag(callback: (event: DragEventType) => void) {
       });
     }
   };
+
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
+  }, deps);
 
   React.useEffect(() => {
     const _elemRef = ref.current;

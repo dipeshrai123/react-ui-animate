@@ -1,10 +1,12 @@
 import * as React from "react";
 import { ScrollEventType, Vector2 } from "../Types";
 import { clamp } from "../Math";
-import { useConst } from "./useConst";
 import { attachEvents } from "../controllers";
 
-export function useScroll(callback: (event: ScrollEventType) => void) {
+export function useScroll(
+  callback: (event: ScrollEventType) => void,
+  deps?: React.DependencyList
+) {
   const ref = React.useRef<any>(null);
 
   const scrollXY = React.useRef<Vector2>({
@@ -22,11 +24,11 @@ export function useScroll(callback: (event: ScrollEventType) => void) {
   const lastTimeStamp = React.useRef<number>(0);
   const velocity = React.useRef<Vector2>({ x: 0, y: 0 });
 
-  const callbackRef = useConst<(event: ScrollEventType) => void>(callback);
+  const callbackRef = React.useRef<(event: ScrollEventType) => void>(callback);
 
   const handleCallback: () => void = () => {
     if (callbackRef) {
-      callbackRef({
+      callbackRef.current({
         isScrolling: isScrolling.current,
         scrollX: scrollXY.current.x,
         scrollY: scrollXY.current.y,
@@ -37,6 +39,15 @@ export function useScroll(callback: (event: ScrollEventType) => void) {
       });
     }
   };
+
+  // Reinitiate callback when dependency change
+  React.useEffect(() => {
+    callbackRef.current = callback;
+
+    return () => {
+      callbackRef.current = () => false;
+    };
+  }, deps);
 
   React.useEffect(() => {
     const _refElement = ref.current;
