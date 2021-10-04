@@ -2,7 +2,7 @@ import * as React from "react";
 import { useSpring, useTransition, SpringValue } from "react-spring";
 import { bin } from "./Math";
 
-type AnimatedValueType = number | boolean | SpringValue;
+type AnimatedValueType = number | boolean | string | SpringValue;
 type InitialConfigType = "ease" | "elastic" | "stiff" | "wooble" | undefined;
 type AnimationConfigType = {
   duration?: number;
@@ -20,7 +20,7 @@ const isDefined = <T>(value: T): boolean => {
 };
 
 const getValue = (value: AnimatedValueType) => {
-  if (typeof value === "number") {
+  if (typeof value === "number" || typeof value === "string") {
     return value;
   } else if (typeof value === "boolean") {
     return bin(value);
@@ -28,7 +28,7 @@ const getValue = (value: AnimatedValueType) => {
     return value;
   } else {
     throw new Error(
-      "Invalid Value! Animated value only accepts animation value, boolean or number."
+      "Invalid Value! Animated value only accepts animation value, string, boolean or number."
     );
   }
 };
@@ -74,8 +74,8 @@ export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ) => {
-  const _initialValue: number | SpringValue = getValue(initialValue);
-  const _prevValue = React.useRef<number | SpringValue>(_initialValue); // Get track previous value
+  const _initialValue: number | string | SpringValue = getValue(initialValue);
+  const _prevValue = React.useRef<number | string | SpringValue>(_initialValue); // Get track previous value
 
   const animationType = config?.animationType ?? "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;

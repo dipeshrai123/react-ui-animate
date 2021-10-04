@@ -67,7 +67,6 @@ export function useDrag(
     const _refElementsMultiple = elementRefs.current;
 
     var reSubscribe: any;
-
     const _initEvents = () => {
       if (_elemRef || _refElementsMultiple.length > 0) {
         reSubscribe = attachEvents(window, [
@@ -76,12 +75,6 @@ export function useDrag(
           ["touchstart", pointerDown, false],
           ["touchmove", pointerMove, false],
         ]);
-      }
-    };
-
-    const _cancelEvents = () => {
-      if (reSubscribe) {
-        reSubscribe();
       }
     };
 
@@ -183,6 +176,11 @@ export function useDrag(
         ["touchend", pointerUp, false],
       ]);
     }
+
+    const _cancelEvents = () => {
+      _initEvents(); // When cancel is called for first time reSubscription is undefined, so initializing reSubscribe and calling it fixes the issue
+      reSubscribe && reSubscribe();
+    };
 
     cancelRef.current = _cancelEvents;
 
