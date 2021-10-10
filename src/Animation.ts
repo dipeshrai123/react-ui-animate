@@ -4,7 +4,7 @@ import { bin } from "./Math";
 
 type AnimatedValueType = number | boolean | string | SpringValue;
 type InitialConfigType = "ease" | "elastic" | "stiff" | "wooble" | undefined;
-type AnimationConfigType = {
+interface AnimationConfigType {
   duration?: number;
   velocity?: number;
   mass?: number;
@@ -12,7 +12,8 @@ type AnimationConfigType = {
   tension?: number;
   easing?: (t: number) => number;
   delay?: number;
-};
+  decay?: number | boolean;
+}
 
 // check undefined or null
 const isDefined = <T>(value: T): boolean => {
@@ -56,18 +57,11 @@ const getInitialConfig = (
   }
 };
 
-export interface UseAnimatedValueConfig {
+export interface UseAnimatedValueConfig extends AnimationConfigType {
   animationType?: InitialConfigType;
-  duration?: number;
-  veloctiy?: number;
-  mass?: number;
-  friction?: number;
-  tension?: number;
   onAnimationEnd?: (value: any) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
-  easing?: (t: number) => number;
-  delay?: number;
 }
 
 export const useAnimatedValue = (
@@ -81,12 +75,13 @@ export const useAnimatedValue = (
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
   const duration = config?.duration;
-  const velocity = config?.veloctiy;
+  const velocity = config?.velocity;
   const mass = config?.mass;
   const friction = config?.friction;
   const tension = config?.tension;
   const easing = config?.easing ?? ((t: number) => t);
   const delay = config?.delay ?? 0;
+  const decay = config?.decay ?? false;
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: AnimationConfigType = {};
@@ -98,6 +93,7 @@ export const useAnimatedValue = (
   if (isDefined(tension)) restConfig.tension = tension;
   if (isDefined(easing)) restConfig.easing = easing;
   if (isDefined(delay)) restConfig.delay = delay;
+  if (isDefined(decay)) restConfig.decay = decay;
 
   const _config = {
     ...initialConfig,
@@ -113,9 +109,11 @@ export const useAnimatedValue = (
   const _update = ({
     updatedValue,
     immediate,
+    decay,
   }: {
     updatedValue?: AnimatedValueType;
     immediate?: boolean;
+    decay?: { value: number | boolean; velocity: number };
   }) => {
     if (immediate !== undefined) {
       set.start({ immediate });
@@ -131,6 +129,13 @@ export const useAnimatedValue = (
         immediate: !!config?.immediate,
         delay: _config.delay,
       });
+    } else if (decay !== undefined) {
+      set.start({
+        config: {
+          decay: decay.value,
+          velocity: decay.velocity,
+        },
+      });
     }
   };
 
@@ -141,9 +146,16 @@ export const useAnimatedValue = (
     }
   }, [initialValue]);
 
-  const targetObject: { value: any; immediate: boolean } = {
+  const targetObject: {
+    value: any;
+    immediate: boolean;
+    currentValue: string | number;
+    decay: { value: number | boolean; velocity: number };
+  } = {
     value: props.value,
     immediate: false,
+    currentValue: props.value.get(),
+    decay: { value: false, velocity: 0 },
   };
 
   return new Proxy(targetObject, {
@@ -164,11 +176,23 @@ export const useAnimatedValue = (
         return true;
       }
 
+      if (key === "decay") {
+        _update({
+          decay: value,
+        });
+
+        return true;
+      }
+
       throw new Error("You cannot set any other property to animation node.");
     },
     get: function (_, key) {
       if (key === "value") {
         return props.value;
+      }
+
+      if (key === "currentValue") {
+        return props.value.get();
       }
 
       throw new Error(
@@ -207,7 +231,7 @@ export const useMountedValue = (
   const onAnimationEnd = config?.onAnimationEnd;
   const duration = config?.duration;
   const listener = config?.listener;
-  const velocity = config?.veloctiy;
+  const velocity = config?.velocity;
   const mass = config?.mass;
   const friction = config?.friction;
   const tension = config?.tension;
