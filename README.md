@@ -70,7 +70,7 @@ onClick={() => opacity.value = 1} // Assignment
 ...
 ```
 
-### `AnimatedBlock`
+#### `AnimatedBlock`
 
 `AnimatedBlock` is a `div` component which can accept the animation node from `useAnimatedValue()` hook.
 
@@ -86,7 +86,7 @@ const width = useAnimatedValue(100);
 />;
 ```
 
-### `interpolate`
+#### `interpolate`
 
 The `interpolate()` function allows animated node value to map from input ranges to different output ranges. By default, it will extrapolate the curve beyond the ranges given, but you can also have it clamp the output value.
 
