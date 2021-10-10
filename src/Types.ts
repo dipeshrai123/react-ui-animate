@@ -48,4 +48,8 @@ export type MouseMoveEventType = {
   mouseY: number;
 } & GenericEventType;
 
+export type UseDragConfig = {
+  initial?: () => { movementX: number; movementY: number };
+};
+
 export type Vector2 = { x: number; y: number };

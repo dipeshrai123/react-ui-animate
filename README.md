@@ -31,10 +31,10 @@ export default function () {
 
   return (
     <div>
-      {/* AnimatedBlock component should be used with useAnimatedValue() */}
+      {/* AnimatedBlock component can read useAnimatedValue() */}
       <AnimatedBlock
         style={{
-          opacity: opacity.value, // value property should be passed
+          opacity: opacity.value, // using opacity with value property
           width: 100,
           padding: 20,
           background: "#39F",
@@ -43,7 +43,7 @@ export default function () {
         ANIMATED
       </AnimatedBlock>
 
-      {/* Animating from 0 to 1 is very simple just assign opacity.value = 1 */}
+      {/* Assigning value to 1 auto animates from initialized value 0 to 1 smoothly */}
       <button onClick={() => (opacity.value = 1)}>Animate Me</button>
     </div>
   );
@@ -54,7 +54,7 @@ Animates opacity from 0 to 1.
 
 #### `useAnimatedValue()`
 
-`useAnimatedValue()` is very flexible and powerful hook that lets you define animated values. It accepts a number and returns a node with same value on `value` property. Whenever `value` property is assigned to another value, it auto animates from one value to another.
+`useAnimatedValue()` is very flexible and powerful hook that lets you define animated values. It accepts a value and returns a node with same value on `value` property. Whenever `value` property is assigned to another value, it auto animates from one value to another.
 
 ```javascript
 const opacity = useAnimatedValue(0); // initialize with 0 opacity
@@ -70,7 +70,7 @@ onClick={() => opacity.value = 1} // Assignment
 ...
 ```
 
-### `AnimatedBlock`
+#### `AnimatedBlock`
 
 `AnimatedBlock` is a `div` component which can accept the animation node from `useAnimatedValue()` hook.
 
@@ -86,7 +86,7 @@ const width = useAnimatedValue(100);
 />;
 ```
 
-### `interpolate`
+#### `interpolate`
 
 The `interpolate()` function allows animated node value to map from input ranges to different output ranges. By default, it will extrapolate the curve beyond the ranges given, but you can also have it clamp the output value.
 
@@ -105,6 +105,10 @@ const width = useAnimatedValue(100);
 ```
 
 `backgroundColor` is interpolated from input range `[100, 200]` to output range `["red", "blue"]`. So, when the width changes from 100 to 200, `backgroundColor` will change from `red` to `blue`.
+
+## Documentation
+
+The official documentation are now published at http://react-ui-animate.js.org/
 
 ## License
 
