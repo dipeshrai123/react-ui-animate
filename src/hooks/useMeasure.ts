@@ -1,5 +1,4 @@
 import * as React from "react";
-import ResizeObserver from "resize-observer-polyfill";
 import { MeasurementType } from "../Types";
 
 export function useMeasure(
