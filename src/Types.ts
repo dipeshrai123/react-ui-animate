@@ -53,7 +53,7 @@ export type DragEventType = {
 } & GenericEventType;
 
 export type MouseMoveEventType = {
-  target: HTMLElement | undefined | null;
+  target: EventTarget | undefined | null;
   isMoving: boolean;
   mouseX: number;
   mouseY: number;

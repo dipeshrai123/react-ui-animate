@@ -111,10 +111,10 @@ export function useScroll(
     var subscribe: any;
     if (_refElement) {
       subscribe = attachEvents(_refElement, [
-        ["scroll", scrollElementListener, false],
+        ["scroll", scrollElementListener],
       ]);
     } else {
-      subscribe = attachEvents(window, [["scroll", scrollListener, false]]);
+      subscribe = attachEvents(window, [["scroll", scrollListener]]);
     }
 
     return () => subscribe && subscribe();

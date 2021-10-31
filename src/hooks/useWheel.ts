@@ -134,7 +134,7 @@ export function useWheel(
 
     var subscribe: any;
     if (_refElement) {
-      subscribe = attachEvents(_refElement, [["wheel", wheelListener, false]]);
+      subscribe = attachEvents(_refElement, [["wheel", wheelListener]]);
     }
 
     return () => subscribe && subscribe();
