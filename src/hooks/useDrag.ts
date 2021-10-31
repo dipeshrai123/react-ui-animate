@@ -74,7 +74,7 @@ export function useDrag(
         reSubscribe = attachEvents(window, [
           ["mousedown", pointerDown],
           ["mousemove", pointerMove],
-          ["touchstart", pointerDown],
+          ["touchstart", pointerDown, { passive: false }],
           ["touchmove", pointerMove, { passive: false }],
         ]);
       }
@@ -102,6 +102,7 @@ export function useDrag(
 
       if (e.target === _elemRef || currElem) {
         isGestureActive.current = true;
+        e.preventDefault();
 
         // set args
         if (currElem) {
@@ -201,7 +202,7 @@ export function useDrag(
         ["mousedown", pointerDown],
         ["mousemove", pointerMove],
         ["mouseup", pointerUp],
-        ["touchstart", pointerDown],
+        ["touchstart", pointerDown, { passive: false }],
         ["touchmove", pointerMove, { passive: false }],
         ["touchend", pointerUp],
       ]);
