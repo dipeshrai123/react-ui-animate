@@ -29,6 +29,17 @@ export type ScrollEventType = {
   scrollY: number;
 } & GenericEventType;
 
+export type WheelEventType = {
+  target: HTMLElement | undefined | null;
+  isWheeling: boolean;
+  movementX: number;
+  movementY: number;
+  offsetX: number;
+  offsetY: number;
+  deltaX: number;
+  deltaY: number;
+} & GenericEventType;
+
 export type DragEventType = {
   args: Array<number | undefined>;
   down: boolean;

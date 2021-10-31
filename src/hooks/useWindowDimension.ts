@@ -1,5 +1,4 @@
 import * as React from "react";
-import ResizeObserver from "resize-observer-polyfill";
 import { WindowDimensionType } from "../Types";
 
 export const useWindowDimension = (

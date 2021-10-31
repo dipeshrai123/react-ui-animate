@@ -110,12 +110,10 @@ export function useMouseMove(
 
     if (_refElement) {
       subscribe = attachEvents(_refElement, [
-        ["mousemove", mouseMoveElementListener, false],
+        ["mousemove", mouseMoveElementListener],
       ]);
     } else {
-      subscribe = attachEvents(window, [
-        ["mousemove", mouseMoveListener, false],
-      ]);
+      subscribe = attachEvents(window, [["mousemove", mouseMoveListener]]);
     }
 
     return () => subscribe && subscribe();

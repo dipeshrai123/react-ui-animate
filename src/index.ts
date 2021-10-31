@@ -24,6 +24,7 @@ export {
   useScroll,
   useDrag,
   useMouseMove,
+  useWheel,
 } from "./hooks";
 
 /**

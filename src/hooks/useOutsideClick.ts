@@ -28,9 +28,7 @@ export function useOutsideClick(
       }
     };
 
-    const subscribe = attachEvents(document, [
-      ["click", handleOutsideClick, true],
-    ]);
+    const subscribe = attachEvents(document, [["click", handleOutsideClick]]);
 
     return () => subscribe && subscribe();
   }, []);

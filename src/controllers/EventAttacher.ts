@@ -5,7 +5,7 @@ export function attachEvent(
   domTarget: Window | Document | HTMLElement,
   event: string,
   callback: (e: any) => void,
-  capture: boolean = false
+  capture: any = false
 ) {
   domTarget.addEventListener(event, callback, capture);
 
@@ -19,7 +19,7 @@ export function attachEvent(
  */
 export function attachEvents(
   domTarget: Window | Document | HTMLElement,
-  events: Array<[event: string, callback: (e: any) => void, capture: boolean]>
+  events: Array<[event: string, callback: (e: any) => void, capture?: any]>
 ) {
   const subscribers: Array<() => void> = [];
 
