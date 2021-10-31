@@ -30,6 +30,7 @@ export type ScrollEventType = {
 } & GenericEventType;
 
 export type WheelEventType = {
+  target: HTMLElement | undefined | null;
   isWheeling: boolean;
   movementX: number;
   movementY: number;
@@ -52,7 +53,7 @@ export type DragEventType = {
 } & GenericEventType;
 
 export type MouseMoveEventType = {
-  target: EventTarget | undefined | null;
+  target: HTMLElement | undefined | null;
   isMoving: boolean;
   mouseX: number;
   mouseY: number;
