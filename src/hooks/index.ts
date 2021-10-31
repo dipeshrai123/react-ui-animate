@@ -4,3 +4,4 @@ export * from "./useWindowDimension";
 export * from "./useScroll";
 export * from "./useDrag";
 export * from "./useMouseMove";
+export * from "./useWheel";
