@@ -72,10 +72,10 @@ export function useDrag(
     const _initEvents = () => {
       if (_elemRef || _refElementsMultiple.length > 0) {
         reSubscribe = attachEvents(window, [
-          ["mousedown", pointerDown, false],
-          ["mousemove", pointerMove, false],
-          ["touchstart", pointerDown, false],
-          ["touchmove", pointerMove, false],
+          ["mousedown", pointerDown],
+          ["mousemove", pointerMove],
+          ["touchstart", pointerDown],
+          ["touchmove", pointerMove, { passive: false }],
         ]);
       }
     };
@@ -135,6 +135,7 @@ export function useDrag(
 
     const pointerMove = (e: any) => {
       if (isGestureActive.current) {
+        e.preventDefault();
         const now = Date.now();
         const deltaTime = Math.min(now - lastTimeStamp.current, 64);
         lastTimeStamp.current = now;
@@ -197,12 +198,12 @@ export function useDrag(
     var subscribe: any;
     if (_elemRef || _refElementsMultiple.length > 0) {
       subscribe = attachEvents(window, [
-        ["mousedown", pointerDown, false],
-        ["mousemove", pointerMove, false],
-        ["mouseup", pointerUp, false],
-        ["touchstart", pointerDown, false],
-        ["touchmove", pointerMove, false],
-        ["touchend", pointerUp, false],
+        ["mousedown", pointerDown],
+        ["mousemove", pointerMove],
+        ["mouseup", pointerUp],
+        ["touchstart", pointerDown],
+        ["touchmove", pointerMove, { passive: false }],
+        ["touchend", pointerUp],
       ]);
     }
 
