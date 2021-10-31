@@ -85,12 +85,12 @@ export function useWheel(
 
       isWheelingID.current = setTimeout(() => {
         isWheeling.current = false;
-        velocity.current = { x: 0, y: 0 }; // Reset Velocity
         translation.current = { x: offset.current.x, y: offset.current.y };
         handleCallback();
 
+        velocity.current = { x: 0, y: 0 }; // Reset Velocity
         movementXY.current = { x: 0, y: 0 };
-      }, 250);
+      }, 200);
 
       // normalize wheel values, especially for Firefox
       if (deltaMode === 1) {
