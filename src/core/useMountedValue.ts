@@ -17,6 +17,12 @@ interface UseMountedValueConfig {
   config?: InternalUseMountedValueConfig;
 }
 
+/**
+ * useMountedValue handles mounting and unmounting of a component
+ * @param state - boolean
+ * @param config - useTransitionConfig
+ * @returns mountedValueFunction with a callback with argument ( animationNode, mounted )
+ */
 export const useMountedValue = (
   state: boolean,
   config: UseMountedValueConfig
