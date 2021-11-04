@@ -73,17 +73,18 @@ export class TimingAnimation extends Animation {
     }
   }
 
-  // Set value
-  set(toValue: number) {
-    this._position = toValue;
-    this._onFrame(toValue);
-  }
-
   stop() {
     this._active = false;
     clearTimeout(this._timeout);
     CancelAnimationFrame.current(this._animationFrame);
     this._debounceOnEnd({ finished: false, value: this._position });
+  }
+
+  // Set value
+  set(toValue: number) {
+    this.stop();
+    this._position = toValue;
+    this._onFrame(toValue);
   }
 
   start({
@@ -121,27 +122,18 @@ export class TimingAnimation extends Animation {
           }
         }
 
-        var start = () => {
-          this._toValue = toValue;
+        // animate from lastly animated position to new toValue
+        this._fromValue = this._position;
+        this._toValue = toValue;
 
-          if (this._duration === 0) {
-            this._onFrame(this._toValue);
-            this._debounceOnEnd({ finished: true, value: this._toValue });
-          } else {
-            this._startTime = Date.now();
-            this._animationFrame = RequestAnimationFrame.current(
-              this.onUpdate.bind(this)
-            );
-          }
-        };
-
-        if (this._active) {
-          if (this._toValue !== toValue) {
-            this._fromValue = this._position;
-            start();
-          }
+        if (this._duration === 0) {
+          this._onFrame(this._toValue);
+          this._debounceOnEnd({ finished: true, value: this._toValue });
         } else {
-          start();
+          this._startTime = Date.now();
+          this._animationFrame = RequestAnimationFrame.current(
+            this.onUpdate.bind(this)
+          );
         }
       }
     };
