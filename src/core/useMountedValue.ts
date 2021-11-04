@@ -5,11 +5,16 @@ import {
   UseTransitionConfig,
 } from "./useTransition";
 
+interface InternalUseMountedValueConfig extends UseTransitionConfig {
+  enterDuration?: number;
+  exitDuration?: number;
+}
+
 interface UseMountedValueConfig {
   from: number;
   enter: number;
   exit: number;
-  config?: UseTransitionConfig;
+  config?: InternalUseMountedValueConfig;
 }
 
 export const useMountedValue = (
@@ -20,6 +25,10 @@ export const useMountedValue = (
   const [mounted, setMounted] = React.useState(false);
   const [isExit, setIsExit] = React.useState(false);
   const [animation, setAnimation] = useTransition(config.from, config?.config);
+
+  const enterDuration =
+    config?.config?.enterDuration ?? config?.config?.duration;
+  const exitDuration = config?.config?.exitDuration ?? config?.config?.duration;
 
   React.useEffect(() => {
     if (state) {
@@ -34,14 +43,21 @@ export const useMountedValue = (
 
   React.useEffect(() => {
     if (initialAnimation && mounted) {
-      setAnimation({ toValue: config.enter });
+      setAnimation({ toValue: config.enter, duration: enterDuration });
     }
-  }, [mounted, initialAnimation, setAnimation, config, setInitialAnimation]);
+  }, [
+    mounted,
+    initialAnimation,
+    setAnimation,
+    config,
+    setInitialAnimation,
+    enterDuration,
+  ]);
 
   React.useEffect(() => {
     if (!initialAnimation && isExit) {
       setAnimation(
-        { toValue: config.exit },
+        { toValue: config.exit, duration: exitDuration },
         ({ finished }: { finished: boolean }) => {
           if (finished) {
             if (mounted) {
@@ -51,7 +67,7 @@ export const useMountedValue = (
         }
       );
     }
-  }, [initialAnimation, isExit, setAnimation, config, mounted]);
+  }, [initialAnimation, isExit, setAnimation, config, mounted, exitDuration]);
 
   return function (
     callback: (animation: TransitionValue, mounted: boolean) => React.ReactNode

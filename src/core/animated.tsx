@@ -266,7 +266,7 @@ export const makeAnimatedComponent = (
           value: AssignValue,
           callback?: (value: ResultType) => void
         ) => {
-          const { toValue, immediate } = value;
+          const { toValue, immediate, duration } = value;
 
           if (animatable) {
             // animatable
@@ -276,6 +276,7 @@ export const makeAnimatedComponent = (
               previousAnimation: animation,
               onEnd: callback,
               immediate,
+              duration,
             });
           } else {
             // non-animatable

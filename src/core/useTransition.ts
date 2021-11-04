@@ -2,6 +2,9 @@ import * as React from "react";
 
 import { ResultType } from "./Animation";
 
+/**
+ * UseTransitionConfig for useTransition config
+ */
 export interface UseTransitionConfig {
   mass?: number;
   tension?: number;
@@ -14,18 +17,32 @@ export interface UseTransitionConfig {
   onRest?: (value: any) => void;
 }
 
+/**
+ * useTransition returns TransitionValue object
+ */
 export type TransitionValue = {
   _subscribe: (onUpdate: () => void) => void;
   _value: number | string;
   _config?: UseTransitionConfig;
 };
 
-export type AssignValue = { toValue: number | string; immediate?: boolean };
+/**
+ * Assign value object to set animation
+ */
+export type AssignValue = {
+  toValue: number | string;
+  immediate?: boolean;
+  duration?: number; // only for time-based animation
+};
+
 export type SubscriptionValue = (
   updatedValue: AssignValue,
   callback?: (result: ResultType) => void
 ) => void;
 
+/**
+ * useTransition return type
+ */
 export type UseTransitionReturn = [TransitionValue, SubscriptionValue];
 
 /**

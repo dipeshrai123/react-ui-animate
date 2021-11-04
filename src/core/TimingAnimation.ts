@@ -23,6 +23,7 @@ export class TimingAnimation extends Animation {
   // Modifiers
   _immediate: boolean;
   _delay: number;
+  _tempDuration: number;
   _onRest?: (value: any) => void;
 
   constructor({
@@ -36,8 +37,9 @@ export class TimingAnimation extends Animation {
 
     this._fromValue = initialPosition;
     this._position = this._fromValue;
-    this._easing = config.easing !== undefined ? config.easing : Easing.linear;
-    this._duration = config.duration !== undefined ? config.duration : 500;
+    this._easing = config?.easing ?? Easing.linear;
+    this._duration = config?.duration ?? 500;
+    this._tempDuration = config?.duration ?? 500;
 
     // Modifiers
     this._immediate = config?.immediate ?? false;
@@ -92,11 +94,13 @@ export class TimingAnimation extends Animation {
     onFrame,
     onEnd,
     immediate,
+    duration,
   }: {
     toValue: number;
     onFrame: (value: number) => void;
     onEnd?: (result: ResultType) => void;
     immediate?: boolean;
+    duration?: number;
   }) {
     const onStart: any = () => {
       this._onFrame = onFrame;
@@ -104,6 +108,12 @@ export class TimingAnimation extends Animation {
       // set immediate here
       if (immediate !== undefined) {
         this._immediate = immediate;
+      }
+
+      if (duration !== undefined) {
+        this._duration = duration;
+      } else {
+        this._duration = this._tempDuration;
       }
 
       if (this._immediate) {
