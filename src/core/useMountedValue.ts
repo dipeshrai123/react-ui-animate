@@ -1,10 +1,15 @@
 import * as React from "react";
-import { useTransition, TransitionValue } from "./useTransition";
+import {
+  useTransition,
+  TransitionValue,
+  UseTransitionConfig,
+} from "./useTransition";
 
 interface UseMountedValueConfig {
   from: number;
   enter: number;
   exit: number;
+  config?: UseTransitionConfig;
 }
 
 export const useMountedValue = (
@@ -14,7 +19,7 @@ export const useMountedValue = (
   const [initialAnimation, setInitialAnimation] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
   const [isExit, setIsExit] = React.useState(false);
-  const [animation, setAnimation] = useTransition(config.from);
+  const [animation, setAnimation] = useTransition(config.from, config?.config);
 
   React.useEffect(() => {
     if (state) {
