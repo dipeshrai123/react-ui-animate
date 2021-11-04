@@ -25,6 +25,10 @@ export class SpringAnimation extends Animation {
   _onFrame: (value: number) => void;
   _animationFrame: any;
 
+  // Modifiers
+  _immediate: boolean;
+  _delay: number;
+
   constructor({
     initialPosition,
     config,
@@ -45,6 +49,10 @@ export class SpringAnimation extends Animation {
     this._mass = config?.mass ?? 1;
     this._tension = config?.tension ?? 170;
     this._friction = config?.friction ?? 26;
+
+    // Modifiers
+    this._immediate = config?.immediate ?? false;
+    this._delay = config?.delay ?? 0;
   }
 
   onUpdate() {
@@ -150,6 +158,12 @@ export class SpringAnimation extends Animation {
     this._debounceOnEnd({ finished: false });
   }
 
+  // Set value
+  set(toValue: number) {
+    this._lastPosition = toValue;
+    this._onFrame(toValue);
+  }
+
   start({
     toValue,
     onFrame,
@@ -161,21 +175,34 @@ export class SpringAnimation extends Animation {
     previousAnimation?: SpringAnimation;
     onEnd?: (result: { finished: boolean }) => void;
   }) {
-    this._toValue = toValue;
-    this._active = true;
+    const onStart = () => {
+      this._onFrame = onFrame;
 
-    this._onFrame = onFrame;
-    this._onEnd = onEnd;
-    const now = Date.now();
+      if (this._immediate) {
+        this.set(toValue);
+      } else {
+        this._active = true;
+        this._toValue = toValue;
+        this._onEnd = onEnd;
 
-    if (previousAnimation instanceof SpringAnimation) {
-      this._lastVelocity =
-        previousAnimation._lastVelocity || this._lastVelocity || 0;
-      this._lastTime = previousAnimation._lastTime || now;
+        const now = Date.now();
+
+        if (previousAnimation instanceof SpringAnimation) {
+          this._lastVelocity =
+            previousAnimation._lastVelocity || this._lastVelocity || 0;
+          this._lastTime = previousAnimation._lastTime || now;
+        } else {
+          this._lastTime = now;
+        }
+
+        this.onUpdate();
+      }
+    };
+
+    if (this._delay !== 0) {
+      setTimeout(() => onStart(), this._delay);
     } else {
-      this._lastTime = now;
+      onStart();
     }
-
-    this.onUpdate();
   }
 }
