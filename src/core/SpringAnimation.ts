@@ -114,6 +114,7 @@ export class SpringAnimation extends Animation {
     this._lastVelocity = velocity;
 
     this._onFrame(position);
+
     if (!this._active) {
       return;
     }
@@ -175,7 +176,7 @@ export class SpringAnimation extends Animation {
     previousAnimation?: SpringAnimation;
     onEnd?: (result: { finished: boolean }) => void;
   }) {
-    const onStart = () => {
+    const onStart: any = () => {
       this._onFrame = onFrame;
 
       if (this._immediate) {

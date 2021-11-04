@@ -8,6 +8,7 @@ import {
 } from "./Interpolation";
 import { tags, unitlessStyleProps } from "./Tags";
 import { TransitionValue } from "./useTransition";
+import { UseTransitionConfig } from "./useTransition";
 
 const isDefined = (value: any) => {
   return value !== null && value !== undefined;
@@ -98,6 +99,21 @@ export const interpolate = (
   };
 };
 
+type AnimationObject = {
+  _subscribe: (onUpdate: () => void) => void;
+  _value: string | number;
+  _config: UseTransitionConfig;
+  property: string;
+  animatable: boolean;
+  animation: any;
+  isInterpolation: boolean;
+  interpolationConfig: {
+    inputRange: Array<number>;
+    outputRange: Array<number | string>;
+    extrapolateConfig?: ExtrapolateConfig;
+  };
+};
+
 export const makeAnimatedComponent = (
   WrapperComponent: React.ComponentType | keyof JSX.IntrinsicElements
 ) => {
@@ -105,7 +121,7 @@ export const makeAnimatedComponent = (
     const ref = React.useRef<any>(null);
 
     // generates the array of animation object
-    const animations = React.useMemo(() => {
+    const animations = React.useMemo<Array<AnimationObject>>(() => {
       if (!style) {
         return [];
       }
@@ -167,7 +183,7 @@ export const makeAnimatedComponent = (
         }
 
         return acc;
-      }, []);
+      }, []) as any;
     }, [style]);
 
     // Update non-animated style if style changes
@@ -190,7 +206,12 @@ export const makeAnimatedComponent = (
       // set all subscribers here
       // TODO: check if it can be interpolated or not
       // always give interpolatable strings value from 0 to 1 in animation
-      animations.forEach((props: any) => {
+
+      // for duplicate values onFrame
+      let previousValue: any;
+      let updatedValue: any;
+
+      animations.forEach((props: AnimationObject) => {
         const { animation, property, _subscribe, _value, animatable, _config } =
           props;
 
@@ -198,7 +219,13 @@ export const makeAnimatedComponent = (
           return;
         }
 
+        // set previous value
+        previousValue = _value;
+
         const onFrame = (value: number) => {
+          // get new value
+          updatedValue = value;
+
           if (props.isInterpolation) {
             const { interpolationConfig } = props;
 
@@ -215,19 +242,17 @@ export const makeAnimatedComponent = (
                 interpolatedValue
               );
             }
-
-            // call the listener
-            if (_config?.listener) {
-              _config?.listener(interpolatedValue);
-            }
           } else {
             if (ref.current) {
               ref.current.style[property] = getCssValue(property, value);
             }
+          }
 
-            // call the listener
-            if (_config?.listener) {
-              _config?.listener(value);
+          // Handeling duplicate listener value updates
+          if (_config.listener) {
+            if (previousValue !== updatedValue) {
+              _config.listener(value);
+              previousValue = updatedValue;
             }
           }
         };
@@ -256,9 +281,9 @@ export const makeAnimatedComponent = (
           }
         };
 
-        onFrame(_value); // first initial value paint the frame
+        onFrame(_value as number); // first initial value paint the frame
 
-        const subscribe = _subscribe(onUpdate);
+        const subscribe = _subscribe(onUpdate as any);
         subscribers.push(subscribe);
       });
 
