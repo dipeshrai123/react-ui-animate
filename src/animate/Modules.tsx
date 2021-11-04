@@ -1,6 +1,6 @@
 import * as React from "react";
 import { animated } from "react-spring";
-import { useAnimatedValue, UseAnimatedValueConfig } from "./Animation";
+import { useAnimatedValue, UseAnimatedValueConfig } from "./useAnimatedValue";
 
 /**
  * Make any component animatable

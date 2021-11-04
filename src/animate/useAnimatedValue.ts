@@ -1,24 +1,10 @@
 import * as React from "react";
-import { useSpring, useTransition, SpringValue } from "react-spring";
+import { useSpring, SpringValue } from "react-spring";
 import { bin } from "./Math";
+import { isDefined } from "./isDefined";
+import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
 
 type AnimatedValueType = number | boolean | string | SpringValue;
-type InitialConfigType = "ease" | "elastic" | "stiff" | "wooble" | undefined;
-interface AnimationConfigType {
-  duration?: number;
-  velocity?: number;
-  mass?: number;
-  friction?: number;
-  tension?: number;
-  easing?: (t: number) => number;
-  delay?: number;
-  decay?: number | boolean;
-}
-
-// check undefined or null
-const isDefined = <T>(value: T): boolean => {
-  return value !== undefined && value !== null;
-};
 
 const getValue = (value: AnimatedValueType) => {
   if (typeof value === "number" || typeof value === "string") {
@@ -34,36 +20,28 @@ const getValue = (value: AnimatedValueType) => {
   }
 };
 
-const getInitialConfig = (
-  animationType: InitialConfigType
-): {
-  mass: number;
-  friction: number;
-  tension: number;
-} => {
-  switch (animationType) {
-    case "elastic":
-      return { mass: 1, friction: 18, tension: 250 };
+// General config type
+export interface GenericAnimationConfig {
+  duration?: number;
+  velocity?: number;
+  mass?: number;
+  friction?: number;
+  tension?: number;
+  easing?: (t: number) => number;
+  delay?: number;
+  decay?: number | boolean;
+}
 
-    case "stiff":
-      return { mass: 1, friction: 18, tension: 350 };
-
-    case "wooble":
-      return { mass: 1, friction: 8, tension: 250 };
-
-    case "ease":
-    default:
-      return { mass: 1, friction: 26, tension: 170 };
-  }
-};
-
-export interface UseAnimatedValueConfig extends AnimationConfigType {
+export interface UseAnimatedValueConfig extends GenericAnimationConfig {
   animationType?: InitialConfigType;
   onAnimationEnd?: (value: any) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
 }
 
+/**
+ * useAnimatedValue for animated transitions
+ */
 export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
@@ -84,7 +62,7 @@ export const useAnimatedValue = (
   const decay = config?.decay ?? false;
 
   const initialConfig = getInitialConfig(animationType);
-  const restConfig: AnimationConfigType = {};
+  const restConfig: GenericAnimationConfig = {};
 
   if (isDefined(duration)) restConfig.duration = duration;
   if (isDefined(velocity)) restConfig.velocity = velocity;
@@ -200,80 +178,4 @@ export const useAnimatedValue = (
       );
     },
   });
-};
-
-interface UseMountedValueConfig extends UseAnimatedValueConfig {
-  enterDuration?: number;
-  exitDuration?: number;
-}
-
-export const useMountedValue = (
-  initialState: boolean,
-  phases: [number, number, number],
-  config?: UseMountedValueConfig
-) => {
-  const [from, enter, leave] = phases;
-
-  const enterDuration = config?.enterDuration;
-  const exitDuration = config?.exitDuration;
-
-  const _enterConfig: any = {};
-  if (isDefined(enterDuration)) {
-    _enterConfig.config = { duration: enterDuration };
-  }
-
-  const _exitConfig: any = {};
-  if (isDefined(exitDuration)) {
-    _exitConfig.config = { duration: exitDuration };
-  }
-
-  const animationType = config?.animationType ?? "ease"; // Defines default animation
-  const onAnimationEnd = config?.onAnimationEnd;
-  const duration = config?.duration;
-  const listener = config?.listener;
-  const velocity = config?.velocity;
-  const mass = config?.mass;
-  const friction = config?.friction;
-  const tension = config?.tension;
-  const easing = config?.easing ?? ((t: number) => t);
-  const delay = config?.delay ?? 0;
-
-  const initialConfig = getInitialConfig(animationType);
-  const restConfig: AnimationConfigType = {};
-
-  if (isDefined(duration)) restConfig.duration = duration;
-  if (isDefined(velocity)) restConfig.velocity = velocity;
-  if (isDefined(mass)) restConfig.mass = mass;
-  if (isDefined(friction)) restConfig.friction = friction;
-  if (isDefined(tension)) restConfig.tension = tension;
-  if (isDefined(easing)) restConfig.easing = easing;
-  if (isDefined(delay)) restConfig.delay = delay;
-
-  const _config = {
-    ...initialConfig,
-    ...restConfig,
-  };
-
-  const transition = useTransition(initialState, {
-    from: { value: from },
-    enter: {
-      value: enter,
-      ..._enterConfig,
-    },
-    leave: {
-      value: leave,
-      ..._exitConfig,
-    },
-    config: _config,
-    onRest: ({ value }: { value: any }) => {
-      onAnimationEnd && onAnimationEnd(value);
-    },
-    onChange: function ({ value }: { value: any }) {
-      listener && listener(value);
-    },
-    immediate: !!config?.immediate,
-    delay: _config.delay,
-  });
-
-  return transition;
 };

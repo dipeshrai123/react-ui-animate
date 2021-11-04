@@ -7,13 +7,13 @@ import {
 } from "./Colors";
 import { SpringValue } from "react-spring";
 
-type ExtrapolateType = "identity" | "extend" | "clamp";
+type Extrapolate = "identity" | "extend" | "clamp";
 
 const _internalInterpolate = (
   val: number,
   arr: any,
-  extrapolateLeft: ExtrapolateType,
-  extrapolateRight: ExtrapolateType
+  extrapolateLeft: Extrapolate,
+  extrapolateRight: Extrapolate
 ) => {
   const [inputMin, inputMax, outputMin, outputMax] = arr;
   let result: number = val;
@@ -142,8 +142,8 @@ const _getColorInterpolate = (value: number, narrowedInput: Array<string>) => {
 const _getArrayInterpolate = (
   value: number,
   narrowedInput: Array<any>,
-  _extrapolateLeft: ExtrapolateType,
-  _extrapolateRight: ExtrapolateType
+  _extrapolateLeft: Extrapolate,
+  _extrapolateRight: Extrapolate
 ) => {
   const [inputMin, inputMax, outputMin, outputMax] = narrowedInput;
 
@@ -211,9 +211,9 @@ const _colorProcessedString = (str: any) => {
 };
 
 interface ExtrapolateConfig {
-  extrapolate?: ExtrapolateType;
-  extrapolateRight?: ExtrapolateType;
-  extrapolateLeft?: ExtrapolateType;
+  extrapolate?: Extrapolate;
+  extrapolateRight?: Extrapolate;
+  extrapolateLeft?: Extrapolate;
 }
 
 export function interpolate(
@@ -240,14 +240,14 @@ export function interpolate(
       outputRange
     );
 
-    let _extrapolateLeft: ExtrapolateType = "extend";
+    let _extrapolateLeft: Extrapolate = "extend";
     if (extrapolateLeft !== undefined) {
       _extrapolateLeft = extrapolateLeft;
     } else if (extrapolate !== undefined) {
       _extrapolateLeft = extrapolate;
     }
 
-    let _extrapolateRight: ExtrapolateType = "extend";
+    let _extrapolateRight: Extrapolate = "extend";
     if (extrapolateRight !== undefined) {
       _extrapolateRight = extrapolateRight;
     } else if (extrapolate !== undefined) {
