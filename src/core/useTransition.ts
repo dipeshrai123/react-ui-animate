@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 export interface UseTransitionConfig {
   mass?: number;
@@ -32,7 +32,7 @@ export type UseTransitionReturn = [
 export const useTransition = (
   initialValue: number | string,
   config?: UseTransitionConfig
-): UseTransitionReturn => {
+): any => {
   const subscriptions = React.useRef<
     Array<(value: number, callback?: (result: any) => void) => void>
   >([]);

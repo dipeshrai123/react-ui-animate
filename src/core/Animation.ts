@@ -3,7 +3,7 @@
  */
 export class Animation {
   _active: boolean;
-  _onEnd: (result: { finished: boolean }) => void;
+  _onEnd: any;
 
   _debounceOnEnd(result: { finished: boolean }) {
     const onEnd = this._onEnd;

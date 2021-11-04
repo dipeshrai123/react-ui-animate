@@ -13,7 +13,7 @@ export function useWheel(
   const ref = React.useRef<any>(null);
 
   const isWheeling = React.useRef<boolean>(false);
-  const isWheelingID = React.useRef<number>(-1);
+  const isWheelingID = React.useRef<any>(-1);
   const movementXY = React.useRef<Vector2>({
     x: 0,
     y: 0,

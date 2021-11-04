@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 
 import { SpringAnimation } from "./SpringAnimation";
 import { TimingAnimation } from "./TimingAnimation";
@@ -102,7 +102,7 @@ export const makeAnimatedComponent = (
   WrapperComponent: React.ComponentType | keyof JSX.IntrinsicElements
 ) => {
   function Wrapper({ style, ...props }: any, forwardRef: any) {
-    const ref = React.useRef(null);
+    const ref = React.useRef<any>(null);
 
     // generates the array of animation object
     const animations = React.useMemo(() => {
@@ -185,12 +185,12 @@ export const makeAnimatedComponent = (
     }, [style]);
 
     React.useEffect(() => {
-      const subscribers = [];
+      const subscribers: any = [];
 
       // set all subscribers here
       // TODO: check if it can be interpolated or not
       // always give interpolatable strings value from 0 to 1 in animation
-      animations.forEach((props) => {
+      animations.forEach((props: any) => {
         const { animation, property, _subscribe, _value, animatable, _config } =
           props;
 
@@ -264,7 +264,7 @@ export const makeAnimatedComponent = (
 
       return () => {
         // cleanup
-        subscribers.forEach((subscriber) => subscriber);
+        subscribers.forEach((subscriber: any) => subscriber);
       };
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

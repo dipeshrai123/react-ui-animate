@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { useTransition, TransitionValue } from "./useTransition";
 
 interface UseMountedValueConfig {
@@ -35,7 +35,7 @@ export const useMountedValue = (
 
   React.useEffect(() => {
     if (!initialAnimation && isExit) {
-      setAnimation(config.exit, ({ finished }) => {
+      setAnimation(config.exit, ({ finished }: { finished: boolean }) => {
         if (finished) {
           if (mounted) {
             setMounted(false);
