@@ -1,4 +1,4 @@
-import { Animation } from "./Animation";
+import { Animation, ResultType } from "./Animation";
 import {
   RequestAnimationFrame,
   CancelAnimationFrame,
@@ -144,7 +144,7 @@ export class SpringAnimation extends Animation {
         this._onFrame(this._toValue);
       }
 
-      this._lastTime = 0;
+      this._lastTime = 0; // reset time
 
       this._debounceOnEnd({ finished: true, value: this._toValue });
       return;
@@ -163,7 +163,10 @@ export class SpringAnimation extends Animation {
 
   // Set value
   set(toValue: number) {
+    this.stop();
     this._lastPosition = toValue;
+    this._lastTime = 0;
+    this._lastVelocity = 0;
     this._onFrame(toValue);
   }
 
@@ -172,14 +175,21 @@ export class SpringAnimation extends Animation {
     onFrame,
     previousAnimation,
     onEnd,
+    immediate,
   }: {
     toValue: number;
     onFrame: (value: number) => void;
     previousAnimation?: SpringAnimation;
-    onEnd?: (result: { finished: boolean }) => void;
+    onEnd?: (result: ResultType) => void;
+    immediate?: boolean;
   }) {
     const onStart: any = () => {
       this._onFrame = onFrame;
+
+      // set immediate here
+      if (immediate !== undefined) {
+        this._immediate = immediate;
+      }
 
       if (this._immediate) {
         this.set(toValue);

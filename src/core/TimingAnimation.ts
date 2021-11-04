@@ -1,4 +1,4 @@
-import { Animation } from "./Animation";
+import { Animation, ResultType } from "./Animation";
 import {
   RequestAnimationFrame,
   CancelAnimationFrame,
@@ -90,13 +90,20 @@ export class TimingAnimation extends Animation {
     toValue,
     onFrame,
     onEnd,
+    immediate,
   }: {
     toValue: number;
     onFrame: (value: number) => void;
-    onEnd?: (result: { finished: boolean }) => void;
+    onEnd?: (result: ResultType) => void;
+    immediate?: boolean;
   }) {
     const onStart: any = () => {
       this._onFrame = onFrame;
+
+      // set immediate here
+      if (immediate !== undefined) {
+        this._immediate = immediate;
+      }
 
       if (this._immediate) {
         this.set(toValue);

@@ -29,19 +29,22 @@ export const useMountedValue = (
 
   React.useEffect(() => {
     if (initialAnimation && mounted) {
-      setAnimation(config.enter);
+      setAnimation({ toValue: config.enter });
     }
   }, [mounted, initialAnimation, setAnimation, config, setInitialAnimation]);
 
   React.useEffect(() => {
     if (!initialAnimation && isExit) {
-      setAnimation(config.exit, ({ finished }: { finished: boolean }) => {
-        if (finished) {
-          if (mounted) {
-            setMounted(false);
+      setAnimation(
+        { toValue: config.exit },
+        ({ finished }: { finished: boolean }) => {
+          if (finished) {
+            if (mounted) {
+              setMounted(false);
+            }
           }
         }
-      });
+      );
     }
   }, [initialAnimation, isExit, setAnimation, config, mounted]);
 

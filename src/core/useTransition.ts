@@ -1,5 +1,7 @@
 import * as React from "react";
 
+import { ResultType } from "./Animation";
+
 export interface UseTransitionConfig {
   mass?: number;
   tension?: number;
@@ -15,13 +17,16 @@ export interface UseTransitionConfig {
 export type TransitionValue = {
   _subscribe: (onUpdate: () => void) => void;
   _value: number | string;
-  _config: UseTransitionConfig;
+  _config?: UseTransitionConfig;
 };
 
-export type UseTransitionReturn = [
-  TransitionValue,
-  (value: number | string, callback?: (result: any) => void) => void
-];
+export type AssignValue = { toValue: number | string; immediate?: boolean };
+export type SubscriptionValue = (
+  updatedValue: AssignValue,
+  callback?: (result: ResultType) => void
+) => void;
+
+export type UseTransitionReturn = [TransitionValue, SubscriptionValue];
 
 /**
  * useTransition() hook for time and spring based animations
@@ -32,15 +37,13 @@ export type UseTransitionReturn = [
 export const useTransition = (
   initialValue: number | string,
   config?: UseTransitionConfig
-): any => {
-  const subscriptions = React.useRef<
-    Array<(value: number, callback?: (result: any) => void) => void>
-  >([]);
+): UseTransitionReturn => {
+  const subscriptions = React.useRef<Array<SubscriptionValue>>([]);
 
   return [
     React.useMemo(() => {
       return {
-        _subscribe: function (onUpdate: () => void) {
+        _subscribe: function (onUpdate: SubscriptionValue) {
           subscriptions.current.push(onUpdate);
 
           return () => {
@@ -53,8 +56,10 @@ export const useTransition = (
         _config: config,
       };
     }, [initialValue, config]),
-    (value: number, callback?: (result: any) => void) => {
-      subscriptions.current.forEach((updater) => updater(value, callback));
+    (updatedValue: AssignValue, callback?: (result: ResultType) => void) => {
+      subscriptions.current.forEach((updater) =>
+        updater(updatedValue, callback)
+      );
     },
   ];
 };

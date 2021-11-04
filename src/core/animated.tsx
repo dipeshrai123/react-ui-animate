@@ -7,8 +7,13 @@ import {
   interpolate as internalInterpolate,
 } from "./Interpolation";
 import { tags, unitlessStyleProps } from "./Tags";
-import { TransitionValue } from "./useTransition";
-import { UseTransitionConfig } from "./useTransition";
+import {
+  TransitionValue,
+  UseTransitionConfig,
+  AssignValue,
+  SubscriptionValue,
+} from "./useTransition";
+import { ResultType } from "./Animation";
 
 const isDefined = (value: any) => {
   return value !== null && value !== undefined;
@@ -100,7 +105,7 @@ export const interpolate = (
 };
 
 type AnimationObject = {
-  _subscribe: (onUpdate: () => void) => void;
+  _subscribe: (onUpdate: SubscriptionValue) => void;
   _value: string | number;
   _config: UseTransitionConfig;
   property: string;
@@ -258,22 +263,25 @@ export const makeAnimatedComponent = (
         };
 
         const onUpdate = (
-          value: number | string,
-          callback?: (value: number) => void
+          value: AssignValue,
+          callback?: (value: ResultType) => void
         ) => {
+          const { toValue, immediate } = value;
+
           if (animatable) {
             // animatable
             animation.start({
-              toValue: value,
+              toValue,
               onFrame,
               previousAnimation: animation,
               onEnd: callback,
+              immediate,
             });
           } else {
             // non-animatable
-            if (typeof value === typeof _value) {
+            if (typeof toValue === typeof _value) {
               if (ref.current) {
-                ref.current.style[property] = getCssValue(property, value);
+                ref.current.style[property] = getCssValue(property, toValue);
               }
             } else {
               throw new Error("Cannot set different types of animation values");
@@ -283,7 +291,7 @@ export const makeAnimatedComponent = (
 
         onFrame(_value as number); // first initial value paint the frame
 
-        const subscribe = _subscribe(onUpdate as any);
+        const subscribe = _subscribe(onUpdate);
         subscribers.push(subscribe);
       });
 
