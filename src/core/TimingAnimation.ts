@@ -119,7 +119,7 @@ export class TimingAnimation extends Animation {
 
           if (this._duration === 0) {
             this._onFrame(this._toValue);
-            this._debounceOnEnd({ finished: true });
+            this._debounceOnEnd({ finished: true, value: this._toValue });
           } else {
             this._startTime = Date.now();
             this._animationFrame = RequestAnimationFrame.current(
