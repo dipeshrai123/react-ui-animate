@@ -28,6 +28,7 @@ export class SpringAnimation extends Animation {
   // Modifiers
   _immediate: boolean;
   _delay: number;
+  _onRest?: (value: any) => void;
 
   constructor({
     initialPosition,
@@ -53,6 +54,7 @@ export class SpringAnimation extends Animation {
     // Modifiers
     this._immediate = config?.immediate ?? false;
     this._delay = config?.delay ?? 0;
+    this._onRest = config?.onRest;
   }
 
   onUpdate() {
@@ -144,7 +146,7 @@ export class SpringAnimation extends Animation {
 
       this._lastTime = 0;
 
-      this._debounceOnEnd({ finished: true });
+      this._debounceOnEnd({ finished: true, value: this._toValue });
       return;
     }
 
@@ -156,7 +158,7 @@ export class SpringAnimation extends Animation {
   stop() {
     this._active = false;
     CancelAnimationFrame.current(this._animationFrame);
-    this._debounceOnEnd({ finished: false });
+    this._debounceOnEnd({ finished: false, value: this._lastPosition });
   }
 
   // Set value
@@ -184,7 +186,17 @@ export class SpringAnimation extends Animation {
       } else {
         this._active = true;
         this._toValue = toValue;
-        this._onEnd = onEnd;
+
+        // overriding this._onEnd if passed onEnd on start method
+        if (onEnd !== undefined) {
+          this._onEnd = onEnd;
+        } else {
+          // re-assign this._onEnd with onRest from config,
+          // because the this._onEnd is nullified on debounce end.
+          if (this._onRest !== undefined) {
+            this._onEnd = this._onRest;
+          }
+        }
 
         const now = Date.now();
 

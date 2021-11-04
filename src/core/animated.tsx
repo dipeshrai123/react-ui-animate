@@ -154,7 +154,7 @@ export const makeAnimatedComponent = (
                 easing: _config?.easing,
                 immediate: _config?.immediate,
                 delay: _config?.delay,
-                onAnimationEnd: _config?.onAnimationEnd,
+                onRest: _config?.onRest,
               },
             });
           } else {
@@ -166,7 +166,7 @@ export const makeAnimatedComponent = (
                 friction: _config?.friction,
                 immediate: _config?.immediate,
                 delay: _config?.delay,
-                onAnimationEnd: _config?.onAnimationEnd,
+                onRest: _config?.onRest,
               },
             });
           }
@@ -249,9 +249,9 @@ export const makeAnimatedComponent = (
           }
 
           // Handeling duplicate listener value updates
-          if (_config.listener) {
+          if (_config?.onChange) {
             if (previousValue !== updatedValue) {
-              _config.listener(value);
+              _config.onChange(value);
               previousValue = updatedValue;
             }
           }

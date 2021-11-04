@@ -48,7 +48,7 @@ export class TimingAnimation extends Animation {
           this._fromValue + this._easing(1) * (this._toValue - this._fromValue);
         this._onFrame(this._position);
       }
-      this._debounceOnEnd({ finished: true });
+      this._debounceOnEnd({ finished: true, value: this._position });
       return;
     }
 
@@ -69,7 +69,7 @@ export class TimingAnimation extends Animation {
     this._active = false;
     clearTimeout(this._timeout);
     CancelAnimationFrame.current(this._animationFrame);
-    this._debounceOnEnd({ finished: false });
+    this._debounceOnEnd({ finished: false, value: this._position });
   }
 
   start({

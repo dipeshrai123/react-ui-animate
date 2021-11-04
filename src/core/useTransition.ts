@@ -8,8 +8,8 @@ export interface UseTransitionConfig {
   easing?: (t: number) => number;
   immediate?: boolean;
   delay?: number;
-  listener?: (value: number) => void;
-  onAnimationEnd?: (value: number) => void;
+  onChange?: (value: number) => void;
+  onRest?: (value: any) => void;
 }
 
 export type TransitionValue = {

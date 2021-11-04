@@ -5,7 +5,7 @@ export class Animation {
   _active: boolean;
   _onEnd: any;
 
-  _debounceOnEnd(result: { finished: boolean }) {
+  _debounceOnEnd(result: any) {
     const onEnd = this._onEnd;
     this._onEnd = null;
     onEnd && onEnd(result);
