@@ -14,12 +14,16 @@ export class TimingAnimation extends Animation {
   _fromValue: number;
   _toValue: any;
   _duration: number;
-  _delay: number;
   _easing: (value: number) => number;
   _onFrame: (value: number) => void;
   _animationFrame: any;
   _timeout: any;
   _position: number;
+
+  // Modifiers
+  _immediate: boolean;
+  _delay: number;
+  _onRest?: (value: any) => void;
 
   constructor({
     initialPosition,
@@ -34,7 +38,11 @@ export class TimingAnimation extends Animation {
     this._position = this._fromValue;
     this._easing = config.easing !== undefined ? config.easing : Easing.linear;
     this._duration = config.duration !== undefined ? config.duration : 500;
-    this._delay = config.delay !== undefined ? config.delay : 0;
+
+    // Modifiers
+    this._immediate = config?.immediate ?? false;
+    this._delay = config?.delay ?? 0;
+    this._onRest = config?.onRest;
   }
 
   onUpdate() {
@@ -65,6 +73,12 @@ export class TimingAnimation extends Animation {
     }
   }
 
+  // Set value
+  set(toValue: number) {
+    this._position = toValue;
+    this._onFrame(toValue);
+  }
+
   stop() {
     this._active = false;
     clearTimeout(this._timeout);
@@ -78,36 +92,57 @@ export class TimingAnimation extends Animation {
     onEnd,
   }: {
     toValue: number;
-    duration: number;
     onFrame: (value: number) => void;
     onEnd?: (result: { finished: boolean }) => void;
   }) {
-    this._active = true;
+    const onStart: any = () => {
+      this._onFrame = onFrame;
 
-    this._onFrame = onFrame;
-    this._onEnd = onEnd;
-
-    var start = () => {
-      this._toValue = toValue;
-
-      if (this._duration === 0) {
-        this._onFrame(this._toValue);
-        this._debounceOnEnd({ finished: true });
+      if (this._immediate) {
+        this.set(toValue);
       } else {
-        this._startTime = Date.now();
-        this._animationFrame = RequestAnimationFrame.current(
-          this.onUpdate.bind(this)
-        );
+        this._active = true;
+
+        // overriding this._onEnd if passed onEnd on start method
+        if (onEnd !== undefined) {
+          this._onEnd = onEnd;
+        } else {
+          // re-assign this._onEnd with onRest from config,
+          // because the this._onEnd is nullified on debounce end.
+          if (this._onRest !== undefined) {
+            this._onEnd = this._onRest;
+          }
+        }
+
+        var start = () => {
+          this._toValue = toValue;
+
+          if (this._duration === 0) {
+            this._onFrame(this._toValue);
+            this._debounceOnEnd({ finished: true });
+          } else {
+            this._startTime = Date.now();
+            this._animationFrame = RequestAnimationFrame.current(
+              this.onUpdate.bind(this)
+            );
+          }
+        };
+
+        if (this._active) {
+          if (this._toValue !== toValue) {
+            this._fromValue = this._position;
+            start();
+          }
+        } else {
+          start();
+        }
       }
     };
 
-    if (this._active) {
-      if (this._toValue !== toValue) {
-        this._fromValue = this._position;
-        start();
-      }
+    if (this._delay !== 0) {
+      setTimeout(() => onStart(), this._delay);
     } else {
-      start();
+      onStart();
     }
   }
 }
