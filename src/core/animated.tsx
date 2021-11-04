@@ -227,7 +227,7 @@ export const makeAnimatedComponent = (
         previousValue = _value;
 
         const onFrame = (value: number) => {
-          _currentValue.value = value;
+          _currentValue.current = value;
 
           // get new value
           updatedValue = value;

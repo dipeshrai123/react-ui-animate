@@ -28,7 +28,8 @@ export type SubscriptionValue = (
 export type TransitionValue = {
   _subscribe: (onUpdate: SubscriptionValue) => void;
   _value: number | string;
-  _currentValue: { value: number | string };
+  _currentValue: React.MutableRefObject<number | string>;
+  get: () => number | string;
   _config?: UseTransitionConfig;
 };
 
@@ -57,6 +58,7 @@ export const useTransition = (
   config?: UseTransitionConfig
 ): UseTransitionReturn => {
   const subscriptions = React.useRef<Array<SubscriptionValue>>([]);
+  const _currentValue = React.useRef<number | string>(initialValue);
 
   return [
     React.useMemo(() => {
@@ -72,7 +74,10 @@ export const useTransition = (
         },
         _value: initialValue,
         _config: config,
-        _currentValue: { value: initialValue },
+        _currentValue,
+        get: function () {
+          return _currentValue.current;
+        },
       };
     }, [initialValue, config]),
     (updatedValue: AssignValue, callback?: (result: ResultType) => void) => {
