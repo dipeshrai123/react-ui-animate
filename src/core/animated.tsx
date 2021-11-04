@@ -7,12 +7,7 @@ import {
   interpolate as internalInterpolate,
 } from "./Interpolation";
 import { tags, unitlessStyleProps } from "./Tags";
-import {
-  TransitionValue,
-  UseTransitionConfig,
-  AssignValue,
-  SubscriptionValue,
-} from "./useTransition";
+import { TransitionValue, AssignValue } from "./useTransition";
 import { ResultType } from "./Animation";
 
 const isDefined = (value: any) => {
@@ -105,9 +100,6 @@ export const interpolate = (
 };
 
 type AnimationObject = {
-  _subscribe: (onUpdate: SubscriptionValue) => void;
-  _value: string | number;
-  _config: UseTransitionConfig;
   property: string;
   animatable: boolean;
   animation: any;
@@ -117,7 +109,7 @@ type AnimationObject = {
     outputRange: Array<number | string>;
     extrapolateConfig?: ExtrapolateConfig;
   };
-};
+} & TransitionValue;
 
 export const makeAnimatedComponent = (
   WrapperComponent: React.ComponentType | keyof JSX.IntrinsicElements
@@ -217,8 +209,15 @@ export const makeAnimatedComponent = (
       let updatedValue: any;
 
       animations.forEach((props: AnimationObject) => {
-        const { animation, property, _subscribe, _value, animatable, _config } =
-          props;
+        const {
+          animation,
+          property,
+          _subscribe,
+          _value,
+          animatable,
+          _config,
+          _currentValue,
+        } = props;
 
         if (!ref.current) {
           return;
@@ -228,6 +227,8 @@ export const makeAnimatedComponent = (
         previousValue = _value;
 
         const onFrame = (value: number) => {
+          _currentValue.value = value;
+
           // get new value
           updatedValue = value;
 

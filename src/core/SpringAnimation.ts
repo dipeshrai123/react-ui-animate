@@ -170,6 +170,11 @@ export class SpringAnimation extends Animation {
     this._onFrame(toValue);
   }
 
+  // Get current value
+  get() {
+    return this._lastPosition;
+  }
+
   start({
     toValue,
     onFrame,

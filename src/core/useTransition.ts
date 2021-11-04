@@ -28,6 +28,7 @@ export type SubscriptionValue = (
 export type TransitionValue = {
   _subscribe: (onUpdate: SubscriptionValue) => void;
   _value: number | string;
+  _currentValue: { value: number | string };
   _config?: UseTransitionConfig;
 };
 
@@ -71,6 +72,7 @@ export const useTransition = (
         },
         _value: initialValue,
         _config: config,
+        _currentValue: { value: initialValue },
       };
     }, [initialValue, config]),
     (updatedValue: AssignValue, callback?: (result: ResultType) => void) => {
