@@ -17,11 +17,16 @@ export interface UseTransitionConfig {
   onRest?: (value: any) => void;
 }
 
+export type SubscriptionValue = (
+  updatedValue: AssignValue,
+  callback?: (result: ResultType) => void
+) => void;
+
 /**
  * useTransition returns TransitionValue object
  */
 export type TransitionValue = {
-  _subscribe: (onUpdate: () => void) => void;
+  _subscribe: (onUpdate: SubscriptionValue) => void;
   _value: number | string;
   _config?: UseTransitionConfig;
 };
@@ -34,11 +39,6 @@ export type AssignValue = {
   immediate?: boolean;
   duration?: number; // only for time-based animation
 };
-
-export type SubscriptionValue = (
-  updatedValue: AssignValue,
-  callback?: (result: ResultType) => void
-) => void;
 
 /**
  * useTransition return type
