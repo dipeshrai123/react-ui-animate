@@ -3,9 +3,7 @@
   "version": "1.2.0",
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
-  "dependencies": {
-    "react-spring": "^9.2.3"
-  },
+  "dependencies": {},
   "peerDependencies": {
     "react": ">=16.13.1",
     "react-dom": ">=16.13.1"
