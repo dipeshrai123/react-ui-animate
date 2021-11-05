@@ -4,3 +4,4 @@ export * from "./Easing";
 export * from "./Animation";
 export * from "./Colors";
 export * from "./Bezier";
+export * from "./Interpolation";

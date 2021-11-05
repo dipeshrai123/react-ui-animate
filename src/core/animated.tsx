@@ -2,18 +2,25 @@ import * as React from "react";
 
 import { SpringAnimation } from "./SpringAnimation";
 import { TimingAnimation } from "./TimingAnimation";
-import {
-  ExtrapolateConfig,
-  interpolate as internalInterpolate,
-} from "./Interpolation";
+import { ExtrapolateConfig, interpolateNumbers } from "./Interpolation";
 import { tags, unitlessStyleProps } from "./Tags";
 import { TransitionValue, AssignValue } from "./useTransition";
 import { ResultType } from "./Animation";
 
+/**
+ * isDefined to check the value is defined or not
+ * @param value - any
+ * @returns - boolean
+ */
 const isDefined = (value: any) => {
   return value !== null && value !== undefined;
 };
 
+/**
+ * isSubscriber to check the value is TransitionValue or not
+ * @param value - any
+ * @returns - boolean
+ */
 export const isSubscriber = (value: any) => {
   return (
     typeof value === "object" &&
@@ -37,7 +44,11 @@ function getCssValue(property: string, value: number | string) {
   return cssValue;
 }
 
-// Non-animatable styles
+/**
+ * getNonAnimatableStyle function returns the non-animatable style object
+ * @param style - CSSProperties
+ * @returns - non-animatable CSSProperties
+ */
 function getNonAnimatableStyle(style: React.CSSProperties) {
   return Object.keys(style).reduce((resultObject, styleProp) => {
     const value = style[styleProp as keyof React.CSSProperties];
@@ -73,31 +84,6 @@ function combineRefs(
     });
   };
 }
-
-/**
- * interpolate function maps input to output range
- * @param value
- * @param inputRange
- * @param outputRange
- * @param extrapolateConfig
- * @returns TransitionValue
- */
-export const interpolate = (
-  value: TransitionValue,
-  inputRange: Array<number>,
-  outputRange: Array<number | string>,
-  extrapolateConfig?: ExtrapolateConfig
-) => {
-  return {
-    ...value,
-    isInterpolation: true,
-    interpolationConfig: {
-      inputRange,
-      outputRange,
-      extrapolateConfig,
-    },
-  };
-};
 
 type AnimationObject = {
   property: string;
@@ -235,7 +221,7 @@ export const makeAnimatedComponent = (
           if (props.isInterpolation) {
             const { interpolationConfig } = props;
 
-            const interpolatedValue = internalInterpolate(
+            const interpolatedValue = interpolateNumbers(
               value,
               interpolationConfig.inputRange,
               interpolationConfig.outputRange,

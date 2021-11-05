@@ -5,6 +5,7 @@ import {
   HEX_NAME_COLOR,
   colorNames,
 } from "./Colors";
+import { TransitionValue } from "./useTransition";
 
 type ExtrapolateType = "identity" | "extend" | "clamp";
 
@@ -215,7 +216,15 @@ export interface ExtrapolateConfig {
   extrapolateLeft?: ExtrapolateType;
 }
 
-export function interpolate(
+/**
+ * interpolateNumbers to interpolate the numeric value
+ * @param value - number
+ * @param inputRange
+ * @param outputRange
+ * @param extrapolateConfig
+ * @returns - number | string
+ */
+export function interpolateNumbers(
   value: number,
   inputRange: Array<number>,
   outputRange: Array<number | string>,
@@ -285,3 +294,28 @@ export function interpolate(
     throw new Error("Output range cannot be Empty");
   }
 }
+
+/**
+ * interpolateTransitionValue to interpolating TransitionValue type value
+ * @param value
+ * @param inputRange
+ * @param outputRange
+ * @param extrapolateConfig
+ * @returns TransitionValue
+ */
+export const interpolateTransitionValue = (
+  value: TransitionValue,
+  inputRange: Array<number>,
+  outputRange: Array<number | string>,
+  extrapolateConfig?: ExtrapolateConfig
+) => {
+  return {
+    ...value,
+    isInterpolation: true,
+    interpolationConfig: {
+      inputRange,
+      outputRange,
+      extrapolateConfig,
+    },
+  };
+};
