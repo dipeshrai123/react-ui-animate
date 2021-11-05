@@ -7,6 +7,7 @@ import {
 } from "./useAnimatedValue";
 
 interface UseMountedValueConfig extends UseAnimatedValueConfig {
+  velocity?: number;
   enterDuration?: number;
   exitDuration?: number;
 }
@@ -43,7 +44,7 @@ export const useMountedValue = (
   const delay = config?.delay ?? 0;
 
   const initialConfig = getInitialConfig(animationType);
-  const restConfig: GenericAnimationConfig = {};
+  const restConfig: GenericAnimationConfig & { velocity?: number } = {};
 
   if (isDefined(duration)) restConfig.duration = duration;
   if (isDefined(velocity)) restConfig.velocity = velocity;

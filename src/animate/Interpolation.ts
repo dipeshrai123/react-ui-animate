@@ -4,7 +4,7 @@ import {
   COLOR_NUMBER_REGEX,
   HEX_NAME_COLOR,
   colorNames,
-} from "./Colors";
+} from "../core/Colors";
 import { SpringValue } from "react-spring";
 
 type Extrapolate = "identity" | "extend" | "clamp";

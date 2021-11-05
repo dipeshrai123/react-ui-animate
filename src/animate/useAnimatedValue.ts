@@ -1,21 +1,23 @@
-import * as React from "react";
-import { useSpring, SpringValue } from "react-spring";
+import { Easing, useTransition } from "../core";
 import { bin } from "./Math";
 import { isDefined } from "./isDefined";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
+import { TransitionValue } from "../core/useTransition";
 
-type AnimatedValueType = number | boolean | string | SpringValue;
+type AnimatedValueType = number | boolean | string;
 
+/**
+ * getValue checks for type of initialValue and throws error
+ * for type other than AnimatedValueType
+ */
 const getValue = (value: AnimatedValueType) => {
   if (typeof value === "number" || typeof value === "string") {
     return value;
   } else if (typeof value === "boolean") {
     return bin(value);
-  } else if (value instanceof SpringValue) {
-    return value;
   } else {
     throw new Error(
-      "Invalid Value! Animated value only accepts animation value, string, boolean or number."
+      "Invalid Value! Animated value only accepts string, boolean or number."
     );
   }
 };
@@ -23,13 +25,11 @@ const getValue = (value: AnimatedValueType) => {
 // General config type
 export interface GenericAnimationConfig {
   duration?: number;
-  velocity?: number;
   mass?: number;
   friction?: number;
   tension?: number;
   easing?: (t: number) => number;
   delay?: number;
-  decay?: number | boolean;
 }
 
 export interface UseAnimatedValueConfig extends GenericAnimationConfig {
@@ -39,125 +39,80 @@ export interface UseAnimatedValueConfig extends GenericAnimationConfig {
   immediate?: boolean;
 }
 
+interface UseAnimatedValueReturn {
+  value:
+    | TransitionValue
+    | number
+    | string
+    | { toValue: number | string; immediate?: boolean };
+  currentValue: number | string;
+}
+
 /**
  * useAnimatedValue for animated transitions
  */
 export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
-) => {
-  const _initialValue: number | string | SpringValue = getValue(initialValue);
-  const _prevValue = React.useRef<number | string | SpringValue>(_initialValue); // Get track previous value
+): UseAnimatedValueReturn => {
+  const _initialValue: number | string = getValue(initialValue);
 
   const animationType = config?.animationType ?? "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
   const duration = config?.duration;
-  const velocity = config?.velocity;
   const mass = config?.mass;
   const friction = config?.friction;
   const tension = config?.tension;
-  const easing = config?.easing ?? ((t: number) => t);
+  const easing = config?.easing ?? Easing.linear;
   const delay = config?.delay ?? 0;
-  const decay = config?.decay ?? false;
 
   const initialConfig = getInitialConfig(animationType);
   const restConfig: GenericAnimationConfig = {};
 
   if (isDefined(duration)) restConfig.duration = duration;
-  if (isDefined(velocity)) restConfig.velocity = velocity;
   if (isDefined(mass)) restConfig.mass = mass;
   if (isDefined(friction)) restConfig.friction = friction;
   if (isDefined(tension)) restConfig.tension = tension;
   if (isDefined(easing)) restConfig.easing = easing;
   if (isDefined(delay)) restConfig.delay = delay;
-  if (isDefined(decay)) restConfig.decay = decay;
 
   const _config = {
     ...initialConfig,
     ...restConfig,
   };
 
-  const [props, set] = useSpring(() => ({
-    value: _initialValue,
-    config: _config,
+  const [_value, _setValue] = useTransition(_initialValue, {
+    ..._config,
     immediate: !!config?.immediate,
-  }));
-
-  const _update = ({
-    updatedValue,
-    immediate,
-    decay,
-  }: {
-    updatedValue?: AnimatedValueType;
-    immediate?: boolean;
-    decay?: { value: number | boolean; velocity: number };
-  }) => {
-    if (immediate !== undefined) {
-      set.start({ immediate });
-    } else if (updatedValue !== undefined) {
-      set.start({
-        value: getValue(updatedValue),
-        onRest: ({ value }: { value: any }) => {
-          onAnimationEnd && onAnimationEnd(value.value);
-        },
-        onChange: function ({ value }: { value: any }) {
-          listener && listener(value);
-        },
-        immediate: !!config?.immediate,
-        delay: _config.delay,
-      });
-    } else if (decay !== undefined) {
-      set.start({
-        config: {
-          decay: decay.value,
-          velocity: decay.velocity,
-        },
-      });
-    }
-  };
-
-  React.useEffect(() => {
-    if (initialValue !== _prevValue.current) {
-      _update({ updatedValue: _initialValue });
-      _prevValue.current = _initialValue;
-    }
-  }, [initialValue]);
+    onRest: function (result: any) {
+      onAnimationEnd && onAnimationEnd(result);
+    },
+    onChange: function (value: number) {
+      listener && listener(value);
+    },
+  });
 
   const targetObject: {
     value: any;
-    immediate: boolean;
     currentValue: string | number;
-    decay: { value: number | boolean; velocity: number };
   } = {
-    value: props.value,
-    immediate: false,
-    currentValue: props.value.get(),
-    decay: { value: false, velocity: 0 },
+    value: _value,
+    currentValue: _value.get(),
   };
 
   return new Proxy(targetObject, {
-    set: function (_, key, value) {
+    set: function (
+      _,
+      key,
+      value: number | string | { toValue: number | string; immediate?: boolean }
+    ) {
       if (key === "value") {
-        _update({
-          updatedValue: value,
-        });
-
-        return true;
-      }
-
-      if (key === "immediate") {
-        _update({
-          immediate: value,
-        });
-
-        return true;
-      }
-
-      if (key === "decay") {
-        _update({
-          decay: value,
-        });
+        if (typeof value === "number" || typeof value === "string") {
+          _setValue({ toValue: value });
+        } else if (typeof value === "object") {
+          _setValue({ toValue: value.toValue, immediate: value?.immediate });
+        }
 
         return true;
       }
@@ -166,11 +121,11 @@ export const useAnimatedValue = (
     },
     get: function (_, key) {
       if (key === "value") {
-        return props.value;
+        return _value;
       }
 
       if (key === "currentValue") {
-        return props.value.get();
+        return _value.get();
       }
 
       throw new Error(
