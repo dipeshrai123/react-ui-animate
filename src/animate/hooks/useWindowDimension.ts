@@ -1,10 +1,10 @@
 import * as React from "react";
 import { WindowDimensionType } from "../Types";
 
-export const useWindowDimension = (
+export function useWindowDimension(
   callback: (event: WindowDimensionType) => void,
   deps?: React.DependencyList
-) => {
+) {
   const windowDimensionsRef = React.useRef<WindowDimensionType>({
     width: 0,
     height: 0,
@@ -50,4 +50,4 @@ export const useWindowDimension = (
 
     return () => resizeObserver.unobserve(document.documentElement);
   }, []);
-};
+}

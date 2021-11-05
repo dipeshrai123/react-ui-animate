@@ -14,7 +14,7 @@ const isDefined = (value: any) => {
   return value !== null && value !== undefined;
 };
 
-const isSubscriber = (value: any) => {
+export const isSubscriber = (value: any) => {
   return (
     typeof value === "object" &&
     Object.prototype.hasOwnProperty.call(value, "_subscribe")

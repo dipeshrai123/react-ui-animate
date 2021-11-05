@@ -39,12 +39,14 @@ export interface UseAnimatedValueConfig extends GenericAnimationConfig {
   immediate?: boolean;
 }
 
+export type ValueReturnType =
+  | TransitionValue
+  | number
+  | string
+  | { toValue: number | string; immediate?: boolean };
+
 interface UseAnimatedValueReturn {
-  value:
-    | TransitionValue
-    | number
-    | string
-    | { toValue: number | string; immediate?: boolean };
+  value: ValueReturnType;
   currentValue: number | string;
 }
 

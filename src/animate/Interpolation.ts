@@ -4,8 +4,9 @@ import {
   COLOR_NUMBER_REGEX,
   HEX_NAME_COLOR,
   colorNames,
-} from "../core/Colors";
-import { SpringValue } from "react-spring";
+  isSubscriber,
+  interpolate as to,
+} from "../core";
 
 type Extrapolate = "identity" | "extend" | "clamp";
 
@@ -217,19 +218,14 @@ interface ExtrapolateConfig {
 }
 
 export function interpolate(
-  value: SpringValue<number> | number,
+  value: any,
   inputRange: Array<number>,
   outputRange: Array<number | string>,
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  if (value instanceof SpringValue) {
-    // Animated Value
-    return value.to({
-      range: inputRange,
-      output: outputRange,
-      ...extrapolateConfig,
-    });
-  } else {
+  if (typeof value === "object" && isSubscriber(value)) {
+    return to(value, inputRange, outputRange, extrapolateConfig);
+  } else if (typeof value === "number") {
     const extrapolate = extrapolateConfig?.extrapolate;
     const extrapolateLeft = extrapolateConfig?.extrapolateLeft;
     const extrapolateRight = extrapolateConfig?.extrapolateRight;
@@ -298,14 +294,17 @@ export function interpolate(
     } else {
       throw new Error("Output range cannot be Empty");
     }
+  } else {
+    throw new Error(`Error! ${typeof value} cannot be interpolated`);
   }
 }
 
 // INTERPOLATE FROM 0 TO 1
 export function bInterpolate(
-  value: SpringValue<number> | number,
-  outputRange: Array<number | string>,
+  value: any,
+  minOutput: number | string,
+  maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  return interpolate(value, [0, 1], outputRange, extrapolateConfig);
+  return interpolate(value, [0, 1], [minOutput, maxOutput], extrapolateConfig);
 }
