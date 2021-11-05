@@ -1,5 +1,5 @@
 import * as React from "react";
-import { animated } from "react-spring";
+import { makeAnimatedComponent as animated } from "../core";
 import { useAnimatedValue, UseAnimatedValueConfig } from "./useAnimatedValue";
 
 /**

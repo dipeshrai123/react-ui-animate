@@ -55,6 +55,7 @@ export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ): UseAnimatedValueReturn => {
+  const isInitial = React.useRef(true);
   const _initialValue: number | string = getValue(initialValue);
 
   const animationType = config?.animationType ?? "ease"; // Defines default animation
@@ -93,8 +94,12 @@ export const useAnimatedValue = (
     },
   });
 
+  // doesn't fire on initial render
   React.useEffect(() => {
-    setAnimation({ toValue: _initialValue });
+    if (!isInitial.current) {
+      setAnimation({ toValue: _initialValue });
+    }
+    isInitial.current = false;
   }, [_initialValue]);
 
   const targetObject: {
