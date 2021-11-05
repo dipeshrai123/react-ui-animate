@@ -123,9 +123,9 @@ type AnimationObject = {
   };
 } & TransitionValue;
 
-export const makeAnimatedComponent = (
+export function makeAnimatedComponent(
   WrapperComponent: React.ComponentType | keyof JSX.IntrinsicElements
-) => {
+) {
   function Wrapper({ style, ...props }: any, forwardRef: any) {
     const ref = React.useRef<any>(null);
 
@@ -360,7 +360,7 @@ export const makeAnimatedComponent = (
   }
 
   return React.forwardRef(Wrapper);
-};
+}
 
 export const animated: any = {};
 tags.forEach((element) => {
