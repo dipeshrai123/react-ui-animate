@@ -6,6 +6,7 @@ import { ExtrapolateConfig, interpolateNumbers } from "./Interpolation";
 import { tags, unitlessStyleProps } from "./Tags";
 import { TransitionValue, AssignValue } from "./useTransition";
 import { ResultType } from "./Animation";
+import { styleTrasformKeys, getTransform } from "./TransformStyles";
 
 /**
  * isDefined to check the value is defined or not
@@ -50,16 +51,38 @@ function getCssValue(property: string, value: number | string) {
  * @returns - non-animatable CSSProperties
  */
 function getNonAnimatableStyle(style: React.CSSProperties) {
-  return Object.keys(style).reduce((resultObject, styleProp) => {
-    const value = style[styleProp as keyof React.CSSProperties];
+  // for transforms
+  const transformPropertiesObject = {};
 
-    // skip subscriber
-    if (isSubscriber(value)) {
-      return resultObject;
-    }
+  const stylesWithoutTransforms = Object.keys(style).reduce(
+    (resultObject, styleProp) => {
+      const value = style[styleProp as keyof React.CSSProperties];
 
-    return { ...resultObject, [styleProp]: value };
-  }, {});
+      // skip subscriber
+      if (isSubscriber(value)) {
+        return resultObject;
+      } else if (styleTrasformKeys.indexOf(styleProp) !== -1) {
+        transformPropertiesObject[styleProp] = value;
+        return resultObject;
+      }
+
+      return { ...resultObject, [styleProp]: value };
+    },
+    {}
+  );
+
+  const transformStyle: any = {};
+  if (Object.keys(transformPropertiesObject).length > 0) {
+    transformStyle.transform = getTransform(transformPropertiesObject);
+  }
+
+  // combined transform and non-transform styles
+  const combinedStyle = {
+    ...transformStyle,
+    ...stylesWithoutTransforms,
+  };
+
+  return combinedStyle;
 }
 
 // Combine multiple refs
