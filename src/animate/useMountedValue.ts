@@ -1,84 +1,82 @@
-import { useTransition } from "react-spring";
-import { isDefined } from "./isDefined";
-import { getInitialConfig } from "./getInitialConfig";
-import {
-  UseAnimatedValueConfig,
-  GenericAnimationConfig,
-} from "./useAnimatedValue";
+import * as React from "react";
+import { useTransition, TransitionValue, UseTransitionConfig } from "../core";
 
-interface UseMountedValueConfig extends UseAnimatedValueConfig {
-  velocity?: number;
+interface InternalUseMountedValueConfig extends UseTransitionConfig {
   enterDuration?: number;
   exitDuration?: number;
 }
 
+interface UseMountedValueConfig {
+  from: number;
+  enter: number;
+  exit: number;
+  config?: InternalUseMountedValueConfig;
+}
+
+/**
+ * useMountedValue handles mounting and unmounting of a component
+ * @param state - boolean
+ * @param config - useTransitionConfig
+ * @returns mountedValueFunction with a callback with argument ( animationNode, mounted )
+ */
 export const useMountedValue = (
-  initialState: boolean,
-  phases: [number, number, number],
-  config?: UseMountedValueConfig
+  state: boolean,
+  config: UseMountedValueConfig
 ) => {
-  const [from, enter, leave] = phases;
+  const [initialAnimation, setInitialAnimation] = React.useState(false);
+  const [mounted, setMounted] = React.useState(false);
+  const [isExit, setIsExit] = React.useState(false);
+  const [animation, setAnimation] = useTransition(config.from, config?.config);
 
-  const enterDuration = config?.enterDuration;
-  const exitDuration = config?.exitDuration;
+  const enterDuration =
+    config?.config?.enterDuration ?? config?.config?.duration;
+  const exitDuration = config?.config?.exitDuration ?? config?.config?.duration;
 
-  const _enterConfig: any = {};
-  if (isDefined(enterDuration)) {
-    _enterConfig.config = { duration: enterDuration };
-  }
+  React.useEffect(() => {
+    if (state) {
+      // If state becomes true mount the node
+      setInitialAnimation(true); // is initial animation
+      setMounted(true);
+    } else {
+      setIsExit(true);
+      setInitialAnimation(false);
+    }
+  }, [state, setAnimation, config, mounted]);
 
-  const _exitConfig: any = {};
-  if (isDefined(exitDuration)) {
-    _exitConfig.config = { duration: exitDuration };
-  }
+  React.useEffect(() => {
+    if (initialAnimation && mounted) {
+      setAnimation({ toValue: config.enter, duration: enterDuration });
+    }
+  }, [
+    mounted,
+    initialAnimation,
+    setAnimation,
+    config,
+    setInitialAnimation,
+    enterDuration,
+  ]);
 
-  const animationType = config?.animationType ?? "ease"; // Defines default animation
-  const onAnimationEnd = config?.onAnimationEnd;
-  const duration = config?.duration;
-  const listener = config?.listener;
-  const velocity = config?.velocity;
-  const mass = config?.mass;
-  const friction = config?.friction;
-  const tension = config?.tension;
-  const easing = config?.easing ?? ((t: number) => t);
-  const delay = config?.delay ?? 0;
+  React.useEffect(() => {
+    if (!initialAnimation && isExit) {
+      setAnimation(
+        { toValue: config.exit, duration: exitDuration },
+        ({ finished }: { finished: boolean }) => {
+          if (finished) {
+            if (mounted) {
+              setMounted(false);
+            }
+          }
+        }
+      );
+    }
+  }, [initialAnimation, isExit, setAnimation, config, mounted, exitDuration]);
 
-  const initialConfig = getInitialConfig(animationType);
-  const restConfig: GenericAnimationConfig & { velocity?: number } = {};
-
-  if (isDefined(duration)) restConfig.duration = duration;
-  if (isDefined(velocity)) restConfig.velocity = velocity;
-  if (isDefined(mass)) restConfig.mass = mass;
-  if (isDefined(friction)) restConfig.friction = friction;
-  if (isDefined(tension)) restConfig.tension = tension;
-  if (isDefined(easing)) restConfig.easing = easing;
-  if (isDefined(delay)) restConfig.delay = delay;
-
-  const _config = {
-    ...initialConfig,
-    ...restConfig,
+  return function (
+    callback: (
+      { value }: { value: TransitionValue },
+      mounted: boolean
+    ) => React.ReactNode
+  ) {
+    return callback({ value: animation }, mounted);
   };
-
-  const transition = useTransition(initialState, {
-    from: { value: from },
-    enter: {
-      value: enter,
-      ..._enterConfig,
-    },
-    leave: {
-      value: leave,
-      ..._exitConfig,
-    },
-    config: _config,
-    onRest: ({ value }: { value: any }) => {
-      onAnimationEnd && onAnimationEnd(value);
-    },
-    onChange: function ({ value }: { value: any }) {
-      listener && listener(value);
-    },
-    immediate: !!config?.immediate,
-    delay: _config.delay,
-  });
-
-  return transition;
 };
