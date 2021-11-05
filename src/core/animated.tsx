@@ -51,17 +51,20 @@ function getCssValue(property: string, value: number | string) {
  * @returns - non-animatable CSSProperties
  */
 function getNonAnimatableStyle(style: React.CSSProperties) {
-  // for transforms
+  // for transforms, we add all the transform keys in transformPropertiesObject and
+  // use getTransform() function to get transform string.
   const transformPropertiesObject = {};
 
   const stylesWithoutTransforms = Object.keys(style).reduce(
     (resultObject, styleProp) => {
       const value = style[styleProp as keyof React.CSSProperties];
 
-      // skip subscriber
+      // skips all the subscribers here
+      // only get non-animatable styles
       if (isSubscriber(value)) {
         return resultObject;
       } else if (styleTrasformKeys.indexOf(styleProp) !== -1) {
+        // if not subscriber, then check styleTransformKeys
         transformPropertiesObject[styleProp] = value;
         return resultObject;
       }
@@ -217,6 +220,21 @@ export const makeAnimatedComponent = (
       let previousValue: any;
       let updatedValue: any;
 
+      // transformPropertiesObject holds the transform keys transforms
+      // it updates with onFrame
+      const transformPropertiesObject: any = {};
+
+      // we make sure that the non-animatable transforms to be present in
+      // transformPropertiesObject , non-animatable transform from first paint
+      // are overridden if it is not added.
+      Object.keys(style).forEach((styleProp) => {
+        const value = style[styleProp as keyof React.CSSProperties];
+
+        if (styleTrasformKeys.indexOf(styleProp) !== -1) {
+          transformPropertiesObject[styleProp] = value;
+        }
+      });
+
       animations.forEach((props: AnimationObject) => {
         const {
           animation,
@@ -230,6 +248,14 @@ export const makeAnimatedComponent = (
 
         if (!ref.current) {
           return;
+        }
+
+        // whether or not the property is one of transform keys
+        const isTransform = styleTrasformKeys.indexOf(property) !== -1;
+
+        // set default transform if available
+        if (isTransform) {
+          transformPropertiesObject[property] = _value;
         }
 
         // set previous value
@@ -252,14 +278,28 @@ export const makeAnimatedComponent = (
             );
 
             if (ref.current) {
-              ref.current.style[property] = getCssValue(
-                property,
-                interpolatedValue
-              );
+              if (isTransform) {
+                transformPropertiesObject[property] = interpolatedValue;
+                ref.current.style.transform = getTransform(
+                  transformPropertiesObject
+                );
+              } else {
+                ref.current.style[property] = getCssValue(
+                  property,
+                  interpolatedValue
+                );
+              }
             }
           } else {
             if (ref.current) {
-              ref.current.style[property] = getCssValue(property, value);
+              if (isTransform) {
+                transformPropertiesObject[property] = value;
+                ref.current.style.transform = getTransform(
+                  transformPropertiesObject
+                );
+              } else {
+                ref.current.style[property] = getCssValue(property, value);
+              }
             }
           }
 
