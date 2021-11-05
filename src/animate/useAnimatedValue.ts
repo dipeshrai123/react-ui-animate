@@ -1,3 +1,4 @@
+import * as React from "react";
 import { Easing, useTransition } from "../core";
 import { bin } from "./Math";
 import { isDefined } from "./isDefined";
@@ -82,7 +83,7 @@ export const useAnimatedValue = (
     ...restConfig,
   };
 
-  const [_value, _setValue] = useTransition(_initialValue, {
+  const [animation, setAnimation] = useTransition(_initialValue, {
     ..._config,
     immediate: !!config?.immediate,
     onRest: function (result: any) {
@@ -93,12 +94,16 @@ export const useAnimatedValue = (
     },
   });
 
+  React.useEffect(() => {
+    setAnimation({ toValue: _initialValue });
+  }, [_initialValue]);
+
   const targetObject: {
     value: any;
     currentValue: string | number;
   } = {
-    value: _value,
-    currentValue: _value.get(),
+    value: animation,
+    currentValue: animation.get(),
   };
 
   return new Proxy(targetObject, {
@@ -109,9 +114,9 @@ export const useAnimatedValue = (
     ) {
       if (key === "value") {
         if (typeof value === "number" || typeof value === "string") {
-          _setValue({ toValue: value });
+          setAnimation({ toValue: value });
         } else if (typeof value === "object") {
-          _setValue({ toValue: value.toValue, immediate: value?.immediate });
+          setAnimation({ toValue: value.toValue, immediate: value?.immediate });
         }
 
         return true;
@@ -121,11 +126,11 @@ export const useAnimatedValue = (
     },
     get: function (_, key) {
       if (key === "value") {
-        return _value;
+        return animation;
       }
 
       if (key === "currentValue") {
-        return _value.get();
+        return animation.get();
       }
 
       throw new Error(
