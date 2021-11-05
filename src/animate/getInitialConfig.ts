@@ -1,17 +1,16 @@
+import { Easing } from "../core";
+import { GenericAnimationConfig } from "./useAnimatedValue";
 export type InitialConfigType =
   | "ease"
   | "elastic"
   | "stiff"
   | "wooble"
+  | "bounce"
   | undefined;
 
 export const getInitialConfig = (
   animationType: InitialConfigType
-): {
-  mass: number;
-  friction: number;
-  tension: number;
-} => {
+): GenericAnimationConfig => {
   switch (animationType) {
     case "elastic":
       return { mass: 1, friction: 18, tension: 250 };
@@ -21,6 +20,9 @@ export const getInitialConfig = (
 
     case "wooble":
       return { mass: 1, friction: 8, tension: 250 };
+
+    case "bounce":
+      return { duration: 500, easing: Easing.bounce };
 
     case "ease":
     default:

@@ -1,9 +1,9 @@
 import * as React from "react";
-import { Easing, useTransition, TransitionValue, ResultType } from "../core";
+import { useTransition, TransitionValue, ResultType } from "../core";
 import { bin } from "./Math";
-import { isDefined } from "./isDefined";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
 
+// useAnimatedValue value type
 type AnimatedValueType = number | boolean | string;
 
 /**
@@ -57,37 +57,16 @@ export const useAnimatedValue = (
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ): UseAnimatedValueReturn => {
-  const isInitial = React.useRef(true);
+  const _isInitial = React.useRef(true);
   const _initialValue: number | string = getValue(initialValue);
 
   const animationType = config?.animationType ?? "ease"; // Defines default animation
   const onAnimationEnd = config?.onAnimationEnd;
   const listener = config?.listener;
-  const duration = config?.duration;
-  const mass = config?.mass;
-  const friction = config?.friction;
-  const tension = config?.tension;
-  const easing = config?.easing ?? Easing.linear;
-  const delay = config?.delay ?? 0;
-
-  const initialConfig = getInitialConfig(animationType);
-  const restConfig: GenericAnimationConfig = {};
-
-  if (isDefined(duration)) restConfig.duration = duration;
-  if (isDefined(mass)) restConfig.mass = mass;
-  if (isDefined(friction)) restConfig.friction = friction;
-  if (isDefined(tension)) restConfig.tension = tension;
-  if (isDefined(easing)) restConfig.easing = easing;
-  if (isDefined(delay)) restConfig.delay = delay;
-
-  const _config = {
-    ...initialConfig,
-    ...restConfig,
-  };
 
   const [animation, setAnimation] = useTransition(_initialValue, {
-    ..._config,
-    immediate: !!config?.immediate,
+    ...getInitialConfig(animationType),
+    ...config,
     onRest: function (result: any) {
       onAnimationEnd && onAnimationEnd(result);
     },
@@ -98,10 +77,10 @@ export const useAnimatedValue = (
 
   // doesn't fire on initial render
   React.useEffect(() => {
-    if (!isInitial.current) {
+    if (!_isInitial.current) {
       setAnimation({ toValue: _initialValue });
     }
-    isInitial.current = false;
+    _isInitial.current = false;
   }, [_initialValue]);
 
   const targetObject: {
