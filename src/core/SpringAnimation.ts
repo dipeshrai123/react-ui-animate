@@ -28,7 +28,7 @@ export class SpringAnimation extends Animation {
   // Modifiers
   _immediate: boolean;
   _delay: number;
-  _onRest?: (value: any) => void;
+  _onRest?: (value: ResultType) => void;
 
   constructor({
     initialPosition,

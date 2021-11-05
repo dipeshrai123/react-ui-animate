@@ -24,7 +24,7 @@ export class TimingAnimation extends Animation {
   _immediate: boolean;
   _delay: number;
   _tempDuration: number;
-  _onRest?: (value: any) => void;
+  _onRest?: (value: ResultType) => void;
 
   constructor({
     initialPosition,

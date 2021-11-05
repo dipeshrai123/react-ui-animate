@@ -1,4 +1,5 @@
-export { animated, interpolate, makeAnimatedComponent } from "./animated";
-export { useTransition } from "./useTransition";
-export { useMountedValue } from "./useMountedValue";
-export { Easing } from "./Easing";
+export * from "./animated";
+export * from "./useTransition";
+export * from "./useMountedValue";
+export * from "./Easing";
+export * from "./Animation";

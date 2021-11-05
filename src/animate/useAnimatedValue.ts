@@ -1,9 +1,8 @@
 import * as React from "react";
-import { Easing, useTransition } from "../core";
+import { Easing, useTransition, TransitionValue, ResultType } from "../core";
 import { bin } from "./Math";
 import { isDefined } from "./isDefined";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
-import { TransitionValue } from "../core/useTransition";
 
 type AnimatedValueType = number | boolean | string;
 
@@ -35,7 +34,7 @@ export interface GenericAnimationConfig {
 
 export interface UseAnimatedValueConfig extends GenericAnimationConfig {
   animationType?: InitialConfigType;
-  onAnimationEnd?: (value: any) => void;
+  onAnimationEnd?: (value: ResultType) => void;
   listener?: (value: number) => void;
   immediate?: boolean;
 }
