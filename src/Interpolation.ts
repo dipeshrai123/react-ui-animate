@@ -3,7 +3,7 @@ import {
   interpolateTransitionValue,
   ExtrapolateConfig,
   isSubscriber,
-} from "../core";
+} from "@raidipesh78/re-motion";
 
 /**
  * interpolate function maps input range to output range

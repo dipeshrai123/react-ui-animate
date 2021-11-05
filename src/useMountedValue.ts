@@ -1,5 +1,9 @@
 import * as React from "react";
-import { useTransition, TransitionValue, UseTransitionConfig } from "../core";
+import {
+  useTransition,
+  TransitionValue,
+  UseTransitionConfig,
+} from "@raidipesh78/re-motion";
 
 interface InternalUseMountedValueConfig extends UseTransitionConfig {
   enterDuration?: number;

@@ -1,4 +1,4 @@
-import { Easing } from "../core";
+import { Easing } from "@raidipesh78/re-motion";
 import { GenericAnimationConfig } from "./useAnimatedValue";
 export type InitialConfigType =
   | "ease"

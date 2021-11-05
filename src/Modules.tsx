@@ -1,5 +1,5 @@
 import * as React from "react";
-import { makeAnimatedComponent as animated } from "../core";
+import { makeAnimatedComponent as animated } from "@raidipesh78/re-motion";
 import { useAnimatedValue, UseAnimatedValueConfig } from "./useAnimatedValue";
 
 /**

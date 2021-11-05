@@ -1,5 +1,9 @@
 import * as React from "react";
-import { useTransition, TransitionValue, ResultType } from "../core";
+import {
+  useTransition,
+  TransitionValue,
+  ResultType,
+} from "@raidipesh78/re-motion";
 import { bin } from "./Math";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
 
