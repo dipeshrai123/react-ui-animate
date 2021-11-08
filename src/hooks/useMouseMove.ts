@@ -14,7 +14,7 @@ export function useMouseMove(
   const callbackRef =
     React.useRef<(event: MouseMoveEventType) => void>(callback);
   const isMoving = React.useRef<boolean>(false);
-  const _isMoving = React.useRef<number>(-1);
+  const _isMoving = React.useRef<any>(-1);
   const mouseXY = React.useRef<Vector2>({ x: 0, y: 0 });
   const prevMouseXY = React.useRef<Vector2>({ x: 0, y: 0 });
   const directionXY = React.useRef<Vector2>({ x: 0, y: 0 });

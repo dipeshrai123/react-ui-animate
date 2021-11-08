@@ -19,7 +19,7 @@ export function useScroll(
   });
   const isScrolling = React.useRef<boolean>(false);
   const scrollDirection = React.useRef<Vector2>({ x: 0, y: 0 });
-  const _isScrolling = React.useRef<number>(-1); // For checking scrolling and add throttle
+  const _isScrolling = React.useRef<any>(-1); // For checking scrolling and add throttle
 
   const lastTimeStamp = React.useRef<number>(0);
   const velocity = React.useRef<Vector2>({ x: 0, y: 0 });

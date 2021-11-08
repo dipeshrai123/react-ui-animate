@@ -17,7 +17,7 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["resize-observer-browser"]
+    "types": ["resize-observer-browser", "node"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "example", "rollup.config.js"]
