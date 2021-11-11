@@ -27,53 +27,46 @@ export const useMountedValue = (
   state: boolean,
   config: UseMountedValueConfig
 ) => {
-  const [initialAnimation, setInitialAnimation] = React.useState(false);
-  const [mounted, setMounted] = React.useState(false);
-  const [isExit, setIsExit] = React.useState(false);
-  const [animation, setAnimation] = useTransition(config.from, config?.config);
+  const [initial, setInitial] = React.useState(true);
+  const [mounted, setMounted] = React.useState(state);
+  const { from, enter, exit, config: _config } = React.useRef(config).current;
+  const [animation, setAnimation] = useTransition(from, _config);
 
-  const enterDuration =
-    config?.config?.enterDuration ?? config?.config?.duration;
-  const exitDuration = config?.config?.exitDuration ?? config?.config?.duration;
+  const enterDuration = config.config?.enterDuration ?? config.config?.duration;
+  const exitDuration =
+    config.config?.exitDuration ?? config.config?.exitDuration;
 
   React.useEffect(() => {
     if (state) {
-      // If state becomes true mount the node
-      setInitialAnimation(true); // is initial animation
+      setInitial(true);
       setMounted(true);
     } else {
-      setIsExit(true);
-      setInitialAnimation(false);
-    }
-  }, [state, setAnimation, config, mounted]);
-
-  React.useEffect(() => {
-    if (initialAnimation && mounted) {
-      setAnimation({ toValue: config.enter, duration: enterDuration });
-    }
-  }, [
-    mounted,
-    initialAnimation,
-    setAnimation,
-    config,
-    setInitialAnimation,
-    enterDuration,
-  ]);
-
-  React.useEffect(() => {
-    if (!initialAnimation && isExit) {
+      setInitial(false);
       setAnimation(
-        { toValue: config.exit, duration: exitDuration },
-        ({ finished }: { finished: boolean }) => {
-          if (finished) {
-            if (mounted) {
-              setMounted(false);
-            }
-          }
+        {
+          toValue: exit,
+          duration: exitDuration,
+        },
+        function () {
+          setMounted(false);
         }
       );
     }
-  }, [initialAnimation, isExit, setAnimation, config, mounted, exitDuration]);
+  }, [state]);
+
+  React.useEffect(() => {
+    if (mounted && initial) {
+      setAnimation(
+        {
+          toValue: enter,
+          duration: enterDuration,
+        },
+        function () {
+          return;
+        }
+      );
+    }
+  }, [mounted, initial]);
 
   return function (
     callback: (
