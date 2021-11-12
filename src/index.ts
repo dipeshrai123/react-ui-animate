@@ -1,6 +1,6 @@
 export { Easing } from "@raidipesh78/re-motion";
 export { useAnimatedValue } from "./useAnimatedValue";
-export * from "./useMountedValue";
+export { useMountedValue } from "./useMountedValue";
 export * from "./Interpolation";
 export * from "./Modules";
 export * from "./Math";

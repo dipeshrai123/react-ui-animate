@@ -5,7 +5,7 @@ import {
   UseTransitionConfig,
 } from "@raidipesh78/re-motion";
 
-interface InternalUseMountedValueConfig extends UseTransitionConfig {
+export interface InnerUseMountedValueConfig extends UseTransitionConfig {
   enterDuration?: number;
   exitDuration?: number;
 }
@@ -14,7 +14,7 @@ interface UseMountedValueConfig {
   from: number;
   enter: number;
   exit: number;
-  config?: InternalUseMountedValueConfig;
+  config?: InnerUseMountedValueConfig;
 }
 
 /**
