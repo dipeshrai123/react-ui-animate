@@ -1,6 +1,10 @@
 import * as React from "react";
-import { makeAnimatedComponent as animated } from "@raidipesh78/re-motion";
+import {
+  makeAnimatedComponent as animated,
+  TransitionValue,
+} from "@raidipesh78/re-motion";
 import { useAnimatedValue, UseAnimatedValueConfig } from "./useAnimatedValue";
+import { useMountedValue, InnerUseMountedValueConfig } from "./useMountedValue";
 
 /**
  * Make any component animatable
@@ -77,4 +81,25 @@ export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
   }, []);
 
   return <div ref={scrollableBlockRef}>{children && children(animation)}</div>;
+};
+
+interface MountedBlockProps {
+  state: boolean;
+  children: (animation: { value: TransitionValue }) => React.ReactNode;
+  config?: InnerUseMountedValueConfig;
+}
+
+/**
+ * MountedBlock handles mounting and unmounting of a component
+ * @props - state: boolean, config: InnerUseMountedValueConfig
+ * @children -  (animation: { value: TransitionValue }) => React.ReactNode
+ */
+export const MountedBlock = ({
+  state,
+  children,
+  config,
+}: MountedBlockProps) => {
+  const open = useMountedValue(state, { from: 0, enter: 1, exit: 0, config });
+
+  return <>{open((animation, mounted) => mounted && children(animation))}</>;
 };
