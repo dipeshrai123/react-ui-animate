@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React from "react";
+import * as React from "react";
 
 export const useRecognizer = (gesture: any, callback: any, config?: any) => {
   const ref = React.useRef<any>();
