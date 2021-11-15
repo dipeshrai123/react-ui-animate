@@ -1,5 +1,11 @@
 import * as React from "react";
-import { WindowDimensionType } from "../Types";
+
+type WindowDimensionType = {
+  width: number;
+  height: number;
+  innerWidth: number;
+  innerHeight: number;
+};
 
 export function useWindowDimension(
   callback: (event: WindowDimensionType) => void,
