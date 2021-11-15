@@ -23,10 +23,7 @@ interface UseMountedValueConfig {
  * @param config - useTransitionConfig
  * @returns mountedValueFunction with a callback with argument ( animationNode, mounted )
  */
-export const useMountedValue = (
-  state: boolean,
-  config: UseMountedValueConfig
-) => {
+export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
   const [initial, setInitial] = React.useState(true);
   const [mounted, setMounted] = React.useState(state);
   const { from, enter, exit, config: _config } = React.useRef(config).current;
@@ -76,4 +73,4 @@ export const useMountedValue = (
   ) {
     return callback({ value: animation }, mounted);
   };
-};
+}

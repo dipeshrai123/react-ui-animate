@@ -4,7 +4,7 @@ import {
   TransitionValue,
   ResultType,
 } from "@raidipesh78/re-motion";
-import { bin } from "./Math";
+import { bin } from "../gestures/math";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
 
 // useAnimatedValue value type
@@ -57,10 +57,10 @@ interface UseAnimatedValueReturn {
 /**
  * useAnimatedValue for animated transitions
  */
-export const useAnimatedValue = (
+export function useAnimatedValue(
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
-): UseAnimatedValueReturn => {
+): UseAnimatedValueReturn {
   const _isInitial = React.useRef(true);
   const _initialValue: number | string = getValue(initialValue);
 
@@ -127,4 +127,4 @@ export const useAnimatedValue = (
       );
     },
   });
-};
+}

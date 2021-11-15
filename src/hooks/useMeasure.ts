@@ -1,5 +1,15 @@
 import * as React from "react";
-import { MeasurementType } from "../Types";
+
+type MeasurementValue = number | Array<number>;
+
+type MeasurementType = {
+  left: MeasurementValue;
+  top: MeasurementValue;
+  width: MeasurementValue;
+  height: MeasurementValue;
+  vLeft: MeasurementValue;
+  vTop: MeasurementValue;
+};
 
 export function useMeasure(
   callback: (event: MeasurementType) => void,

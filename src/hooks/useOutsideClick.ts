@@ -1,5 +1,6 @@
 import * as React from "react";
-import { attachEvents } from "../controllers";
+
+import { attachEvents } from "../gestures/eventAttacher";
 
 export function useOutsideClick(
   elementRef: React.RefObject<HTMLElement>,
@@ -28,7 +29,7 @@ export function useOutsideClick(
       }
     };
 
-    const subscribe = attachEvents(document, [["click", handleOutsideClick]]);
+    const subscribe = attachEvents([document], [["click", handleOutsideClick]]);
 
     return () => subscribe && subscribe();
   }, []);
