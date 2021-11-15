@@ -1,24 +1,49 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import * as React from "react";
 
-export const useRecognizer = (gesture: any, callback: any, config?: any) => {
+type UseRecognizerHandlerType = Array<
+  [
+    key: "drag" | "wheel" | "move" | "scroll",
+    gesture: any,
+    callback: any,
+    config?: any
+  ]
+>;
+
+export const useRecognizer = (handlers: UseRecognizerHandlerType) => {
   const ref = React.useRef<any>();
   const elementRefs = React.useRef<Array<any>>([]);
-  const subscribe = React.useRef<any>(null);
+  const subscribers = React.useRef<
+    Map<string, { keyIndex: number; gesture: any; unsubscribe: any }>
+  >(new Map()).current;
+
+  // re-initiate callback on change
+  React.useEffect(() => {
+    for (let [, { keyIndex, gesture }] of subscribers.entries()) {
+      const [, , callback] = handlers[keyIndex];
+      gesture.applyCallback(callback);
+    }
+  }, [handlers]);
 
   React.useEffect(() => {
-    gesture.applyCallback(callback);
-  }, [callback]);
-
-  React.useEffect(() => {
-    subscribe.current = gesture.applyGesture({
-      targetElement: ref.current,
-      targetElements: elementRefs.current,
-      callback,
-      config,
+    handlers.forEach(([key, gesture, callback, config], keyIndex) => {
+      subscribers.set(key, {
+        keyIndex,
+        gesture,
+        unsubscribe: gesture.applyGesture({
+          targetElement: ref.current,
+          targetElements: elementRefs.current,
+          callback,
+          config,
+        }),
+      });
     });
 
-    return () => subscribe.current && subscribe.current();
+    return () => {
+      for (let [, { unsubscribe }] of subscribers.entries()) {
+        unsubscribe && unsubscribe();
+      }
+    };
   }, []);
 
   return (index?: number) => {

@@ -7,5 +7,5 @@ import { useRecognizer } from "./useRecognizer";
 export function useScroll(callback: (event: ScrollEventType) => void) {
   const gesture = React.useRef(new ScrollGesture()).current;
 
-  return useRecognizer(gesture, callback);
+  return useRecognizer([["scroll", gesture, callback]]);
 }

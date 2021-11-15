@@ -10,5 +10,5 @@ export function useDrag(
 ) {
   const gesture = React.useRef(new DragGesture()).current;
 
-  return useRecognizer(gesture, callback, config);
+  return useRecognizer([["drag", gesture, callback, config]]);
 }

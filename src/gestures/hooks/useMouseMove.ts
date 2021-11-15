@@ -7,5 +7,5 @@ import { useRecognizer } from "./useRecognizer";
 export function useMouseMove(callback: (event: MouseMoveEventType) => void) {
   const gesture = React.useRef(new MouseMoveGesture()).current;
 
-  return useRecognizer(gesture, callback);
+  return useRecognizer([["move", gesture, callback]]);
 }

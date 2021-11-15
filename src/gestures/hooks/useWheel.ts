@@ -7,5 +7,5 @@ import { useRecognizer } from "./useRecognizer";
 export function useWheel(callback: (event: WheelEventType) => void) {
   const gesture = React.useRef(new WheelGesture()).current;
 
-  return useRecognizer(gesture, callback);
+  return useRecognizer([["wheel", gesture, callback]]);
 }
