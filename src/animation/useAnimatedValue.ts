@@ -4,11 +4,10 @@ import {
   TransitionValue,
   ResultType,
 } from "@raidipesh78/re-motion";
-import { bin } from "./Math";
 import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
 
 // useAnimatedValue value type
-type AnimatedValueType = number | boolean | string;
+type AnimatedValueType = number | string;
 
 /**
  * getValue checks for type of initialValue and throws error
@@ -17,11 +16,9 @@ type AnimatedValueType = number | boolean | string;
 const getValue = (value: AnimatedValueType) => {
   if (typeof value === "number" || typeof value === "string") {
     return value;
-  } else if (typeof value === "boolean") {
-    return bin(value);
   } else {
     throw new Error(
-      "Invalid Value! Animated value only accepts string, boolean or number."
+      "Invalid Value! Animated value only accepts string or number."
     );
   }
 };
@@ -57,10 +54,10 @@ interface UseAnimatedValueReturn {
 /**
  * useAnimatedValue for animated transitions
  */
-export const useAnimatedValue = (
+export function useAnimatedValue(
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
-): UseAnimatedValueReturn => {
+): UseAnimatedValueReturn {
   const _isInitial = React.useRef(true);
   const _initialValue: number | string = getValue(initialValue);
 
@@ -127,4 +124,4 @@ export const useAnimatedValue = (
       );
     },
   });
-};
+}
