@@ -44,8 +44,10 @@ export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
           toValue: exit,
           duration: exitDuration,
         },
-        function () {
-          setMounted(false);
+        function ({ finished }) {
+          if (finished) {
+            setMounted(false);
+          }
         }
       );
     }
