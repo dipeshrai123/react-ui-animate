@@ -69,7 +69,9 @@ export function useAnimatedValue(
     ...getInitialConfig(animationType),
     ...config,
     onRest: function (result: any) {
-      onAnimationEnd && onAnimationEnd(result);
+      if (result.finished) {
+        onAnimationEnd && onAnimationEnd(result.value);
+      }
     },
     onChange: function (value: number) {
       listener && listener(value);
