@@ -104,7 +104,10 @@ export function useAnimatedValue(
         if (typeof value === "number" || typeof value === "string") {
           setAnimation({ toValue: value });
         } else if (typeof value === "object") {
-          setAnimation({ toValue: value.toValue, immediate: value?.immediate });
+          setAnimation({
+            toValue: value.toValue,
+            config: { immediate: value.immediate },
+          });
         }
 
         return true;

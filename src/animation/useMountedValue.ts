@@ -42,7 +42,9 @@ export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
       setAnimation(
         {
           toValue: exit,
-          duration: exitDuration,
+          config: {
+            duration: exitDuration,
+          },
         },
         function ({ finished }) {
           if (finished) {
@@ -58,7 +60,9 @@ export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
       setAnimation(
         {
           toValue: enter,
-          duration: enterDuration,
+          config: {
+            duration: enterDuration,
+          },
         },
         function () {
           return;
