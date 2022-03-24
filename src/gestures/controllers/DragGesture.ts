@@ -1,8 +1,8 @@
-import { attachEvents } from "../eventAttacher";
-import { Vector2 } from "../types";
-import { clamp } from "../math";
-import { withDefault } from "../withDefault";
-import { Gesture } from "./Gesture";
+import { attachEvents } from '../eventAttacher';
+import { Vector2 } from '../types';
+import { clamp } from '../math';
+import { withDefault } from '../withDefault';
+import { Gesture } from './Gesture';
 
 export class DragGesture extends Gesture {
   movementStart: Vector2 = withDefault(0, 0);
@@ -20,12 +20,12 @@ export class DragGesture extends Gesture {
       this._subscribe = attachEvents(
         [window],
         [
-          ["mousedown", this.pointerDown.bind(this)],
-          ["mousemove", this.pointerMove.bind(this)],
-          ["mouseup", this.pointerUp.bind(this)],
-          ["touchstart", this.pointerDown.bind(this), { passive: false }],
-          ["touchmove", this.pointerMove.bind(this), { passive: false }],
-          ["touchend", this.pointerUp.bind(this)],
+          ['mousedown', this.pointerDown.bind(this)],
+          ['mousemove', this.pointerMove.bind(this)],
+          ['mouseup', this.pointerUp.bind(this)],
+          ['touchstart', this.pointerDown.bind(this), { passive: false }],
+          ['touchmove', this.pointerMove.bind(this), { passive: false }],
+          ['touchend', this.pointerUp.bind(this)],
         ]
       );
     }
@@ -36,7 +36,7 @@ export class DragGesture extends Gesture {
   // will not be triggered
   _cancelEvents() {
     if (this._subscribe) {
-      this._subscribe(["mousedown", "mousemove", "touchstart", "touchmove"]);
+      this._subscribe(['mousedown', 'mousemove', 'touchstart', 'touchmove']);
     }
   }
 
@@ -63,7 +63,7 @@ export class DragGesture extends Gesture {
   }
 
   pointerDown(e: any) {
-    if (e.type === "touchstart") {
+    if (e.type === 'touchstart') {
       this.movementStart = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
@@ -118,12 +118,12 @@ export class DragGesture extends Gesture {
     if (this.isActive) {
       e.preventDefault();
       const now = Date.now();
-      const deltaTime = Math.min(now - this.lastTimeStamp, 64);
+      const deltaTime = clamp(now - this.lastTimeStamp, 0.1, 64);
       this.lastTimeStamp = now;
 
       const t = deltaTime / 1000;
 
-      if (e.type === "touchmove") {
+      if (e.type === 'touchmove') {
         this.movement = {
           x:
             this.initialMovement.x +
@@ -170,6 +170,7 @@ export class DragGesture extends Gesture {
     if (this.isActive) {
       this.isActive = false;
       this._handleCallback();
+      this._cancelEvents();
       this._initEvents();
     }
   }
