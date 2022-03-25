@@ -68,6 +68,8 @@ export function useAnimatedValue(
             toValue: value.toValue,
             config: { immediate: value.immediate },
           });
+        } else if (typeof value === 'function') {
+          setAnimation(value);
         }
 
         return true;
