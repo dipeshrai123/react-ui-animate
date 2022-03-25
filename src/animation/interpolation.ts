@@ -1,4 +1,8 @@
-import { interpolate, ExtrapolateConfig } from '@raidipesh78/re-motion';
+import {
+  interpolate,
+  ExtrapolateConfig,
+  TransitionValue,
+} from '@raidipesh78/re-motion';
 export { interpolate } from '@raidipesh78/re-motion';
 
 /**
@@ -11,7 +15,7 @@ export { interpolate } from '@raidipesh78/re-motion';
  * @returns - number | TransitionValue
  */
 export function bInterpolate(
-  value: any,
+  value: number | TransitionValue,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
