@@ -1,4 +1,8 @@
-import { useTransition, UseTransitionConfig } from '@raidipesh78/re-motion';
+import {
+  ResultType,
+  useTransition,
+  UseTransitionConfig,
+} from '@raidipesh78/re-motion';
 import { InitialConfigType, getInitialConfig } from './getInitialConfig';
 
 // useAnimatedValue value type
@@ -9,17 +13,40 @@ export interface UseAnimatedValueConfig
   onAnimationStart?: (value: number) => void;
   onAnimationEnd?: (value: number) => void;
   listener?: (value: number) => void;
-  immediate?: boolean;
 }
 
-// interface UseAnimatedValueReturn {
-//   value:
-//     | number
-//     | string
-//     | { toValue: number | string; config?: UseAnimatedValueConfig }
-//     | any;
-//   currentValue: number | string;
-// }
+type Length = number | string;
+type AssignValue = {
+  toValue: Length;
+  config?: UseAnimatedValueConfig;
+};
+export type ValueType =
+  | Length
+  | AssignValue
+  | ((next: (next: AssignValue) => Promise<any>) => void);
+
+const getConfig = (config?: UseAnimatedValueConfig) => {
+  const animationType = config?.animationType ?? 'ease'; // Defines default animation
+  const onAnimationEnd = config?.onAnimationEnd;
+  const listener = config?.listener;
+  const onAnimationStart = config?.onAnimationStart;
+
+  return {
+    ...getInitialConfig(animationType),
+    ...config,
+    onStart: function (value: number) {
+      onAnimationStart && onAnimationStart(value);
+    },
+    onChange: function (value: number) {
+      listener && listener(value);
+    },
+    onRest: function (result: ResultType) {
+      if (result.finished) {
+        onAnimationEnd && onAnimationEnd(result.value);
+      }
+    },
+  };
+};
 
 /**
  * useAnimatedValue for animated transitions
@@ -28,45 +55,28 @@ export function useAnimatedValue(
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ) {
-  const animationType = config?.animationType ?? 'ease'; // Defines default animation
-  const onAnimationEnd = config?.onAnimationEnd;
-  const listener = config?.listener;
-  const onAnimationStart = config?.onAnimationStart;
+  const [animation, setAnimation] = useTransition(
+    initialValue,
+    getConfig(config)
+  );
 
-  const [animation, setAnimation] = useTransition(initialValue, {
-    ...getInitialConfig(animationType),
-    ...config,
-    onStart: function (value) {
-      onAnimationStart && onAnimationStart(value);
-    },
-    onChange: function (value: number) {
-      listener && listener(value);
-    },
-    onRest: function (result) {
-      if (result.finished) {
-        onAnimationEnd && onAnimationEnd(result.value);
-      }
-    },
-  });
-
-  const targetObject: { value: any; currentValue: any } = {
+  const targetObject: {
+    value: any;
+    currentValue: number | string;
+  } = {
     value: animation,
     currentValue: animation.get(),
   };
 
   return new Proxy(targetObject, {
-    set: function (
-      _,
-      key,
-      value: number | string | { toValue: number | string; immediate?: boolean }
-    ) {
+    set: function (_, key, value: ValueType) {
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
           setAnimation({ toValue: value });
         } else if (typeof value === 'object') {
           setAnimation({
             toValue: value.toValue,
-            config: { immediate: value.immediate },
+            config: getConfig(value.config),
           });
         } else if (typeof value === 'function') {
           setAnimation(value);
