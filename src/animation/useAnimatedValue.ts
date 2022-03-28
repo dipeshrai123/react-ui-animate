@@ -1,18 +1,10 @@
-import {
-  ResultType,
-  useTransition,
-  UseTransitionConfig,
-} from '@raidipesh78/re-motion';
+import { useTransition, UseTransitionConfig } from '@raidipesh78/re-motion';
 import { InitialConfigType, getInitialConfig } from './getInitialConfig';
 
 // useAnimatedValue value type
 type AnimatedValueType = number | string;
-export interface UseAnimatedValueConfig
-  extends Omit<UseTransitionConfig, ' onChange' | 'onRest' | 'onStart'> {
+export interface UseAnimatedValueConfig extends UseTransitionConfig {
   animationType?: InitialConfigType;
-  onAnimationStart?: (value: number) => void;
-  onAnimationEnd?: (value: number) => void;
-  listener?: (value: number) => void;
 }
 
 type Length = number | string;
@@ -27,24 +19,10 @@ export type ValueType =
 
 const getConfig = (config?: UseAnimatedValueConfig) => {
   const animationType = config?.animationType ?? 'ease'; // Defines default animation
-  const onAnimationEnd = config?.onAnimationEnd;
-  const listener = config?.listener;
-  const onAnimationStart = config?.onAnimationStart;
 
   return {
     ...getInitialConfig(animationType),
     ...config,
-    onStart: function (value: number) {
-      onAnimationStart && onAnimationStart(value);
-    },
-    onChange: function (value: number) {
-      listener && listener(value);
-    },
-    onRest: function (result: ResultType) {
-      if (result.finished) {
-        onAnimationEnd && onAnimationEnd(result.value);
-      }
-    },
   };
 };
 

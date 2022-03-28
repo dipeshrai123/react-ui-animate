@@ -1,50 +1,41 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   useTransition,
   TransitionValue,
-  UseTransitionConfig,
-} from "@raidipesh78/re-motion";
+  UseMountConfig,
+} from '@raidipesh78/re-motion';
 
-export interface InnerUseMountedValueConfig extends UseTransitionConfig {
-  enterDuration?: number;
-  exitDuration?: number;
-}
-
-interface UseMountedValueConfig {
-  from: number;
-  enter: number;
-  exit: number;
-  config?: InnerUseMountedValueConfig;
-}
+export interface UseMountedValueConfig extends UseMountConfig {}
 
 /**
  * useMountedValue handles mounting and unmounting of a component
  * @param state - boolean
  * @param config - useTransitionConfig
- * @returns mountedValueFunction with a callback with argument ( animationNode, mounted )
+ * @returns mountedValueFunction with a callback with argument ( { value: animationNode }, mounted )
  */
 export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
-  const [initial, setInitial] = React.useState(true);
+  const initial = React.useRef(true);
   const [mounted, setMounted] = React.useState(state);
-  const { from, enter, exit, config: _config } = React.useRef(config).current;
-  const [animation, setAnimation] = useTransition(from, _config);
-
-  const enterDuration = config.config?.enterDuration ?? config.config?.duration;
-  const exitDuration =
-    config.config?.exitDuration ?? config.config?.exitDuration;
+  const {
+    from,
+    enter,
+    exit,
+    config: innerConfig,
+    enterConfig,
+    exitConfig,
+  } = React.useRef(config).current;
+  const [animation, setAnimation] = useTransition(from, innerConfig);
 
   React.useEffect(() => {
     if (state) {
-      setInitial(true);
+      initial.current = true;
       setMounted(true);
     } else {
-      setInitial(false);
+      initial.current = false;
       setAnimation(
         {
           toValue: exit,
-          config: {
-            duration: exitDuration,
-          },
+          config: exitConfig,
         },
         function ({ finished }) {
           if (finished) {
@@ -56,24 +47,17 @@ export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
   }, [state]);
 
   React.useEffect(() => {
-    if (mounted && initial) {
-      setAnimation(
-        {
-          toValue: enter,
-          config: {
-            duration: enterDuration,
-          },
-        },
-        function () {
-          return;
-        }
-      );
+    if (mounted && initial.current) {
+      setAnimation({
+        toValue: enter,
+        config: enterConfig,
+      });
     }
-  }, [mounted, initial]);
+  }, [mounted, initial.current]);
 
   return function (
     callback: (
-      { value }: { value: TransitionValue },
+      { value: animation }: { value: TransitionValue },
       mounted: boolean
     ) => React.ReactNode
   ) {

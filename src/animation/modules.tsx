@@ -1,10 +1,10 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   makeAnimatedComponent as animated,
   TransitionValue,
-} from "@raidipesh78/re-motion";
-import { useAnimatedValue, UseAnimatedValueConfig } from "./useAnimatedValue";
-import { useMountedValue, InnerUseMountedValueConfig } from "./useMountedValue";
+} from '@raidipesh78/re-motion';
+import { useAnimatedValue, UseAnimatedValueConfig } from './useAnimatedValue';
+import { useMountedValue, UseMountedValueConfig } from './useMountedValue';
 
 /**
  * Make any component animatable
@@ -18,18 +18,18 @@ export function makeAnimatedComponent(
 /**
  * AnimatedBlock : Animated Div
  */
-export const AnimatedBlock = animated("div");
+export const AnimatedBlock = animated('div');
 /**
  * AnimatedInline : Animated Span
  */
-export const AnimatedInline = animated("span");
+export const AnimatedInline = animated('span');
 /**
  * AnimatedImage : Animated Image
  */
-export const AnimatedImage = animated("img");
+export const AnimatedImage = animated('img');
 interface ScrollableBlockProps {
   children?: (animation: any) => React.ReactNode;
-  direction?: "single" | "both";
+  direction?: 'single' | 'both';
   threshold?: number;
   animationConfig?: UseAnimatedValueConfig;
 }
@@ -43,7 +43,7 @@ interface ScrollableBlockProps {
 export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
   const {
     children,
-    direction = "single",
+    direction = 'single',
     animationConfig,
     threshold = 0.2,
   } = props;
@@ -60,7 +60,7 @@ export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
         if (isIntersecting) {
           animation.value = 1;
         } else {
-          if (direction === "both") animation.value = 0;
+          if (direction === 'both') animation.value = 0;
         }
       },
       {
@@ -86,7 +86,7 @@ export const ScrollableBlock: React.FC<ScrollableBlockProps> = (props) => {
 interface MountedBlockProps {
   state: boolean;
   children: (animation: { value: TransitionValue }) => React.ReactNode;
-  config?: InnerUseMountedValueConfig;
+  config: UseMountedValueConfig;
 }
 
 /**
@@ -99,7 +99,7 @@ export const MountedBlock = ({
   children,
   config,
 }: MountedBlockProps) => {
-  const open = useMountedValue(state, { from: 0, enter: 1, exit: 0, config });
+  const open = useMountedValue(state, config);
 
   return <>{open((animation, mounted) => mounted && children(animation))}</>;
 };
