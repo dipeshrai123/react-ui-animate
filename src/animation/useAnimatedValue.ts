@@ -1,11 +1,8 @@
 import { useTransition, UseTransitionConfig } from '@raidipesh78/re-motion';
-import { InitialConfigType, getInitialConfig } from './getInitialConfig';
 
 // useAnimatedValue value type
 type AnimatedValueType = number | string;
-export interface UseAnimatedValueConfig extends UseTransitionConfig {
-  animationType?: InitialConfigType;
-}
+export interface UseAnimatedValueConfig extends UseTransitionConfig {}
 
 type Length = number | string;
 type AssignValue = {
@@ -15,16 +12,7 @@ type AssignValue = {
 export type ValueType =
   | Length
   | AssignValue
-  | ((next: (next: AssignValue) => Promise<any>) => void);
-
-const getConfig = (config?: UseAnimatedValueConfig) => {
-  const animationType = config?.animationType ?? 'ease'; // Defines default animation
-
-  return {
-    ...getInitialConfig(animationType),
-    ...config,
-  };
-};
+  | ((update: (next: AssignValue) => Promise<any>) => void);
 
 /**
  * useAnimatedValue for animated transitions
@@ -33,10 +21,7 @@ export function useAnimatedValue(
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
 ) {
-  const [animation, setAnimation] = useTransition(
-    initialValue,
-    getConfig(config)
-  );
+  const [animation, setAnimation] = useTransition(initialValue, config);
 
   const targetObject: {
     value: any;
@@ -51,12 +36,7 @@ export function useAnimatedValue(
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
           setAnimation({ toValue: value });
-        } else if (typeof value === 'object') {
-          setAnimation({
-            toValue: value.toValue,
-            config: getConfig(value.config),
-          });
-        } else if (typeof value === 'function') {
+        } else if (typeof value === 'object' || typeof value === 'function') {
           setAnimation(value);
         }
 

@@ -6,3 +6,4 @@ export {
   UseAnimatedValueConfig,
 } from './useAnimatedValue';
 export { useMountedValue } from './useMountedValue';
+export * from './animationType';
