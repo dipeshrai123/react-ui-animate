@@ -4,7 +4,7 @@
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
   "dependencies": {
-    "@raidipesh78/re-motion": "^2.0.0-alpha.12"
+    "@raidipesh78/re-motion": "^2.0.0"
   },
   "peerDependencies": {
     "react": ">=16.13.1",
