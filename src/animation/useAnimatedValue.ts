@@ -1,55 +1,18 @@
-import * as React from "react";
-import {
-  useTransition,
-  TransitionValue,
-  ResultType,
-} from "@raidipesh78/re-motion";
-import { InitialConfigType, getInitialConfig } from "./getInitialConfig";
+import { useTransition, UseTransitionConfig } from '@raidipesh78/re-motion';
 
 // useAnimatedValue value type
 type AnimatedValueType = number | string;
+export interface UseAnimatedValueConfig extends UseTransitionConfig {}
 
-/**
- * getValue checks for type of initialValue and throws error
- * for type other than AnimatedValueType
- */
-const getValue = (value: AnimatedValueType) => {
-  if (typeof value === "number" || typeof value === "string") {
-    return value;
-  } else {
-    throw new Error(
-      "Invalid Value! Animated value only accepts string or number."
-    );
-  }
+type Length = number | string;
+type AssignValue = {
+  toValue: Length;
+  config?: UseAnimatedValueConfig;
 };
-
-// General config type
-export interface GenericAnimationConfig {
-  duration?: number;
-  mass?: number;
-  friction?: number;
-  tension?: number;
-  easing?: (t: number) => number;
-  delay?: number;
-}
-
-export interface UseAnimatedValueConfig extends GenericAnimationConfig {
-  animationType?: InitialConfigType;
-  onAnimationEnd?: (value: ResultType) => void;
-  listener?: (value: number) => void;
-  immediate?: boolean;
-}
-
-export type ValueReturnType =
-  | TransitionValue
-  | number
-  | string
-  | { toValue: number | string; immediate?: boolean };
-
-interface UseAnimatedValueReturn {
-  value: ValueReturnType;
-  currentValue: number | string;
-}
+export type ValueType =
+  | Length
+  | AssignValue
+  | ((update: (next: AssignValue) => Promise<any>) => void);
 
 /**
  * useAnimatedValue for animated transitions
@@ -57,75 +20,42 @@ interface UseAnimatedValueReturn {
 export function useAnimatedValue(
   initialValue: AnimatedValueType,
   config?: UseAnimatedValueConfig
-): UseAnimatedValueReturn {
-  const _isInitial = React.useRef(true);
-  const _initialValue: number | string = getValue(initialValue);
-
-  const animationType = config?.animationType ?? "ease"; // Defines default animation
-  const onAnimationEnd = config?.onAnimationEnd;
-  const listener = config?.listener;
-
-  const [animation, setAnimation] = useTransition(_initialValue, {
-    ...getInitialConfig(animationType),
-    ...config,
-    onRest: function (result: any) {
-      if (result.finished) {
-        onAnimationEnd && onAnimationEnd(result.value);
-      }
-    },
-    onChange: function (value: number) {
-      listener && listener(value);
-    },
-  });
-
-  // doesn't fire on initial render
-  React.useEffect(() => {
-    if (!_isInitial.current) {
-      setAnimation({ toValue: _initialValue });
-    }
-    _isInitial.current = false;
-  }, [_initialValue]);
+) {
+  const [animation, setAnimation] = useTransition(initialValue, config);
 
   const targetObject: {
     value: any;
-    currentValue: string | number;
+    currentValue: number | string;
   } = {
     value: animation,
     currentValue: animation.get(),
   };
 
   return new Proxy(targetObject, {
-    set: function (
-      _,
-      key,
-      value: number | string | { toValue: number | string; immediate?: boolean }
-    ) {
-      if (key === "value") {
-        if (typeof value === "number" || typeof value === "string") {
+    set: function (_, key, value: ValueType) {
+      if (key === 'value') {
+        if (typeof value === 'number' || typeof value === 'string') {
           setAnimation({ toValue: value });
-        } else if (typeof value === "object") {
-          setAnimation({
-            toValue: value.toValue,
-            config: { immediate: value.immediate },
-          });
+        } else if (typeof value === 'object' || typeof value === 'function') {
+          setAnimation(value);
         }
 
         return true;
       }
 
-      throw new Error("You cannot set any other property to animation node.");
+      throw new Error('You cannot set any other property to animation node.');
     },
     get: function (_, key) {
-      if (key === "value") {
+      if (key === 'value') {
         return animation;
       }
 
-      if (key === "currentValue") {
+      if (key === 'currentValue') {
         return animation.get();
       }
 
       throw new Error(
-        "You cannot access any other property from animation node."
+        'You cannot access any other property from animation node.'
       );
     },
   });

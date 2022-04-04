@@ -1,4 +1,5 @@
-export { Easing } from "@raidipesh78/re-motion";
-export * from "./animation";
-export * from "./gestures";
-export * from "./hooks";
+export { Easing } from '@raidipesh78/re-motion';
+export { delay } from './utils';
+export * from './animation';
+export * from './gestures';
+export * from './hooks';

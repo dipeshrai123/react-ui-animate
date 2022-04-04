@@ -1,1 +1,2 @@
-export * from "./isDefined";
+export * from './isDefined';
+export * from './delay';
