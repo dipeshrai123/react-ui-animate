@@ -1,19 +1,19 @@
 type MouseEventType =
-  | "click"
-  | "dblclick"
-  | "mousedown"
-  | "mousemove"
-  | "mouseup"
-  | "touchstart"
-  | "touchmove"
-  | "touchend"
-  | "mouseenter"
-  | "mouseleave"
-  | "mouseout"
-  | "mouseover"
-  | "scroll"
-  | "wheel"
-  | "contextmenu";
+  | 'click'
+  | 'dblclick'
+  | 'mousedown'
+  | 'mousemove'
+  | 'mouseup'
+  | 'touchstart'
+  | 'touchmove'
+  | 'touchend'
+  | 'mouseenter'
+  | 'mouseleave'
+  | 'mouseout'
+  | 'mouseover'
+  | 'scroll'
+  | 'wheel'
+  | 'contextmenu';
 
 type DomTargetTypes = Array<Window | Document | HTMLElement>;
 

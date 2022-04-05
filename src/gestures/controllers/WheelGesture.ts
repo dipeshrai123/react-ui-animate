@@ -1,8 +1,8 @@
-import { attachEvents } from "../eventAttacher";
-import { Vector2 } from "../types";
-import { clamp } from "../math";
-import { withDefault } from "../withDefault";
-import { Gesture } from "./Gesture";
+import { attachEvents } from '../eventAttacher';
+import { Vector2 } from '../types';
+import { clamp } from '../math';
+import { withDefault } from '../withDefault';
+import { Gesture } from './Gesture';
 
 const LINE_HEIGHT = 40;
 const PAGE_HEIGHT = 800;
@@ -25,7 +25,7 @@ export class WheelGesture extends Gesture {
     if (this.targetElement) {
       this._subscribe = attachEvents(
         [this.targetElement],
-        [["wheel", this.onWheel.bind(this)]]
+        [['wheel', this.onWheel.bind(this)]]
       );
     }
   }

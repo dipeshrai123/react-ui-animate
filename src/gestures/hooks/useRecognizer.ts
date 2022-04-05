@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import * as React from "react";
+import * as React from 'react';
 
 type UseRecognizerHandlerType = Array<
   [
-    key: "drag" | "wheel" | "move" | "scroll",
+    key: 'drag' | 'wheel' | 'move' | 'scroll',
     gesture: any,
     callback: any,
     config?: any

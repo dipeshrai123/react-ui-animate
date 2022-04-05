@@ -1,8 +1,8 @@
-import * as React from "react";
+import * as React from 'react';
 
-import { DragEventType, UseDragConfig } from "../types";
-import { DragGesture } from "../controllers";
-import { useRecognizer } from "./useRecognizer";
+import { DragEventType, UseDragConfig } from '../types';
+import { DragGesture } from '../controllers';
+import { useRecognizer } from './useRecognizer';
 
 export function useDrag(
   callback: (event: DragEventType) => void,
@@ -10,5 +10,5 @@ export function useDrag(
 ) {
   const gesture = React.useRef(new DragGesture()).current;
 
-  return useRecognizer([["drag", gesture, callback, config]]);
+  return useRecognizer([['drag', gesture, callback, config]]);
 }
