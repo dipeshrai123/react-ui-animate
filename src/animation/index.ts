@@ -7,3 +7,4 @@ export {
 } from './useAnimatedValue';
 export { useMountedValue } from './useMountedValue';
 export * from './animationType';
+export * from './modules';
