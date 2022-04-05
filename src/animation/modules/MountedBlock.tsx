@@ -12,7 +12,7 @@ interface MountedBlockProps {
  * MountedBlock - Higher order component which handles mounting and unmounting of a component.
  * @prop { boolean } state - Boolean indicating the component should mount or unmount.
  * @prop { function } children - Child as a function with `AnimatedValue` on `.value` property.
- * @prop { UseMountedValueConfig } config - `useAnimatedValue()` hooks configuration.
+ * @prop { UseMountedValueConfig } config - Animation configuration.
  */
 export const MountedBlock = ({
   state,
