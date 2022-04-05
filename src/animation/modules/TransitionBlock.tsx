@@ -13,7 +13,7 @@ interface TransitionBlockProps {
  * TransitionBlock - Higher order component which animates on state change.
  * @prop { boolean } state - Boolean indicating the current state of animation, usually `false = 0 and true = 1`.
  * @prop { function } children - Child as a function with `AnimatedValue` on `.value` property.
- * @prop { UseAnimatedValueConfig } config - Animation config.
+ * @prop { UseAnimatedValueConfig } config - Animation configuration.
  */
 export const TransitionBlock = ({
   state,

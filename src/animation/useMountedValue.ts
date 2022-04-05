@@ -8,10 +8,11 @@ import {
 export interface UseMountedValueConfig extends UseMountConfig {}
 
 /**
- * useMountedValue handles mounting and unmounting of a component
- * @param state - boolean
- * @param config - useTransitionConfig
- * @returns mountedValueFunction with a callback with argument ( { value: animationNode }, mounted )
+ * `useMountedValue` handles mounting and unmounting of a component which captures current state
+ * passed as an arugment (`state`) and exposes the shadow state which handles the mount and unmount
+ * of a component.
+ * @param { boolean } state - Boolean indicating the component should mount or unmount.
+ * @param { UseMountedValueConfig } config - Animation configuration.
  */
 export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
   const initial = React.useRef(true);
