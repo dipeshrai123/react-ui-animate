@@ -1,8 +1,8 @@
-import { attachEvents } from "../eventAttacher";
-import { Vector2 } from "../types";
-import { clamp } from "../math";
-import { withDefault } from "../withDefault";
-import { Gesture } from "./Gesture";
+import { attachEvents } from '../eventAttacher';
+import { Vector2 } from '../types';
+import { clamp } from '../math';
+import { withDefault } from '../withDefault';
+import { Gesture } from './Gesture';
 
 export class ScrollGesture extends Gesture {
   isActiveID?: any;
@@ -17,12 +17,12 @@ export class ScrollGesture extends Gesture {
     if (this.targetElement) {
       this._subscribe = attachEvents(
         [this.targetElement],
-        [["scroll", this.scrollElementListener.bind(this)]]
+        [['scroll', this.scrollElementListener.bind(this)]]
       );
     } else {
       this._subscribe = attachEvents(
         [window],
-        [["scroll", this.scrollListener.bind(this)]]
+        [['scroll', this.scrollListener.bind(this)]]
       );
     }
   }

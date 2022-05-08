@@ -1,8 +1,8 @@
-import { attachEvents } from "../eventAttacher";
-import { Vector2 } from "../types";
-import { clamp } from "../math";
-import { withDefault } from "../withDefault";
-import { Gesture } from "./Gesture";
+import { attachEvents } from '../eventAttacher';
+import { Vector2 } from '../types';
+import { clamp } from '../math';
+import { withDefault } from '../withDefault';
+import { Gesture } from './Gesture';
 
 export class MouseMoveGesture extends Gesture {
   event?: MouseEvent;
@@ -18,16 +18,16 @@ export class MouseMoveGesture extends Gesture {
     if (this.targetElement) {
       this._subscribe = attachEvents(
         [this.targetElement],
-        [["mousemove", this.onMouseMove.bind(this)]]
+        [['mousemove', this.onMouseMove.bind(this)]]
       );
     } else if (this.targetElements.length > 0) {
       this._subscribe = attachEvents(this.targetElements, [
-        ["mousemove", this.onMouseMove.bind(this)],
+        ['mousemove', this.onMouseMove.bind(this)],
       ]);
     } else {
       this._subscribe = attachEvents(
         [window],
-        [["mousemove", this.onMouseMove.bind(this)]]
+        [['mousemove', this.onMouseMove.bind(this)]]
       );
     }
   }

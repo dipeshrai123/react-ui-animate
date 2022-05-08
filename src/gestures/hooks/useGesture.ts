@@ -1,17 +1,17 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   DragGesture,
   MouseMoveGesture,
   ScrollGesture,
   WheelGesture,
-} from "../controllers";
+} from '../controllers';
 import {
   DragEventType,
   WheelEventType,
   ScrollEventType,
   MouseMoveEventType,
-} from "../types";
-import { useRecognizer } from "./useRecognizer";
+} from '../types';
+import { useRecognizer } from './useRecognizer';
 
 export function useGesture({
   onDrag,
@@ -30,9 +30,9 @@ export function useGesture({
   const mouseMoveGesture = React.useRef(new MouseMoveGesture()).current;
 
   return useRecognizer([
-    ["drag", dragGesture, onDrag],
-    ["wheel", wheelGesture, onWheel],
-    ["scroll", scrollGesture, onScroll],
-    ["move", mouseMoveGesture, onMouseMove],
+    ['drag', dragGesture, onDrag],
+    ['wheel', wheelGesture, onWheel],
+    ['scroll', scrollGesture, onScroll],
+    ['move', mouseMoveGesture, onMouseMove],
   ]);
 }
