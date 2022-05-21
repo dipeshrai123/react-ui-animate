@@ -1,5 +1,5 @@
 import { useState } from 'react';
-// import { TransitionBlock, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import { AnimatedBlock, bInterpolate, TransitionBlock } from 'react-ui-animate';
 
 export function TBExample() {
   const [open, setOpen] = useState(false);
@@ -7,20 +7,20 @@ export function TBExample() {
   return (
     <>
       <button onClick={() => setOpen((prev) => !prev)}>ANIMTE</button>
-      {/* <TransitionBlock state={open}>
+      <TransitionBlock state={open}>
         {(animation) => {
           return (
             <AnimatedBlock
               style={{
                 width: 100,
                 height: 100,
-                backgroundColor: 'red',
+                backgroundColor: '#3399ff',
                 translateX: bInterpolate(animation.value, 0, 500),
               }}
             />
           );
         }}
-      </TransitionBlock> */}
+      </TransitionBlock>
     </>
   );
 }
