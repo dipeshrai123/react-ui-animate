@@ -1,9 +1,12 @@
 import * as React from 'react';
-import { TransitionValue } from '@raidipesh78/re-motion';
-import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import {
+  useAnimatedValue,
+  UseAnimatedValueConfig,
+  ValueType,
+} from '../useAnimatedValue';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: TransitionValue }) => React.ReactNode;
+  children?: (animation: { value: ValueType }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
   animationConfig?: UseAnimatedValueConfig;
@@ -58,5 +61,9 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
     };
   }, []);
 
-  return <div ref={scrollableBlockRef}>{children && children(animation)}</div>;
+  return (
+    <div ref={scrollableBlockRef}>
+      {children && children({ value: animation.value })}
+    </div>
+  );
 };
