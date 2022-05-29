@@ -33,10 +33,10 @@ export function useAnimatedValue(
   });
 
   const targetObject: {
-    value: any;
+    value: ValueType;
     currentValue: number | string;
   } = {
-    value: animation,
+    value: animation as any,
     currentValue: animation.get(),
   };
 

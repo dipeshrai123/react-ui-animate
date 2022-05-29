@@ -1,11 +1,14 @@
 import * as React from 'react';
-import { TransitionValue } from '@raidipesh78/re-motion';
 import { bin } from '../../gestures/math';
-import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import {
+  useAnimatedValue,
+  UseAnimatedValueConfig,
+  ValueType,
+} from '../useAnimatedValue';
 
 interface TransitionBlockProps {
   state: boolean;
-  children: (animation: { value: TransitionValue }) => React.ReactNode;
+  children: (animation: { value: ValueType }) => React.ReactNode;
   config?: UseAnimatedValueConfig;
 }
 
@@ -22,5 +25,5 @@ export const TransitionBlock = ({
 }: TransitionBlockProps) => {
   const amv = useAnimatedValue(bin(state), config);
 
-  return <>{children(amv)}</>;
+  return <>{children({ value: amv.value })}</>;
 };
