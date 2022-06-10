@@ -1,4 +1,4 @@
-import { Easing, UseTransitionConfig } from '@raidipesh78/re-motion';
+import { Easing, TransitionValueConfig } from '@raidipesh78/re-motion';
 export type InitialConfigType =
   | 'linear'
   | 'easein'
@@ -16,7 +16,7 @@ export type InitialConfigType =
 
 export const getInitialConfig = (
   animationType?: InitialConfigType
-): UseTransitionConfig => {
+): TransitionValueConfig => {
   switch (animationType) {
     case 'elastic':
       return { mass: 1, friction: 18, tension: 250 };
