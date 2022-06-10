@@ -1,11 +1,10 @@
-import { useTransition, UseTransitionConfig } from '@raidipesh78/re-motion';
+import { useTransition, TransitionValueConfig } from '@raidipesh78/re-motion';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type
 type Length = number | string;
-type AnimatedValueType = Length;
 
-export interface UseAnimatedValueConfig extends UseTransitionConfig {}
+export interface UseAnimatedValueConfig extends TransitionValueConfig {}
 
 type AssignValue = {
   toValue: Length;
@@ -20,11 +19,12 @@ export type ValueType =
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The retured value persist until the lifetime of
  * a component. It doesnot cast any re-renders which can is very good for performance optimization.
+ *
  * @param { string | number } initialValue - Initial value
  * @param { UseAnimatedValueConfig } config - Animation configuration object.
  */
 export function useAnimatedValue(
-  initialValue: AnimatedValueType,
+  initialValue: Length,
   config?: UseAnimatedValueConfig
 ) {
   const [animation, setAnimation] = useTransition(initialValue, {

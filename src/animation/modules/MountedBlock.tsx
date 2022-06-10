@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { TransitionValue } from '@raidipesh78/re-motion';
+import { FluidValue } from '@raidipesh78/re-motion';
 import { useMountedValue, UseMountedValueConfig } from '../useMountedValue';
 
 interface MountedBlockProps {
   state: boolean;
-  children: (animation: { value: TransitionValue }) => React.ReactNode;
+  children: (animation: { value: FluidValue }) => React.ReactNode;
   config: UseMountedValueConfig;
 }
 

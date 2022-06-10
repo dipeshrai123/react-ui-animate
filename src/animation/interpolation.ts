@@ -1,4 +1,4 @@
-import { ExtrapolateConfig, TransitionValue } from '@raidipesh78/re-motion';
+import { ExtrapolateConfig, FluidValue } from '@raidipesh78/re-motion';
 import { ValueType } from './useAnimatedValue';
 import { interpolate as internalInterpolate } from '@raidipesh78/re-motion';
 
@@ -11,7 +11,7 @@ import { interpolate as internalInterpolate } from '@raidipesh78/re-motion';
  * @returns - number | TransitionValue
  */
 export function interpolate(
-  value: number | TransitionValue | ValueType,
+  value: number | FluidValue | ValueType,
   inputRange: Array<number>,
   outputRange: Array<number | string>,
   extrapolateConfig?: ExtrapolateConfig
@@ -34,7 +34,7 @@ export function interpolate(
  * @returns - number | TransitionValue
  */
 export function bInterpolate(
-  value: number | TransitionValue | ValueType,
+  value: number | FluidValue | ValueType,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
