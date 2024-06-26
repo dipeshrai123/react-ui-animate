@@ -1,4 +1,4 @@
-import { Easing, TransitionValueConfig } from '@raidipesh78/re-motion';
+import { Easing, TransitionValueConfig } from './core';
 export type InitialConfigType =
   | 'linear'
   | 'easein'

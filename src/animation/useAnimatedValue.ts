@@ -1,4 +1,4 @@
-import { useTransition, TransitionValueConfig } from '@raidipesh78/re-motion';
+import { useTransition, TransitionValueConfig } from './core';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type

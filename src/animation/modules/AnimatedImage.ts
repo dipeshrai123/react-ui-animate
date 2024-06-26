@@ -1,4 +1,4 @@
-import { makeAnimatedComponent } from '@raidipesh78/re-motion';
+import { makeAnimatedComponent } from '../core';
 
 /**
  * AnimatedImage - A higher order component built upon `img` element

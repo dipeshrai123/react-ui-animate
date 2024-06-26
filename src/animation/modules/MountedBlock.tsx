@@ -1,6 +1,6 @@
-import * as React from "react";
-import { FluidValue, TransitionValueConfig } from "@raidipesh78/re-motion";
-import { useMountedValue } from "../useMountedValue";
+import * as React from 'react';
+import { FluidValue, TransitionValueConfig } from '../core';
+import { useMountedValue } from '../useMountedValue';
 
 interface MountedValueConfig extends TransitionValueConfig {}
 
@@ -45,5 +45,7 @@ export const MountedBlock = ({
     exitConfig,
   });
 
-  return <>{open((animation, mounted) => mounted && children(animation))}</>;
+  return (
+    <>{open((animation, mounted) => mounted && children(animation as any))}</>
+  );
 };

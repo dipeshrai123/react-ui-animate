@@ -3,7 +3,7 @@ import { AnimatedBlock } from "react-ui-animate"
 function App() {
   return (
     <div>
-      <AnimatedBlock>HEY</AnimatedBlock>
+      <AnimatedBlock />
     </div>
   );
 }
