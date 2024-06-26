@@ -24,7 +24,7 @@ export type AnimationObject = {
  */
 export function getAnimatableObject(
   propertyType: PropertyType,
-  propertiesObject: object
+  propertiesObject: { [key: string]: any }
 ) {
   return Object.keys(propertiesObject).reduce(function (acc, styleProp) {
     const value = propertiesObject[styleProp] as FluidValue;

@@ -17,7 +17,7 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["resize-observer-browser", "node"]
+    "types": ["resize-observer-browser", "node", "@types/jest"]
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "example", "rollup.config.js"]

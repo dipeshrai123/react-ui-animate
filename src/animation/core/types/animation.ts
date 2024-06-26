@@ -53,7 +53,9 @@ export type FluidValue = {
  */
 export type AssignValue =
   | Length
-  | Fn<(next: Length, config?: TransitionValueConfig) => Promise<any>, void>;
+  | Fn<(next: Length, config?: TransitionValueConfig) => Promise<any>, void>
+  | { toValue: Length }
+  | object;
 
 export type OnUpdateCallback = Fn<ResultType, void>;
 

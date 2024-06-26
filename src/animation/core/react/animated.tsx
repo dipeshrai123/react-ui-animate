@@ -1,4 +1,10 @@
-import React from 'react';
+import {
+  useRef,
+  useMemo,
+  useLayoutEffect,
+  createElement,
+  forwardRef,
+} from 'react';
 
 import { SpringAnimation } from '../animation/SpringAnimation';
 import { TimingAnimation } from '../animation/TimingAnimation';
@@ -30,7 +36,7 @@ type AnimationTypes = 'spring' | 'timing';
 export type AnimatedCSSProperties = {
   [key in keyof React.CSSProperties]: React.CSSProperties[key] | any;
 } & {
-  [key in typeof styleTrasformKeys[number]]?:
+  [key in (typeof styleTrasformKeys)[number]]?:
     | number
     | string
     | FluidValue
@@ -70,19 +76,19 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
   WrapperComponent: C
 ) {
   function Wrapper(props: AnimatedProps<C>, forwardRef: any) {
-    const ref = React.useRef<any>(null);
+    const ref = useRef<any>(null);
 
     // for transforms, we add all the transform keys in transformPropertiesObjectRef and
     // use getTransform() function to get transform string.
     // we make sure that the non-animatable transforms to be present in
     // transformPropertiesObjectRef , non-animatable transform from first paint
     // are overridden if it is not added.
-    const transformPropertiesObjectRef = React.useRef<{
+    const transformPropertiesObjectRef = useRef<{
       [property: string]: any;
     }>({});
 
     // generates the array of animation object
-    const animations = React.useMemo<Array<AnimationObject>>(() => {
+    const animations = useMemo<Array<AnimationObject>>(() => {
       const animatableStyles = getAnimatableObject(
         'style',
         props.style ?? Object.create({})
@@ -100,7 +106,7 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
      * here useLayoutEffect is used so that the changes is reflected
      * as soon as possible
      */
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
       if (!props.style) {
         return;
       }
@@ -120,7 +126,7 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
       });
     }, [props.style]);
 
-    React.useLayoutEffect(() => {
+    useLayoutEffect(() => {
       const subscribers: any = [];
 
       animations.forEach((props: AnimationObject) => {
@@ -298,22 +304,22 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return React.createElement(WrapperComponent, {
+    return createElement(WrapperComponent, {
       ...getCleanProps(props),
       ref: combineRefs(ref, forwardRef),
     });
   }
 
-  return React.forwardRef(Wrapper);
+  return forwardRef(Wrapper);
 }
 
 type WithAnimated = {
   [element in keyof JSX.IntrinsicElements]: React.ComponentType<
     AnimatedProps<element>
   >;
-};
+} & any;
 
-export const animated: WithAnimated = {} as any;
+export const animated = {} as WithAnimated;
 tags.forEach((element) => {
   animated[element] = makeAnimatedComponent(
     element as keyof JSX.IntrinsicElements
