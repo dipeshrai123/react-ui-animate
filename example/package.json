@@ -14,7 +14,6 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "^5.0.1",
-    "react-ui-animate": "..",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
