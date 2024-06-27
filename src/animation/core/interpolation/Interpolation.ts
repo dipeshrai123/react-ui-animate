@@ -6,7 +6,7 @@ import {
   colorNames,
 } from './Colors';
 import { isFluidValue } from '../react/helpers';
-import { FluidValue } from '../animation/FluidValue';
+import { FluidValue } from '../controllers/FluidValue';
 
 type ExtrapolateType = 'identity' | 'extend' | 'clamp';
 

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 
 import { useTransition } from './useTransition';
 import type { AssignValue, FluidValueConfig } from '../types/animation';
-import { FluidValue } from '../animation/FluidValue';
+import { FluidValue } from '../controllers/FluidValue';
 
 export interface UseMountConfig {
   from: number;

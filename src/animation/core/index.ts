@@ -4,7 +4,7 @@ export * from './react/useMount';
 export * from './react/helpers/isFluidValue';
 export * from './easing/Easing';
 export * from './interpolation/Interpolation';
-export * from './animation/FluidValue';
+export * from './controllers/FluidValue';
 export type * from './types/animation';
 export type * from './types/common';
 export type * from './types/fluid';

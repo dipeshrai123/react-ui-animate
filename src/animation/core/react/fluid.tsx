@@ -6,8 +6,8 @@ import {
   forwardRef,
 } from 'react';
 
-import { SpringAnimation } from '../animation/SpringAnimation';
-import { TimingAnimation } from '../animation/TimingAnimation';
+import { SpringAnimation } from '../controllers/SpringAnimation';
+import { TimingAnimation } from '../controllers/TimingAnimation';
 import { interpolateNumbers } from '../interpolation/Interpolation';
 import { tags } from './Tags';
 import { ResultType, FluidValueConfig, Length } from '../types/animation';
