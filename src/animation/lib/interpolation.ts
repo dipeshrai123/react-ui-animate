@@ -1,6 +1,6 @@
-import { ExtrapolateConfig, FluidValue } from './core';
+import { ExtrapolateConfig, FluidValue } from '../core';
 import { ValueType } from './useAnimatedValue';
-import { interpolate as internalInterpolate } from './core';
+import { interpolate as internalInterpolate } from '../core';
 
 /**
  * interpolate functions maps input range to given output range

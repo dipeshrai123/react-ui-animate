@@ -1,4 +1,4 @@
-import { makeFluidComponent } from '../core';
+import { makeFluidComponent } from '../../core';
 
 /**
  * AnimatedImage - A higher order component built upon `img` element

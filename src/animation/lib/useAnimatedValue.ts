@@ -1,4 +1,4 @@
-import { useTransition, FluidValueConfig } from './core';
+import { useTransition, FluidValueConfig } from '../core';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type

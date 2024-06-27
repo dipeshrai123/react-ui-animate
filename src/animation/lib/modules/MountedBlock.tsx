@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { FluidValue, FluidValueConfig } from '../core';
+import { FluidValue, FluidValueConfig } from '../../core';
 import { useMountedValue } from '../useMountedValue';
 
 interface MountedValueConfig extends FluidValueConfig {}

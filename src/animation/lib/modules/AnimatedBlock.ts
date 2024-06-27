@@ -1,4 +1,4 @@
-import { makeFluidComponent } from '../core';
+import { makeFluidComponent } from '../../core';
 
 /**
  * AnimatedBlock - A higher order component built upon `div` element

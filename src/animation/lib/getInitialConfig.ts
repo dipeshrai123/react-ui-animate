@@ -1,4 +1,4 @@
-import { Easing, FluidValueConfig } from './core';
+import { Easing, FluidValueConfig } from '../core';
 export type InitialConfigType =
   | 'linear'
   | 'easein'
