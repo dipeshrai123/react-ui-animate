@@ -261,7 +261,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
       });
 
       return () => {
-        subscribers.forEach((subscriber: any) => subscriber);
+        subscribers.forEach((subscriber: () => void) => subscriber());
       };
     }, []);
 

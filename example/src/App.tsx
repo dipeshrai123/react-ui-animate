@@ -3,7 +3,7 @@ import {
   // Gestures,
   // Interpolation,
   // Loop,
-  Mounted,
+  // Mounted,
   // MouseMove,
   // MultistageTransition,
   // Scroll,
@@ -12,7 +12,7 @@ import {
   // SVGLine,
   // TBExample,
   // UseAnimatedValue,
-  // UseMountedValue,
+  UseMountedValue,
   // Wheel,
 } from './components';
 
@@ -22,9 +22,9 @@ function App() {
       {/* <Draggable />
       <Gestures />
       <Interpolation />
-      <Loop /> */}
+      <Loop />
       <Mounted />
-      {/* <MouseMove />
+      <MouseMove />
       <MultistageTransition />
       <Scroll />
       <SCBlock />
@@ -34,6 +34,7 @@ function App() {
       <UseAnimatedValue />
       <UseMountedValue />
       <Wheel /> */}
+      <UseMountedValue />
     </div>
   );
 }
