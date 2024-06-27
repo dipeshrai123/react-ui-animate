@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useLayoutEffect } from 'react';
 
 import { useFluidValue } from './useFluidValue';
 import type { AssignValue, FluidValueConfig } from '../types/animation';
@@ -23,7 +23,6 @@ export interface UseMountConfig {
  * @param config - the config object `UseMountConfig`
  */
 export const useMount = (state: boolean, config: UseMountConfig) => {
-  const initial = useRef(true);
   const [mounted, setMounted] = useState(false);
   const {
     from,
@@ -35,12 +34,11 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
   } = useRef(config).current;
   const [animation, setAnimation] = useFluidValue(from, innerConfig);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (state) {
-      initial.current = true;
       setMounted(true);
+      queueMicrotask(() => setAnimation(enter, enterConfig));
     } else {
-      initial.current = false;
       setAnimation(
         exit,
         exitConfig,
@@ -52,12 +50,6 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
       );
     }
   }, [state]);
-
-  useEffect(() => {
-    if (mounted && initial.current) {
-      setAnimation(enter, enterConfig);
-    }
-  }, [mounted, initial.current]);
 
   return (
     callback: (animation: FluidValue, mounted: boolean) => React.ReactNode
