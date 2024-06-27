@@ -1,10 +1,10 @@
-import { useTransition, TransitionValueConfig } from './core';
+import { useTransition, FluidValueConfig } from './core';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type
 type Length = number | string;
 
-export interface UseAnimatedValueConfig extends TransitionValueConfig {}
+export interface UseAnimatedValueConfig extends FluidValueConfig {}
 
 type AssignValue = {
   toValue: Length;

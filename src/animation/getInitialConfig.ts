@@ -1,4 +1,4 @@
-import { Easing, TransitionValueConfig } from './core';
+import { Easing, FluidValueConfig } from './core';
 export type InitialConfigType =
   | 'linear'
   | 'easein'
@@ -16,7 +16,7 @@ export type InitialConfigType =
 
 export const getInitialConfig = (
   animationType?: InitialConfigType
-): TransitionValueConfig => {
+): FluidValueConfig => {
   switch (animationType) {
     case 'elastic':
       return { mass: 1, friction: 18, tension: 250 };

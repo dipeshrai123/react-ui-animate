@@ -1,6 +1,6 @@
-import { isTransitionValue } from './isTransitionValue';
+import { isFluidValue } from './isFluidValue';
 import type { ExtrapolateConfig } from '../../interpolation/Interpolation';
-import type { FluidValue } from '../../types/animation';
+import { FluidValue } from '../../animation/FluidValue';
 
 type PropertyType = 'style' | 'props';
 
@@ -29,15 +29,12 @@ export function getAnimatableObject(
   return Object.keys(propertiesObject).reduce(function (acc, styleProp) {
     const value = propertiesObject[styleProp] as FluidValue;
 
-    if (isTransitionValue(value)) {
-      const { _value } = value;
-
+    if (isFluidValue(value)) {
       return [
         ...acc,
         {
           propertyType,
           property: styleProp,
-          animatable: !(typeof _value === 'string'), // strings are non animatable
           ...value,
         },
       ];

@@ -1,18 +1,7 @@
 import { AnimatedBlock, useAnimatedValue } from 'react-ui-animate';
 
-/**
- * Test cases
- * 1. red -> yellow ( named colors )
- * 2. Hex colors
- * 3. number
- * 4. string + numbers ( example: 1px solid red )
- * 5. rgba colors
- * 6. rgb colors
- * 7. non interpolable values ( example: 'relative' -> 'absolute' )
- */
-
 function App() {
-  const x = useAnimatedValue('5px solid rgba(0,0,0,0.5)');
+  const x = useAnimatedValue('5px solid green');
 
   return (
     <div>

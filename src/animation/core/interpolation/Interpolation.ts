@@ -5,8 +5,8 @@ import {
   HEX_NAME_COLOR,
   colorNames,
 } from './Colors';
-import { FluidValue } from '../types/animation';
-import { isTransitionValue } from '../react/helpers';
+import { isFluidValue } from '../react/helpers';
+import { FluidValue } from '../animation/FluidValue';
 
 type ExtrapolateType = 'identity' | 'extend' | 'clamp';
 
@@ -342,7 +342,7 @@ export const interpolate = (
   outputRange: Array<number | string>,
   extrapolateConfig?: ExtrapolateConfig
 ) => {
-  if (isTransitionValue(value)) {
+  if (isFluidValue(value)) {
     return interpolateTransitionValue(
       value as FluidValue,
       inputRange,

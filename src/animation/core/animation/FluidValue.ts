@@ -2,22 +2,22 @@ import type {
   Length,
   ResultType,
   SubscribeFn,
-  TransitionValueConfig,
+  FluidValueConfig,
   OnUpdateFn,
   AssignValue,
 } from '../types/animation';
 import { Fn } from '../types/common';
 
-export class TransitionValue {
+export class FluidValue {
   public _subscribe: SubscribeFn;
   public _value: Length;
-  public _config?: TransitionValueConfig;
+  public _config?: FluidValueConfig;
   public _currentValue: { current: Length };
   public _subscriptions: Map<{ uuid: number; property: string }, OnUpdateFn>;
 
   public get: () => Length;
 
-  constructor(initialValue: Length, config?: TransitionValueConfig) {
+  constructor(initialValue: Length, config?: FluidValueConfig) {
     this._subscriptions = new Map();
     this._subscribe = (
       onUpdate: OnUpdateFn,
@@ -42,7 +42,7 @@ export class TransitionValue {
    */
   setValue(
     updatedValue: AssignValue,
-    config?: TransitionValueConfig,
+    config?: FluidValueConfig,
     callback?: Fn<ResultType, void>
   ) {
     /** Multistage transition */

@@ -3,7 +3,7 @@ import {
   RequestAnimationFrame,
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
-import type { TransitionValueConfig, ResultType } from '../types/animation';
+import type { FluidValueConfig, ResultType } from '../types/animation';
 
 /**
  * Class implementing spring based animation
@@ -37,7 +37,7 @@ export class SpringAnimation extends Animation {
     config,
   }: {
     initialPosition: number;
-    config?: Omit<TransitionValueConfig, 'duration' | 'easing'>;
+    config?: Omit<FluidValueConfig, 'duration' | 'easing'>;
   }) {
     super();
 

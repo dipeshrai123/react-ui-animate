@@ -1,19 +1,16 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { useTransition } from './useTransition';
-import type {
-  FluidValue,
-  TransitionValueConfig,
-  AssignValue,
-} from '../types/animation';
+import type { AssignValue, FluidValueConfig } from '../types/animation';
+import { FluidValue } from '../animation/FluidValue';
 
 export interface UseMountConfig {
   from: number;
   enter: number | AssignValue;
   exit: number | AssignValue;
-  enterConfig?: TransitionValueConfig;
-  exitConfig?: TransitionValueConfig;
-  config?: TransitionValueConfig;
+  enterConfig?: FluidValueConfig;
+  exitConfig?: FluidValueConfig;
+  config?: FluidValueConfig;
 }
 
 /**

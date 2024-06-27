@@ -1,9 +1,9 @@
 import { styleTrasformKeys } from '../react/TransformStyles';
 import { FluidValue } from './animation';
 
-export type AnimationTypes = 'spring' | 'timing';
+export type FluidTypes = 'spring' | 'timing';
 
-export type AnimatedCSSProperties = {
+export type FluidCSSProperties = {
   [key in keyof React.CSSProperties]: React.CSSProperties[key] | any;
 } & {
   [key in (typeof styleTrasformKeys)[number]]?:
@@ -13,27 +13,27 @@ export type AnimatedCSSProperties = {
     | any;
 };
 
-export type AnimatedHTMLAttributes<T> = {
+export type FluidHTMLAttributes<T> = {
   [property in keyof React.HTMLAttributes<T>]:
     | React.HTMLAttributes<T>[property]
     | FluidValue
     | any;
 };
 
-export type AnimatedSVGAttributes<T> = {
+export type FluidSVGAttributes<T> = {
   [property in keyof React.SVGAttributes<T>]:
     | React.SVGAttributes<T>[property]
     | FluidValue
     | any;
 };
 
-export type AnimatedProps<T> = Omit<
-  AnimatedHTMLAttributes<T> & AnimatedSVGAttributes<T>,
+export type FluidProps<T> = Omit<
+  FluidHTMLAttributes<T> & FluidSVGAttributes<T>,
   'style'
 > & {
-  style?: AnimatedCSSProperties;
+  style?: FluidCSSProperties;
 };
 
 export type WrappedComponentOrTag =
-  | React.ComponentType<any>
+  | React.ComponentType<React.HTMLAttributes<HTMLElement>>
   | keyof JSX.IntrinsicElements;

@@ -10,7 +10,7 @@ import { SpringAnimation } from '../animation/SpringAnimation';
 import { TimingAnimation } from '../animation/TimingAnimation';
 import { interpolateNumbers } from '../interpolation/Interpolation';
 import { tags } from './Tags';
-import { ResultType, TransitionValueConfig, Length } from '../types/animation';
+import { ResultType, FluidValueConfig, Length } from '../types/animation';
 import { styleTrasformKeys, getTransform } from './TransformStyles';
 import { combineRefs } from './combineRefs';
 import {
@@ -22,21 +22,17 @@ import {
   getCssValue,
   camelToDash,
 } from './helpers';
-import {
-  AnimatedProps,
-  AnimationTypes,
-  WrappedComponentOrTag,
-} from '../types/fluid';
+import { FluidProps, FluidTypes, WrappedComponentOrTag } from '../types/fluid';
 import { canInterpolate } from './helpers/canInterpolate';
 
 /**
  * Higher order component to make any component animatable
  * @param WrapperComponent
  */
-export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
+export function makeFluidComponent<C extends WrappedComponentOrTag>(
   WrapperComponent: C
 ) {
-  function Wrapper(props: AnimatedProps<C>, forwardRef: any) {
+  function Wrapper(props: FluidProps<C>, forwardRef: any) {
     const ref = useRef<any>(null);
 
     // for transforms, we add all the transform keys in transformPropertiesObjectRef and
@@ -49,7 +45,7 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
     }>({});
 
     // generates the array of animation object
-    const animations = useMemo<Array<AnimationObject>>(() => {
+    const animations = useMemo(() => {
       const animatableStyles = getAnimatableObject(
         'style',
         props.style ?? Object.create({})
@@ -166,16 +162,13 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
          * "spring" or "timing" based animations are
          * determined by the config duration
          */
-        const defineAnimation = (
-          value: number,
-          config?: TransitionValueConfig
-        ) => {
-          const animationConfig: TransitionValueConfig | undefined = {
+        const defineAnimation = (value: number, config?: FluidValueConfig) => {
+          const animationConfig: FluidValueConfig | undefined = {
             ..._config,
             ...config,
           };
 
-          let type: AnimationTypes;
+          let type: FluidTypes;
           /**
            * Here duration key determines the type of animation
            * spring config are overridden by duration
@@ -204,7 +197,7 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
 
         const onUpdate = (
           value: Length,
-          config?: TransitionValueConfig,
+          config?: FluidValueConfig,
           callback?: (value: ResultType) => void
         ) => {
           if (canInterpolate(_value, value)) {
@@ -268,10 +261,8 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
       });
 
       return () => {
-        // cleanup
         subscribers.forEach((subscriber: any) => subscriber);
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return createElement(WrapperComponent, {
@@ -283,15 +274,12 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
   return forwardRef(Wrapper);
 }
 
-type WithAnimated = {
-  [element in keyof JSX.IntrinsicElements]: React.ComponentType<
-    AnimatedProps<element>
+export const fluid = {} as {
+  [k in keyof JSX.IntrinsicElements]: React.ComponentType<
+    FluidProps<HTMLElement>
   >;
-} & any;
+};
 
-export const animated = {} as WithAnimated;
-tags.forEach((element) => {
-  animated[element] = makeAnimatedComponent(
-    element as keyof JSX.IntrinsicElements
-  );
+tags.forEach((tag) => {
+  fluid[tag] = makeFluidComponent(tag);
 });

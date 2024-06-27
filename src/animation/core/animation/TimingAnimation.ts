@@ -4,7 +4,7 @@ import {
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
 import { Easing } from '../easing/Easing';
-import type { TransitionValueConfig, ResultType } from '../types/animation';
+import type { FluidValueConfig, ResultType } from '../types/animation';
 
 /**
  * Class implementing timing based animation
@@ -32,7 +32,7 @@ export class TimingAnimation extends Animation {
     config,
   }: {
     initialPosition: number;
-    config?: Omit<TransitionValueConfig, 'mass' | 'friction' | 'tension'>;
+    config?: Omit<FluidValueConfig, 'mass' | 'friction' | 'tension'>;
   }) {
     super();
 

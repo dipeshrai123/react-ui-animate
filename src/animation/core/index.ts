@@ -1,12 +1,10 @@
 export * from './react/fluid';
 export * from './react/useTransition';
-export * from './react/useTransitions';
 export * from './react/useMount';
-export * from './react/useMounts';
-export * from './react/helpers/isTransitionValue';
+export * from './react/helpers/isFluidValue';
 export * from './easing/Easing';
 export * from './interpolation/Interpolation';
-export * from './animation/TransitionValue';
+export * from './animation/FluidValue';
 export type * from './types/animation';
 export type * from './types/common';
 export type * from './types/fluid';

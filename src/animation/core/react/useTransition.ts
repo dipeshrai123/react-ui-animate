@@ -1,8 +1,8 @@
 import { useEffect, useRef, useMemo, useCallback } from 'react';
 
-import { TransitionValue } from '../animation/TransitionValue';
+import { FluidValue } from '../animation/FluidValue';
 import type {
-  TransitionValueConfig,
+  FluidValueConfig,
   Length,
   AssignValue,
   OnUpdateCallback,
@@ -12,26 +12,26 @@ import type {
  * useTransition
  *
  * @param value - initial value
- * @param config - the config object for `TransitionValue`
+ * @param config - the config object for `FluidValue`
  */
 export const useTransition = (
   value: Length,
-  config?: TransitionValueConfig
+  config?: FluidValueConfig
 ): [
-  TransitionValue,
+  FluidValue,
   (
     updateValue: AssignValue,
-    config?: TransitionValueConfig,
+    config?: FluidValueConfig,
     callback?: OnUpdateCallback
   ) => void
 ] => {
   const isInitialRender = useRef<boolean>(true);
-  const transition = useMemo(() => new TransitionValue(value, config), []);
+  const transition = useMemo(() => new FluidValue(value, config), []);
 
   const setTransition = useCallback(
     (
       updateValue: AssignValue,
-      config?: TransitionValueConfig,
+      config?: FluidValueConfig,
       callback?: OnUpdateCallback
     ) => {
       transition.setValue(updateValue, config, callback);

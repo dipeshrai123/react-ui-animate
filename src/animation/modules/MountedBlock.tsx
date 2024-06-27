@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { FluidValue, TransitionValueConfig } from '../core';
+import { FluidValue, FluidValueConfig } from '../core';
 import { useMountedValue } from '../useMountedValue';
 
-interface MountedValueConfig extends TransitionValueConfig {}
+interface MountedValueConfig extends FluidValueConfig {}
 
 interface MountedBlockProps {
   state: boolean;
