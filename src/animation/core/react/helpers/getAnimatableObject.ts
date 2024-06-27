@@ -1,6 +1,6 @@
 import { isTransitionValue } from './isTransitionValue';
 import type { ExtrapolateConfig } from '../../interpolation/Interpolation';
-import type { FluidValue } from '../../types';
+import type { FluidValue } from '../../types/animation';
 
 type PropertyType = 'style' | 'props';
 

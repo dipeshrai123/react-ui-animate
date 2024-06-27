@@ -10,12 +10,7 @@ import { SpringAnimation } from '../animation/SpringAnimation';
 import { TimingAnimation } from '../animation/TimingAnimation';
 import { interpolateNumbers } from '../interpolation/Interpolation';
 import { tags } from './Tags';
-import {
-  ResultType,
-  TransitionValueConfig,
-  FluidValue,
-  Length,
-} from '../types';
+import { ResultType, TransitionValueConfig, Length } from '../types/animation';
 import { styleTrasformKeys, getTransform } from './TransformStyles';
 import { combineRefs } from './combineRefs';
 import {
@@ -26,47 +21,12 @@ import {
   getNonAnimatableStyle,
   getCssValue,
   camelToDash,
-} from './functions';
-
-/**
- * Animation Types : For now spring and timing based animations
- */
-type AnimationTypes = 'spring' | 'timing';
-
-export type AnimatedCSSProperties = {
-  [key in keyof React.CSSProperties]: React.CSSProperties[key] | any;
-} & {
-  [key in (typeof styleTrasformKeys)[number]]?:
-    | number
-    | string
-    | FluidValue
-    | any;
-};
-
-export type AnimatedHTMLAttributes<T> = {
-  [property in keyof React.HTMLAttributes<T>]:
-    | React.HTMLAttributes<T>[property]
-    | FluidValue
-    | any;
-};
-
-export type AnimatedSVGAttributes<T> = {
-  [property in keyof React.SVGAttributes<T>]:
-    | React.SVGAttributes<T>[property]
-    | FluidValue
-    | any;
-};
-
-export type AnimatedProps<T> = Omit<
-  AnimatedHTMLAttributes<T> & AnimatedSVGAttributes<T>,
-  'style'
-> & {
-  style?: AnimatedCSSProperties;
-};
-
-type WrappedComponentOrTag =
-  | React.ComponentType<any>
-  | keyof JSX.IntrinsicElements;
+} from './helpers';
+import {
+  AnimatedProps,
+  AnimationTypes,
+  WrappedComponentOrTag,
+} from '../types/fluid';
 
 /**
  * Higher order component to make any component animatable

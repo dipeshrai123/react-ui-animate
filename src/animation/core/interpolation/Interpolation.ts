@@ -5,8 +5,8 @@ import {
   HEX_NAME_COLOR,
   colorNames,
 } from './Colors';
-import { FluidValue } from '../types';
-import { isTransitionValue } from '../react/functions';
+import { FluidValue } from '../types/animation';
+import { isTransitionValue } from '../react/helpers';
 
 type ExtrapolateType = 'identity' | 'extend' | 'clamp';
 

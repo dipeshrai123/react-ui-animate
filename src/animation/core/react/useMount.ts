@@ -1,7 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 
 import { useTransition } from './useTransition';
-import type { FluidValue, TransitionValueConfig, AssignValue } from '../types';
+import type {
+  FluidValue,
+  TransitionValueConfig,
+  AssignValue,
+} from '../types/animation';
 
 export interface UseMountConfig {
   from: number;
@@ -40,11 +44,15 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
       setMounted(true);
     } else {
       initial.current = false;
-      setAnimation(exit, exitConfig, function ({ finished }) {
-        if (finished) {
-          setMounted(false);
+      setAnimation(
+        exit,
+        exitConfig,
+        function ({ finished }: { finished: boolean }) {
+          if (finished) {
+            setMounted(false);
+          }
         }
-      });
+      );
     }
   }, [state]);
 

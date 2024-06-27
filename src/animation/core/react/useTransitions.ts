@@ -6,7 +6,7 @@ import type {
   Length,
   AssignValue,
   OnUpdateCallback,
-} from '../types';
+} from '../types/animation';
 
 /**
  * useTransitions hook for multiple values transition

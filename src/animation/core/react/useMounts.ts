@@ -2,7 +2,11 @@ import { useRef, useState, useEffect } from 'react';
 
 import { useTransitions } from './useTransitions';
 import { TransitionValue } from '../animation/TransitionValue';
-import type { AssignValue, Length, TransitionValueConfig } from '../types';
+import type {
+  AssignValue,
+  Length,
+  TransitionValueConfig,
+} from '../types/animation';
 
 export interface UseMountsConfig<T> {
   from: T;
@@ -44,11 +48,15 @@ export const useMounts = <T extends { [key: string]: Length }>(
       setMounted(true);
     } else {
       initial.current = false;
-      setAnimation(exit, exitConfig, function ({ finished }) {
-        if (finished) {
-          setMounted(false);
+      setAnimation(
+        exit,
+        exitConfig,
+        function ({ finished }: { finished: boolean }) {
+          if (finished) {
+            setMounted(false);
+          }
         }
-      });
+      );
     }
   }, [state]);
 

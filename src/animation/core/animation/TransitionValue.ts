@@ -1,12 +1,12 @@
 import type {
-  Fn,
   Length,
   ResultType,
   SubscribeFn,
   TransitionValueConfig,
   OnUpdateFn,
   AssignValue,
-} from '../types';
+} from '../types/animation';
+import { Fn } from '../types/common';
 
 export class TransitionValue {
   public _subscribe: SubscribeFn;

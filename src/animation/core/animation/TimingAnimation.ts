@@ -4,7 +4,7 @@ import {
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
 import { Easing } from '../easing/Easing';
-import type { TransitionValueConfig, ResultType } from '../types';
+import type { TransitionValueConfig, ResultType } from '../types/animation';
 
 /**
  * Class implementing timing based animation

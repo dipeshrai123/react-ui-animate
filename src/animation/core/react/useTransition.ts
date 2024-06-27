@@ -6,7 +6,7 @@ import type {
   Length,
   AssignValue,
   OnUpdateCallback,
-} from '../types';
+} from '../types/animation';
 
 /**
  * useTransition

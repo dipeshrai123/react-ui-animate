@@ -3,7 +3,7 @@ import {
   RequestAnimationFrame,
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
-import type { TransitionValueConfig, ResultType } from '../types';
+import type { TransitionValueConfig, ResultType } from '../types/animation';
 
 /**
  * Class implementing spring based animation
