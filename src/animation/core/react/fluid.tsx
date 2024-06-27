@@ -27,6 +27,7 @@ import {
   AnimationTypes,
   WrappedComponentOrTag,
 } from '../types/fluid';
+import { canInterpolate } from './helpers/canInterpolate';
 
 /**
  * Higher order component to make any component animatable
@@ -87,6 +88,8 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
     }, [props.style]);
 
     useLayoutEffect(() => {
+      if (!ref.current) return;
+
       const subscribers: any = [];
 
       animations.forEach((props: AnimationObject) => {
@@ -205,11 +208,11 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
           config?: TransitionValueConfig,
           callback?: (value: ResultType) => void
         ) => {
-          if (animatable) {
+          if (canInterpolate(_value, value)) {
             const previousAnimation = animation;
 
             // animatable
-            if (previousAnimation._toValue !== value) {
+            if (previousAnimation._value !== value) {
               /**
                * stopping animation here would affect in whole
                * animation pattern, requestAnimationFrame instance
@@ -225,16 +228,28 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
               // invoke onStart function
               config?.onStart && config.onStart(previousAnimation._position);
 
+              if (typeof value === 'string') {
+                props.isInterpolation = true;
+                props.interpolationConfig = {
+                  inputRange: [0, 1],
+                  outputRange: [_value, value],
+                };
+              }
+
               // start animations here by start api
               animation.start({
-                toValue: value,
+                toValue:
+                  typeof value === 'string'
+                    ? _value !== value
+                      ? 1
+                      : 0
+                    : value,
                 onFrame,
                 previousAnimation,
                 onEnd: callback,
               });
             }
           } else {
-            // non-animatable
             if (typeof value === typeof _value) {
               if (ref.current) {
                 ref.current.style[property] = getCssValue(property, value);
@@ -245,13 +260,9 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
           }
         };
 
-        // called initially to paint the frame with initial value '_value'
-        onFrame(_value as number);
-
-        if (animatable) {
-          // define type of animation to paint the first frame with initial value '_value'
-          defineAnimation(_value as number);
-        }
+        const initialValue = typeof _value === 'string' ? 0 : _value;
+        onFrame(initialValue);
+        defineAnimation(initialValue);
 
         const subscribe = _subscribe(onUpdate, property, Date.now());
         subscribers.push(subscribe);

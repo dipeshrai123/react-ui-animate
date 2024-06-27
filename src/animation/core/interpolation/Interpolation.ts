@@ -172,14 +172,8 @@ const _getArrayInterpolate = (
   }
 };
 
-const _getTemplateString = (str: string) => {
-  return str.replace(COLOR_NUMBER_REGEX, function (match) {
-    if (match.indexOf(' ') === 0) {
-      return ' $';
-    }
-
-    return '$';
-  });
+export const _getTemplateString = (str: string) => {
+  return str.replace(COLOR_NUMBER_REGEX, '$');
 };
 
 const _getParsedStringArray = (str: any) => {
@@ -199,7 +193,7 @@ const _getParsedStringArray = (str: any) => {
  * @param str2 - second string
  * @returns boolean indicating two strings matched or not
  */
-const stringMatched = (str1: string, str2: string) => {
+export const stringMatched = (str1: string, str2: string) => {
   return (
     _getTemplateString(str1).trim().replace(/\s/g, '').length ===
     _getTemplateString(str2).trim().replace(/\s/g, '').length
@@ -212,7 +206,7 @@ const stringMatched = (str1: string, str2: string) => {
  * @param str - string
  * @returns hex color string
  */
-const getProcessedColor = (str: any) => {
+export const getProcessedColor = (str: string) => {
   return str.replace(HEX_NAME_COLOR, function (match: any) {
     if (match.indexOf('#') !== -1) {
       return rgbaToHex(hexToRgba(match));
@@ -282,8 +276,8 @@ export function interpolateNumbers(
     } else {
       const [inputMin, inputMax, outputMin, outputMax] = narrowedInput;
 
-      const processedOutputMin = getProcessedColor(outputMin);
-      const processedOutputMax = getProcessedColor(outputMax);
+      const processedOutputMin = getProcessedColor(outputMin as string);
+      const processedOutputMax = getProcessedColor(outputMax as string);
 
       let templateString = _getTemplateString(processedOutputMin);
 
