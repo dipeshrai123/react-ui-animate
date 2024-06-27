@@ -4,6 +4,7 @@ import {
   useLayoutEffect,
   createElement,
   forwardRef,
+  RefObject,
 } from 'react';
 
 import { SpringAnimation } from '../controllers/SpringAnimation';
@@ -12,7 +13,6 @@ import { interpolateNumbers } from '../interpolation/Interpolation';
 import { tags } from './Tags';
 import { ResultType, FluidValueConfig, Length } from '../types/animation';
 import { styleTrasformKeys, getTransform } from './TransformStyles';
-import { combineRefs } from './combineRefs';
 import {
   isDefined,
   getCleanProps,
@@ -32,14 +32,9 @@ import { canInterpolate } from './helpers/canInterpolate';
 export function makeFluidComponent<C extends WrappedComponentOrTag>(
   WrapperComponent: C
 ) {
-  function Wrapper(props: FluidProps<C>, forwardRef: any) {
+  return forwardRef((givenProps: FluidProps<C>, givenRef: any) => {
     const ref = useRef<any>(null);
 
-    // for transforms, we add all the transform keys in transformPropertiesObjectRef and
-    // use getTransform() function to get transform string.
-    // we make sure that the non-animatable transforms to be present in
-    // transformPropertiesObjectRef , non-animatable transform from first paint
-    // are overridden if it is not added.
     const transformPropertiesObjectRef = useRef<{
       [property: string]: any;
     }>({});
@@ -48,28 +43,23 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
     const animations = useMemo(() => {
       const animatableStyles = getAnimatableObject(
         'style',
-        props.style ?? Object.create({})
+        givenProps.style ?? Object.create({})
       );
       const animatableProps = getAnimatableObject(
         'props',
-        props ?? Object.create({})
+        givenProps ?? Object.create({})
       );
 
       return [...animatableStyles, ...animatableProps];
-    }, [props]);
+    }, [givenProps]);
 
-    /**
-     * Update non-animated style if style changes...
-     * here useLayoutEffect is used so that the changes is reflected
-     * as soon as possible
-     */
     useLayoutEffect(() => {
-      if (!props.style) {
+      if (!givenProps.style) {
         return;
       }
 
       const nonAnimatableStyle = getNonAnimatableStyle(
-        props.style as React.CSSProperties,
+        givenProps.style as React.CSSProperties,
         transformPropertiesObjectRef
       );
 
@@ -81,7 +71,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
           ref.current.style[styleProp] = getCssValue(styleProp, value);
         }
       });
-    }, [props.style]);
+    }, [givenProps.style]);
 
     useLayoutEffect(() => {
       if (!ref.current) return;
@@ -89,6 +79,8 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
       const subscribers: any = [];
 
       animations.forEach((props: AnimationObject) => {
+        if (!ref.current) return;
+
         const {
           _subscribe,
           _value,
@@ -98,18 +90,10 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
           property,
         } = props;
 
-        // store animations here
         let animation: any = null;
 
-        if (!ref.current) {
-          return;
-        }
-
-        // whether or not the property is one of transform keys
         const isTransform = styleTrasformKeys.indexOf(property as any) !== -1;
 
-        // called every frame to update new transform values
-        // getTransform function returns the valid transform string
         const getTransformValue = (value: any) => {
           transformPropertiesObjectRef.current[property] = value;
           return getTransform(transformPropertiesObjectRef.current);
@@ -266,12 +250,10 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
     }, []);
 
     return createElement(WrapperComponent, {
-      ...getCleanProps(props),
-      ref: combineRefs(ref, forwardRef),
+      ...getCleanProps(givenProps),
+      ref: combineRefs(ref, givenRef),
     });
-  }
-
-  return forwardRef(Wrapper);
+  });
 }
 
 export const fluid = {} as {
@@ -283,3 +265,18 @@ export const fluid = {} as {
 tags.forEach((tag) => {
   fluid[tag] = makeFluidComponent(tag);
 });
+
+function combineRefs(
+  ...refs: Array<RefObject<any> | ((element: HTMLElement) => void)>
+) {
+  return function applyRef(element: HTMLElement) {
+    refs.forEach((ref) => {
+      if (!ref) return;
+      if (typeof ref === 'function') {
+        ref(element);
+        return;
+      }
+      if ('current' in ref) (ref.current as HTMLElement) = element;
+    });
+  };
+}

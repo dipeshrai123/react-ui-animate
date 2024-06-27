@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  useAnimatedValue,
-  AnimatedBlock,
-  AnimationConfigUtils,
-  interpolate,
-} from 'react-ui-animate';
+import { useAnimatedValue, AnimatedBlock, interpolate } from 'react-ui-animate';
 
 export const UseAnimatedValue: React.FC = () => {
   const width = useAnimatedValue(100);
@@ -22,20 +17,14 @@ export const UseAnimatedValue: React.FC = () => {
 
       <button
         onClick={() => {
-          width.value = {
-            toValue: 100,
-            config: { ...AnimationConfigUtils.BOUNCE },
-          };
+          width.value = 100;
         }}
       >
         LEFT
       </button>
       <button
         onClick={() => {
-          width.value = {
-            toValue: 500,
-            config: { ...AnimationConfigUtils.POWER4 },
-          };
+          width.value = 500;
         }}
       >
         RIGHT
