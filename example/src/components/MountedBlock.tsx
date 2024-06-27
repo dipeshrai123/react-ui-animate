@@ -1,5 +1,5 @@
-import React from "react";
-import { MountedBlock, AnimatedBlock, bInterpolate } from "react-ui-animate";
+import React from 'react';
+import { MountedBlock, AnimatedBlock, bInterpolate } from 'react-ui-animate';
 
 export const Mounted: React.FC = () => {
   const [open, setOpen] = React.useState(false);
@@ -12,7 +12,7 @@ export const Mounted: React.FC = () => {
             style={{
               width: 100,
               height: 100,
-              backgroundColor: "#3399ff",
+              backgroundColor: '#3399ff',
               translateX: bInterpolate(animation.value, 0, 500),
             }}
           />

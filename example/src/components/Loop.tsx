@@ -5,7 +5,7 @@ import {
   useMouseMove,
 } from 'react-ui-animate';
 
-export default function App() {
+export function Loop() {
   const x = useAnimatedValue(0);
   const rotateZ = useAnimatedValue(0, {
     onRest: function ({ finished, value }: any) {
