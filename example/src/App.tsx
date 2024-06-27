@@ -1,7 +1,7 @@
 import { AnimatedBlock, useAnimatedValue } from 'react-ui-animate';
 
 function App() {
-  const x = useAnimatedValue(0, { duration: 500, delay: 1000 });
+  const x = useAnimatedValue(0);
 
   return (
     <div>
@@ -14,10 +14,8 @@ function App() {
           left: x.value,
           top: 0,
         }}
-        onClick={() => (x.value = 100)}
-      >
-        HEY
-      </AnimatedBlock>
+        onClick={() => (x.value = 500)}
+      />
     </div>
   );
 }
