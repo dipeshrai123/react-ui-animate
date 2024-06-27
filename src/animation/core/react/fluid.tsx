@@ -100,7 +100,6 @@ export function makeAnimatedComponent<C extends WrappedComponentOrTag>(
           _currentValue,
           propertyType,
           property,
-          animatable,
         } = props;
 
         // store animations here
