@@ -1,4 +1,4 @@
-import { useTransition, FluidValueConfig } from '../core';
+import { useFluidValue, FluidValueConfig } from '../core';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type
@@ -27,7 +27,7 @@ export function useAnimatedValue(
   initialValue: Length,
   config?: UseAnimatedValueConfig
 ) {
-  const [animation, setAnimation] = useTransition(initialValue, {
+  const [animation, setAnimation] = useFluidValue(initialValue, {
     ...AnimationConfigUtils.EASE,
     ...config,
   });

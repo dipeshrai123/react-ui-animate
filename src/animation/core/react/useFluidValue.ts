@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useCallback } from 'react';
+import { useMemo, useCallback } from 'react';
 
 import { FluidValue } from '../controllers/FluidValue';
 import type {
@@ -9,12 +9,12 @@ import type {
 } from '../types/animation';
 
 /**
- * useTransition
+ * useFluidValue
  *
  * @param value - initial value
  * @param config - the config object for `FluidValue`
  */
-export const useTransition = (
+export const useFluidValue = (
   value: Length,
   config?: FluidValueConfig
 ): [
@@ -25,27 +25,18 @@ export const useTransition = (
     callback?: OnUpdateCallback
   ) => void
 ] => {
-  const isInitialRender = useRef<boolean>(true);
-  const transition = useMemo(() => new FluidValue(value, config), []);
+  const fluid = useMemo(() => new FluidValue(value, config), []);
 
-  const setTransition = useCallback(
+  const setFluid = useCallback(
     (
       updateValue: AssignValue,
       config?: FluidValueConfig,
       callback?: OnUpdateCallback
     ) => {
-      transition.setValue(updateValue, config, callback);
+      fluid.setValue(updateValue, config, callback);
     },
     []
   );
 
-  useEffect(() => {
-    if (isInitialRender.current) {
-      isInitialRender.current = false;
-    } else {
-      setTransition(value, config);
-    }
-  }, [value]);
-
-  return [transition, setTransition];
+  return [fluid, setFluid];
 };

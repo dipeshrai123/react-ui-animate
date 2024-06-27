@@ -1,5 +1,5 @@
 export * from './react/fluid';
-export * from './react/useTransition';
+export * from './react/useFluidValue';
 export * from './react/useMount';
 export * from './react/helpers/isFluidValue';
 export * from './easing/Easing';

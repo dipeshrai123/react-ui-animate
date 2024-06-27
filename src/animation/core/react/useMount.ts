@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-import { useTransition } from './useTransition';
+import { useFluidValue } from './useFluidValue';
 import type { AssignValue, FluidValueConfig } from '../types/animation';
 import { FluidValue } from '../controllers/FluidValue';
 
@@ -33,7 +33,7 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
     enterConfig,
     exitConfig,
   } = useRef(config).current;
-  const [animation, setAnimation] = useTransition(from, innerConfig);
+  const [animation, setAnimation] = useFluidValue(from, innerConfig);
 
   useEffect(() => {
     if (state) {
