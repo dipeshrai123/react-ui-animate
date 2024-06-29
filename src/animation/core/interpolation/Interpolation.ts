@@ -193,12 +193,9 @@ const _getParsedStringArray = (str: any) => {
  * @param str2 - second string
  * @returns boolean indicating two strings matched or not
  */
-export const stringMatched = (str1: string, str2: string) => {
-  return (
-    _getTemplateString(str1).trim().replace(/\s/g, '').length ===
-    _getTemplateString(str2).trim().replace(/\s/g, '').length
-  );
-};
+export const stringMatched = (str1: string, str2: string) =>
+  _getTemplateString(str1).trim().replace(/\s/g, '') ===
+  _getTemplateString(str2).trim().replace(/\s/g, '');
 
 /**
  * Function which proccess the
