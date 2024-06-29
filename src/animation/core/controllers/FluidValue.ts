@@ -24,11 +24,15 @@ export class FluidValue {
       property: string,
       uuid: number
     ) => {
-      this._subscriptions.set({ uuid, property }, onUpdate);
+      for (const key of this._subscriptions.keys()) {
+        if (key.property === property) {
+          this._subscriptions.set(key, onUpdate);
+          return () => this._subscriptions.delete(key);
+        }
+      }
 
-      return () => {
-        this._subscriptions.delete({ uuid, property });
-      };
+      this._subscriptions.set({ uuid, property }, onUpdate);
+      return () => this._subscriptions.delete({ uuid, property });
     };
     this._value = initialValue;
     this._currentValue = { current: initialValue };
