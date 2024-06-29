@@ -22,9 +22,11 @@ export const UseMountedValue: React.FC = () => {
               style={{
                 width: bInterpolate(animation.value, 100, 500),
                 height: 100,
-                // backgroundColor: "#3399ff",
-
-                background: 'red',
+                backgroundColor: bInterpolate(
+                  animation.value,
+                  'red',
+                  '#3399ff'
+                ),
               }}
             />
           )

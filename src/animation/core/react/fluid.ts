@@ -23,7 +23,23 @@ import {
   camelToDash,
   canInterpolate,
 } from '../helpers';
-import { FluidProps, FluidTypes, WrappedComponentOrTag } from '../types/fluid';
+import { FluidProps, WrappedComponentOrTag } from '../types/fluid';
+
+const animationObjectGenerator =
+  (defaultConfig?: FluidValueConfig) =>
+  (value: number, config?: FluidValueConfig) => {
+    const animationConfig = { ...defaultConfig, ...config };
+
+    const Animation =
+      isDefined(animationConfig?.duration) || animationConfig?.immediate
+        ? TimingAnimation
+        : SpringAnimation;
+
+    return new Animation({
+      initialPosition: value,
+      config: animationConfig,
+    });
+  };
 
 /**
  * Higher order component to make any component animatable
@@ -90,27 +106,24 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
           property,
         } = props;
 
+        const generateAnimation = animationObjectGenerator(_config);
         let animation: any = null;
 
         const isTransform = styleTrasformKeys.indexOf(property as any) !== -1;
-
-        const getTransformValue = (value: any) => {
-          transformPropertiesObjectRef.current[property] = value;
-          return getTransform(transformPropertiesObjectRef.current);
-        };
 
         // to apply animation values to a ref node
         const applyAnimationValues = (value: any) => {
           if (ref.current) {
             if (propertyType === 'style') {
-              // set animation to style
               if (isTransform) {
-                ref.current.style.transform = getTransformValue(value);
+                transformPropertiesObjectRef.current[property] = value;
+                ref.current.style.transform = getTransform(
+                  transformPropertiesObjectRef.current
+                );
               } else {
                 ref.current.style[property] = getCssValue(property, value);
               }
             } else if (propertyType === 'props') {
-              // set animation to property
               ref.current.setAttribute(camelToDash(property), value);
             }
           }
@@ -119,64 +132,16 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
         const onFrame = (value: number) => {
           _currentValue.current = value;
 
-          // for interpolation we check isInterpolation boolean
-          // which is injected from interpolate function
-          if (props.isInterpolation) {
-            const { interpolationConfig } = props;
+          const updatedValue = props.isInterpolation
+            ? interpolateNumbers(
+                value,
+                props.interpolationConfig.inputRange,
+                props.interpolationConfig.outputRange,
+                props.interpolationConfig.extrapolateConfig
+              )
+            : value;
 
-            const interpolatedValue = interpolateNumbers(
-              value,
-              interpolationConfig.inputRange,
-              interpolationConfig.outputRange,
-              interpolationConfig.extrapolateConfig
-            );
-
-            // interpolate it first and
-            // apply animation to ref node
-            applyAnimationValues(interpolatedValue);
-          } else {
-            // if it is FluidValue, we dont have to interpolate it
-            // just apply animation value
-            applyAnimationValues(value);
-          }
-        };
-
-        /**
-         * Function to initialize dynamic animations according to config
-         * "spring" or "timing" based animations are
-         * determined by the config duration
-         */
-        const defineAnimation = (value: number, config?: FluidValueConfig) => {
-          const animationConfig: FluidValueConfig | undefined = {
-            ..._config,
-            ...config,
-          };
-
-          let type: FluidTypes;
-          /**
-           * Here duration key determines the type of animation
-           * spring config are overridden by duration
-           */
-          if (
-            isDefined(animationConfig?.duration) ||
-            animationConfig?.immediate
-          ) {
-            type = 'timing';
-          } else {
-            type = 'spring';
-          }
-
-          if (type === 'spring') {
-            animation = new SpringAnimation({
-              initialPosition: value,
-              config: animationConfig,
-            });
-          } else if (type === 'timing') {
-            animation = new TimingAnimation({
-              initialPosition: value,
-              config: animationConfig,
-            });
-          }
+          applyAnimationValues(updatedValue);
         };
 
         const onUpdate = (
@@ -187,21 +152,13 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
           if (canInterpolate(_value, value)) {
             const previousAnimation = animation;
 
-            // animatable
             if (previousAnimation._value !== value) {
-              /**
-               * stopping animation here would affect in whole
-               * animation pattern, requestAnimationFrame instance
-               * is created on frequent calls like mousemove
-               * it flushes current running requestAnimationFrame
-               */
               animation.stop();
 
-              // re-define animation here with different configuration
-              // used for dynamic animation
-              defineAnimation(previousAnimation._position, config);
-
-              // invoke onStart function
+              animation = generateAnimation(
+                previousAnimation._position,
+                config
+              );
               config?.onStart && config.onStart(previousAnimation._position);
 
               if (typeof value === 'string') {
@@ -212,7 +169,6 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
                 };
               }
 
-              // start animations here by start api
               animation.start({
                 toValue:
                   typeof value === 'string'
@@ -238,7 +194,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
 
         const initialValue = typeof _value === 'string' ? 0 : _value;
         onFrame(initialValue);
-        defineAnimation(initialValue);
+        animation = generateAnimation(initialValue);
 
         const subscribe = _subscribe(onUpdate, property, Date.now());
         subscribers.push(subscribe);
