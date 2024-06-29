@@ -5,7 +5,7 @@ import {
   HEX_NAME_COLOR,
   colorNames,
 } from './Colors';
-import { isFluidValue } from '../react/helpers';
+import { isFluidValue } from '../helpers';
 import { FluidValue } from '../controllers/FluidValue';
 
 type ExtrapolateType = 'identity' | 'extend' | 'clamp';

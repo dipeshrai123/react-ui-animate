@@ -5,3 +5,4 @@ export * from './getCssValue';
 export * from './isDefined';
 export * from './isFluidValue';
 export * from './camelToDash';
+export * from './canInterpolate';

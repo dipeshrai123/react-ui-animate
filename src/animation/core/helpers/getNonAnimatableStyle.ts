@@ -1,4 +1,4 @@
-import { styleTrasformKeys, getTransform } from '../TransformStyles';
+import { styleTrasformKeys, getTransform } from '../react/TransformStyles';
 import { isFluidValue } from './isFluidValue';
 
 /**

@@ -1,4 +1,4 @@
-import { unitlessStyleProps } from "../Tags";
+import { unitlessStyleProps } from '../react/Tags';
 
 /**
  * getCssValue() function to get css value with unit or without unit
@@ -9,11 +9,11 @@ import { unitlessStyleProps } from "../Tags";
  */
 export function getCssValue(property: string, value: number | string) {
   let cssValue;
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     if (unitlessStyleProps.indexOf(property) !== -1) {
       cssValue = value;
     } else {
-      cssValue = value + "px";
+      cssValue = value + 'px';
     }
   } else {
     cssValue = value;

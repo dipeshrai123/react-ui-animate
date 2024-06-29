@@ -21,9 +21,9 @@ import {
   getNonAnimatableStyle,
   getCssValue,
   camelToDash,
-} from './helpers';
+  canInterpolate,
+} from '../helpers';
 import { FluidProps, FluidTypes, WrappedComponentOrTag } from '../types/fluid';
-import { canInterpolate } from './helpers/canInterpolate';
 
 /**
  * Higher order component to make any component animatable

@@ -1,7 +1,7 @@
 import {
   _getTemplateString,
   getProcessedColor,
-} from '../../interpolation/Interpolation';
+} from '../interpolation/Interpolation';
 
 /**
  * Determines if two values can be interpolated.
