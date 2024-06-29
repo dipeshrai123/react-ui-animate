@@ -1,7 +1,4 @@
-/**
- * style keys which can be accepted by animated component
- */
-export const styleTrasformKeys = [
+const styleTrasformKeys = [
   'perspective',
   'translate',
   'translateX',
@@ -18,7 +15,7 @@ export const styleTrasformKeys = [
   'skew',
   'skewX',
   'skewY',
-] as const;
+];
 
 function splitCSSValueAndUnit(value: string) {
   const valueMatch = value.match(/(-)?(\d+.)?\d+/g);
@@ -88,17 +85,16 @@ function getTransformValueWithUnits(property: string, value: string) {
 /**
  * getTransform function returns transform string from style object
  */
-export function getTransform(style: any) {
-  const styleKeys: any = Object.keys(style);
-
-  return styleKeys
-    .map(function (styleProp: string) {
-      const value = style[styleProp];
-
-      return getTransformValueWithUnits(styleProp, value);
-    })
-    .reduce(function (transform: string, value: number) {
-      return (transform += ` ${value}`);
-    }, '')
+export function getTransform(style: Record<string, any>) {
+  return Object.entries(style)
+    .map(([prop, value]) => getTransformValueWithUnits(prop, value))
+    .reduce(
+      (transform: string, value: string) => (transform += ` ${value}`),
+      ''
+    )
     .trim();
+}
+
+export function isTransformKey(key: string) {
+  return styleTrasformKeys.includes(key);
 }

@@ -1,4 +1,4 @@
-import { styleTrasformKeys } from '../react/TransformStyles';
+import { styleTrasformKeys } from '../react/transforms';
 import { FluidValue } from './animation';
 
 export type FluidTypes = 'spring' | 'timing';

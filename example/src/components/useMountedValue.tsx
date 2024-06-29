@@ -1,7 +1,13 @@
 import React from 'react';
-import { useMountedValue, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import {
+  useMountedValue,
+  AnimatedBlock,
+  bInterpolate,
+  useAnimatedValue,
+} from 'react-ui-animate';
 
 export const UseMountedValue: React.FC = () => {
+  const x = useAnimatedValue(0);
   const [open, setOpen] = React.useState(true);
   const mountedValue = useMountedValue(open, {
     from: 0,
@@ -15,6 +21,17 @@ export const UseMountedValue: React.FC = () => {
 
   return (
     <>
+      <AnimatedBlock
+        radius={x.value}
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: '#3399ff',
+          translateX: 100,
+          rotate: x.value,
+        }}
+        onClick={() => (x.value = 45)}
+      />
       {mountedValue(
         (animation, mounted) =>
           mounted && (
@@ -27,6 +44,7 @@ export const UseMountedValue: React.FC = () => {
                   'red',
                   '#3399ff'
                 ),
+                translateX: 45,
               }}
             />
           )

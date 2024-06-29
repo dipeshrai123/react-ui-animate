@@ -9,21 +9,23 @@ import {
 
 import { SpringAnimation } from '../controllers/SpringAnimation';
 import { TimingAnimation } from '../controllers/TimingAnimation';
-import { interpolateNumbers } from '../interpolation/Interpolation';
+import {
+  ExtrapolateConfig,
+  interpolateNumbers,
+} from '../interpolation/Interpolation';
 import { tags } from './Tags';
 import { ResultType, FluidValueConfig, Length } from '../types/animation';
-import { styleTrasformKeys, getTransform } from './TransformStyles';
+import { getTransform, isTransformKey } from './transforms';
 import {
   isDefined,
   getCleanProps,
-  getAnimatableObject,
-  AnimationObject,
-  getNonAnimatableStyle,
   getCssValue,
   camelToDash,
   canInterpolate,
+  isFluidValue,
 } from '../helpers';
 import { FluidProps, WrappedComponentOrTag } from '../types/fluid';
+import { FluidValue } from '../controllers/FluidValue';
 
 /**
  * Higher order component to make any component animatable
@@ -37,18 +39,15 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
 
     const transformStyleRef = useRef<Record<string, Length>>({});
 
-    // generates the array of animation object
-    const animations = useMemo(() => {
-      const animatableStyles = getAnimatableObject(
-        'style',
-        givenProps.style ?? Object.create({})
-      );
-      const animatableProps = getAnimatableObject(
-        'props',
-        givenProps ?? Object.create({})
-      );
+    const { fluids, nonFluids } = useMemo(() => {
+      const { style, ...props } = givenProps;
+      const fluidStyle = getFluids('style', style);
+      const fluidProps = getFluids('props', props);
 
-      return [...animatableStyles, ...animatableProps];
+      return {
+        fluids: [...fluidStyle.fluids, ...fluidProps.fluids],
+        nonFluids: [...fluidStyle.nonFluids, ...fluidProps.nonFluids],
+      };
     }, [givenProps]);
 
     const applyAnimationValues = ({
@@ -79,54 +78,35 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
     };
 
     useLayoutEffect(() => {
-      if (!givenProps.style) {
-        return;
-      }
-
-      const nonAnimatableStyle = getNonAnimatableStyle(
-        givenProps.style as React.CSSProperties,
-        transformStyleRef
+      nonFluids.forEach(({ isTransform, property, propertyType, value }) =>
+        applyAnimationValues({
+          isTransform,
+          property,
+          propertyType,
+          value: value as number,
+        })
       );
-
-      console.log(nonAnimatableStyle);
-
-      Object.keys(nonAnimatableStyle).forEach((styleProp) => {
-        const value =
-          nonAnimatableStyle[styleProp as keyof React.CSSProperties];
-
-        if (instanceRef.current) {
-          instanceRef.current.style[styleProp] = getCssValue(styleProp, value);
-        }
-      });
-    }, [givenProps.style]);
+    }, [nonFluids]);
 
     useLayoutEffect(() => {
       const subscribers: any = [];
 
-      animations.forEach((props: AnimationObject) => {
-        const {
-          _subscribe,
-          _value,
-          _config,
-          _currentValue,
-          propertyType,
-          property,
-        } = props;
+      fluids.forEach((f) => {
+        const { value: fluidValue, propertyType, property, isTransform } = f;
+        const { _subscribe, _value, _currentValue, _config } = fluidValue;
 
         const generateAnimation = animationObjectGenerator(_config);
         let animation: any = null;
 
-        const isTransform = styleTrasformKeys.indexOf(property as any) !== -1;
-
         const onFrame = (value: number) => {
           _currentValue.current = value;
 
-          const updatedValue: number = props.isInterpolation
+          const updatedValue: number = fluidValue.isInterpolation
             ? interpolateNumbers(
                 value,
-                props.interpolationConfig.inputRange,
-                props.interpolationConfig.outputRange,
-                props.interpolationConfig.extrapolateConfig
+                fluidValue.interpolationConfig.inputRange,
+                fluidValue.interpolationConfig.outputRange,
+                fluidValue.interpolationConfig.extrapolateConfig
               )
             : value;
 
@@ -156,8 +136,8 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
               config?.onStart && config.onStart(previousAnimation._position);
 
               if (typeof value === 'string') {
-                props.isInterpolation = true;
-                props.interpolationConfig = {
+                fluidValue.isInterpolation = true;
+                fluidValue.interpolationConfig = {
                   inputRange: [0, 1],
                   outputRange: [_value, value],
                 };
@@ -248,4 +228,42 @@ function animationObjectGenerator(defaultConfig?: FluidValueConfig) {
       config: animationConfig,
     });
   };
+}
+
+type InterpolationValue = {
+  isInterpolation: boolean;
+  interpolationConfig: {
+    inputRange: Array<number>;
+    outputRange: Array<number | string>;
+    extrapolateConfig?: ExtrapolateConfig;
+  };
+};
+
+type Fluid = {
+  isTransform: boolean;
+  property: string;
+  propertyType: 'style' | 'props';
+  value: FluidValue & InterpolationValue;
+};
+
+type NonFluid = Omit<Fluid, 'value'> & { value: unknown };
+
+function getFluids(
+  propertyType: Fluid['propertyType'],
+  props: Record<string, any> = {}
+) {
+  return Object.entries(props).reduce(
+    (res, [property, value]) => {
+      const isTransform = propertyType === 'style' && isTransformKey(property);
+
+      if (isFluidValue(value)) {
+        res.fluids.push({ isTransform, property, propertyType, value });
+      } else {
+        res.nonFluids.push({ isTransform, property, propertyType, value });
+      }
+
+      return res;
+    },
+    { fluids: [], nonFluids: [] } as { fluids: Fluid[]; nonFluids: NonFluid[] }
+  );
 }
