@@ -25,22 +25,6 @@ import {
 } from '../helpers';
 import { FluidProps, WrappedComponentOrTag } from '../types/fluid';
 
-const animationObjectGenerator =
-  (defaultConfig?: FluidValueConfig) =>
-  (value: number, config?: FluidValueConfig) => {
-    const animationConfig = { ...defaultConfig, ...config };
-
-    const Animation =
-      isDefined(animationConfig?.duration) || animationConfig?.immediate
-        ? TimingAnimation
-        : SpringAnimation;
-
-    return new Animation({
-      initialPosition: value,
-      config: animationConfig,
-    });
-  };
-
 /**
  * Higher order component to make any component animatable
  * @param WrapperComponent
@@ -49,11 +33,9 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
   WrapperComponent: C
 ) {
   return forwardRef((givenProps: FluidProps<C>, givenRef: any) => {
-    const ref = useRef<any>(null);
+    const instanceRef = useRef<any>(null);
 
-    const transformPropertiesObjectRef = useRef<{
-      [property: string]: any;
-    }>({});
+    const transformStyleRef = useRef<Record<string, Length>>({});
 
     // generates the array of animation object
     const animations = useMemo(() => {
@@ -69,6 +51,49 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
       return [...animatableStyles, ...animatableProps];
     }, [givenProps]);
 
+    const animationObjectGenerator =
+      (defaultConfig?: FluidValueConfig) =>
+      (value: number, config?: FluidValueConfig) => {
+        const animationConfig = { ...defaultConfig, ...config };
+
+        const Animation =
+          isDefined(animationConfig?.duration) || animationConfig?.immediate
+            ? TimingAnimation
+            : SpringAnimation;
+
+        return new Animation({
+          initialPosition: value,
+          config: animationConfig,
+        });
+      };
+
+    const applyAnimationValues = ({
+      isTransform,
+      propertyType,
+      property,
+      value,
+    }: {
+      isTransform: boolean;
+      propertyType: 'style' | 'props';
+      property: string;
+      value: number;
+    }) => {
+      if (!instanceRef.current) return;
+
+      if (propertyType === 'style') {
+        if (isTransform) {
+          transformStyleRef.current[property] = value;
+          instanceRef.current.style.transform = getTransform(
+            transformStyleRef.current
+          );
+        } else {
+          instanceRef.current.style[property] = getCssValue(property, value);
+        }
+      } else if (propertyType === 'props') {
+        instanceRef.current.setAttribute(camelToDash(property), value);
+      }
+    };
+
     useLayoutEffect(() => {
       if (!givenProps.style) {
         return;
@@ -76,27 +101,25 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
 
       const nonAnimatableStyle = getNonAnimatableStyle(
         givenProps.style as React.CSSProperties,
-        transformPropertiesObjectRef
+        transformStyleRef
       );
 
       Object.keys(nonAnimatableStyle).forEach((styleProp) => {
         const value =
           nonAnimatableStyle[styleProp as keyof React.CSSProperties];
 
-        if (ref.current) {
-          ref.current.style[styleProp] = getCssValue(styleProp, value);
+        if (instanceRef.current) {
+          instanceRef.current.style[styleProp] = getCssValue(styleProp, value);
         }
       });
     }, [givenProps.style]);
 
     useLayoutEffect(() => {
-      if (!ref.current) return;
+      if (!instanceRef.current) return;
 
       const subscribers: any = [];
 
       animations.forEach((props: AnimationObject) => {
-        if (!ref.current) return;
-
         const {
           _subscribe,
           _value,
@@ -111,28 +134,10 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
 
         const isTransform = styleTrasformKeys.indexOf(property as any) !== -1;
 
-        // to apply animation values to a ref node
-        const applyAnimationValues = (value: any) => {
-          if (ref.current) {
-            if (propertyType === 'style') {
-              if (isTransform) {
-                transformPropertiesObjectRef.current[property] = value;
-                ref.current.style.transform = getTransform(
-                  transformPropertiesObjectRef.current
-                );
-              } else {
-                ref.current.style[property] = getCssValue(property, value);
-              }
-            } else if (propertyType === 'props') {
-              ref.current.setAttribute(camelToDash(property), value);
-            }
-          }
-        };
-
         const onFrame = (value: number) => {
           _currentValue.current = value;
 
-          const updatedValue = props.isInterpolation
+          const updatedValue: number = props.isInterpolation
             ? interpolateNumbers(
                 value,
                 props.interpolationConfig.inputRange,
@@ -141,7 +146,12 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
               )
             : value;
 
-          applyAnimationValues(updatedValue);
+          applyAnimationValues({
+            isTransform,
+            propertyType,
+            property,
+            value: updatedValue,
+          });
         };
 
         const onUpdate = (
@@ -183,8 +193,11 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
             }
           } else {
             if (typeof value === typeof _value) {
-              if (ref.current) {
-                ref.current.style[property] = getCssValue(property, value);
+              if (instanceRef.current) {
+                instanceRef.current.style[property] = getCssValue(
+                  property,
+                  value
+                );
               }
             } else {
               throw new Error('Cannot set different types of animation values');
@@ -207,7 +220,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
 
     return createElement(WrapperComponent, {
       ...getCleanProps(givenProps),
-      ref: combineRefs(ref, givenRef),
+      ref: combineRefs(instanceRef, givenRef),
     });
   });
 }
