@@ -1,5 +1,4 @@
 const styleTrasformKeys = [
-  'perspective',
   'translate',
   'translateX',
   'translateY',
