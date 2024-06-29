@@ -11,8 +11,8 @@ import {
   // SnapTo,
   // SVGLine,
   // TBExample,
-  // UseAnimatedValue,
-  UseMountedValue,
+  UseAnimatedValue,
+  // UseMountedValue,
   // Wheel,
 } from './components';
 
@@ -31,10 +31,9 @@ function App() {
       <SnapTo />
       <SVGLine />
       <TBExample /> */}
-      <UseMountedValue />
+      <UseAnimatedValue />
       {/* <UseMountedValue />
-      <Wheel />
-      <UseMountedValue /> */}
+      <Wheel /> */}
     </div>
   );
 }
