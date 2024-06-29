@@ -51,22 +51,6 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
       return [...animatableStyles, ...animatableProps];
     }, [givenProps]);
 
-    const animationObjectGenerator =
-      (defaultConfig?: FluidValueConfig) =>
-      (value: number, config?: FluidValueConfig) => {
-        const animationConfig = { ...defaultConfig, ...config };
-
-        const Animation =
-          isDefined(animationConfig?.duration) || animationConfig?.immediate
-            ? TimingAnimation
-            : SpringAnimation;
-
-        return new Animation({
-          initialPosition: value,
-          config: animationConfig,
-        });
-      };
-
     const applyAnimationValues = ({
       isTransform,
       propertyType,
@@ -104,6 +88,8 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
         transformStyleRef
       );
 
+      console.log(nonAnimatableStyle);
+
       Object.keys(nonAnimatableStyle).forEach((styleProp) => {
         const value =
           nonAnimatableStyle[styleProp as keyof React.CSSProperties];
@@ -115,8 +101,6 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
     }, [givenProps.style]);
 
     useLayoutEffect(() => {
-      if (!instanceRef.current) return;
-
       const subscribers: any = [];
 
       animations.forEach((props: AnimationObject) => {
@@ -193,12 +177,12 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
             }
           } else {
             if (typeof value === typeof _value) {
-              if (instanceRef.current) {
-                instanceRef.current.style[property] = getCssValue(
-                  property,
-                  value
-                );
-              }
+              if (!instanceRef.current) return;
+
+              instanceRef.current.style[property] = getCssValue(
+                property,
+                value
+              );
             } else {
               throw new Error('Cannot set different types of animation values');
             }
@@ -246,6 +230,22 @@ function combineRefs(
         return;
       }
       if ('current' in ref) (ref.current as HTMLElement) = element;
+    });
+  };
+}
+
+function animationObjectGenerator(defaultConfig?: FluidValueConfig) {
+  return (value: number, config?: FluidValueConfig) => {
+    const animationConfig = { ...defaultConfig, ...config };
+
+    const Animation =
+      isDefined(animationConfig?.duration) || animationConfig?.immediate
+        ? TimingAnimation
+        : SpringAnimation;
+
+    return new Animation({
+      initialPosition: value,
+      config: animationConfig,
     });
   };
 }
