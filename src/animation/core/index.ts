@@ -1,10 +1,16 @@
-export * from './react/fluid';
-export * from './react/useFluidValue';
-export * from './react/useMount';
-export * from './helpers/isFluidValue';
-export * from './easing/Easing';
-export * from './interpolation/Interpolation';
-export * from './controllers/FluidValue';
-export type * from './types/animation';
-export type * from './types/common';
-export type * from './types/fluid';
+// React
+export { fluid } from './react/fluid';
+export { makeFluid } from './react/makeFluid';
+export { useFluidValue } from './react/useFluidValue';
+export { useMount } from './react/useMount';
+
+// Helpers and Utilities
+export { isFluidValue } from './helpers/isFluidValue';
+export { Easing } from './easing/Easing';
+export { interpolate } from './interpolation/Interpolation';
+export { FluidValue } from './controllers/FluidValue';
+
+// Types
+export type { FluidValueConfig } from './types/animation';
+export type { UseMountConfig } from './react/useMount';
+export type { ExtrapolateConfig } from './interpolation/Interpolation';
