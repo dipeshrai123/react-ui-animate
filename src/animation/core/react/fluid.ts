@@ -20,7 +20,7 @@ import {
   isDefined,
   getCleanProps,
   getCssValue,
-  camelToDash,
+  camelCaseToKebabCase,
   canInterpolate,
   isFluidValue,
 } from '../helpers';
@@ -73,7 +73,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
           instanceRef.current.style[property] = getCssValue(property, value);
         }
       } else if (propertyType === 'props') {
-        instanceRef.current.setAttribute(camelToDash(property), value);
+        instanceRef.current.setAttribute(camelCaseToKebabCase(property), value);
       }
     };
 

@@ -1,7 +1,13 @@
 import { isFluidValue } from './isFluidValue';
 
 /**
- * Function to get clean props object without any subscribers
+ * Filters out properties with fluid values from a given props object.
+ * This function removes any properties that are considered fluid values,
+ * typically those that subscribe to updates and therefore should not be
+ * included in a static props object.
+ *
+ * @param props - The original props object, which may include fluid values.
+ * @returns A new props object with fluid values removed.
  */
 export const getCleanProps = ({ style, ...props }: any) => {
   return Object.fromEntries(
