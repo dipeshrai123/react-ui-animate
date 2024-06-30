@@ -1,8 +1,9 @@
-import { attachEvents } from '../eventAttacher';
-import { Vector2 } from '../types';
-import { clamp } from '../math';
-import { withDefault } from '../withDefault';
+import { attachEvents } from '../helpers/eventAttacher';
+import { clamp } from '../helpers/math';
+import { withDefault } from '../helpers/withDefault';
 import { Gesture } from './Gesture';
+
+import type { Vector2 } from '../types';
 
 export class DragGesture extends Gesture {
   movementStart: Vector2 = withDefault(0, 0);

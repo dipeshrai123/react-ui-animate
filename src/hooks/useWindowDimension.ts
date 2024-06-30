@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useRef, useEffect, DependencyList } from 'react';
 
 type WindowDimensionType = {
   width: number;
@@ -9,16 +9,15 @@ type WindowDimensionType = {
 
 export function useWindowDimension(
   callback: (event: WindowDimensionType) => void,
-  deps?: React.DependencyList
+  deps?: DependencyList
 ) {
-  const windowDimensionsRef = React.useRef<WindowDimensionType>({
+  const windowDimensionsRef = useRef<WindowDimensionType>({
     width: 0,
     height: 0,
     innerWidth: 0,
     innerHeight: 0,
   });
-  const callbackRef =
-    React.useRef<(event: WindowDimensionType) => void>(callback);
+  const callbackRef = useRef<(event: WindowDimensionType) => void>(callback);
 
   const handleCallback: () => void = () => {
     if (callbackRef) {
@@ -29,7 +28,7 @@ export function useWindowDimension(
   };
 
   // Reinitiate callback when dependency change
-  React.useEffect(() => {
+  useEffect(() => {
     callbackRef.current = callback;
 
     return () => {
@@ -37,7 +36,7 @@ export function useWindowDimension(
     };
   }, deps);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const resizeObserver = new ResizeObserver(([entry]) => {
       const { clientWidth, clientHeight } = entry.target;
       const { innerWidth, innerHeight } = window;

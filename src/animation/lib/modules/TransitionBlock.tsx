@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { bin } from '../../../gestures/math';
+import { bin } from '../../../gestures/helpers/math';
 import {
   useAnimatedValue,
   UseAnimatedValueConfig,

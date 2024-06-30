@@ -1,7 +1,7 @@
-import { attachEvents } from '../eventAttacher';
+import { attachEvents } from '../helpers/eventAttacher';
 import { Vector2 } from '../types';
-import { clamp } from '../math';
-import { withDefault } from '../withDefault';
+import { clamp } from '../helpers/math';
+import { withDefault } from '../helpers/withDefault';
 import { Gesture } from './Gesture';
 
 const LINE_HEIGHT = 40;
