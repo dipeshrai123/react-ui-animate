@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { useMount, UseMountConfig, FluidValue } from '../core';
 
 export interface UseMountedValueConfig extends UseMountConfig {}
