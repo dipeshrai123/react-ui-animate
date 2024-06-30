@@ -1,8 +1,9 @@
 import { useState, useRef, useLayoutEffect } from 'react';
 
 import { useFluidValue } from './useFluidValue';
-import type { AssignValue, FluidValueConfig } from '../types/animation';
 import { FluidValue } from '../controllers/FluidValue';
+
+import type { AssignValue, FluidValueConfig } from '../types/animation';
 
 export interface UseMountConfig {
   from: number;

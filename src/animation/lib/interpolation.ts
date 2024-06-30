@@ -1,5 +1,4 @@
 import { ExtrapolateConfig, FluidValue } from '../core';
-import { ValueType } from './useAnimatedValue';
 import { interpolate as internalInterpolate } from '../core';
 
 /**
@@ -11,7 +10,7 @@ import { interpolate as internalInterpolate } from '../core';
  * @returns - number | TransitionValue
  */
 export function interpolate(
-  value: number | FluidValue | ValueType,
+  value: number | FluidValue,
   inputRange: Array<number>,
   outputRange: Array<number | string>,
   extrapolateConfig?: ExtrapolateConfig
@@ -34,7 +33,7 @@ export function interpolate(
  * @returns - number | TransitionValue
  */
 export function bInterpolate(
-  value: number | FluidValue | ValueType,
+  value: number | FluidValue,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig

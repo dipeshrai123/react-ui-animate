@@ -1,6 +1,10 @@
+import { makeFluid } from './makeFluid';
+
+import type { FluidProps } from '../types/fluid';
+
 type HTMLTags = keyof JSX.IntrinsicElements;
 
-export const tags: HTMLTags[] = [
+const tags: HTMLTags[] = [
   'a',
   'abbr',
   'address',
@@ -180,41 +184,14 @@ export const tags: HTMLTags[] = [
   'view',
 ];
 
-export const unitlessStyleProps = [
-  'borderImageOutset',
-  'borderImageSlice',
-  'borderImageWidth',
-  'fontWeight',
-  'lineHeight',
-  'opacity',
-  'orphans',
-  'tabSize',
-  'widows',
-  'zIndex',
-  'zoom',
-  // SVG-related properties
-  'fillOpacity',
-  'floodOpacity',
-  'stopOpacity',
-  'strokeDasharray',
-  'strokeDashoffset',
-  'strokeMiterlimit',
-  'strokeOpacity',
-  'strokeWidth',
-  // prefixed
-  'animationIterationCount',
-  'boxFlex',
-  'boxFlexGroup',
-  'boxOrdinalGroup',
-  'columnCount',
-  'flex',
-  'flexGrow',
-  'flexPositive',
-  'flexShrink',
-  'flexNegative',
-  'flexOrder',
-  'gridRow',
-  'gridColumn',
-  'order',
-  'lineClamp',
-];
+type WithFluid = {
+  [k in keyof JSX.IntrinsicElements]: React.ComponentType<
+    FluidProps<HTMLElement>
+  >;
+};
+
+export const fluid: WithFluid = {} as WithFluid;
+
+tags.forEach((tag) => {
+  (fluid as any)[tag] = makeFluid(tag);
+});

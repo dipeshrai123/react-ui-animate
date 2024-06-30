@@ -1,8 +1,4 @@
-/**
- * style keys which can be accepted by animated component
- */
 export const styleTrasformKeys = [
-  'perspective',
   'translate',
   'translateX',
   'translateY',
@@ -44,17 +40,11 @@ function getValueUnit(property: string, value: string) {
     return { value: splitValue, unit: splitUnit };
   }
 
-  if (
-    property.indexOf('translate') !== -1 ||
-    property.indexOf('perspective') !== -1
-  ) {
+  if (property.includes('translate') || property.includes('perspective')) {
     unit = 'px';
-  } else if (property.indexOf('scale') !== -1) {
+  } else if (property.includes('scale')) {
     unit = '';
-  } else if (
-    property.indexOf('rotate') !== -1 ||
-    property.indexOf('skew') !== -1
-  ) {
+  } else if (property.includes('rotate') || property.includes('skew')) {
     unit = 'deg';
   }
 
@@ -65,19 +55,16 @@ function getTransformValueWithUnits(property: string, value: string) {
   const valueUnit = getValueUnit(property, value);
 
   if (
-    property.indexOf('X') !== -1 ||
-    property.indexOf('Y') !== -1 ||
-    property.indexOf('Z') !== -1 ||
-    property.indexOf('perspective') !== -1 ||
-    property.indexOf('rotate') !== -1 ||
-    property.indexOf('skew') !== -1
+    property.includes('X') ||
+    property.includes('Y') ||
+    property.includes('Z') ||
+    property.includes('perspective') ||
+    property.includes('rotate') ||
+    property.includes('skew')
   ) {
     // axis value
     return `${property}(${valueUnit.value}${valueUnit.unit})`;
-  } else if (
-    property.indexOf('translate') !== -1 ||
-    property.indexOf('scale') !== -1
-  ) {
+  } else if (property.includes('translate') || property.indexOf('scale')) {
     // two parameter value
     return `${property}(${valueUnit.value}${valueUnit.unit}, ${valueUnit.value}${valueUnit.unit})`;
   } else {
@@ -88,17 +75,16 @@ function getTransformValueWithUnits(property: string, value: string) {
 /**
  * getTransform function returns transform string from style object
  */
-export function getTransform(style: any) {
-  const styleKeys: any = Object.keys(style);
-
-  return styleKeys
-    .map(function (styleProp: string) {
-      const value = style[styleProp];
-
-      return getTransformValueWithUnits(styleProp, value);
-    })
-    .reduce(function (transform: string, value: number) {
-      return (transform += ` ${value}`);
-    }, '')
+export function getTransform(style: Record<string, any>) {
+  return Object.entries(style)
+    .map(([prop, value]) => getTransformValueWithUnits(prop, value))
+    .reduce(
+      (transform: string, value: string) => (transform += ` ${value}`),
+      ''
+    )
     .trim();
+}
+
+export function isTransformKey(key: string) {
+  return (styleTrasformKeys as readonly string[]).includes(key);
 }

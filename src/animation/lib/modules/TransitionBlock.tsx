@@ -1,14 +1,13 @@
 import * as React from 'react';
-import { bin } from '../../../gestures/math';
-import {
-  useAnimatedValue,
-  UseAnimatedValueConfig,
-  ValueType,
-} from '../useAnimatedValue';
+import { bin } from '../../../gestures/helpers/math';
+import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import { FluidValue } from '../../core';
 
 interface TransitionBlockProps {
   state: boolean;
-  children: (animation: { value: ValueType }) => React.ReactNode;
+  children: (animation: {
+    value?: FluidValue | string | number;
+  }) => React.ReactNode;
   config?: UseAnimatedValueConfig;
 }
 

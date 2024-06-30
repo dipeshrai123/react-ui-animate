@@ -4,6 +4,7 @@ import {
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
 import { Easing } from '../easing/Easing';
+
 import type { FluidValueConfig, ResultType } from '../types/animation';
 
 /**

@@ -1,19 +1,10 @@
-import { useFluidValue, FluidValueConfig } from '../core';
+import { useFluidValue, FluidValueConfig, FluidValue } from '../core';
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type
 type Length = number | string;
 
 export interface UseAnimatedValueConfig extends FluidValueConfig {}
-
-type AssignValue = {
-  toValue: Length;
-  config?: UseAnimatedValueConfig;
-};
-export type ValueType =
-  | Length
-  | AssignValue
-  | ((update: (next: AssignValue) => Promise<any>) => void);
 
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
@@ -33,15 +24,15 @@ export function useAnimatedValue(
   });
 
   const targetObject: {
-    value: ValueType;
+    value: FluidValue | string | number | undefined;
     currentValue: number | string;
   } = {
-    value: animation as any,
+    value: animation,
     currentValue: animation.get(),
   };
 
   return new Proxy(targetObject, {
-    set: function (_, key, value: ValueType) {
+    set: function (_, key, value: any) {
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
           setAnimation(value);

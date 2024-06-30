@@ -1,12 +1,9 @@
 import {
   useAnimatedValue,
-  makeFluidComponent,
   useDrag,
   AnimationConfigUtils,
+  fluid,
 } from 'react-ui-animate';
-
-const AnimatedLine = makeFluidComponent('line');
-const AnimatedCircle = makeFluidComponent('circle');
 
 export function SVGLine() {
   const dragX = useAnimatedValue(0, { immediate: true });
@@ -27,15 +24,15 @@ export function SVGLine() {
         height={200}
         xmlns='http://www.w3.org/2000/svg'
       >
-        <AnimatedLine
+        <fluid.line
           x1={followX.value}
           y1='10'
           x2={dragX.value}
           y2='50'
           stroke='black'
         />
-        <AnimatedCircle cx={followX.value} cy='10' r='2' fill='red' />
-        <AnimatedCircle
+        <fluid.circle cx={followX.value} cy='10' r='2' fill='red' />
+        <fluid.circle
           {...circleBind()}
           style={{
             cursor: 'pointer',

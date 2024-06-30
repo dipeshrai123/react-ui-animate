@@ -2,7 +2,7 @@ import {
   // Draggable,
   // Gestures,
   // Interpolation,
-  // Loop,
+  Loop,
   // Mounted,
   // MouseMove,
   // MultistageTransition,
@@ -11,7 +11,7 @@ import {
   // SnapTo,
   // SVGLine,
   // TBExample,
-  UseAnimatedValue,
+  // UseAnimatedValue,
   // UseMountedValue,
   // Wheel,
 } from './components';
@@ -21,9 +21,9 @@ function App() {
     <div style={{ width: '80%', margin: '20px auto' }}>
       {/* <Draggable />
       <Gestures />
-      <Interpolation />
+      <Interpolation /> */}
       <Loop />
-      <Mounted />
+      {/* <Mounted />
       <MouseMove />
       <MultistageTransition />
       <Scroll />
@@ -31,10 +31,9 @@ function App() {
       <SnapTo />
       <SVGLine />
       <TBExample /> */}
-      <UseAnimatedValue />
-      {/* <UseMountedValue />
-      <Wheel />
+      {/* <UseAnimatedValue />
       <UseMountedValue /> */}
+      {/* <Wheel /> */}
     </div>
   );
 }

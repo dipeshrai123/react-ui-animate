@@ -3,6 +3,7 @@ import {
   AnimatedBlock,
   useAnimatedValue,
   useMouseMove,
+  fluid,
 } from 'react-ui-animate';
 
 export function Loop() {
@@ -11,9 +12,9 @@ export function Loop() {
     onRest: function ({ finished, value }: any) {
       if (finished) {
         if (value === 0) {
-          rotateZ.value = { toValue: 360, config: { duration: 1000 } };
+          rotateZ.value = 360;
         } else if (value === 360) {
-          rotateZ.value = { toValue: 0, config: { duration: 0 } };
+          rotateZ.value = 0;
         }
       }
     },
@@ -24,16 +25,16 @@ export function Loop() {
   });
 
   useEffect(() => {
-    rotateZ.value = { toValue: 360, config: { duration: 1000 } };
+    rotateZ.value = 360;
   }, [rotateZ]);
 
   return (
     <AnimatedBlock
       style={{
-        translateX: x.value,
-        width: 100,
+        translateX: rotateZ.value,
       }}
     >
+      <fluid.div />
       <AnimatedBlock
         style={{
           width: 100,
