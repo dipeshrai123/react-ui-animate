@@ -3,6 +3,7 @@ import {
   RequestAnimationFrame,
   CancelAnimationFrame,
 } from './RequestAnimationFrame';
+
 import type { FluidValueConfig, ResultType } from '../types/animation';
 
 /**

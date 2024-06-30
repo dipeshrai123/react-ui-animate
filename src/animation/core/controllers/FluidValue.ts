@@ -6,7 +6,7 @@ import type {
   OnUpdateFn,
   AssignValue,
 } from '../types/animation';
-import { Fn } from '../types/common';
+import type { Fn } from '../types/common';
 
 /**
  * Represents a fluid value that can animate between states.
