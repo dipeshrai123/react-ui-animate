@@ -59,7 +59,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
       isTransform: boolean;
       propertyType: 'style' | 'props';
       property: string;
-      value: number;
+      value: Length;
     }) => {
       if (!instanceRef.current) return;
 
@@ -95,6 +95,7 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
         const { value: fluidValue, propertyType, property, isTransform } = f;
         const { _subscribe, _value, _currentValue, _config } = fluidValue;
 
+        const interpolationOutputRange: string[] = [];
         const generateAnimation = animationObjectGenerator(_config);
         let animation: any = null;
 
@@ -136,19 +137,25 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
               config?.onStart && config.onStart(previousAnimation._position);
 
               if (typeof value === 'string') {
+                if (!interpolationOutputRange.includes(_value as string)) {
+                  interpolationOutputRange.push(_value as string);
+                }
+
+                if (!interpolationOutputRange.includes(value)) {
+                  interpolationOutputRange.push(value);
+                }
+
                 fluidValue.isInterpolation = true;
                 fluidValue.interpolationConfig = {
-                  inputRange: [0, 1],
-                  outputRange: [_value, value],
+                  inputRange: interpolationOutputRange.map((_, i) => i),
+                  outputRange: interpolationOutputRange,
                 };
               }
 
               animation.start({
                 toValue:
                   typeof value === 'string'
-                    ? _value !== value
-                      ? 1
-                      : 0
+                    ? interpolationOutputRange.indexOf(value)
                     : value,
                 onFrame,
                 previousAnimation,
@@ -156,22 +163,28 @@ export function makeFluidComponent<C extends WrappedComponentOrTag>(
               });
             }
           } else {
-            if (typeof value === typeof _value) {
-              if (!instanceRef.current) return;
-
-              instanceRef.current.style[property] = getCssValue(
-                property,
-                value
+            if (typeof value !== typeof _value) {
+              throw new Error(
+                `Cannot assign ${typeof value} to animated ${typeof _value}`
               );
-            } else {
-              throw new Error('Cannot set different types of animation values');
             }
+
+            applyAnimationValues({
+              isTransform,
+              propertyType,
+              property,
+              value,
+            });
           }
         };
 
-        const initialValue = typeof _value === 'string' ? 0 : _value;
-        onFrame(initialValue);
-        animation = generateAnimation(initialValue);
+        animation = generateAnimation(typeof _value === 'string' ? 0 : _value);
+        applyAnimationValues({
+          isTransform,
+          propertyType,
+          property,
+          value: _value,
+        });
 
         const subscribe = _subscribe(onUpdate, property, Date.now());
         subscribers.push(subscribe);
