@@ -8,6 +8,9 @@ import type {
 } from '../types/animation';
 import { Fn } from '../types/common';
 
+/**
+ * Represents a fluid value that can animate between states.
+ */
 export class FluidValue {
   public _subscribe: SubscribeFn;
   public _value: Length;
@@ -17,6 +20,11 @@ export class FluidValue {
 
   public get: () => Length;
 
+  /**
+   * Creates a new FluidValue instance.
+   * @param initialValue - The initial value of the fluid value.
+   * @param config - Optional configuration for the fluid value.
+   */
   constructor(initialValue: Length, config?: FluidValueConfig) {
     this._subscriptions = new Map();
     this._subscribe = (
@@ -41,8 +49,11 @@ export class FluidValue {
   }
 
   /**
-   * Animates from initial value to updated value, determines the transition type `multistage`
-   * or `singlestage` according to updatedValue
+   * Animates from the current value to the updated value.
+   * Determines whether to perform a multi-stage or single-stage transition.
+   * @param updatedValue - The value to animate to, or a function that defines a multi-stage transition.
+   * @param config - Optional configuration for the animation.
+   * @param callback - Optional callback to be called after the animation ends.
    */
   setValue(
     updatedValue: AssignValue,
