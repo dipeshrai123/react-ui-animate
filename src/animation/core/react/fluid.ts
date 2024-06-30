@@ -184,12 +184,14 @@ const tags: HTMLTags[] = [
   'view',
 ];
 
-export const fluid = {} as {
+type WithFluid = {
   [k in keyof JSX.IntrinsicElements]: React.ComponentType<
     FluidProps<HTMLElement>
   >;
 };
 
+export const fluid: WithFluid = {} as WithFluid;
+
 tags.forEach((tag) => {
-  fluid[tag] = makeFluid(tag);
+  (fluid as any)[tag] = makeFluid(tag);
 });

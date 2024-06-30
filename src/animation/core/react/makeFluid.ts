@@ -14,7 +14,6 @@ import {
   canInterpolate,
   interpolateNumbers,
 } from '../interpolation/Interpolation';
-import { ResultType, FluidValueConfig, Length } from '../types/animation';
 import { getTransform, isTransformKey } from './transforms';
 import {
   isDefined,
@@ -23,8 +22,10 @@ import {
   camelCaseToKebabCase,
   isFluidValue,
 } from '../helpers';
-import { FluidProps, WrappedComponentOrTag } from '../types/fluid';
 import { FluidValue } from '../controllers/FluidValue';
+
+import type { ResultType, FluidValueConfig, Length } from '../types/animation';
+import type { FluidProps, WrappedComponentOrTag } from '../types/fluid';
 
 /**
  * Higher-order component to make any component animatable.

@@ -14,7 +14,7 @@ export const styleTrasformKeys = [
   'skew',
   'skewX',
   'skewY',
-];
+] as const;
 
 function splitCSSValueAndUnit(value: string) {
   const valueMatch = value.match(/(-)?(\d+.)?\d+/g);
@@ -86,5 +86,5 @@ export function getTransform(style: Record<string, any>) {
 }
 
 export function isTransformKey(key: string) {
-  return styleTrasformKeys.includes(key);
+  return (styleTrasformKeys as readonly string[]).includes(key);
 }

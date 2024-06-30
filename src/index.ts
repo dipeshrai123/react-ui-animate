@@ -39,4 +39,4 @@ export {
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
 
 // Types
-export type { UseAnimatedValueConfig, ValueType } from './animation/lib';
+export type { UseAnimatedValueConfig } from './animation/lib';

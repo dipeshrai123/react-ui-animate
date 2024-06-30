@@ -1,9 +1,4 @@
-import {
-  AnimatedBlock,
-  useAnimatedValue,
-  ValueType,
-  AnimationConfigUtils,
-} from 'react-ui-animate';
+import { AnimatedBlock, useAnimatedValue } from 'react-ui-animate';
 
 export const MultistageTransition = () => {
   const x = useAnimatedValue(0);
@@ -21,10 +16,7 @@ export const MultistageTransition = () => {
 
       <button
         onClick={() => {
-          x.value = {
-            toValue: 0,
-            config: { ...AnimationConfigUtils.BOUNCE },
-          } as ValueType;
+          x.value = 0;
         }}
       >
         ANIMATE LEFT
@@ -32,13 +24,7 @@ export const MultistageTransition = () => {
 
       <button
         onClick={() => {
-          x.value = async (next) => {
-            await next({ toValue: 50, config: { duration: 1000 } });
-            await next({
-              toValue: 500,
-              config: { mass: 1, friction: 2, tension: 200 },
-            });
-          };
+          x.value = 0;
         }}
       >
         ANIMATE RIGHT
