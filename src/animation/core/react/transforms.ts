@@ -1,4 +1,4 @@
-const styleTrasformKeys = [
+export const styleTrasformKeys = [
   'translate',
   'translateX',
   'translateY',

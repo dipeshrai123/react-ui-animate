@@ -11,6 +11,7 @@ import { SpringAnimation } from '../controllers/SpringAnimation';
 import { TimingAnimation } from '../controllers/TimingAnimation';
 import {
   ExtrapolateConfig,
+  canInterpolate,
   interpolateNumbers,
 } from '../interpolation/Interpolation';
 import { ResultType, FluidValueConfig, Length } from '../types/animation';
@@ -20,7 +21,6 @@ import {
   getCleanProps,
   getCssValue,
   camelCaseToKebabCase,
-  canInterpolate,
   isFluidValue,
 } from '../helpers';
 import { FluidProps, WrappedComponentOrTag } from '../types/fluid';
