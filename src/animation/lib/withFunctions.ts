@@ -1,6 +1,6 @@
 import { AnimationConfigUtils } from './animationType';
 
-import type { FluidValueConfig, Length } from '../core/types/animation';
+import type { FluidValueConfig, Length } from '../core';
 
 interface WithSpringConfig
   extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'> {}
