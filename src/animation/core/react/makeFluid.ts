@@ -24,7 +24,12 @@ import {
 } from '../helpers';
 import { FluidValue } from '../controllers/FluidValue';
 
-import type { ResultType, FluidValueConfig, Length } from '../types/animation';
+import type {
+  ResultType,
+  FluidValueConfig,
+  Length,
+  UpdateValue,
+} from '../types/animation';
 import type { FluidProps, WrappedComponentOrTag } from '../types/fluid';
 
 /**
@@ -143,14 +148,15 @@ export function makeFluid<C extends WrappedComponentOrTag>(
         };
 
         const onUpdate = (
-          value: Length,
-          config?: FluidValueConfig,
+          updatedValue: UpdateValue,
           callback?: (value: ResultType) => void
         ) => {
-          if (canInterpolate(_value, value)) {
+          const { toValue, config } = updatedValue;
+
+          if (canInterpolate(_value, toValue)) {
             const previousAnimation = animation;
 
-            if (previousAnimation._value !== value) {
+            if (previousAnimation._value !== toValue) {
               animation.stop();
 
               animation = generateAnimation(
@@ -159,13 +165,13 @@ export function makeFluid<C extends WrappedComponentOrTag>(
               );
               config?.onStart && config.onStart(previousAnimation._position);
 
-              if (typeof value === 'string') {
+              if (typeof toValue === 'string') {
                 if (!interpolationOutputRange.includes(_value as string)) {
                   interpolationOutputRange.push(_value as string);
                 }
 
-                if (!interpolationOutputRange.includes(value)) {
-                  interpolationOutputRange.push(value);
+                if (!interpolationOutputRange.includes(toValue)) {
+                  interpolationOutputRange.push(toValue);
                 }
 
                 fluidValue.isInterpolation = true;
@@ -177,18 +183,18 @@ export function makeFluid<C extends WrappedComponentOrTag>(
 
               animation.start({
                 toValue:
-                  typeof value === 'string'
-                    ? interpolationOutputRange.indexOf(value)
-                    : value,
+                  typeof toValue === 'string'
+                    ? interpolationOutputRange.indexOf(toValue)
+                    : toValue,
                 onFrame,
                 previousAnimation,
                 onEnd: callback,
               });
             }
           } else {
-            if (typeof value !== typeof _value) {
+            if (typeof toValue !== typeof _value) {
               throw new Error(
-                `Cannot assign ${typeof value} to animated ${typeof _value}`
+                `Cannot assign ${typeof toValue} to animated ${typeof _value}`
               );
             }
 
@@ -196,7 +202,7 @@ export function makeFluid<C extends WrappedComponentOrTag>(
               isTransform,
               propertyType,
               property,
-              value,
+              value: toValue,
             });
           }
         };

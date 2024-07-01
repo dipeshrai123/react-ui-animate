@@ -41,9 +41,9 @@ export function useAnimatedValue(
     set: function (_, key, value: ValueType) {
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
-          setAnimation(value);
+          setAnimation({ toValue: value });
         } else if (typeof value === 'object' && 'toValue' in value) {
-          setAnimation(value.toValue, value.config);
+          setAnimation(value);
         }
 
         return true;

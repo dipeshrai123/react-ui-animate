@@ -55,20 +55,16 @@ export class FluidValue {
    * @param config - Optional configuration for the animation.
    * @param callback - Optional callback to be called after the animation ends.
    */
-  setValue(
-    updatedValue: AssignValue,
-    config?: FluidValueConfig,
-    callback?: Fn<ResultType, void>
-  ) {
+  setValue(updatedValue: AssignValue, callback?: Fn<ResultType, void>) {
     /** Multistage transition */
     if (typeof updatedValue === 'function') {
-      updatedValue((nextValue, nextConfig) => {
+      updatedValue((nextValue) => {
         const multiStagePromise = new Promise((resolve) => {
           for (const subscriptionKey of this._subscriptions.keys()) {
             const updater = this._subscriptions.get(subscriptionKey);
 
             if (updater) {
-              updater(nextValue, nextConfig ?? config, function (result) {
+              updater(nextValue, function (result) {
                 if (result.finished) {
                   resolve(nextValue);
                 }
@@ -91,7 +87,7 @@ export class FluidValue {
     for (const subscriptionKey of this._subscriptions.keys()) {
       const updater = this._subscriptions.get(subscriptionKey);
 
-      updater && updater(updatedValue, config, callback);
+      updater && updater(updatedValue, callback);
     }
   }
 }

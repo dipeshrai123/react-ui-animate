@@ -35,18 +35,44 @@ export const UseMountedValue: React.FC = () => {
       {mountedValue(
         (animation, mounted) =>
           mounted && (
-            <AnimatedBlock
-              style={{
-                width: bInterpolate(animation.value, 100, 500),
-                height: 100,
-                backgroundColor: bInterpolate(
-                  animation.value,
-                  'red',
-                  '#3399ff'
-                ),
-                translateX: 45,
-              }}
-            />
+            <>
+              <AnimatedBlock
+                style={{
+                  width: bInterpolate(animation.value, 100, 500),
+                  height: 100,
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
+                  ),
+                  translateX: 45,
+                }}
+              />
+              <AnimatedBlock
+                style={{
+                  width: bInterpolate(animation.value, 100, 500),
+                  height: 100,
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
+                  ),
+                  translateX: 45,
+                }}
+              />
+              <AnimatedBlock
+                style={{
+                  width: bInterpolate(animation.value, 100, 500),
+                  height: 100,
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
+                  ),
+                  translateX: 45,
+                }}
+              />
+            </>
           )
       )}
 

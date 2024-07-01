@@ -1,6 +1,6 @@
 // import { Draggable as Example } from './components/Draggable';
 // import { Gestures as Example } from './components/Gestures';
-import { Interpolation as Example } from './components/Interpolation';
+// import { Interpolation as Example } from './components/Interpolation';
 // import { Loop as Example } from './components/Loop';
 // import { Mounted as Example } from './components/MountedBlock';
 // import { MouseMove as Example } from './components/MouseMove';
@@ -11,7 +11,7 @@ import { Interpolation as Example } from './components/Interpolation';
 // import { SVGLine as Example } from './components/svgLine';
 // import { TBExample as Example } from './components/TransitionBlock';
 // import { UseAnimatedValue as Example } from './components/useAnimatedValue';
-// import { UseMountedValue as Example } from './components/useMountedValue';
+import { UseMountedValue as Example } from './components/useMountedValue';
 // import { Wheel as Example } from './components/Wheel';
 
 function App() {
