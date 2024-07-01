@@ -2,7 +2,7 @@ import React from 'react';
 import { useAnimatedValue, AnimatedBlock, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const translateX = useAnimatedValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
@@ -26,21 +26,6 @@ export const Draggable = () => {
           translateX: translateX.value,
         }}
       />
-
-      {/* {Array(5)
-        .fill(null)
-        .map((_, i) => (
-          <div
-            key={i}
-            {...bind(i)}
-            style={{
-              width: 100,
-              height: 100,
-              backgroundColor: "#3399ff",
-              marginBottom: 10,
-            }}
-          />
-        ))} */}
     </>
   );
 };
