@@ -1,6 +1,6 @@
 // import { Draggable as Example } from './components/Draggable';
-import { Gestures as Example } from './components/Gestures';
-// import { Interpolation as Example } from './components/Interpolation';
+// import { Gestures as Example } from './components/Gestures';
+import { Interpolation as Example } from './components/Interpolation';
 // import { Loop as Example } from './components/Loop';
 // import { Mounted as Example } from './components/MountedBlock';
 // import { MouseMove as Example } from './components/MouseMove';

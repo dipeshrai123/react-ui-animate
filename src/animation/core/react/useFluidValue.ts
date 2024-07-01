@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useLayoutEffect } from 'react';
 
 import { FluidValue } from '../controllers/FluidValue';
 
@@ -38,6 +38,10 @@ export const useFluidValue = (
     },
     []
   );
+
+  useLayoutEffect(() => {
+    fluid.setValue(value, config);
+  }, [value]);
 
   return [fluid, setFluid];
 };

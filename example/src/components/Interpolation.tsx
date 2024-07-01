@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { AnimatedBlock, interpolate, useAnimatedValue } from 'react-ui-animate';
 
 export const Interpolation = () => {
-  const x = useAnimatedValue(0);
+  const [open, setOpen] = useState(false);
+  const x = useAnimatedValue(open ? 500 : 0);
 
   return (
     <>
@@ -14,7 +16,7 @@ export const Interpolation = () => {
         }}
       />
 
-      <button onClick={() => (x.value = 100)}>ANIMATE ME</button>
+      <button onClick={() => setOpen((p) => !p)}>ANIMATE ME</button>
     </>
   );
 };
