@@ -9,6 +9,6 @@
  * @returns {boolean} - Returns `true` if the value is neither `null` nor `undefined`, otherwise returns `false`.
  *
  */
-export const isDefined = <T>(value: T) => {
+export const isDefined = <T>(value: T): value is NonNullable<T> => {
   return value !== null && value !== undefined;
 };
