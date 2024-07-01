@@ -3,12 +3,12 @@ import { useState, useRef, useLayoutEffect } from 'react';
 import { useFluidValue } from './useFluidValue';
 import { FluidValue } from '../controllers/FluidValue';
 
-import type { AssignValue, FluidValueConfig } from '../types/animation';
+import type { FluidValueConfig } from '../types/animation';
 
 export interface UseMountConfig {
   from: number;
-  enter: number | AssignValue;
-  exit: number | AssignValue;
+  enter: number;
+  exit: number;
   enterConfig?: FluidValueConfig;
   exitConfig?: FluidValueConfig;
   config?: FluidValueConfig;
@@ -29,20 +29,27 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
     from,
     enter,
     exit,
-    config: innerConfig,
+    config: defaultConfig,
     enterConfig,
     exitConfig,
   } = useRef(config).current;
-  const [animation, setAnimation] = useFluidValue(from, innerConfig);
+  const [animation, setAnimation] = useFluidValue(from, defaultConfig);
 
   useLayoutEffect(() => {
     if (state) {
       setMounted(true);
-      queueMicrotask(() => setAnimation(enter, enterConfig));
+      queueMicrotask(() =>
+        setAnimation({
+          toValue: enter,
+          config: enterConfig,
+        })
+      );
     } else {
       setAnimation(
-        exit,
-        exitConfig,
+        {
+          toValue: exit,
+          config: exitConfig,
+        },
         function ({ finished }: { finished: boolean }) {
           if (finished) {
             setMounted(false);

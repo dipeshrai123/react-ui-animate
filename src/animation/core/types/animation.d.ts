@@ -18,7 +18,7 @@ export type SubscribeFn = (
   onUpdate: OnUpdateFn,
   property: string,
   uuid: number
-) => void;
+) => () => void;
 
 /**
  * Configuration object for `FluidValue`
@@ -40,17 +40,17 @@ export interface FluidValueConfig {
 /**
  * Object which can be assigned to animate
  */
-export type AssignValue =
-  | Length
-  | Fn<(next: Length, config?: FluidValueConfig) => Promise<any>, void>;
+export type UpdateValue = {
+  toValue: Length;
+  config?: FluidValueConfig;
+};
 
-export type OnUpdateCallback = Fn<ResultType, void>;
+export type AssignValue = UpdateValue | Fn<Fn<UpdateValue, Promise<any>>, void>;
 
 /**
  * Function to start the animation (it starts the already subscribed animation)
  */
 export type OnUpdateFn = (
   updatedValue: AssignValue,
-  config?: FluidValueConfig,
-  callback?: OnUpdateCallback
+  callback?: Fn<ResultType, void>
 ) => void;

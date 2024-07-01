@@ -1,13 +1,8 @@
-import { useMemo, useCallback, useLayoutEffect } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 import { FluidValue } from '../controllers/FluidValue';
 
-import type {
-  FluidValueConfig,
-  Length,
-  AssignValue,
-  OnUpdateCallback,
-} from '../types/animation';
+import type { FluidValueConfig, Length, OnUpdateFn } from '../types/animation';
 
 /**
  * useFluidValue
@@ -18,30 +13,12 @@ import type {
 export const useFluidValue = (
   value: Length,
   config?: FluidValueConfig
-): [
-  FluidValue,
-  (
-    updateValue: AssignValue,
-    config?: FluidValueConfig,
-    callback?: OnUpdateCallback
-  ) => void
-] => {
-  const fluid = useMemo(() => new FluidValue(value, config), []);
-
-  const setFluid = useCallback(
-    (
-      updateValue: AssignValue,
-      config?: FluidValueConfig,
-      callback?: OnUpdateCallback
-    ) => {
-      fluid.setValue(updateValue, config, callback);
-    },
-    []
-  );
+): [FluidValue, OnUpdateFn] => {
+  const fluid = useRef(new FluidValue(value, config)).current;
 
   useLayoutEffect(() => {
-    fluid.setValue(value, config);
+    fluid.setValue({ toValue: value, config });
   }, [value]);
 
-  return [fluid, setFluid];
+  return [fluid, fluid.setValue.bind(fluid)];
 };

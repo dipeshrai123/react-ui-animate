@@ -32,15 +32,13 @@ export class FluidValue {
       property: string,
       uuid: number
     ) => {
-      for (const key of this._subscriptions.keys()) {
-        if (key.property === property) {
-          this._subscriptions.set(key, onUpdate);
-          return () => this._subscriptions.delete(key);
-        }
-      }
-
       this._subscriptions.set({ uuid, property }, onUpdate);
-      return () => this._subscriptions.delete({ uuid, property });
+
+      return () => {
+        for (const key of this._subscriptions.keys()) {
+          this._subscriptions.delete(key);
+        }
+      };
     };
     this._value = initialValue;
     this._currentValue = { current: initialValue };
@@ -55,20 +53,16 @@ export class FluidValue {
    * @param config - Optional configuration for the animation.
    * @param callback - Optional callback to be called after the animation ends.
    */
-  setValue(
-    updatedValue: AssignValue,
-    config?: FluidValueConfig,
-    callback?: Fn<ResultType, void>
-  ) {
+  setValue(updatedValue: AssignValue, callback?: Fn<ResultType, void>) {
     /** Multistage transition */
     if (typeof updatedValue === 'function') {
-      updatedValue((nextValue, nextConfig) => {
+      updatedValue((nextValue) => {
         const multiStagePromise = new Promise((resolve) => {
           for (const subscriptionKey of this._subscriptions.keys()) {
             const updater = this._subscriptions.get(subscriptionKey);
 
             if (updater) {
-              updater(nextValue, nextConfig ?? config, function (result) {
+              updater(nextValue, function (result) {
                 if (result.finished) {
                   resolve(nextValue);
                 }
@@ -91,7 +85,7 @@ export class FluidValue {
     for (const subscriptionKey of this._subscriptions.keys()) {
       const updater = this._subscriptions.get(subscriptionKey);
 
-      updater && updater(updatedValue, config, callback);
+      updater && updater(updatedValue, callback);
     }
   }
 }

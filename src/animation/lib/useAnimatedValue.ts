@@ -11,7 +11,10 @@ type AssignValue = {
   config?: UseAnimatedValueConfig;
 };
 
-export type ValueType = Length | AssignValue;
+export type ValueType =
+  | Length
+  | AssignValue
+  | ((update: (next: AssignValue) => Promise<any>) => void);
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The retured value persist until the lifetime of
@@ -41,9 +44,9 @@ export function useAnimatedValue(
     set: function (_, key, value: ValueType) {
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
+          setAnimation({ toValue: value });
+        } else if (typeof value === 'object' || typeof value === 'function') {
           setAnimation(value);
-        } else if (typeof value === 'object' && 'toValue' in value) {
-          setAnimation(value.toValue, value.config);
         }
 
         return true;
