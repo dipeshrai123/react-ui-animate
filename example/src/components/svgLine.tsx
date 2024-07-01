@@ -7,7 +7,7 @@ import {
 
 export function SVGLine() {
   const dragX = useAnimatedValue(0, { immediate: true });
-  const followX = useAnimatedValue(0, { ...AnimationConfigUtils.ELASTIC });
+  const followX = useAnimatedValue(0, AnimationConfigUtils.ELASTIC);
 
   const circleBind = useDrag(({ movementX }) => {
     dragX.value = movementX;

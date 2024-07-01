@@ -124,14 +124,15 @@ export function makeFluid<C extends WrappedComponentOrTag>(
         const onFrame = (value: number) => {
           _currentValue.current = value;
 
-          const updatedValue: number = fluidValue.isInterpolation
-            ? interpolateNumbers(
-                value,
-                fluidValue.interpolationConfig.inputRange,
-                fluidValue.interpolationConfig.outputRange,
-                fluidValue.interpolationConfig.extrapolateConfig
-              )
-            : value;
+          const updatedValue: number =
+            fluidValue.isInterpolation && fluidValue.interpolationConfig
+              ? interpolateNumbers(
+                  value,
+                  fluidValue.interpolationConfig.inputRange,
+                  fluidValue.interpolationConfig.outputRange,
+                  fluidValue.interpolationConfig.extrapolateConfig
+                )
+              : value;
 
           applyAnimationValues({
             isTransform,
@@ -255,20 +256,20 @@ function animationObjectGenerator(defaultConfig?: FluidValueConfig) {
   };
 }
 
-type InterpolationValue = {
+interface InterpolationValue {
   isInterpolation: boolean;
   interpolationConfig: {
     inputRange: Array<number>;
     outputRange: Array<number | string>;
     extrapolateConfig?: ExtrapolateConfig;
   };
-};
+}
 
 type Fluid = {
   isTransform: boolean;
   property: string;
   propertyType: 'style' | 'props';
-  value: FluidValue & InterpolationValue;
+  value: FluidValue & Partial<InterpolationValue>;
 };
 
 type NonFluid = Omit<Fluid, 'value'> & { value: unknown };
