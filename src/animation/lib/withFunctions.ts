@@ -31,7 +31,7 @@ export const withTiming = (
 export const withSequence = ([...configs]: Array<{
   toValue: Length;
   config?: FluidValueConfig;
-}>): any => {
+}>) => {
   return async (
     next: (arg: { toValue: Length; config?: FluidValueConfig }) => void
   ) => {
