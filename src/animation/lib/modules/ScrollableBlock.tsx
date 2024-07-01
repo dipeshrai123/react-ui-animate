@@ -1,11 +1,12 @@
 import * as React from 'react';
-import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
-import { FluidValue } from '../../core';
+import {
+  useAnimatedValue,
+  UseAnimatedValueConfig,
+  ValueType,
+} from '../useAnimatedValue';
 
 interface ScrollableBlockProps {
-  children?: (animation: {
-    value?: FluidValue | string | number;
-  }) => React.ReactNode;
+  children?: (animation: { value: ValueType }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
   animationConfig?: UseAnimatedValueConfig;

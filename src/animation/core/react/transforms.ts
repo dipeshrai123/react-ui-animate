@@ -58,9 +58,9 @@ function getTransformValueWithUnits(property: string, value: string) {
     property.includes('X') ||
     property.includes('Y') ||
     property.includes('Z') ||
-    property.includes('perspective') ||
     property.includes('rotate') ||
-    property.includes('skew')
+    property.includes('skew') ||
+    property.includes('scale')
   ) {
     // axis value
     return `${property}(${valueUnit.value}${valueUnit.unit})`;

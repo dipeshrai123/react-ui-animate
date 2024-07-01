@@ -10,7 +10,7 @@ export * from './Scroll';
 export * from './Wheel';
 export * from './Gestures';
 export * from './Interpolation';
-export * from './MultistageTransition';
+export * from './DynamicAnimation';
 export * from './Loop';
 export * from './SnapTo';
 export * from './TransitionBlock';

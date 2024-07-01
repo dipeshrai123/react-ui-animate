@@ -1,21 +1,20 @@
-import { useState } from 'react';
-import { AnimatedBlock, useAnimatedValue } from 'react-ui-animate';
+import { AnimatedBlock, interpolate, useAnimatedValue } from 'react-ui-animate';
 
 export const Interpolation = () => {
-  const [open, setOpen] = useState(false);
-  const x = useAnimatedValue(open ? 500 : 0);
+  const x = useAnimatedValue(0);
+
   return (
     <>
       <AnimatedBlock
         style={{
           width: 100,
           height: 100,
-          backgroundColor: 'red',
+          backgroundColor: interpolate(x.value, [0, 500], ['red', 'blue']),
           translateX: x.value,
         }}
       />
 
-      <button onClick={() => setOpen((prev) => !prev)}>ANIMATE ME</button>
+      <button onClick={() => (x.value = 100)}>ANIMATE ME</button>
     </>
   );
 };

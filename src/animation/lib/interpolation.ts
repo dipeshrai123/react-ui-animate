@@ -1,6 +1,20 @@
 import { ExtrapolateConfig, FluidValue, isFluidValue } from '../core';
 import { interpolate as internalInterpolate } from '../core';
 import { isDefined } from '../core/helpers';
+import { ValueType } from './useAnimatedValue';
+
+function checkFluidValueOrNumber(value: unknown): number | FluidValue {
+  if (
+    !isDefined(value) ||
+    !(typeof value === 'number' || isFluidValue(value))
+  ) {
+    console.log(value);
+    throw new Error(
+      `Invalid ${value} type for interpolate function. Expected number or FluidValue.`
+    );
+  }
+  return value;
+}
 
 /**
  * Maps the input range to the given output range using the specified extrapolation configuration.
@@ -14,18 +28,19 @@ import { isDefined } from '../core/helpers';
  * @throws - Will throw an error if the value is not a number or FluidValue.
  */
 export function interpolate(
-  value: FluidValue | number | string | undefined,
+  value: FluidValue | ValueType | number,
   inputRange: Array<number>,
   outputRange: Array<number | string>,
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  if (!isDefined(value) || typeof value !== 'number' || !isFluidValue(value)) {
-    throw new Error(
-      `Invalid ${value} type for interpolate function. Expected number or FluidValue.`
-    );
-  }
+  const checkedValue = checkFluidValueOrNumber(value);
 
-  return internalInterpolate(value, inputRange, outputRange, extrapolateConfig);
+  return internalInterpolate(
+    checkedValue,
+    inputRange,
+    outputRange,
+    extrapolateConfig
+  );
 }
 
 /**
@@ -40,19 +55,15 @@ export function interpolate(
  * @throws - Will throw an error if the value is not a number or FluidValue.
  */
 export function bInterpolate(
-  value: FluidValue | number | string | undefined,
+  value: FluidValue | ValueType | number,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  if (!isDefined(value) || typeof value !== 'number' || !isFluidValue(value)) {
-    throw new Error(
-      `Invalid ${value} type for interpolate function. Expected number or FluidValue.`
-    );
-  }
+  const checkedValue = checkFluidValueOrNumber(value);
 
   return internalInterpolate(
-    value,
+    checkedValue,
     [0, 1],
     [minOutput, maxOutput],
     extrapolateConfig

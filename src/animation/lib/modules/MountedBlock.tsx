@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { FluidValue, FluidValueConfig } from '../../core';
+import { FluidValueConfig } from '../../core';
 import { useMountedValue } from '../useMountedValue';
+import { ValueType } from '../useAnimatedValue';
 
 interface MountedValueConfig extends FluidValueConfig {}
 
 interface MountedBlockProps {
   state: boolean;
-  children: (animation: { value: FluidValue }) => React.ReactNode;
+  children: (animation: { value: ValueType }) => React.ReactNode;
   from?: number;
   enter?: number;
   exit?: number;
@@ -46,6 +47,11 @@ export const MountedBlock = ({
   });
 
   return (
-    <>{open((animation, mounted) => mounted && children(animation as any))}</>
+    <>
+      {open(
+        (animation, mounted) =>
+          mounted && children({ value: animation.value as any })
+      )}
+    </>
   );
 };
