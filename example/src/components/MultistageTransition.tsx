@@ -1,7 +1,10 @@
 import {
   AnimatedBlock,
   useAnimatedValue,
-  AnimationConfigUtils,
+  withSpring,
+  withTiming,
+  withSequence,
+  Easing,
 } from 'react-ui-animate';
 
 export const MultistageTransition = () => {
@@ -20,10 +23,7 @@ export const MultistageTransition = () => {
 
       <button
         onClick={() => {
-          x.value = {
-            toValue: 0,
-            config: AnimationConfigUtils.BOUNCE,
-          };
+          x.value = withTiming(0);
         }}
       >
         ANIMATE LEFT
@@ -31,13 +31,10 @@ export const MultistageTransition = () => {
 
       <button
         onClick={() => {
-          x.value = async (next) => {
-            await next({ toValue: 50, config: { duration: 1000 } });
-            await next({
-              toValue: 500,
-              config: { mass: 1, friction: 2, tension: 200 },
-            });
-          };
+          x.value = withSequence([
+            withTiming(200, { duration: 5000, easing: Easing.elastic() }),
+            withSpring(400),
+          ]);
         }}
       >
         ANIMATE RIGHT

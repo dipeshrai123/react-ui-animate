@@ -10,3 +10,9 @@ export {
 export { useAnimatedValue, UseAnimatedValueConfig } from './useAnimatedValue';
 export { useMountedValue } from './useMountedValue';
 export { AnimationConfigUtils } from './animationType';
+export {
+  withSpring,
+  withTiming,
+  withSequence,
+  withDelay,
+} from './withFunctions';

@@ -17,11 +17,16 @@ export {
 export { bInterpolate, interpolate } from './animation/lib';
 
 // Hooks
-
 export { useAnimatedValue, useMountedValue } from './animation/lib';
 
 // Helpers and Utilities
 export { delay } from './utils';
+export {
+  withSpring,
+  withTiming,
+  withSequence,
+  withDelay,
+} from './animation/lib';
 
 // Hooks
 export { useMeasure, useOutsideClick, useWindowDimension } from './hooks';
