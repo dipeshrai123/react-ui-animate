@@ -3,43 +3,37 @@ import {
   useMountedValue,
   AnimatedBlock,
   bInterpolate,
-  useAnimatedValue,
+  AnimationConfigUtils,
 } from 'react-ui-animate';
 
 export const UseMountedValue: React.FC = () => {
-  const x = useAnimatedValue(0);
   const [open, setOpen] = React.useState(true);
   const mountedValue = useMountedValue(open, {
     from: 0,
     enter: 1,
     exit: 0,
-    config: {
-      duration: 200,
-    },
-    enterConfig: { duration: 2000 },
+    enterConfig: AnimationConfigUtils.ELASTIC,
+    exitConfig: AnimationConfigUtils.BOUNCE,
   });
 
   return (
     <>
-      <AnimatedBlock
-        radius={x.value}
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: '#3399ff',
-          translateX: 100,
-          rotate: x.value,
+      <button
+        onClick={() => {
+          setOpen((prev) => !prev);
         }}
-        onClick={() => (x.value = 45)}
-      />
+      >
+        ANIMATE ME
+      </button>
+
       {mountedValue(
         (animation, mounted) =>
           mounted && (
             <>
               <AnimatedBlock
                 style={{
-                  width: bInterpolate(animation.value, 100, 500),
-                  height: 100,
+                  width: bInterpolate(animation.value, 100, 300),
+                  height: bInterpolate(animation.value, 100, 200),
                   backgroundColor: bInterpolate(
                     animation.value,
                     'red',
@@ -50,8 +44,9 @@ export const UseMountedValue: React.FC = () => {
               />
               <AnimatedBlock
                 style={{
-                  width: bInterpolate(animation.value, 100, 500),
-                  height: 100,
+                  width: bInterpolate(animation.value, 100, 400),
+                  height: bInterpolate(animation.value, 100, 50),
+                  border: '1px solid black',
                   backgroundColor: bInterpolate(
                     animation.value,
                     'red',
@@ -75,14 +70,6 @@ export const UseMountedValue: React.FC = () => {
             </>
           )
       )}
-
-      <button
-        onClick={() => {
-          setOpen((prev) => !prev);
-        }}
-      >
-        ANIMATE ME
-      </button>
     </>
   );
 };

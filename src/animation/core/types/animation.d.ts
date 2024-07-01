@@ -18,7 +18,7 @@ export type SubscribeFn = (
   onUpdate: OnUpdateFn,
   property: string,
   uuid: number
-) => void;
+) => () => void;
 
 /**
  * Configuration object for `FluidValue`

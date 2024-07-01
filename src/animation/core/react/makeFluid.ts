@@ -116,7 +116,7 @@ export function makeFluid<C extends WrappedComponentOrTag>(
     }, [nonFluids]);
 
     useLayoutEffect(() => {
-      const subscribers: any = [];
+      const subscribers: (() => void)[] = [];
 
       fluids.forEach((f) => {
         const { value: fluidValue, propertyType, property, isTransform } = f;
@@ -220,7 +220,7 @@ export function makeFluid<C extends WrappedComponentOrTag>(
       });
 
       return () => {
-        subscribers.forEach((subscriber: () => void) => subscriber());
+        subscribers.forEach((subscriber) => subscriber());
       };
     }, []);
 
