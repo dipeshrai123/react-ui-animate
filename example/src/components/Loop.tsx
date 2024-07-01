@@ -1,40 +1,36 @@
-import { useEffect } from 'react';
 import {
   AnimatedBlock,
   useAnimatedValue,
   useMouseMove,
-  fluid,
 } from 'react-ui-animate';
 
 export function Loop() {
   const x = useAnimatedValue(0);
+  const y = useAnimatedValue(0);
   const rotateZ = useAnimatedValue(0, {
     onRest: function ({ finished, value }: any) {
       if (finished) {
         if (value === 0) {
-          rotateZ.value = 360;
+          rotateZ.value = { toValue: 360, config: { duration: 2000 } };
         } else if (value === 360) {
-          rotateZ.value = 0;
+          rotateZ.value = { toValue: 0, config: { immediate: true } };
         }
       }
     },
   });
 
-  useMouseMove(({ mouseX }) => {
-    x.value = mouseX;
+  useMouseMove(({ mouseX, mouseY }) => {
+    x.value = mouseX - 50;
+    y.value = mouseY - 50;
   });
-
-  useEffect(() => {
-    rotateZ.value = 360;
-  }, [rotateZ]);
 
   return (
     <AnimatedBlock
       style={{
-        translateX: rotateZ.value,
+        translateX: x.value,
+        translateY: y.value,
       }}
     >
-      <fluid.div />
       <AnimatedBlock
         style={{
           width: 100,
