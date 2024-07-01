@@ -104,6 +104,44 @@ const width = useAnimatedValue(100); // Start with a width of 100
 
 In this example, as the width changes from 100 to 200, the background color smoothly transitions from red to blue.
 
+### Gestures
+
+The `react-ui-animate` library also provides several hooks for handling different types of gestures:
+
+1. `useDrag`: Handles drag gestures on elements.
+2. `useMouseMove`: Handles mouse movements.
+3. `useScroll`: Handles scrolling of the document.
+4. `useWheel`: Handles wheel rotation gestures.
+5. `useGesture`: Handles combinations of various gestures.
+
+**Example**: `useDrag`
+
+```jsx
+import { useAnimatedValue, AnimatedBlock, useDrag } from 'react-ui-animate';
+
+export const Draggable = () => {
+  const translateX = useAnimatedValue(0);
+
+  const bind = useDrag(function ({ down, movementX }) {
+    translateX.value = down ? movementX : 0;
+  });
+
+  return (
+    <AnimatedBlock
+      {...bind()}
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: '#3399ff',
+        translateX: translateX.value, // Use translateX with animated value
+      }}
+    />
+  );
+};
+```
+
+In this example, the blue block can be dragged horizontally by clicking and dragging.
+
 ## Documentation
 
 For detailed documentation and examples, visit the official [react-ui-animate documentation](http://react-ui-animate.js.org/).
