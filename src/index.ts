@@ -1,5 +1,5 @@
 // Core
-export { Easing, makeFluid, fluid } from './animation/core';
+export { Easing, makeFluid, fluid } from '@raidipesh78/re-motion';
 
 // react-ui-animate
 // Modules
@@ -11,22 +11,22 @@ export {
   MountedBlock,
   ScrollableBlock,
   TransitionBlock,
-} from './animation/lib';
+} from './animation';
 
 // Interpolation
-export { bInterpolate, interpolate } from './animation/lib';
+export { bInterpolate, interpolate } from './animation';
 
 // Hooks
-export { useAnimatedValue, useMountedValue } from './animation/lib';
+export { useAnimatedValue, useMountedValue } from './animation';
 
 // Helpers and Utilities
-export { delay } from './utils';
 export {
   withSpring,
   withTiming,
   withSequence,
   withDelay,
-} from './animation/lib';
+  delay,
+} from './animation';
 
 // Hooks
 export { useMeasure, useOutsideClick, useWindowDimension } from './hooks';
@@ -44,4 +44,7 @@ export {
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
 
 // Types
-export type { UseAnimatedValueConfig } from './animation/lib';
+export type {
+  UseAnimatedValueConfig,
+  UseMountedValueConfig,
+} from './animation';

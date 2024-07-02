@@ -1,4 +1,4 @@
-import { useMount, UseMountConfig, FluidValue } from '../core';
+import { useMount, UseMountConfig, FluidValue } from '@raidipesh78/re-motion';
 
 export interface UseMountedValueConfig extends UseMountConfig {}
 

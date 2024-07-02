@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { FluidValueConfig } from '../../core';
+import type { FluidValueConfig } from '@raidipesh78/re-motion';
+
 import { useMountedValue } from '../useMountedValue';
 import { ValueType } from '../useAnimatedValue';
 

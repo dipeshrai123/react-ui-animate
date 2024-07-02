@@ -8,7 +8,6 @@ export const UseAnimatedValue: React.FC = () => {
   return (
     <>
       <AnimatedBlock
-        a={bg.value}
         style={{
           width: 100,
           height: 100,
@@ -16,9 +15,10 @@ export const UseAnimatedValue: React.FC = () => {
           position: bg.value,
           left: 0,
           top: 0,
+          opacity: 0.4,
         }}
       />
-      <button onClick={() => (bg.value = 'absolute')}>Animate</button>
+      <button onClick={() => (bg.value = 'absolute')}>MAKE BOX ABSOLUTE</button>
       {/* <button onClick={() => (bg.value = '#00ff00')}>Green</button> */}
 
       {/* <div style={{ perspective: 200 }}>
