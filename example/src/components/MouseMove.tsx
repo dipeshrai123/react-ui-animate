@@ -6,7 +6,7 @@ import {
 } from 'react-ui-animate';
 
 export const MouseMove = () => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);
   const x = useAnimatedValue(0);
   const y = useAnimatedValue(0);
 
