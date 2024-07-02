@@ -1,4 +1,5 @@
-import { useFluidValue, FluidValueConfig } from '../core';
+import { useFluidValue, FluidValueConfig } from '@raidipesh78/re-motion';
+
 import { AnimationConfigUtils } from './animationType';
 
 // useAnimatedValue value type

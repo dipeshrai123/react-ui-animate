@@ -6,6 +6,9 @@
   "peerDependencies": {
     "react": ">=16.8.0  || >=17.0.0 || >=18.0.0"
   },
+  "dependencies": {
+    "@raidipesh78/re-motion": "^3.0.3"
+  },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@types/jest": "^29.5.12",

@@ -1,6 +1,11 @@
-import { ExtrapolateConfig, FluidValue, isFluidValue } from '../core';
-import { interpolate as internalInterpolate } from '../core';
-import { isDefined } from '../core/helpers';
+import {
+  ExtrapolateConfig,
+  FluidValue,
+  isFluidValue,
+  interpolate as internalInterpolate,
+} from '@raidipesh78/re-motion';
+
+import { isDefined } from './helpers';
 import { ValueType } from './useAnimatedValue';
 
 function checkFluidValueOrNumber(value: unknown): number | FluidValue {

@@ -1,6 +1,6 @@
-import { AnimationConfigUtils } from './animationType';
+import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
 
-import type { FluidValueConfig, Length } from '../core';
+import { AnimationConfigUtils } from './animationType';
 
 interface WithSpringConfig
   extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'> {}

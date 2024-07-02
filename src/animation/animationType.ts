@@ -1,4 +1,5 @@
-import { Easing, FluidValueConfig } from '../core';
+import { Easing, FluidValueConfig } from '@raidipesh78/re-motion';
+
 type InitialConfigType =
   | 'linear'
   | 'easein'

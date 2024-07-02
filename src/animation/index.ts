@@ -8,7 +8,7 @@ export {
   TransitionBlock,
 } from './modules';
 export { useAnimatedValue, UseAnimatedValueConfig } from './useAnimatedValue';
-export { useMountedValue } from './useMountedValue';
+export { useMountedValue, UseMountedValueConfig } from './useMountedValue';
 export { AnimationConfigUtils } from './animationType';
 export {
   withSpring,
@@ -16,3 +16,4 @@ export {
   withSequence,
   withDelay,
 } from './withFunctions';
+export { delay } from './helpers';

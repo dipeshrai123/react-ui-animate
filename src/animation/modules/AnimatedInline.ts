@@ -1,4 +1,4 @@
-import { makeFluid } from '../../core';
+import { makeFluid } from '@raidipesh78/re-motion';
 
 /**
  * AnimatedInline - A higher order component built upon `span` element
