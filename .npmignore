@@ -11,3 +11,4 @@ ecosystem.config.js
 package-lock.json
 tsconfig.json
 *.mjs
+.prettierrc
