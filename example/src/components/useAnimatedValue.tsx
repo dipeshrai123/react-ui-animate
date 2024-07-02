@@ -8,7 +8,6 @@ export const UseAnimatedValue: React.FC = () => {
   return (
     <>
       <AnimatedBlock
-        a={bg.value}
         style={{
           width: 100,
           height: 100,
