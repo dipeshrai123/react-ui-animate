@@ -1,4 +1,4 @@
-import * as React from "react";
+import { useRef, useEffect, DependencyList, createRef } from 'react';
 
 type MeasurementValue = number | Array<number>;
 
@@ -13,14 +13,14 @@ type MeasurementType = {
 
 export function useMeasure(
   callback: (event: MeasurementType) => void,
-  deps?: React.DependencyList
+  deps?: DependencyList
 ) {
-  const ref = React.useRef(null);
-  const elementRefs = React.useRef([]);
-  const callbackRef = React.useRef<(event: MeasurementType) => void>(callback);
+  const ref = useRef(null);
+  const elementRefs = useRef([]);
+  const callbackRef = useRef<(event: MeasurementType) => void>(callback);
 
   // Reinitiate callback when dependency change
-  React.useEffect(() => {
+  useEffect(() => {
     callbackRef.current = callback;
 
     return () => {
@@ -28,7 +28,7 @@ export function useMeasure(
     };
   }, deps);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const _refElement = ref.current || document.documentElement;
     const _refElementsMultiple = elementRefs.current;
 
@@ -124,8 +124,7 @@ export function useMeasure(
     if (index === null || index === undefined) {
       return { ref };
     } else {
-      elementRefs.current[index] =
-        elementRefs.current[index] || React.createRef();
+      elementRefs.current[index] = elementRefs.current[index] || createRef();
 
       return { ref: elementRefs.current[index] };
     }
