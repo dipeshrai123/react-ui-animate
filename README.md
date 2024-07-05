@@ -104,6 +104,62 @@ const width = useAnimatedValue(100); // Start with a width of 100
 
 In this example, as the width changes from 100 to 200, the background color smoothly transitions from red to blue.
 
+#### Dynamic Animations and Sequence Transitions
+
+You can dynamically modify animation configurations by assigning values to an animated value using various animation functions.
+
+To apply a spring animation and update the value to `10`:
+
+```jsx
+x.value = withSpring(10);
+```
+
+To apply a timing animation with a duration of 5000 milliseconds:
+
+```jsx
+x.value = withTiming(10, { duration: 5000 });
+```
+
+To create sequential transitions using the `withSequence` function with dynamic modifiers like `withSpring` and `withTiming`:
+
+```jsx
+x.value = withSequence([withSpring(50), withTiming(100), 200]);
+```
+
+To delay an animation using the withDelay function:
+
+```jsx
+x.value = withDelay(1000, withSpring(100));
+```
+
+In this example, a spring animation to `100` will be applied after a 1-second delay.
+
+#### `useMountedValue()`
+
+The `useMountedValue()` hook facilitates managing the mounting and unmounting of a component with animations.
+
+```jsx
+import { useMountedValue } from 'react-ui-animate';
+
+export default function App() {
+  const [visible, setVisible] = useState(false);
+
+  const open = useMountedValue(visible, {
+    from: 0,
+    enter: 1,
+    exit: 0,
+  });
+
+  return open((animation, mounted) => mounted && <AnimatedBlock />);
+}
+```
+
+In this example,
+
+1. A state variable `visible` determines whether the component is visible.
+2. The `useMountedValue` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
+3. The `open` function, returned by `useMountedValue`, is used to conditionally render `AnimatedBlock` based on the `mounted` boolean and apply the transition animation.
+
 ### Gestures
 
 The `react-ui-animate` library also provides several hooks for handling different types of gestures:
