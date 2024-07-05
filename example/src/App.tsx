@@ -2,7 +2,7 @@
 // import { Gestures as Example } from './components/Gestures';
 // import { Interpolation as Example } from './components/Interpolation';
 // import { Loop as Example } from './components/Loop';
-// import { Mounted as Example } from './components/MountedBlock';
+import { Mounted as Example } from './components/MountedBlock';
 // import { MouseMove as Example } from './components/MouseMove';
 // import { DynamicAnimation as Example } from './components/DynamicAnimation';
 // import { Scroll as Example } from './components/Scroll';
@@ -13,7 +13,7 @@
 // import { UseAnimatedValue as Example } from './components/useAnimatedValue';
 // import { UseMountedValue as Example } from './components/useMountedValue';
 // import { Wheel as Example } from './components/Wheel';
-import { MultistageTransition as Example } from './components/MultistageTransition';
+// import { SequenceTransition as Example } from './components/SequenceTransition';
 
 function App() {
   return <Example />;

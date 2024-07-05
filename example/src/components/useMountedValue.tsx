@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  useMountedValue,
-  AnimatedBlock,
-  bInterpolate,
-  AnimationConfigUtils,
-} from 'react-ui-animate';
+import { useMountedValue, AnimatedBlock, bInterpolate } from 'react-ui-animate';
 
 export const UseMountedValue: React.FC = () => {
   const [open, setOpen] = React.useState(true);
@@ -12,8 +7,6 @@ export const UseMountedValue: React.FC = () => {
     from: 0,
     enter: 1,
     exit: 0,
-    enterConfig: AnimationConfigUtils.ELASTIC,
-    exitConfig: AnimationConfigUtils.BOUNCE,
   });
 
   return (

@@ -45,15 +45,18 @@ export const withTiming = (
  * @param {Array<{ toValue: Length; config?: FluidValueConfig }>} configs - An array of animation configurations.
  * @returns {Function} An async function that runs the animations in sequence.
  */
-export const withSequence = ([...configs]: Array<{
-  toValue: Length;
-  config?: FluidValueConfig;
-}>) => {
+export const withSequence = ([...configs]: Array<
+  | {
+      toValue: Length;
+      config?: FluidValueConfig;
+    }
+  | number
+>) => {
   return async (
     next: (arg: { toValue: Length; config?: FluidValueConfig }) => void
   ) => {
     for (const c of configs) {
-      await next(c);
+      await next(typeof c === 'number' ? { toValue: c } : c);
     }
   };
 };

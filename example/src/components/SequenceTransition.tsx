@@ -7,7 +7,7 @@ import {
   Easing,
 } from 'react-ui-animate';
 
-export const MultistageTransition = () => {
+export const SequenceTransition = () => {
   const x = useAnimatedValue(0);
 
   return (
