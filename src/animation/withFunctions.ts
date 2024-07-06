@@ -2,8 +2,27 @@ import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
 
 import { AnimationConfigUtils } from './animationType';
 
+interface WithConfig
+  extends Pick<FluidValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
+
+interface WithEaseConfig extends WithConfig {}
+
+/**
+ * Creates a ease animation configuration.
+ * @param {Length} toValue - The target value of the animation.
+ * @param {WithEaseConfig} [config=AnimationConfigUtils.EASE] - Optional ease configuration.
+ * @returns {{ toValue: Length; config: WithEaseConfig }}
+ */
+export const withEase = (toValue: Length, config?: WithEaseConfig) => {
+  return {
+    toValue,
+    config,
+  };
+};
+
 interface WithSpringConfig
-  extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'> {}
+  extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'>,
+    WithConfig {}
 
 /**
  * Creates a spring animation configuration.
@@ -22,7 +41,8 @@ export const withSpring = (
 };
 
 interface WithTimingConfig
-  extends Pick<FluidValueConfig, 'duration' | 'easing'> {}
+  extends Pick<FluidValueConfig, 'duration' | 'easing'>,
+    WithConfig {}
 
 /**
  * Creates a timing animation configuration.
