@@ -12,3 +12,4 @@ package-lock.json
 tsconfig.json
 *.mjs
 .prettierrc
+CHANGELOG.md
