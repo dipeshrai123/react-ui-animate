@@ -2,6 +2,22 @@ import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
 
 import { AnimationConfigUtils } from './animationType';
 
+// Base interfaces for callbacks
+interface WithOnCallbacks
+  extends Pick<FluidValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
+
+// Configuration interfaces
+interface WithEaseConfig extends WithOnCallbacks {}
+interface WithSpringConfig
+  extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'>,
+    WithOnCallbacks {}
+interface WithTimingConfig
+  extends Pick<FluidValueConfig, 'duration' | 'easing'>,
+    WithOnCallbacks {}
+interface WithDecayConfig
+  extends Pick<FluidValueConfig, 'decay' | 'velocity' | 'deceleration'>,
+    WithOnCallbacks {}
+
 /**
  * Creates a default animation configuration.
  * @param {Length} toValue - The target value of the animation.
@@ -13,11 +29,6 @@ export const withConfig = (toValue: Length, config?: FluidValueConfig) => ({
   config,
 });
 
-interface WithOnCallbacks
-  extends Pick<FluidValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
-
-interface WithEaseConfig extends WithOnCallbacks {}
-
 /**
  * Creates an ease animation configuration.
  * @param {Length} toValue - The target value of the animation.
@@ -27,14 +38,7 @@ interface WithEaseConfig extends WithOnCallbacks {}
 export const withEase = (
   toValue: Length,
   config: WithEaseConfig = AnimationConfigUtils.EASE
-) => ({
-  toValue,
-  config,
-});
-
-interface WithSpringConfig
-  extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'>,
-    WithOnCallbacks {}
+) => withConfig(toValue, config);
 
 /**
  * Creates a spring animation configuration.
@@ -45,14 +49,7 @@ interface WithSpringConfig
 export const withSpring = (
   toValue: Length,
   config: WithSpringConfig = AnimationConfigUtils.ELASTIC
-) => ({
-  toValue,
-  config,
-});
-
-interface WithTimingConfig
-  extends Pick<FluidValueConfig, 'duration' | 'easing'>,
-    WithOnCallbacks {}
+) => withConfig(toValue, config);
 
 /**
  * Creates a timing animation configuration.
@@ -63,14 +60,7 @@ interface WithTimingConfig
 export const withTiming = (
   toValue: Length,
   config: WithTimingConfig = { duration: 250 }
-) => ({
-  toValue,
-  config,
-});
-
-interface WithDecayConfig
-  extends Pick<FluidValueConfig, 'decay' | 'velocity' | 'deceleration'>,
-    WithOnCallbacks {}
+) => withConfig(toValue, config);
 
 /**
  * Creates a decay animation configuration.
@@ -98,8 +88,8 @@ export const withSequence = (
   return async (
     next: (arg: { toValue?: Length; config?: FluidValueConfig }) => void
   ) => {
-    for (const c of configs) {
-      await next(typeof c === 'number' ? { toValue: c } : c);
+    for (const config of configs) {
+      await next(typeof config === 'number' ? { toValue: config } : config);
     }
   };
 };
