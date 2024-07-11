@@ -30,6 +30,8 @@ export {
   withSequence,
   withDelay,
   withEase,
+  withConfig,
+  withDecay,
   delay,
 } from './animation';
 

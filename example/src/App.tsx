@@ -13,8 +13,8 @@
 // import { UseAnimatedValue as Example } from './components/useAnimatedValue';
 // import { UseMountedValue as Example } from './components/useMountedValue';
 // import { Wheel as Example } from './components/Wheel';
-// import { SequenceTransition as Example } from './components/SequenceTransition';
-import { Decay as Example } from './components/Decay';
+import { SequenceTransition as Example } from './components/SequenceTransition';
+// import { Decay as Example } from './components/Decay';
 
 function App() {
   return <Example />;
