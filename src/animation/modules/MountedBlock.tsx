@@ -7,7 +7,7 @@ import { ValueType } from '../useAnimatedValue';
 interface MountedValueConfig extends FluidValueConfig {}
 
 type AssignValue = {
-  toValue: Length;
+  toValue?: Length;
   config?: MountedValueConfig;
 };
 
