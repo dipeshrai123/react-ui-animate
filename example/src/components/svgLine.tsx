@@ -2,7 +2,7 @@ import {
   useAnimatedValue,
   useDrag,
   AnimationConfigUtils,
-  fluid,
+  animate,
 } from 'react-ui-animate';
 
 export function SVGLine() {
@@ -15,32 +15,32 @@ export function SVGLine() {
   });
 
   return (
-    <div className='App'>
+    <div className="App">
       <svg
         style={{
           border: '1px solid #3399ff',
         }}
         width={200}
         height={200}
-        xmlns='http://www.w3.org/2000/svg'
+        xmlns="http://www.w3.org/2000/svg"
       >
-        <fluid.line
+        <animate.line
           x1={followX.value}
-          y1='10'
+          y1="10"
           x2={dragX.value}
-          y2='50'
-          stroke='black'
+          y2="50"
+          stroke="black"
         />
-        <fluid.circle cx={followX.value} cy='10' r='2' fill='red' />
-        <fluid.circle
+        <animate.circle cx={followX.value} cy="10" r="2" fill="red" />
+        <animate.circle
           {...circleBind()}
           style={{
             cursor: 'pointer',
           }}
           cx={dragX.value}
-          cy='50'
-          r='5'
-          fill='red'
+          cy="50"
+          r="5"
+          fill="red"
         />
       </svg>
     </div>

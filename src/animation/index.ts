@@ -16,5 +16,7 @@ export {
   withSequence,
   withDelay,
   withEase,
+  withConfig,
+  withDecay,
 } from './withFunctions';
 export { delay } from './helpers';

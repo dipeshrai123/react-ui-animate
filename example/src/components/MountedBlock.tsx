@@ -6,7 +6,7 @@ import {
   withSequence,
   withSpring,
   interpolate,
-  withEase,
+  withConfig,
 } from 'react-ui-animate';
 
 export const Mounted: React.FC = () => {
@@ -16,7 +16,7 @@ export const Mounted: React.FC = () => {
     <>
       <MountedBlock
         state={open}
-        enter={withSequence([withSpring(0.5), withEase(1)])}
+        enter={withSequence([withSpring(0.5), withConfig(1)])}
       >
         {(animation) => (
           <AnimatedBlock
