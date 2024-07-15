@@ -16,4 +16,4 @@ export * from './SnapTo';
 export * from './TransitionBlock';
 export * from './useAnimatedValue';
 export * from './useMountedValue';
-export * from './MultistageTransition';
+export * from './SequenceTransition';

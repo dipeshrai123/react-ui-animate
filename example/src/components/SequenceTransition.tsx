@@ -5,9 +5,10 @@ import {
   withTiming,
   withSequence,
   Easing,
+  withDecay,
 } from 'react-ui-animate';
 
-export const MultistageTransition = () => {
+export const SequenceTransition = () => {
   const x = useAnimatedValue(0);
 
   return (
@@ -34,6 +35,7 @@ export const MultistageTransition = () => {
           x.value = withSequence([
             withTiming(200, { duration: 5000, easing: Easing.elastic() }),
             withSpring(400),
+            withDecay({ decay: true, velocity: 1 }),
           ]);
         }}
       >

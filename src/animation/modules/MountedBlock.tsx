@@ -1,32 +1,39 @@
 import * as React from 'react';
-import type { FluidValueConfig } from '@raidipesh78/re-motion';
+import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
 
 import { useMountedValue } from '../useMountedValue';
 import { ValueType } from '../useAnimatedValue';
 
 interface MountedValueConfig extends FluidValueConfig {}
 
+type AssignValue = {
+  toValue?: Length;
+  config?: MountedValueConfig;
+};
+
 interface MountedBlockProps {
   state: boolean;
   children: (animation: { value: ValueType }) => React.ReactNode;
   from?: number;
-  enter?: number;
-  exit?: number;
+  enter?:
+    | number
+    | AssignValue
+    | ((update: (next: AssignValue) => Promise<any>) => void);
+  exit?:
+    | number
+    | AssignValue
+    | ((update: (next: AssignValue) => Promise<any>) => void);
   config?: MountedValueConfig;
-  enterConfig?: MountedValueConfig;
-  exitConfig?: MountedValueConfig;
 }
 
 /**
  * MountedBlock - Higher order component which handles mounting and unmounting of a component.
- * @prop { boolean } state - Boolean indicating the component should mount or unmount.
- * @prop { function } children - Child as a function with `AnimatedValue` on `.value` property.
- * @prop { number } from - Number that dictates the beginning state for animation.
- * @prop { number } enter - Number that dictates the entry state for animation.
- * @prop { number } exit - Number that dictates the exit state for animation.
- * @prop { MountedValueConfig } config - Animation configuration for overall animation.
- * @prop { MountedValueConfig } enterConfig - Animation configuration for the entering state of animation.
- * @prop { MountedValueConfig } exitConfig - Animation configuration for the entering state of animation.
+ * @param { boolean } state - Boolean indicating the component should mount or unmount.
+ * @param { function } children - Child as a function with `AnimatedValue` on `.value` property.
+ * @param { number } } from - Number that dictates the beginning state for animation.
+ * @param { number | { toValue: number, config: MountedValueConfig } } enter - Number that dictates the entry state for animation.
+ * @param { number | { toValue: number, config: MountedValueConfig } } exit - Number that dictates the exit state for animation.
+ * @param { MountedValueConfig } config - Animation configuration for overall animation.
  */
 export const MountedBlock = ({
   state,
@@ -35,16 +42,12 @@ export const MountedBlock = ({
   enter = 1,
   exit = 0,
   config,
-  enterConfig,
-  exitConfig,
 }: MountedBlockProps) => {
   const open = useMountedValue(state, {
     from,
     enter,
     exit,
     config,
-    enterConfig,
-    exitConfig,
   });
 
   return (

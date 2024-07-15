@@ -1,5 +1,9 @@
 // Core
-export { Easing, makeFluid, fluid } from '@raidipesh78/re-motion';
+export {
+  Easing,
+  makeFluid as makeAnimated,
+  fluid as animate,
+} from '@raidipesh78/re-motion';
 
 // react-ui-animate
 // Modules
@@ -25,6 +29,9 @@ export {
   withTiming,
   withSequence,
   withDelay,
+  withEase,
+  withConfig,
+  withDecay,
   delay,
 } from './animation';
 

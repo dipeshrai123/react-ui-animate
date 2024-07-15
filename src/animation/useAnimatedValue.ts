@@ -8,7 +8,7 @@ type Length = number | string;
 export interface UseAnimatedValueConfig extends FluidValueConfig {}
 
 type AssignValue = {
-  toValue: Length;
+  toValue?: Length;
   config?: UseAnimatedValueConfig;
 };
 

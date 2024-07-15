@@ -1,12 +1,23 @@
 import React from 'react';
-import { MountedBlock, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import {
+  MountedBlock,
+  AnimatedBlock,
+  bInterpolate,
+  withSequence,
+  withSpring,
+  interpolate,
+  withConfig,
+} from 'react-ui-animate';
 
 export const Mounted: React.FC = () => {
   const [open, setOpen] = React.useState(false);
 
   return (
     <>
-      <MountedBlock state={open}>
+      <MountedBlock
+        state={open}
+        enter={withSequence([withSpring(0.5), withConfig(1)])}
+      >
         {(animation) => (
           <AnimatedBlock
             style={{
@@ -14,6 +25,12 @@ export const Mounted: React.FC = () => {
               height: 100,
               backgroundColor: '#3399ff',
               translateX: bInterpolate(animation.value, 0, 500),
+              borderRadius: interpolate(
+                animation.value,
+                [0.5, 1],
+                ['0%', '100%'],
+                { extrapolateLeft: 'clamp' }
+              ),
             }}
           />
         )}
