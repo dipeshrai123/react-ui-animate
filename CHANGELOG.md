@@ -21,3 +21,10 @@ const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
 ### Fixed
 
 - Gestures hooks issue with not showing the suggestions on callback arguments fixed.
+
+## [3.3.1] - 2024-07-20
+
+### Fixed
+
+- Gestures hooks doesn't get applied on the re-mounted elements (After the mount)
+- Animation values not animating when applied on the re-mounted elements
