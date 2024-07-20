@@ -15,10 +15,10 @@
 // import { Wheel as Example } from './components/Wheel';
 // import { SequenceTransition as Example } from './components/SequenceTransition';
 // import { Decay as Example } from './components/Decay';
-import { SharedElement } from './components/SharedElement';
+import { SharedElement as Example } from './components/SharedElement';
 
 function App() {
-  return <SharedElement />;
+  return <Example />;
 }
 
 export default App;

@@ -27,16 +27,18 @@ export const useRecognizer = (handlers: UseRecognizerHandlerType) => {
 
   React.useEffect(() => {
     handlers.forEach(([key, gesture, callback, config], keyIndex) => {
-      subscribers.set(key, {
-        keyIndex,
-        gesture,
-        unsubscribe: gesture.applyGesture({
-          targetElement: ref.current,
-          targetElements: elementRefs.current,
-          callback,
-          config,
-        }),
-      });
+      queueMicrotask(() =>
+        subscribers.set(key, {
+          keyIndex,
+          gesture,
+          unsubscribe: gesture.applyGesture({
+            targetElement: ref.current,
+            targetElements: elementRefs.current,
+            callback,
+            config,
+          }),
+        })
+      );
     });
 
     return () => {
@@ -44,7 +46,7 @@ export const useRecognizer = (handlers: UseRecognizerHandlerType) => {
         unsubscribe && unsubscribe();
       }
     };
-  }, []);
+  });
 
   return (index?: number) => {
     if (index === null || index === undefined) {
