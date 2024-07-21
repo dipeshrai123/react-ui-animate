@@ -8,13 +8,11 @@ export function Loop() {
   const x = useAnimatedValue(0);
   const y = useAnimatedValue(0);
   const rotateZ = useAnimatedValue(0, {
-    onRest: function ({ finished, value }: any) {
-      if (finished) {
-        if (value === 0) {
-          rotateZ.value = { toValue: 360, config: { duration: 2000 } };
-        } else if (value === 360) {
-          rotateZ.value = { toValue: 0, config: { immediate: true } };
-        }
+    onRest: function (value) {
+      if (value === 0) {
+        rotateZ.value = { toValue: 360, config: { duration: 2000 } };
+      } else if (value === 360) {
+        rotateZ.value = { toValue: 0, config: { immediate: true } };
       }
     },
   });
