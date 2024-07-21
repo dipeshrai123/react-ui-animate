@@ -35,10 +35,8 @@ export const withConfig = (toValue: Length, config?: FluidValueConfig) => ({
  * @param {FluidValueConfig} [config=AnimationConfigUtils.EASE] - Optional ease configuration.
  * @returns {{ toValue: Length; config: FluidValueConfig }}
  */
-export const withEase = (
-  toValue: Length,
-  config: WithEaseConfig = AnimationConfigUtils.EASE
-) => withConfig(toValue, config);
+export const withEase = (toValue: Length, config?: WithEaseConfig) =>
+  withConfig(toValue, { ...AnimationConfigUtils.EASE, ...config });
 
 /**
  * Creates a spring animation configuration.
@@ -46,10 +44,8 @@ export const withEase = (
  * @param {WithSpringConfig} [config=AnimationConfigUtils.ELASTIC] - Optional spring configuration.
  * @returns {{ toValue: Length; config: WithSpringConfig }}
  */
-export const withSpring = (
-  toValue: Length,
-  config: WithSpringConfig = AnimationConfigUtils.ELASTIC
-) => withConfig(toValue, config);
+export const withSpring = (toValue: Length, config?: WithSpringConfig) =>
+  withConfig(toValue, { ...AnimationConfigUtils.ELASTIC, ...config });
 
 /**
  * Creates a timing animation configuration.
@@ -57,10 +53,8 @@ export const withSpring = (
  * @param {WithTimingConfig} [config={ duration: 250 }] - Optional timing configuration.
  * @returns {{ toValue: Length; config: WithTimingConfig }}
  */
-export const withTiming = (
-  toValue: Length,
-  config: WithTimingConfig = { duration: 250 }
-) => withConfig(toValue, config);
+export const withTiming = (toValue: Length, config?: WithTimingConfig) =>
+  withConfig(toValue, { duration: 250, ...config });
 
 /**
  * Creates a decay animation configuration.
