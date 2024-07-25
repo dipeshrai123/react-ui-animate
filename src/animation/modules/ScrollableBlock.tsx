@@ -1,12 +1,9 @@
 import * as React from 'react';
-import {
-  useAnimatedValue,
-  UseAnimatedValueConfig,
-  ValueType,
-} from '../useAnimatedValue';
+
+import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: ValueType }) => React.ReactNode;
+  children?: (animation: { value: any }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
   animationConfig?: UseAnimatedValueConfig;
@@ -63,7 +60,7 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
 
   return (
     <div ref={scrollableBlockRef}>
-      {children && children({ value: animation.value })}
+      {children && children({ value: animation.value as any })}
     </div>
   );
 };

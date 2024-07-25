@@ -20,7 +20,7 @@ export const Decay = () => {
           config: {
             decay: true,
             velocity: velocityX,
-            onChange: (v) => (offsetX.current = v),
+            onChange: (v: number) => (offsetX.current = v),
           },
         };
   });

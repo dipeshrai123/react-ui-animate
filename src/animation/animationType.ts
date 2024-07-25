@@ -1,4 +1,4 @@
-import { Easing, FluidValueConfig } from '@raidipesh78/re-motion';
+import { Easing, UseFluidValueConfig } from '@raidipesh78/re-motion';
 
 type InitialConfigType =
   | 'linear'
@@ -17,7 +17,7 @@ type InitialConfigType =
 
 const getInitialConfig = (
   animationType?: InitialConfigType
-): FluidValueConfig => {
+): UseFluidValueConfig => {
   switch (animationType) {
     case 'elastic':
       return { mass: 1, friction: 18, tension: 250 };

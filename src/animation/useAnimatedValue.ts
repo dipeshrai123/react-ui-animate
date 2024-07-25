@@ -1,19 +1,15 @@
-import { useFluidValue, FluidValueConfig } from '@raidipesh78/re-motion';
+import { useFluidValue, UseFluidValueConfig } from '@raidipesh78/re-motion';
 
 import { AnimationConfigUtils } from './animationType';
 
-// useAnimatedValue value type
-type Length = number | string;
-
-export interface UseAnimatedValueConfig extends FluidValueConfig {}
+export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
 
 type AssignValue = {
-  toValue?: Length;
+  toValue?: number;
   config?: UseAnimatedValueConfig;
 };
 
-export type ValueType =
-  | Length
+export type UpdateValue =
   | AssignValue
   | ((update: (next: AssignValue) => Promise<any>) => void);
 /**
@@ -25,7 +21,7 @@ export type ValueType =
  * @param { UseAnimatedValueConfig } config - Animation configuration object.
  */
 export function useAnimatedValue(
-  initialValue: Length,
+  initialValue: number,
   config?: UseAnimatedValueConfig
 ) {
   const [animation, setAnimation] = useFluidValue(initialValue, {
@@ -34,7 +30,7 @@ export function useAnimatedValue(
   });
 
   const targetObject: {
-    value: ValueType;
+    value: any;
     currentValue: number | string;
   } = {
     value: animation as any,
@@ -42,7 +38,7 @@ export function useAnimatedValue(
   };
 
   return new Proxy(targetObject, {
-    set: function (_, key, value: ValueType) {
+    set: function (_, key, value: number | UpdateValue) {
       if (key === 'value') {
         if (typeof value === 'number' || typeof value === 'string') {
           queueMicrotask(() => setAnimation({ toValue: value }));

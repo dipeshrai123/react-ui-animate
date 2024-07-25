@@ -1,29 +1,16 @@
 import * as React from 'react';
-import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
+import { UseFluidValueConfig } from '@raidipesh78/re-motion';
 
 import { useMountedValue } from '../useMountedValue';
-import { ValueType } from '../useAnimatedValue';
-
-interface MountedValueConfig extends FluidValueConfig {}
-
-type AssignValue = {
-  toValue?: Length;
-  config?: MountedValueConfig;
-};
+import type { UpdateValue } from '../useAnimatedValue';
 
 interface MountedBlockProps {
   state: boolean;
-  children: (animation: { value: ValueType }) => React.ReactNode;
+  children: (animation: { value: any }) => React.ReactNode;
   from?: number;
-  enter?:
-    | number
-    | AssignValue
-    | ((update: (next: AssignValue) => Promise<any>) => void);
-  exit?:
-    | number
-    | AssignValue
-    | ((update: (next: AssignValue) => Promise<any>) => void);
-  config?: MountedValueConfig;
+  enter?: number | UpdateValue;
+  exit?: number | UpdateValue;
+  config?: UseFluidValueConfig;
 }
 
 /**
@@ -33,7 +20,7 @@ interface MountedBlockProps {
  * @param { number } } from - Number that dictates the beginning state for animation.
  * @param { number | { toValue: number, config: MountedValueConfig } } enter - Number that dictates the entry state for animation.
  * @param { number | { toValue: number, config: MountedValueConfig } } exit - Number that dictates the exit state for animation.
- * @param { MountedValueConfig } config - Animation configuration for overall animation.
+ * @param { UseFluidValueConfig } config - Animation configuration for overall animation.
  */
 export const MountedBlock = ({
   state,

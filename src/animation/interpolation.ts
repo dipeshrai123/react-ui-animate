@@ -1,21 +1,16 @@
 import {
   ExtrapolateConfig,
   FluidValue,
-  isFluidValue,
-  interpolate as internalInterpolate,
+  interpolate as _interpolate,
 } from '@raidipesh78/re-motion';
 
 import { isDefined } from './helpers';
-import { ValueType } from './useAnimatedValue';
 
-function checkFluidValueOrNumber(value: unknown): number | FluidValue {
-  if (
-    !isDefined(value) ||
-    !(typeof value === 'number' || isFluidValue(value))
-  ) {
+function checkFluidValue(value: unknown): FluidValue {
+  if (!isDefined(value) || !(value instanceof FluidValue)) {
     console.log(value);
     throw new Error(
-      `Invalid ${value} type for interpolate function. Expected number or FluidValue.`
+      `Invalid ${value} type for interpolate function. Expected FluidValue.`
     );
   }
   return value;
@@ -33,19 +28,14 @@ function checkFluidValueOrNumber(value: unknown): number | FluidValue {
  * @throws - Will throw an error if the value is not a number or FluidValue.
  */
 export function interpolate(
-  value: FluidValue | ValueType | number,
-  inputRange: Array<number>,
-  outputRange: Array<number | string>,
+  value: any,
+  inputRange: number[],
+  outputRange: number[] | string[],
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  const checkedValue = checkFluidValueOrNumber(value);
+  const checkedValue = checkFluidValue(value);
 
-  return internalInterpolate(
-    checkedValue,
-    inputRange,
-    outputRange,
-    extrapolateConfig
-  );
+  return _interpolate(checkedValue, inputRange, outputRange, extrapolateConfig);
 }
 
 /**
@@ -60,17 +50,17 @@ export function interpolate(
  * @throws - Will throw an error if the value is not a number or FluidValue.
  */
 export function bInterpolate(
-  value: FluidValue | ValueType | number,
+  value: any,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
 ) {
-  const checkedValue = checkFluidValueOrNumber(value);
+  const checkedValue = checkFluidValue(value);
 
-  return internalInterpolate(
+  return _interpolate(
     checkedValue,
     [0, 1],
-    [minOutput, maxOutput],
+    [minOutput, maxOutput] as number[] | string[],
     extrapolateConfig
   );
 }

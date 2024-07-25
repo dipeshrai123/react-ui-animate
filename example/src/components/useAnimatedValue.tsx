@@ -2,23 +2,21 @@ import React from 'react';
 import { useAnimatedValue, AnimatedBlock } from 'react-ui-animate';
 
 export const UseAnimatedValue: React.FC = () => {
-  // const width = useAnimatedValue(100);
-  const bg = useAnimatedValue('position');
+  const width = useAnimatedValue(100);
 
   return (
     <>
       <AnimatedBlock
         style={{
-          width: 100,
+          width: width.value,
           height: 100,
           backgroundColor: 'red',
-          position: bg.value,
           left: 0,
           top: 0,
           opacity: 0.4,
         }}
       />
-      <button onClick={() => (bg.value = 'absolute')}>MAKE BOX ABSOLUTE</button>
+      <button onClick={() => (width.value = 100)}>MAKE BOX ABSOLUTE</button>
       {/* <button onClick={() => (bg.value = '#00ff00')}>Green</button> */}
 
       {/* <div style={{ perspective: 200 }}>

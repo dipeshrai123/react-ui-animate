@@ -24,9 +24,9 @@ export const Mounted: React.FC = () => {
               width: 100,
               height: 100,
               backgroundColor: '#3399ff',
-              translateX: bInterpolate(animation.value, 0, 500),
+              translateX: bInterpolate(animation.value as any, 0, 500),
               borderRadius: interpolate(
-                animation.value,
+                animation.value as any,
                 [0.5, 1],
                 ['0%', '100%'],
                 { extrapolateLeft: 'clamp' }

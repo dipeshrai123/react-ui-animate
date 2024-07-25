@@ -122,7 +122,7 @@ export function SharedElement() {
               right: 0,
               bottom: 0,
               backgroundColor: 'none',
-              opacity: opacity.value,
+              opacity: opacity.value as any,
             }}
           >
             <AnimatedBlock

@@ -1,64 +1,64 @@
-import type { FluidValueConfig, Length } from '@raidipesh78/re-motion';
+import type { UseFluidValueConfig } from '@raidipesh78/re-motion';
 
 import { AnimationConfigUtils } from './animationType';
 
 // Base interfaces for callbacks
 interface WithOnCallbacks
-  extends Pick<FluidValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
+  extends Pick<UseFluidValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
 
 // Configuration interfaces
 interface WithEaseConfig extends WithOnCallbacks {}
 interface WithSpringConfig
-  extends Pick<FluidValueConfig, 'mass' | 'friction' | 'tension'>,
+  extends Pick<UseFluidValueConfig, 'mass' | 'friction' | 'tension'>,
     WithOnCallbacks {}
 interface WithTimingConfig
-  extends Pick<FluidValueConfig, 'duration' | 'easing'>,
+  extends Pick<UseFluidValueConfig, 'duration' | 'easing'>,
     WithOnCallbacks {}
 interface WithDecayConfig
-  extends Pick<FluidValueConfig, 'decay' | 'velocity' | 'deceleration'>,
+  extends Pick<UseFluidValueConfig, 'decay' | 'velocity' | 'deceleration'>,
     WithOnCallbacks {}
 
 /**
  * Creates a default animation configuration.
- * @param {Length} toValue - The target value of the animation.
- * @param {FluidValueConfig} config - Optional configuration.
- * @returns {{ toValue: Length; config: FluidValueConfig }}
+ * @param {number} toValue - The target value of the animation.
+ * @param {UseFluidValueConfig} config - Optional configuration.
+ * @returns {{ toValue: number; config: UseFluidValueConfig }}
  */
-export const withConfig = (toValue: Length, config?: FluidValueConfig) => ({
+export const withConfig = (toValue: number, config?: UseFluidValueConfig) => ({
   toValue,
   config,
 });
 
 /**
  * Creates an ease animation configuration.
- * @param {Length} toValue - The target value of the animation.
- * @param {FluidValueConfig} [config=AnimationConfigUtils.EASE] - Optional ease configuration.
- * @returns {{ toValue: Length; config: FluidValueConfig }}
+ * @param {number} toValue - The target value of the animation.
+ * @param {UseFluidValueConfig} [config=AnimationConfigUtils.EASE] - Optional ease configuration.
+ * @returns {{ toValue: number; config: UseFluidValueConfig }}
  */
 export const withEase = (
-  toValue: Length,
+  toValue: number,
   config: WithEaseConfig = AnimationConfigUtils.EASE
 ) => withConfig(toValue, config);
 
 /**
  * Creates a spring animation configuration.
- * @param {Length} toValue - The target value of the animation.
+ * @param {number} toValue - The target value of the animation.
  * @param {WithSpringConfig} [config=AnimationConfigUtils.ELASTIC] - Optional spring configuration.
- * @returns {{ toValue: Length; config: WithSpringConfig }}
+ * @returns {{ toValue: number; config: WithSpringConfig }}
  */
 export const withSpring = (
-  toValue: Length,
+  toValue: number,
   config: WithSpringConfig = AnimationConfigUtils.ELASTIC
 ) => withConfig(toValue, config);
 
 /**
  * Creates a timing animation configuration.
- * @param {Length} toValue - The target value of the animation.
+ * @param {number} toValue - The target value of the animation.
  * @param {WithTimingConfig} [config={ duration: 250 }] - Optional timing configuration.
- * @returns {{ toValue: Length; config: WithTimingConfig }}
+ * @returns {{ toValue: number; config: WithTimingConfig }}
  */
 export const withTiming = (
-  toValue: Length,
+  toValue: number,
   config: WithTimingConfig = { duration: 250 }
 ) => withConfig(toValue, config);
 
@@ -73,20 +73,20 @@ export const withDecay = (config: WithDecayConfig) => ({
 
 /**
  * Creates a sequence of animations that run one after another.
- * @param {Array<{ toValue: Length; config?: FluidValueConfig } | number>} configs - An array of animation configurations or delays.
+ * @param {Array<{ toValue: number; config?: UseFluidValueConfig } | number>} configs - An array of animation configurations or delays.
  * @returns {Function} An async function that runs the animations in sequence.
  */
 export const withSequence = (
   configs: Array<
     | {
-        toValue?: Length;
-        config?: FluidValueConfig;
+        toValue?: number;
+        config?: UseFluidValueConfig;
       }
     | number
   >
 ) => {
   return async (
-    next: (arg: { toValue?: Length; config?: FluidValueConfig }) => void
+    next: (arg: { toValue?: number; config?: UseFluidValueConfig }) => void
   ) => {
     for (const config of configs) {
       await next(typeof config === 'number' ? { toValue: config } : config);
@@ -97,12 +97,12 @@ export const withSequence = (
 /**
  * Adds a delay before the given animation.
  * @param {number} delay - The delay in milliseconds.
- * @param {{ toValue: Length; config?: FluidValueConfig }} animation - The animation configuration (withTiming | withSpring).
- * @returns {{ toValue: Length; config: FluidValueConfig }} The updated animation configuration with delay.
+ * @param {{ toValue: number; config?: UseFluidValueConfig }} animation - The animation configuration (withTiming | withSpring).
+ * @returns {{ toValue: number; config: UseFluidValueConfig }} The updated animation configuration with delay.
  */
 export const withDelay = (
   delay: number,
-  animation: { toValue: Length; config?: FluidValueConfig }
+  animation: { toValue: number; config?: UseFluidValueConfig }
 ) => ({
   ...animation,
   config: {
