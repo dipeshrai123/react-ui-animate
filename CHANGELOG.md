@@ -28,3 +28,9 @@ const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
 
 - Gestures hooks doesn't get applied on the re-mounted elements (After the mount)
 - Animation values not animating when applied on the re-mounted elements
+
+## [3.3.2] - 2024-07-21
+
+### Fixed
+
+- with\* function config overrides bug fixed
