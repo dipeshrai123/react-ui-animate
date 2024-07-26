@@ -12,6 +12,7 @@ type AssignValue = {
 export type UpdateValue =
   | AssignValue
   | ((update: (next: AssignValue) => Promise<any>) => void);
+
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The retured value persist until the lifetime of
@@ -31,18 +32,18 @@ export function useAnimatedValue(
 
   const targetObject: {
     value: any;
-    currentValue: number | string;
+    currentValue: number;
   } = {
-    value: animation as any,
+    value: animation,
     currentValue: animation.get(),
   };
 
   return new Proxy(targetObject, {
     set: function (_, key, value: number | UpdateValue) {
       if (key === 'value') {
-        if (typeof value === 'number' || typeof value === 'string') {
+        if (typeof value === 'number') {
           queueMicrotask(() => setAnimation({ toValue: value }));
-        } else if (typeof value === 'object' || typeof value === 'function') {
+        } else if (typeof value === 'function') {
           queueMicrotask(() => setAnimation(value));
         }
 

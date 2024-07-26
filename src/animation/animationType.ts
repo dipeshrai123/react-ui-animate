@@ -57,7 +57,7 @@ const getInitialConfig = (
 
     case 'ease':
     default:
-      return { mass: 1, friction: 34, tension: 290 };
+      return { mass: 1, friction: 26, tension: 170 };
   }
 };
 
