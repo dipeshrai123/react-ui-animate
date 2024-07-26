@@ -8,9 +8,6 @@ export {
 // react-ui-animate
 // Modules
 export {
-  AnimatedBlock,
-  AnimatedImage,
-  AnimatedInline,
   AnimationConfigUtils,
   MountedBlock,
   ScrollableBlock,
