@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import {
-  AnimatedBlock,
+  animate,
   useDrag,
   useAnimatedValue,
   snapTo,
@@ -37,7 +37,7 @@ export function SnapTo() {
   );
 
   return (
-    <AnimatedBlock
+    <animate.div
       {...bind()}
       style={{
         backgroundColor: '#3399ff',

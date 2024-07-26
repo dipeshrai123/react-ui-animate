@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import {
   useDrag,
   useAnimatedValue,
-  AnimatedBlock,
+  animate,
   interpolate,
 } from 'react-ui-animate';
 
@@ -26,7 +26,7 @@ export const Decay = () => {
   });
 
   return (
-    <AnimatedBlock
+    <animate.div
       {...bind()}
       style={{
         width: 100,

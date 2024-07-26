@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TransitionBlock, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import { TransitionBlock, animate, bInterpolate } from 'react-ui-animate';
 
 export function TBExample() {
   const [open, setOpen] = useState(false);
@@ -11,7 +11,7 @@ export function TBExample() {
         {(animation) => {
           return (
             <>
-              <AnimatedBlock
+              <animate.div
                 style={{
                   width: 100,
                   height: 100,
@@ -19,7 +19,7 @@ export function TBExample() {
                   translateX: bInterpolate(animation.value, 0, 500),
                 }}
               />
-              <AnimatedBlock
+              <animate.div
                 style={{
                   width: 100,
                   height: 100,

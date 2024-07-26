@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   MountedBlock,
-  AnimatedBlock,
+  animate,
   bInterpolate,
   withSequence,
   withSpring,
@@ -19,7 +19,7 @@ export const Mounted: React.FC = () => {
         enter={withSequence([withSpring(0.5), withConfig(1)])}
       >
         {(animation) => (
-          <AnimatedBlock
+          <animate.div
             style={{
               width: 100,
               height: 100,

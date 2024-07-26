@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollableBlock, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import { ScrollableBlock, animate, bInterpolate } from 'react-ui-animate';
 
 export const SCBlock: React.FC = () => {
   return (
@@ -8,7 +8,7 @@ export const SCBlock: React.FC = () => {
 
       <ScrollableBlock direction="both" threshold={0.5}>
         {(animation) => (
-          <AnimatedBlock
+          <animate.div
             style={{
               height: 500,
               backgroundColor: '#3399ff',

@@ -3,7 +3,7 @@ import {
   useAnimatedValue,
   MountedBlock,
   clamp,
-  AnimatedBlock,
+  animate,
   withTiming,
   withSequence,
   withSpring,
@@ -114,7 +114,7 @@ export function SharedElement() {
 
       <MountedBlock state={activeIndex !== null}>
         {() => (
-          <AnimatedBlock
+          <animate.div
             style={{
               position: 'fixed',
               left: 0,
@@ -124,7 +124,7 @@ export function SharedElement() {
               backgroundColor: 'none',
             }}
           >
-            <AnimatedBlock
+            <animate.div
               {...bind()}
               style={{
                 position: 'absolute',
@@ -143,8 +143,8 @@ export function SharedElement() {
               }}
             >
               <span style={{ userSelect: 'none' }}>Pull Down</span>
-            </AnimatedBlock>
-          </AnimatedBlock>
+            </animate.div>
+          </animate.div>
         )}
       </MountedBlock>
     </>

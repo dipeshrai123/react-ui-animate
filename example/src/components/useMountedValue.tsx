@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMountedValue, AnimatedBlock, bInterpolate } from 'react-ui-animate';
+import { useMountedValue, animate, bInterpolate } from 'react-ui-animate';
 
 export const UseMountedValue: React.FC = () => {
   const [open, setOpen] = React.useState(true);
@@ -23,7 +23,7 @@ export const UseMountedValue: React.FC = () => {
         (animation, mounted) =>
           mounted && (
             <>
-              <AnimatedBlock
+              <animate.div
                 style={{
                   width: bInterpolate(animation.value, 100, 300),
                   height: bInterpolate(animation.value, 100, 200),
@@ -35,7 +35,7 @@ export const UseMountedValue: React.FC = () => {
                   translateX: 45,
                 }}
               />
-              <AnimatedBlock
+              <animate.div
                 style={{
                   width: bInterpolate(animation.value, 100, 400),
                   height: bInterpolate(animation.value, 100, 50),
@@ -48,7 +48,7 @@ export const UseMountedValue: React.FC = () => {
                   translateX: 45,
                 }}
               />
-              <AnimatedBlock
+              <animate.div
                 style={{
                   width: bInterpolate(animation.value, 100, 500),
                   height: 100,

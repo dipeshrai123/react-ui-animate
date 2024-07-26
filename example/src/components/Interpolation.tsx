@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatedBlock, interpolate, useAnimatedValue } from 'react-ui-animate';
+import { animate, interpolate, useAnimatedValue } from 'react-ui-animate';
 
 export const Interpolation = () => {
   const [open, setOpen] = useState(false);
@@ -7,7 +7,7 @@ export const Interpolation = () => {
 
   return (
     <>
-      <AnimatedBlock
+      <animate.div
         style={{
           width: 100,
           height: 100,

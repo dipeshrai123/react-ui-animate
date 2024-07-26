@@ -1,9 +1,5 @@
 import React from 'react';
-import {
-  AnimatedBlock,
-  useAnimatedValue,
-  useMouseMove,
-} from 'react-ui-animate';
+import { animate, useAnimatedValue, useMouseMove } from 'react-ui-animate';
 
 export const MouseMove = () => {
   const [open, setOpen] = React.useState(true);
@@ -26,7 +22,7 @@ export const MouseMove = () => {
         {open ? 'disable' : 'enable'}
       </button>
 
-      <AnimatedBlock
+      <animate.div
         style={{
           width: 100,
           height: 100,

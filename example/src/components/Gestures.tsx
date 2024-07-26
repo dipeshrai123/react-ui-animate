@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  useAnimatedValue,
-  AnimatedBlock,
-  useGesture,
-  clamp,
-} from 'react-ui-animate';
+import { useAnimatedValue, animate, useGesture, clamp } from 'react-ui-animate';
 
 export const Gestures = () => {
   const x = useAnimatedValue(0, { immediate: true });
@@ -49,7 +44,7 @@ export const Gestures = () => {
       </div>
 
       <div>
-        <AnimatedBlock
+        <animate.div
           {...bind()}
           style={{
             width: 100,
@@ -70,7 +65,7 @@ export const Gestures = () => {
           }}
         >
           DIPESH
-        </AnimatedBlock>
+        </animate.div>
       </div>
     </>
   );

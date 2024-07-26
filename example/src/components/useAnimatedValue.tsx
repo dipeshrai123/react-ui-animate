@@ -1,12 +1,12 @@
 import React from 'react';
-import { useAnimatedValue, AnimatedBlock } from 'react-ui-animate';
+import { useAnimatedValue, animate } from 'react-ui-animate';
 
 export const UseAnimatedValue: React.FC = () => {
   const width = useAnimatedValue(100);
 
   return (
     <>
-      <AnimatedBlock
+      <animate.div
         style={{
           width: width.value,
           height: 100,
@@ -20,7 +20,7 @@ export const UseAnimatedValue: React.FC = () => {
       {/* <button onClick={() => (bg.value = '#00ff00')}>Green</button> */}
 
       {/* <div style={{ perspective: 200 }}>
-        <AnimatedBlock
+        <animate.div
           style={{
             perspective: 400,
             width: width.value,

@@ -21,7 +21,7 @@ yarn add react-ui-animate
 The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Here’s how you can get started quickly:
 
 ```javascript
-import { AnimatedBlock, useAnimatedValue } from 'react-ui-animate';
+import { animate.div, useAnimatedValue } from 'react-ui-animate';
 
 export default function () {
   // Initialize an animated opacity value
@@ -29,8 +29,8 @@ export default function () {
 
   return (
     <div>
-      {/* AnimatedBlock component uses the animated opacity value */}
-      <AnimatedBlock
+      {/* animate.div component uses the animated opacity value */}
+      <animate.div
         style={{
           opacity: opacity.value, // using opacity with value property
           width: 100,
@@ -39,7 +39,7 @@ export default function () {
         }}
       >
         ANIMATED
-      </AnimatedBlock>
+      </animate.div>
 
       {/* Clicking the button changes the opacity smoothly to 1 */}
       <button onClick={() => (opacity.value = 1)}>Animate Me</button>
@@ -68,14 +68,14 @@ style={{
 onClick={() => (opacity.value = 1)} // Changes the opacity to 1
 ```
 
-#### `AnimatedBlock`
+#### `animate.div`
 
-`AnimatedBlock` is a special component designed to work with `useAnimatedValue()`. It simplifies animating elements by directly using animated values.
+`animate.div` is a special component designed to work with `useAnimatedValue()`. It simplifies animating elements by directly using animated values.
 
 ```javascript
 const width = useAnimatedValue(100); // Start with a width of 100
 
-<AnimatedBlock
+<animate.div
   style={{
     width: width.value,
     height: 100,
@@ -89,11 +89,11 @@ const width = useAnimatedValue(100); // Start with a width of 100
 The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
 
 ```javascript
-import { useAnimatedValue, AnimatedBlock, interpolate } from 'react-ui-animate';
+import { useAnimatedValue, animate.div, interpolate } from 'react-ui-animate';
 
 const width = useAnimatedValue(100); // Start with a width of 100
 
-<AnimatedBlock
+<animate.div
   style={{
     width: width.value,
     height: 100,
@@ -150,7 +150,7 @@ export default function App() {
     exit: 0,
   });
 
-  return open((animation, mounted) => mounted && <AnimatedBlock />);
+  return open((animation, mounted) => mounted && <animate.div />);
 }
 ```
 
@@ -158,7 +158,7 @@ In this example,
 
 1. A state variable `visible` determines whether the component is visible.
 2. The `useMountedValue` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
-3. The `open` function, returned by `useMountedValue`, is used to conditionally render `AnimatedBlock` based on the `mounted` boolean and apply the transition animation.
+3. The `open` function, returned by `useMountedValue`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
 
 ### Gestures
 
@@ -175,7 +175,7 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useAnimatedValue, AnimatedBlock, useDrag } from 'react-ui-animate';
+import { useAnimatedValue, animate.div, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
   const translateX = useAnimatedValue(0);
@@ -185,7 +185,7 @@ export const Draggable = () => {
   });
 
   return (
-    <AnimatedBlock
+    <animate.div
       {...bind()}
       style={{
         width: 100,

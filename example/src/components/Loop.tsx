@@ -1,8 +1,4 @@
-import {
-  AnimatedBlock,
-  useAnimatedValue,
-  useMouseMove,
-} from 'react-ui-animate';
+import { animate, useAnimatedValue, useMouseMove } from 'react-ui-animate';
 
 export function Loop() {
   const x = useAnimatedValue(0);
@@ -23,13 +19,13 @@ export function Loop() {
   });
 
   return (
-    <AnimatedBlock
+    <animate.div
       style={{
         translateX: x.value,
         translateY: y.value,
       }}
     >
-      <AnimatedBlock
+      <animate.div
         style={{
           width: 100,
           height: 100,
@@ -37,6 +33,6 @@ export function Loop() {
           rotateZ: rotateZ.value,
         }}
       />
-    </AnimatedBlock>
+    </animate.div>
   );
 }

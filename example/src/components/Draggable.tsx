@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAnimatedValue, AnimatedBlock, useDrag } from 'react-ui-animate';
+import { useAnimatedValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
   const [open, setOpen] = React.useState(true);
@@ -17,7 +17,7 @@ export const Draggable = () => {
         {open ? 'disable' : 'enable'}
       </button>
 
-      <AnimatedBlock
+      <animate.div
         {...bind()}
         style={{
           width: 100,

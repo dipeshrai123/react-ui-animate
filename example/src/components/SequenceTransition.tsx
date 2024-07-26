@@ -1,5 +1,5 @@
 import {
-  AnimatedBlock,
+  animate,
   useAnimatedValue,
   withSpring,
   withTiming,
@@ -13,7 +13,7 @@ export const SequenceTransition = () => {
 
   return (
     <>
-      <AnimatedBlock
+      <animate.div
         style={{
           width: 100,
           height: 100,
