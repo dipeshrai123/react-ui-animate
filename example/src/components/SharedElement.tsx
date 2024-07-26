@@ -113,7 +113,7 @@ export function SharedElement() {
       </div>
 
       <MountedBlock state={activeIndex !== null}>
-        {(opacity) => (
+        {() => (
           <AnimatedBlock
             style={{
               position: 'fixed',
@@ -122,7 +122,6 @@ export function SharedElement() {
               right: 0,
               bottom: 0,
               backgroundColor: 'none',
-              opacity: opacity.value as any,
             }}
           >
             <AnimatedBlock

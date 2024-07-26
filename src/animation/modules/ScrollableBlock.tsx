@@ -60,7 +60,7 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
 
   return (
     <div ref={scrollableBlockRef}>
-      {children && children({ value: animation.value as any })}
+      {children && children({ value: animation.value })}
     </div>
   );
 };
