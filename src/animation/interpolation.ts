@@ -1,9 +1,9 @@
-import {
-  ExtrapolateConfig,
-  FluidValue,
-  interpolate as _interpolate,
-} from '@raidipesh78/re-motion';
+import { FluidValue } from '@raidipesh78/re-motion';
 
+import {
+  interpolate as _interpolate,
+  ExtrapolateConfig,
+} from './core/inerpolate';
 import { isDefined } from './helpers';
 
 function checkFluidValue(value: unknown): FluidValue {

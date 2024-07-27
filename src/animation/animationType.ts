@@ -1,4 +1,6 @@
-import { Easing, UseFluidValueConfig } from '@raidipesh78/re-motion';
+import { Easing } from '@raidipesh78/re-motion';
+
+import type { UseFluidValueConfig } from './core/useFluidValue';
 
 type InitialConfigType =
   | 'linear'

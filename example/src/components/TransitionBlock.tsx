@@ -24,7 +24,7 @@ export function TBExample() {
                   width: 100,
                   height: 100,
                   backgroundColor: 'red',
-                  translateX: bInterpolate(animation.value, 0, 500),
+                  translateX: bInterpolate(animation.value, 0, 400),
                   marginTop: 10,
                 }}
               />

@@ -1,6 +1,6 @@
-import type { UseFluidValueConfig } from '@raidipesh78/re-motion';
-
 import { AnimationConfigUtils } from './animationType';
+
+import type { UseFluidValueConfig } from './core/useFluidValue';
 
 // Base interfaces for callbacks
 interface WithOnCallbacks

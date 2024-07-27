@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { UseFluidValueConfig } from '@raidipesh78/re-motion';
 
 import { useMountedValue } from '../useMountedValue';
+
+import type { UseFluidValueConfig } from '../core/useFluidValue';
 import type { UpdateValue } from '../useAnimatedValue';
 
 interface MountedBlockProps {
