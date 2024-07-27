@@ -61,6 +61,9 @@ export default function Header() {
         <li>
           <Link to="/arrayvalues">Array Values</Link>
         </li>
+        <li>
+          <Link to="/sorting">Sorting</Link>
+        </li>
       </ul>
     </header>
   );

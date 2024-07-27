@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 
 import Header from './Header';
@@ -22,7 +23,7 @@ import { SequenceTransition } from './components/SequenceTransition';
 import { Decay } from './components/Decay';
 import { SharedElement } from './components/SharedElement';
 import { ArrayValues } from './components/ArrayValues';
-import { useLayoutEffect } from 'react';
+import { Sorting } from './components/Sorting';
 
 const router = createBrowserRouter([
   {
@@ -104,6 +105,10 @@ const router = createBrowserRouter([
       {
         path: '/arrayvalues',
         element: <ArrayValues />,
+      },
+      {
+        path: '/sorting',
+        element: <Sorting />,
       },
     ],
   },
