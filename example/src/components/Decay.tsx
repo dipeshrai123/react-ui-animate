@@ -4,6 +4,7 @@ import {
   useAnimatedValue,
   animate,
   interpolate,
+  withDecay,
 } from 'react-ui-animate';
 
 export const Decay = () => {
@@ -16,13 +17,10 @@ export const Decay = () => {
 
     translateX.value = down
       ? movementX + offsetX.current
-      : {
-          config: {
-            decay: true,
-            velocity: velocityX,
-            onChange: (v: number) => (offsetX.current = v),
-          },
-        };
+      : withDecay({
+          velocity: velocityX,
+          onChange: (v) => (offsetX.current = v),
+        });
   });
 
   return (

@@ -67,9 +67,11 @@ interface WithDecayConfig
  * @param {WithDecayConfig} config - Optional decay configuration.
  * @returns {{ config: WithDecayConfig }}
  */
-export const withDecay = (config: WithDecayConfig) => ({
-  decay: true,
-  ...config,
+export const withDecay = (config?: WithDecayConfig) => ({
+  config: {
+    decay: true,
+    ...config,
+  },
 });
 
 /**

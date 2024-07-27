@@ -35,7 +35,7 @@ export const SequenceTransition = () => {
           x.value = withSequence([
             withTiming(200, { duration: 5000, easing: Easing.elastic() }),
             withSpring(400),
-            withDecay({ decay: true, velocity: 1 }),
+            withDecay({ velocity: 1 }),
           ]);
         }}
       >
