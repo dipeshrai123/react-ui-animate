@@ -1,24 +1,119 @@
-// import { Draggable as Example } from './components/Draggable';
-// import { Gestures as Example } from './components/Gestures';
-// import { Interpolation as Example } from './components/Interpolation';
-// import { Loop as Example } from './components/Loop';
-// import { Mounted as Example } from './components/MountedBlock';
-// import { MouseMove as Example } from './components/MouseMove';
-// import { DynamicAnimation as Example } from './components/DynamicAnimation';
-// import { Scroll as Example } from './components/Scroll';
-// import { SCBlock as Example } from './components/ScrollableBlock';
-// import { SnapTo as Example } from './components/SnapTo';
-// import { SVGLine as Example } from './components/svgLine';
-// import { TBExample as Example } from './components/TransitionBlock';
-// import { UseAnimatedValue as Example } from './components/useAnimatedValue';
-// import { UseMountedValue as Example } from './components/useMountedValue';
-// import { Wheel as Example } from './components/Wheel';
-// import { SequenceTransition as Example } from './components/SequenceTransition';
-// import { Decay as Example } from './components/Decay';
-import { SharedElement as Example } from './components/SharedElement';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+
+import Header from './Header';
+
+// Examples
+import { Draggable } from './components/Draggable';
+import { Gestures } from './components/Gestures';
+import { Interpolation } from './components/Interpolation';
+import { Loop } from './components/Loop';
+import { Mounted } from './components/MountedBlock';
+import { MouseMove } from './components/MouseMove';
+import { DynamicAnimation } from './components/DynamicAnimation';
+import { Scroll } from './components/Scroll';
+import { SCBlock } from './components/ScrollableBlock';
+import { SnapTo } from './components/SnapTo';
+import { SVGLine } from './components/svgLine';
+import { TBExample } from './components/TransitionBlock';
+import { UseAnimatedValue } from './components/useAnimatedValue';
+import { UseMountedValue } from './components/useMountedValue';
+import { Wheel } from './components/Wheel';
+import { SequenceTransition } from './components/SequenceTransition';
+import { Decay } from './components/Decay';
+import { SharedElement } from './components/SharedElement';
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Root />,
+    children: [
+      {
+        path: '/draggable',
+        element: <Draggable />,
+      },
+      {
+        path: '/gestures',
+        element: <Gestures />,
+      },
+      {
+        path: '/interpolation',
+        element: <Interpolation />,
+      },
+      {
+        path: '/loop',
+        element: <Loop />,
+      },
+      {
+        path: '/mountedblock',
+        element: <Mounted />,
+      },
+      {
+        path: '/mousemove',
+        element: <MouseMove />,
+      },
+      {
+        path: '/dynamicanimation',
+        element: <DynamicAnimation />,
+      },
+      {
+        path: '/scroll',
+        element: <Scroll />,
+      },
+      {
+        path: '/scrollableblock',
+        element: <SCBlock />,
+      },
+      {
+        path: '/snapto',
+        element: <SnapTo />,
+      },
+      {
+        path: '/svgline',
+        element: <SVGLine />,
+      },
+      {
+        path: '/transitionblock',
+        element: <TBExample />,
+      },
+      {
+        path: '/useanimatedvalue',
+        element: <UseAnimatedValue />,
+      },
+      {
+        path: '/usemountedvalue',
+        element: <UseMountedValue />,
+      },
+      {
+        path: '/wheel',
+        element: <Wheel />,
+      },
+      {
+        path: '/sequencetransition',
+        element: <SequenceTransition />,
+      },
+      {
+        path: '/decay',
+        element: <Decay />,
+      },
+      {
+        path: '/sharedelement',
+        element: <SharedElement />,
+      },
+    ],
+  },
+]);
+
+function Root() {
+  return (
+    <div>
+      <Header />
+      <Outlet />
+    </div>
+  );
+}
 
 function App() {
-  return <Example />;
+  return <RouterProvider router={router} />;
 }
 
 export default App;

@@ -6,3 +6,14 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
 }
+
+header.header ul {
+  display: flex;
+  list-style: none;
+  width: 100%;
+  overflow-x: auto;
+}
+
+header.header ul li {
+  padding: 10px;
+}
