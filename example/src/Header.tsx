@@ -58,6 +58,9 @@ export default function Header() {
         <li>
           <Link to="/sharedelement">SharedElement</Link>
         </li>
+        <li>
+          <Link to="/arrayvalues">Array Values</Link>
+        </li>
       </ul>
     </header>
   );

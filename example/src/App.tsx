@@ -21,6 +21,8 @@ import { Wheel } from './components/Wheel';
 import { SequenceTransition } from './components/SequenceTransition';
 import { Decay } from './components/Decay';
 import { SharedElement } from './components/SharedElement';
+import { ArrayValues } from './components/ArrayValues';
+import { useLayoutEffect } from 'react';
 
 const router = createBrowserRouter([
   {
@@ -99,6 +101,10 @@ const router = createBrowserRouter([
         path: '/sharedelement',
         element: <SharedElement />,
       },
+      {
+        path: '/arrayvalues',
+        element: <ArrayValues />,
+      },
     ],
   },
 ]);
@@ -113,6 +119,10 @@ function Root() {
 }
 
 function App() {
+  useLayoutEffect(() => {
+    document.body.style.backgroundColor = '#333';
+  }, []);
+
   return <RouterProvider router={router} />;
 }
 

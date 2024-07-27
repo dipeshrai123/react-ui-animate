@@ -17,3 +17,7 @@ header.header ul {
 header.header ul li {
   padding: 10px;
 }
+
+header.header ul li a {
+  color: red;
+}

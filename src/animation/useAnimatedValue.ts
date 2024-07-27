@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
+import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useFluidValue } from './core/useFluidValue';
 import { AnimationConfigUtils } from './animationType';
@@ -16,6 +17,9 @@ export type UpdateValue =
   | AssignValue
   | ((update: (next: AssignValue) => Promise<any>) => void);
 
+const getValue = (value: unknown) =>
+  typeof value === 'number' ? { toValue: value } : value;
+
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
@@ -24,8 +28,8 @@ export type UpdateValue =
  * @param { string | number } initialValue - Initial value
  * @param { UseAnimatedValueConfig } config - Animation configuration object.
  */
-export function useAnimatedValue(
-  initialValue: number,
+export function useAnimatedValue<T extends number | number[]>(
+  initialValue: T,
   config?: UseAnimatedValueConfig
 ) {
   const isInitialRender = useRef(true);
@@ -34,34 +38,44 @@ export function useAnimatedValue(
     ...config,
   });
 
+  const currentValue = Array.isArray(animation)
+    ? animation.map((a) => a.get())
+    : (animation as FluidValue).get();
+
   const targetObject: {
-    value: any;
-    currentValue: number;
+    value: T extends number ? any : any[];
+    currentValue: T extends number ? number : number[];
   } = {
-    value: animation,
-    currentValue: animation.get(),
+    value: animation as T extends number ? FluidValue : FluidValue[],
+    currentValue: currentValue as T extends number ? number : number[],
   };
+
+  const updateAnimation = useCallback((value: unknown) => {
+    const updateValue = getValue(value);
+
+    if (Array.isArray(value)) {
+      setAnimation(value.map((v) => getValue(v)) as any);
+    } else {
+      queueMicrotask(() => setAnimation(updateValue as any));
+    }
+  }, []);
 
   useLayoutEffect(() => {
     if (!isInitialRender.current) {
-      setAnimation(
-        typeof initialValue === 'number'
-          ? { toValue: initialValue }
-          : initialValue
-      );
+      updateAnimation(initialValue);
     }
 
     isInitialRender.current = false;
   }, [initialValue, config]);
 
   return new Proxy(targetObject, {
-    set: function (_, key, value: number | UpdateValue) {
+    set: function (
+      _,
+      key,
+      value: number | UpdateValue | number[] | UpdateValue[]
+    ) {
       if (key === 'value') {
-        if (typeof value === 'number') {
-          queueMicrotask(() => setAnimation({ toValue: value }));
-        } else if (typeof value === 'function' || typeof value === 'object') {
-          queueMicrotask(() => setAnimation(value));
-        }
+        updateAnimation(value);
 
         return true;
       }
@@ -74,7 +88,9 @@ export function useAnimatedValue(
       }
 
       if (key === 'currentValue') {
-        return animation.get();
+        return Array.isArray(animation)
+          ? animation.map((a) => a.get())
+          : animation.get();
       }
 
       throw new Error(
