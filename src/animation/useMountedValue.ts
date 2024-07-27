@@ -10,7 +10,7 @@ export interface UseMountedValueConfig extends UseMountConfig {}
  * of a component.
  *
  * @param { boolean } state - Boolean indicating the component should mount or unmount.
- * @param { UseMountedValueConfig } config - Animation configuration.
+ * @param { UseAnimatedValueConfig } config - Animation configuration.
  */
 export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
   const mv = useMount(state, config);

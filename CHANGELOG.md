@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - New `withConfig` function added for passing default configuration.
-- Decay animation implemented with configurations `velocity`, `deceleration` and `decay`
+- Decay animation implemented with configurations `velocity`, `deceleration` and `decay`.
 
 ```js
 const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
@@ -26,5 +26,15 @@ const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
 
 ### Fixed
 
-- Gestures hooks doesn't get applied on the re-mounted elements (After the mount)
-- Animation values not animating when applied on the re-mounted elements
+- Gestures hooks doesn't get applied on the re-mounted elements (After the mount).
+- Animation values not animating when applied on the re-mounted elements.
+
+## [4.0.0]
+
+### Removed
+
+- Removed `AnimatedBlock`, `AnimatedInline` and `AnimatedImage` HOCs.
+
+### Fixed
+
+- with\* function config overrides bug fixed.

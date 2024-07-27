@@ -2,8 +2,7 @@ import * as React from 'react';
 
 import { useMountedValue } from '../useMountedValue';
 
-import type { UseFluidValueConfig } from '../core/useFluidValue';
-import type { UpdateValue } from '../useAnimatedValue';
+import type { UpdateValue, UseAnimatedValueConfig } from '../useAnimatedValue';
 
 interface MountedBlockProps {
   state: boolean;
@@ -11,7 +10,7 @@ interface MountedBlockProps {
   from?: number;
   enter?: number | UpdateValue;
   exit?: number | UpdateValue;
-  config?: UseFluidValueConfig;
+  config?: UseAnimatedValueConfig;
 }
 
 /**
@@ -21,7 +20,7 @@ interface MountedBlockProps {
  * @param { number } } from - Number that dictates the beginning state for animation.
  * @param { number | { toValue: number, config: MountedValueConfig } } enter - Number that dictates the entry state for animation.
  * @param { number | { toValue: number, config: MountedValueConfig } } exit - Number that dictates the exit state for animation.
- * @param { UseFluidValueConfig } config - Animation configuration for overall animation.
+ * @param { UseAnimatedValueConfig } config - Animation configuration for overall animation.
  */
 export const MountedBlock = ({
   state,

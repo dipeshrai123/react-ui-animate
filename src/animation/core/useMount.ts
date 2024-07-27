@@ -1,11 +1,9 @@
 import { useState, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import {
-  AssignValue,
-  useFluidValue,
-  UseFluidValueConfig,
-} from './useFluidValue';
+import { useFluidValue } from './useFluidValue';
+
+import type { AssignValue, UseFluidValueConfig } from './FluidController';
 
 export interface UseMountConfig {
   from: number;

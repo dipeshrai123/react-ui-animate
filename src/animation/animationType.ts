@@ -1,6 +1,6 @@
 import { Easing } from '@raidipesh78/re-motion';
 
-import type { UseFluidValueConfig } from './core/useFluidValue';
+import type { UseAnimatedValueConfig } from './useAnimatedValue';
 
 type InitialConfigType =
   | 'linear'
@@ -19,7 +19,7 @@ type InitialConfigType =
 
 const getInitialConfig = (
   animationType?: InitialConfigType
-): UseFluidValueConfig => {
+): UseAnimatedValueConfig => {
   switch (animationType) {
     case 'elastic':
       return { mass: 1, friction: 18, tension: 250 };

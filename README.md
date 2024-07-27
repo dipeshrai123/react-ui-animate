@@ -21,7 +21,7 @@ yarn add react-ui-animate
 The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Here’s how you can get started quickly:
 
 ```javascript
-import { animate.div, useAnimatedValue } from 'react-ui-animate';
+import { animate, useAnimatedValue } from 'react-ui-animate';
 
 export default function () {
   // Initialize an animated opacity value
@@ -89,7 +89,7 @@ const width = useAnimatedValue(100); // Start with a width of 100
 The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
 
 ```javascript
-import { useAnimatedValue, animate.div, interpolate } from 'react-ui-animate';
+import { useAnimatedValue, animate, interpolate } from 'react-ui-animate';
 
 const width = useAnimatedValue(100); // Start with a width of 100
 

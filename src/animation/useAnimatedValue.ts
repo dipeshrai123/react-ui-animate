@@ -1,6 +1,9 @@
-import { UseFluidValueConfig, useFluidValue } from './core/useFluidValue';
-import { AnimationConfigUtils } from './animationType';
 import { useLayoutEffect, useRef } from 'react';
+
+import { useFluidValue } from './core/useFluidValue';
+import { AnimationConfigUtils } from './animationType';
+
+import type { UseFluidValueConfig } from './core/FluidController';
 
 export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
 
