@@ -6,6 +6,7 @@ import {
   FluidController,
   UseFluidValueConfig,
 } from './FluidController';
+import { FluidArrayController } from './FluidArrayController';
 
 export const useFluidValue = <T extends number | number[]>(
   value: T,
@@ -19,7 +20,7 @@ export const useFluidValue = <T extends number | number[]>(
 ] => {
   const fluidController = useRef(
     Array.isArray(value)
-      ? value.map((v) => new FluidController(v, config))
+      ? new FluidArrayController(value, config)
       : new FluidController(value, config)
   ).current;
 
@@ -28,10 +29,8 @@ export const useFluidValue = <T extends number | number[]>(
       updateValue: T extends number ? AssignValue : AssignValue[],
       callback?: () => void
     ) => {
-      if (Array.isArray(fluidController)) {
-        fluidController.map((fc, i) => {
-          fc.setFluid((updateValue as AssignValue[])[i], callback);
-        });
+      if (fluidController instanceof FluidArrayController) {
+        fluidController.setFluid(updateValue as AssignValue[], callback);
       } else {
         fluidController.setFluid(updateValue as AssignValue, callback);
       }
@@ -39,17 +38,7 @@ export const useFluidValue = <T extends number | number[]>(
     []
   );
 
-  const fluidValue = useMemo(
-    () =>
-      Array.isArray(fluidController)
-        ? (fluidController.map((fc) => fc.getFluid()) as T extends number
-            ? FluidValue
-            : FluidValue[])
-        : (fluidController.getFluid() as T extends number
-            ? FluidValue
-            : FluidValue[]),
-    []
-  );
+  const fluidValue = useMemo(() => fluidController.getFluid(), []);
 
-  return [fluidValue, onUpdate];
+  return [fluidValue as T extends number ? FluidValue : FluidValue[], onUpdate];
 };
