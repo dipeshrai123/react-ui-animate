@@ -75,7 +75,7 @@ export class FluidController {
         easing: config?.easing,
       };
 
-      timing(this.fluid, timingConfig, onRest);
+      timing(this.fluid, timingConfig).start(onRest);
     } else if (config?.decay) {
       const decayConfig = {
         velocity: config?.velocity,
@@ -83,7 +83,7 @@ export class FluidController {
         delay: config?.delay,
       };
 
-      decay(this.fluid, decayConfig, onRest);
+      decay(this.fluid, decayConfig).start(onRest);
     } else {
       if (!isDefined(updateValue.toValue)) {
         throw new Error('No `toValue` is defined');
@@ -98,7 +98,7 @@ export class FluidController {
         restDistance: config?.restDistance,
       };
 
-      spring(this.fluid, springConfig, onRest);
+      spring(this.fluid, springConfig).start(onRest);
     }
   }
 
