@@ -30,18 +30,22 @@ export const Sorting = () => {
       originalIndex.current = newOrder;
     }
 
-    animationY.value = animationY.value.map((_, j) => {
+    const animationYValues = [];
+    const zIndexValues = [];
+    const animationXValues = [];
+
+    for (let j = 0; j < ITEMS.length; j++) {
       const isActive = down && j === i;
-      return withSpring(isActive ? index * 70 + my : newOrder.indexOf(j) * 70);
-    });
-    zIndex.value = ITEMS.map((_, j) => {
-      const isActive = down && j === i;
-      return withConfig(isActive ? 1 : 0, { immediate: true });
-    });
-    animationX.value = ITEMS.map((_, j) => {
-      const isActive = down && j === i;
-      return withSpring(isActive ? mx : 0);
-    });
+      animationYValues[j] = withSpring(
+        isActive ? index * 70 + my : newOrder.indexOf(j) * 70
+      );
+      zIndexValues[j] = withConfig(isActive ? 1 : 0, { immediate: true });
+      animationXValues[j] = withSpring(isActive ? mx : 0);
+    }
+
+    animationY.value = animationYValues;
+    zIndex.value = zIndexValues;
+    animationX.value = animationXValues;
   });
 
   return (
