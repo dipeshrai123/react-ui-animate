@@ -35,6 +35,30 @@ const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
 
 - Removed `AnimatedBlock`, `AnimatedInline` and `AnimatedImage` HOCs.
 
+### Added
+
+- `useAnimatedValue` can accept array of numbers
+
+```jsx
+const animations = useAnimatedValue([0, 100, 200]);
+```
+
+And it can be updated like
+
+```jsx
+animations.value = [200, 400, 500];
+```
+
+Or it also can be used with animation modifiers
+
+```jsx
+animations.value = [
+  withSpring(200),
+  withTiming(400),
+  withConfig(500, AnimationConfigUtils.BOUNCE),
+];
+```
+
 ### Fixed
 
 - with\* function config overrides bug fixed.

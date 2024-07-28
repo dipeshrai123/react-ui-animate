@@ -175,7 +175,7 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useAnimatedValue, animate.div, useDrag } from 'react-ui-animate';
+import { useAnimatedValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
   const translateX = useAnimatedValue(0);
