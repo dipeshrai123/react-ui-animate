@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useFluidValue } from './core/useFluidValue';
@@ -32,7 +32,7 @@ export function useAnimatedValue<T extends number | number[]>(
   initialValue: T,
   config?: UseAnimatedValueConfig
 ) {
-  // const isInitialRender = useRef(true);
+  const isInitialRender = useRef(true);
   const [animation, setAnimation] = useFluidValue(initialValue, {
     ...AnimationConfigUtils.EASE,
     ...config,
@@ -60,13 +60,13 @@ export function useAnimatedValue<T extends number | number[]>(
     }
   }, []);
 
-  // useLayoutEffect(() => {
-  //   if (!isInitialRender.current) {
-  //     updateAnimation(initialValue);
-  //   }
+  useLayoutEffect(() => {
+    if (!isInitialRender.current) {
+      updateAnimation(initialValue);
+    }
 
-  //   isInitialRender.current = false;
-  // }, [initialValue, config]);
+    isInitialRender.current = false;
+  }, [initialValue, config]);
 
   return new Proxy(targetObject, {
     set: function (
