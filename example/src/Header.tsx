@@ -64,6 +64,9 @@ export default function Header() {
         <li>
           <Link to="/sorting">Sorting</Link>
         </li>
+        <li>
+          <Link to="/toast">Toast</Link>
+        </li>
       </ul>
     </header>
   );

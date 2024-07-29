@@ -24,6 +24,7 @@ import { Decay } from './components/Decay';
 import { SharedElement } from './components/SharedElement';
 import { ArrayValues } from './components/ArrayValues';
 import { Sorting } from './components/Sorting';
+import { ToastComp } from './components/Toast';
 
 const router = createBrowserRouter([
   {
@@ -109,6 +110,10 @@ const router = createBrowserRouter([
       {
         path: '/sorting',
         element: <Sorting />,
+      },
+      {
+        path: '/toast',
+        element: <ToastComp />,
       },
     ],
   },
