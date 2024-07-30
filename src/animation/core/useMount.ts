@@ -53,7 +53,7 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
         }
       );
     }
-  }, [state, config]);
+  }, [state]);
 
   return (
     callback: (animation: FluidValue, mounted: boolean) => React.ReactNode
