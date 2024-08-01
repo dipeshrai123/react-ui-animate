@@ -24,12 +24,24 @@ export function useOutsideClick(
 
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (!elementRef?.current?.contains(e.target as Element)) {
+      const target = e.target as Node;
+
+      if (!target || !target.isConnected) {
+        return;
+      }
+
+      const isOutside =
+        elementRef.current && !elementRef.current.contains(target);
+
+      if (isOutside) {
         callbackRef.current && callbackRef.current(e);
       }
     };
 
-    const subscribe = attachEvents([document], [['click', handleOutsideClick]]);
+    const subscribe = attachEvents(
+      [document],
+      [['mousedown', handleOutsideClick]]
+    );
 
     return () => subscribe && subscribe();
   }, []);

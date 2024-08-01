@@ -25,6 +25,7 @@ import { SharedElement } from './components/SharedElement';
 import { ArrayValues } from './components/ArrayValues';
 import { Sorting } from './components/Sorting';
 import { ToastComp } from './components/Toast';
+import { ModalComp } from './components/Modal';
 
 const router = createBrowserRouter([
   {
@@ -114,6 +115,10 @@ const router = createBrowserRouter([
       {
         path: '/toast',
         element: <ToastComp />,
+      },
+      {
+        path: '/modal',
+        element: <ModalComp />,
       },
     ],
   },
