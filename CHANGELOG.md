@@ -62,3 +62,4 @@ animations.value = [
 ### Fixed
 
 - with\* function config overrides bug fixed.
+- `useOutsideClick` hook immediate callback fire issue with modal fixed.
