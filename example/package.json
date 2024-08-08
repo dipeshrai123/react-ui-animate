@@ -20,6 +20,8 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "start": "npm run storybook",
+    "build": "npm run build-storybook",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
