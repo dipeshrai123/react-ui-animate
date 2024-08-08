@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ToastComp as Example } from './Toast';
+import { ModalComp as Example } from './Modal';
 
 const meta = {
-  title: 'Examples/Toast',
+  title: 'Demo/Modal',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Toast: Story = {};
+export const Modal: Story = {};

@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ModalComp as Example } from './Modal';
+import { SharedElement as Example } from './SharedElement';
 
 const meta = {
-  title: 'Examples/Modal',
+  title: 'Demo/SharedElement',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Modal: Story = {};
+export const SharedElement: Story = {};
