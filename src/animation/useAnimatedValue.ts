@@ -17,15 +17,12 @@ export type UpdateValue =
   | AssignValue
   | ((update: (next: AssignValue) => Promise<any>) => void);
 
-const getValue = (value: unknown) =>
-  typeof value === 'number' ? { toValue: value } : value;
-
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
  * a component. It doesn't cast any re-renders which can is very good for performance optimization.
  *
- * @param { string | number } initialValue - Initial value
+ * @param { number | number[] } initialValue - Initial value
  * @param { UseAnimatedValueConfig } config - Animation configuration object.
  */
 export function useAnimatedValue<T extends number | number[]>(
@@ -38,27 +35,18 @@ export function useAnimatedValue<T extends number | number[]>(
     ...config,
   });
 
-  const currentValue = Array.isArray(animation)
-    ? animation.map((a) => a.get())
-    : (animation as FluidValue).get();
+  const updateAnimation = useCallback(
+    (value: number | UpdateValue | Array<number | UpdateValue>) => {
+      type AnimationType = T extends number ? AssignValue : AssignValue[];
 
-  const targetObject: {
-    value: T extends number ? any : any[];
-    currentValue: T extends number ? number : number[];
-  } = {
-    value: animation as T extends number ? FluidValue : FluidValue[],
-    currentValue: currentValue as T extends number ? number : number[],
-  };
+      const updatedValue = Array.isArray(value)
+        ? (value.map((v) => getToValue(v)) as AnimationType)
+        : (getToValue(value) as AnimationType);
 
-  const updateAnimation = useCallback((value: unknown) => {
-    const updateValue = getValue(value);
-
-    if (Array.isArray(value)) {
-      setAnimation(value.map((v) => getValue(v)) as any);
-    } else {
-      queueMicrotask(() => setAnimation(updateValue as any));
-    }
-  }, []);
+      queueMicrotask(() => setAnimation(updatedValue));
+    },
+    []
+  );
 
   useLayoutEffect(() => {
     if (!isInitialRender.current) {
@@ -68,34 +56,21 @@ export function useAnimatedValue<T extends number | number[]>(
     isInitialRender.current = false;
   }, [initialValue, config]);
 
-  return new Proxy(targetObject, {
-    set: function (
-      _,
-      key,
-      value: number | UpdateValue | number[] | UpdateValue[]
-    ) {
-      if (key === 'value') {
-        updateAnimation(value);
-
-        return true;
-      }
-
-      throw new Error('You cannot set any other property to animation node.');
+  return {
+    set value(to: number | UpdateValue | number[] | UpdateValue[]) {
+      updateAnimation(to);
     },
-    get: function (_, key) {
-      if (key === 'value') {
-        return animation;
-      }
-
-      if (key === 'currentValue') {
-        return Array.isArray(animation)
-          ? animation.map((a) => a.get())
-          : animation.get();
-      }
-
-      throw new Error(
-        'You cannot access any other property from animation node.'
-      );
+    get value(): T extends number ? FluidValue : FluidValue[] {
+      return animation;
     },
-  });
+    get currentValue() {
+      return Array.isArray(animation)
+        ? animation.map((a) => a.get())
+        : animation.get();
+    },
+  };
+}
+
+function getToValue(value: unknown) {
+  return typeof value === 'number' ? { toValue: value } : value;
 }
