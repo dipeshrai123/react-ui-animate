@@ -1,7 +1,10 @@
 export { interpolate, bInterpolate } from './interpolation';
 export { MountedBlock, ScrollableBlock, TransitionBlock } from './modules';
-export { useAnimatedValue, UseAnimatedValueConfig } from './useAnimatedValue';
-export { useMountedValue, UseMountedValueConfig } from './useMountedValue';
+export {
+  useAnimatedValue,
+  type UseAnimatedValueConfig,
+} from './useAnimatedValue';
+export { useMountedValue, type UseMountedValueConfig } from './useMountedValue';
 export { AnimationConfigUtils } from './animationType';
 export {
   withSpring,
@@ -11,5 +14,5 @@ export {
   withEase,
   withConfig,
   withDecay,
-} from './withFunctions';
+} from './controllers';
 export { delay } from './helpers';
