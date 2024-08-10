@@ -8,7 +8,6 @@ import { isDefined } from './helpers';
 
 function checkFluidValue(value: unknown): FluidValue {
   if (!isDefined(value) || !(value instanceof FluidValue)) {
-    console.log(value);
     throw new Error(
       `Invalid ${value} type for interpolate function. Expected FluidValue.`
     );
