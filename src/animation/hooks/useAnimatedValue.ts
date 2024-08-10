@@ -1,10 +1,11 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useFluidValue } from './core/useFluidValue';
-import { AnimationConfigUtils } from './animationType';
+import { useFluidValue } from '../core/useFluidValue';
+import { AnimationConfigUtils } from '../animationType';
 
-import type { UseFluidValueConfig } from './core/FluidController';
+import type { UseFluidValueConfig } from '../core/FluidController';
+import { getToValue } from '../helpers';
 
 export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
 
@@ -69,8 +70,4 @@ export function useAnimatedValue<T extends number | number[]>(
         : animation.get();
     },
   };
-}
-
-function getToValue(value: unknown) {
-  return typeof value === 'number' ? { toValue: value } : value;
 }

@@ -1,7 +1,10 @@
 import * as React from 'react';
 
 import { bin } from '../../gestures/helpers/math';
-import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import {
+  useAnimatedValue,
+  UseAnimatedValueConfig,
+} from '../hooks/useAnimatedValue';
 
 interface TransitionBlockProps {
   state: boolean;

@@ -1,19 +1,10 @@
-import { type UseAnimatedValueConfig } from '../useAnimatedValue';
+import { getToValue } from '../helpers';
+import { type AssignValue } from '../core/FluidController';
 
-export const withSequence = (
-  configs: Array<
-    | {
-        toValue?: number;
-        config?: UseAnimatedValueConfig;
-      }
-    | number
-  >
-) => {
-  return async (
-    next: (arg: { toValue?: number; config?: UseAnimatedValueConfig }) => void
-  ) => {
-    for (const config of configs) {
-      await next(typeof config === 'number' ? { toValue: config } : config);
+export const withSequence = (animations: Array<AssignValue | number>) => {
+  return async (next: (arg: AssignValue) => void) => {
+    for (const a of animations) {
+      await next(getToValue(a) as AssignValue);
     }
   };
 };

@@ -1,8 +1,11 @@
 import * as React from 'react';
 
-import { useMountedValue } from '../useMountedValue';
+import { useMountedValue } from '../hooks/useMountedValue';
 
-import type { UpdateValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import type {
+  UpdateValue,
+  UseAnimatedValueConfig,
+} from '../hooks/useAnimatedValue';
 
 interface MountedBlockProps {
   state: boolean;

@@ -1,6 +1,6 @@
 import { Easing } from '@raidipesh78/re-motion';
 
-import type { UseAnimatedValueConfig } from './useAnimatedValue';
+import type { UseAnimatedValueConfig } from './hooks/useAnimatedValue';
 
 type InitialConfigType =
   | 'linear'

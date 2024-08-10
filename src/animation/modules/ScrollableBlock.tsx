@@ -1,6 +1,9 @@
 import * as React from 'react';
 
-import { useAnimatedValue, UseAnimatedValueConfig } from '../useAnimatedValue';
+import {
+  useAnimatedValue,
+  UseAnimatedValueConfig,
+} from '../hooks/useAnimatedValue';
 
 interface ScrollableBlockProps {
   children?: (animation: { value: any }) => React.ReactNode;
