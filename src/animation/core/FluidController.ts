@@ -1,4 +1,10 @@
-import { FluidValue, timing, decay, spring } from '@raidipesh78/re-motion';
+import {
+  FluidValue,
+  timing,
+  decay,
+  spring,
+  sequence,
+} from '@raidipesh78/re-motion';
 
 import { isDefined } from '../helpers';
 
@@ -76,7 +82,7 @@ export class FluidController {
     }
   }
 
-  private runAnimation(
+  private runSingleAnimation(
     updateValue: AssignValue,
     onComplete?: (value: number) => void
   ) {
@@ -107,14 +113,23 @@ export class FluidController {
   }
 
   public setFluid(
-    updateValue: AssignValue,
-    callback?: (value: number) => void
+    updateValue: AssignValue | AssignValue[],
+    callback?: (value?: number) => void
   ) {
     if (!updateValue) {
       return;
     }
 
-    this.runAnimation(updateValue, callback);
+    if (Array.isArray(updateValue)) {
+      const animations = updateValue.map((uv) =>
+        this.getAnimation(uv, { ...this.defaultConfig, ...uv.config })
+      );
+      sequence(animations).start(
+        ({ finished, value }) => finished && callback?.(value)
+      );
+    } else {
+      this.runSingleAnimation(updateValue, callback);
+    }
   }
 
   public getFluid() {

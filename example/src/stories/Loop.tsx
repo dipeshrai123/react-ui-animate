@@ -1,4 +1,4 @@
-import { animate, useAnimatedValue, useMouseMove } from 'react-ui-animate';
+import { animate, useAnimatedValue } from 'react-ui-animate';
 
 export function Loop() {
   // const x = useAnimatedValue(0);

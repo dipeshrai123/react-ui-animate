@@ -9,6 +9,8 @@ import { getToValue } from '../helpers';
 
 export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
 
+type UpdateValue = number | AssignValue | number[] | AssignValue[];
+
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
@@ -27,18 +29,15 @@ export function useAnimatedValue<T extends number | number[]>(
     ...config,
   });
 
-  const updateAnimation = useCallback(
-    (value: number | AssignValue | Array<number | AssignValue>) => {
-      type AnimationType = T extends number ? AssignValue : AssignValue[];
+  const updateAnimation = useCallback((value: UpdateValue | UpdateValue[]) => {
+    type AnimationType = T extends number ? AssignValue : AssignValue[];
 
-      const updatedValue = Array.isArray(value)
-        ? (value.map((v) => getToValue(v)) as AnimationType)
-        : (getToValue(value) as AnimationType);
+    const updatedValue = Array.isArray(value)
+      ? (value.map((v) => getToValue(v)) as AnimationType)
+      : (getToValue(value) as AnimationType);
 
-      queueMicrotask(() => setAnimation(updatedValue));
-    },
-    []
-  );
+    queueMicrotask(() => setAnimation(updatedValue));
+  }, []);
 
   useLayoutEffect(() => {
     if (!isInitialRender.current) {
@@ -49,7 +48,7 @@ export function useAnimatedValue<T extends number | number[]>(
   }, [initialValue, config]);
 
   return {
-    set value(to: number | AssignValue | number[] | AssignValue[]) {
+    set value(to: UpdateValue | UpdateValue[]) {
       updateAnimation(to);
     },
     get value(): T extends number ? FluidValue : FluidValue[] {
