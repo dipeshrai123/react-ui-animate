@@ -2,17 +2,15 @@ import * as React from 'react';
 
 import { useMountedValue } from '../hooks/useMountedValue';
 
-import type {
-  UpdateValue,
-  UseAnimatedValueConfig,
-} from '../hooks/useAnimatedValue';
+import type { UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import type { AssignValue } from '../core/FluidController';
 
 interface MountedBlockProps {
   state: boolean;
   children: (animation: { value: any }) => React.ReactNode;
   from?: number;
-  enter?: number | UpdateValue;
-  exit?: number | UpdateValue;
+  enter?: number | AssignValue;
+  exit?: number | AssignValue;
   config?: UseAnimatedValueConfig;
 }
 

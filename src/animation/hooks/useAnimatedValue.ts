@@ -4,19 +4,10 @@ import { FluidValue } from '@raidipesh78/re-motion';
 import { useFluidValue } from '../core/useFluidValue';
 import { AnimationConfigUtils } from '../animationType';
 
-import type { UseFluidValueConfig } from '../core/FluidController';
+import type { AssignValue, UseFluidValueConfig } from '../core/FluidController';
 import { getToValue } from '../helpers';
 
 export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
-
-type AssignValue = {
-  toValue?: number;
-  config?: UseAnimatedValueConfig;
-};
-
-export type UpdateValue =
-  | AssignValue
-  | ((update: (next: AssignValue) => Promise<any>) => void);
 
 /**
  * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
@@ -37,7 +28,7 @@ export function useAnimatedValue<T extends number | number[]>(
   });
 
   const updateAnimation = useCallback(
-    (value: number | UpdateValue | Array<number | UpdateValue>) => {
+    (value: number | AssignValue | Array<number | AssignValue>) => {
       type AnimationType = T extends number ? AssignValue : AssignValue[];
 
       const updatedValue = Array.isArray(value)
@@ -58,7 +49,7 @@ export function useAnimatedValue<T extends number | number[]>(
   }, [initialValue, config]);
 
   return {
-    set value(to: number | UpdateValue | number[] | UpdateValue[]) {
+    set value(to: number | AssignValue | number[] | AssignValue[]) {
       updateAnimation(to);
     },
     get value(): T extends number ? FluidValue : FluidValue[] {

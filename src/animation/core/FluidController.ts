@@ -27,7 +27,7 @@ type UpdateValue = {
   config?: UseFluidValueConfig;
 };
 
-export type AssignValue = UpdateValue | Fn<Fn<UpdateValue, Promise<any>>, void>;
+export type AssignValue = UpdateValue;
 
 export class FluidController {
   private fluid: FluidValue;
@@ -116,18 +116,8 @@ export class FluidController {
       return;
     }
 
-    if (typeof updateValue === 'function') {
-      updateValue((nextValue) => {
-        return new Promise((resolve) => {
-          this.runAnimation(nextValue, (value) => {
-            resolve(nextValue);
-
-            if (callback) {
-              callback(value);
-            }
-          });
-        });
-      });
+    if (Array.isArray(updateValue)) {
+      console.log('apply sequence animation');
     } else {
       this.runAnimation(updateValue, callback);
     }
