@@ -19,6 +19,7 @@ export interface UseFluidValueConfig {
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
+  loop?: boolean | number;
 }
 
 type UpdateValue = {
@@ -35,6 +36,46 @@ export class FluidController {
   constructor(value: number, config?: UseFluidValueConfig) {
     this.fluid = new FluidValue(value);
     this.defaultConfig = config;
+  }
+
+  private getAnimation(updateValue: UpdateValue, config?: UseFluidValueConfig) {
+    if (isDefined(config?.duration) || config?.immediate) {
+      if (!isDefined(updateValue.toValue)) {
+        throw new Error('No `toValue` is defined');
+      }
+
+      const timingConfig = {
+        toValue: updateValue.toValue,
+        delay: config?.delay,
+        duration: config?.immediate ? 0 : config?.duration,
+        easing: config?.easing,
+      };
+
+      return timing(this.fluid, timingConfig);
+    } else if (config?.decay) {
+      const decayConfig = {
+        velocity: config?.velocity,
+        deceleration: config?.deceleration,
+        delay: config?.delay,
+      };
+
+      return decay(this.fluid, decayConfig);
+    } else {
+      if (!isDefined(updateValue.toValue)) {
+        throw new Error('No `toValue` is defined');
+      }
+
+      const springConfig = {
+        toValue: updateValue.toValue,
+        delay: config?.delay,
+        mass: config?.mass,
+        tension: config?.tension,
+        friction: config?.friction,
+        restDistance: config?.restDistance,
+      };
+
+      return spring(this.fluid, springConfig);
+    }
   }
 
   private runAnimation(
@@ -63,43 +104,8 @@ export class FluidController {
       }
     };
 
-    if (isDefined(config?.duration) || config?.immediate) {
-      if (!isDefined(updateValue.toValue)) {
-        throw new Error('No `toValue` is defined');
-      }
-
-      const timingConfig = {
-        toValue: updateValue.toValue,
-        delay: config?.delay,
-        duration: config?.immediate ? 0 : config?.duration,
-        easing: config?.easing,
-      };
-
-      timing(this.fluid, timingConfig).start(onRest);
-    } else if (config?.decay) {
-      const decayConfig = {
-        velocity: config?.velocity,
-        deceleration: config?.deceleration,
-        delay: config?.delay,
-      };
-
-      decay(this.fluid, decayConfig).start(onRest);
-    } else {
-      if (!isDefined(updateValue.toValue)) {
-        throw new Error('No `toValue` is defined');
-      }
-
-      const springConfig = {
-        toValue: updateValue.toValue,
-        delay: config?.delay,
-        mass: config?.mass,
-        tension: config?.tension,
-        friction: config?.friction,
-        restDistance: config?.restDistance,
-      };
-
-      spring(this.fluid, springConfig).start(onRest);
-    }
+    const animation = this.getAnimation(updateValue, config);
+    animation.start(onRest);
   }
 
   public setFluid(
