@@ -22,12 +22,10 @@ export interface UseFluidValueConfig {
   loop?: boolean | number;
 }
 
-type UpdateValue = {
+export type AssignValue = {
   toValue?: number;
   config?: UseFluidValueConfig;
 };
-
-export type AssignValue = UpdateValue;
 
 export class FluidController {
   private fluid: FluidValue;
@@ -38,7 +36,7 @@ export class FluidController {
     this.defaultConfig = config;
   }
 
-  private getAnimation(updateValue: UpdateValue, config?: UseFluidValueConfig) {
+  private getAnimation(updateValue: AssignValue, config?: UseFluidValueConfig) {
     if (isDefined(config?.duration) || config?.immediate) {
       if (!isDefined(updateValue.toValue)) {
         throw new Error('No `toValue` is defined');
@@ -79,7 +77,7 @@ export class FluidController {
   }
 
   private runAnimation(
-    updateValue: UpdateValue,
+    updateValue: AssignValue,
     onComplete?: (value: number) => void
   ) {
     const config = { ...this.defaultConfig, ...updateValue.config };
@@ -116,11 +114,7 @@ export class FluidController {
       return;
     }
 
-    if (Array.isArray(updateValue)) {
-      console.log('apply sequence animation');
-    } else {
-      this.runAnimation(updateValue, callback);
-    }
+    this.runAnimation(updateValue, callback);
   }
 
   public getFluid() {
