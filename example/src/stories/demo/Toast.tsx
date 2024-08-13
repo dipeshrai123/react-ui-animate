@@ -13,13 +13,11 @@ const Toast = ({ id, onEnd }: any) => {
   return (
     <MountedBlock
       state={visible}
-      enter={
-        withSequence([
-          1,
-          2,
-          withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
-        ]) as any
-      }
+      enter={withSequence([
+        1,
+        2,
+        withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
+      ])}
       exit={{ toValue: 4, config: { onRest: () => onEnd(id) } }}
     >
       {(a) => (

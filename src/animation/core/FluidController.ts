@@ -1,10 +1,4 @@
-import {
-  FluidValue,
-  timing,
-  decay,
-  spring,
-  sequence,
-} from '@raidipesh78/re-motion';
+import { FluidValue, timing, decay, spring } from '@raidipesh78/re-motion';
 
 import { isDefined } from '../helpers';
 
@@ -25,13 +19,14 @@ export interface UseFluidValueConfig {
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
-  loop?: boolean | number;
 }
 
-export type AssignValue = {
+type UpdateValue = {
   toValue?: number;
   config?: UseFluidValueConfig;
 };
+
+export type AssignValue = UpdateValue | Fn<Fn<UpdateValue, Promise<any>>, void>;
 
 export class FluidController {
   private fluid: FluidValue;
@@ -42,48 +37,8 @@ export class FluidController {
     this.defaultConfig = config;
   }
 
-  private getAnimation(updateValue: AssignValue, config?: UseFluidValueConfig) {
-    if (isDefined(config?.duration) || config?.immediate) {
-      if (!isDefined(updateValue.toValue)) {
-        throw new Error('No `toValue` is defined');
-      }
-
-      const timingConfig = {
-        toValue: updateValue.toValue,
-        delay: config?.delay,
-        duration: config?.immediate ? 0 : config?.duration,
-        easing: config?.easing,
-      };
-
-      return timing(this.fluid, timingConfig);
-    } else if (config?.decay) {
-      const decayConfig = {
-        velocity: config?.velocity,
-        deceleration: config?.deceleration,
-        delay: config?.delay,
-      };
-
-      return decay(this.fluid, decayConfig);
-    } else {
-      if (!isDefined(updateValue.toValue)) {
-        throw new Error('No `toValue` is defined');
-      }
-
-      const springConfig = {
-        toValue: updateValue.toValue,
-        delay: config?.delay,
-        mass: config?.mass,
-        tension: config?.tension,
-        friction: config?.friction,
-        restDistance: config?.restDistance,
-      };
-
-      return spring(this.fluid, springConfig);
-    }
-  }
-
-  private runSingleAnimation(
-    updateValue: AssignValue,
+  private runAnimation(
+    updateValue: UpdateValue,
     onComplete?: (value: number) => void
   ) {
     const config = { ...this.defaultConfig, ...updateValue.config };
@@ -108,27 +63,67 @@ export class FluidController {
       }
     };
 
-    const animation = this.getAnimation(updateValue, config);
-    animation.start(onRest);
+    if (isDefined(config?.duration) || config?.immediate) {
+      if (!isDefined(updateValue.toValue)) {
+        throw new Error('No `toValue` is defined');
+      }
+
+      const timingConfig = {
+        toValue: updateValue.toValue,
+        delay: config?.delay,
+        duration: config?.immediate ? 0 : config?.duration,
+        easing: config?.easing,
+      };
+
+      timing(this.fluid, timingConfig).start(onRest);
+    } else if (config?.decay) {
+      const decayConfig = {
+        velocity: config?.velocity,
+        deceleration: config?.deceleration,
+        delay: config?.delay,
+      };
+
+      decay(this.fluid, decayConfig).start(onRest);
+    } else {
+      if (!isDefined(updateValue.toValue)) {
+        throw new Error('No `toValue` is defined');
+      }
+
+      const springConfig = {
+        toValue: updateValue.toValue,
+        delay: config?.delay,
+        mass: config?.mass,
+        tension: config?.tension,
+        friction: config?.friction,
+        restDistance: config?.restDistance,
+      };
+
+      spring(this.fluid, springConfig).start(onRest);
+    }
   }
 
   public setFluid(
-    updateValue: AssignValue | AssignValue[],
-    callback?: (value?: number) => void
+    updateValue: AssignValue,
+    callback?: (value: number) => void
   ) {
     if (!updateValue) {
       return;
     }
 
-    if (Array.isArray(updateValue)) {
-      const animations = updateValue.map((uv) =>
-        this.getAnimation(uv, { ...this.defaultConfig, ...uv.config })
-      );
-      sequence(animations).start(
-        ({ finished, value }) => finished && callback?.(value)
-      );
+    if (typeof updateValue === 'function') {
+      updateValue((nextValue) => {
+        return new Promise((resolve) => {
+          this.runAnimation(nextValue, (value) => {
+            resolve(nextValue);
+
+            if (callback) {
+              callback(value);
+            }
+          });
+        });
+      });
     } else {
-      this.runSingleAnimation(updateValue, callback);
+      this.runAnimation(updateValue, callback);
     }
   }
 
