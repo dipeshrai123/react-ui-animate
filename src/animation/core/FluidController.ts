@@ -19,6 +19,7 @@ export interface UseFluidValueConfig {
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
+  loop?: number | boolean;
 }
 
 type UpdateValue = {
@@ -26,7 +27,7 @@ type UpdateValue = {
   config?: UseFluidValueConfig;
 };
 
-export type AssignValue = UpdateValue | Fn<Fn<UpdateValue, Promise<any>>, void>;
+export type AssignValue = UpdateValue | UpdateValue[];
 
 export class FluidController {
   private fluid: FluidValue;
@@ -102,7 +103,7 @@ export class FluidController {
     }
   }
 
-  public setFluid(
+  public async setFluid(
     updateValue: AssignValue,
     callback?: (value: number) => void
   ) {
@@ -110,18 +111,22 @@ export class FluidController {
       return;
     }
 
-    if (typeof updateValue === 'function') {
-      updateValue((nextValue) => {
-        return new Promise((resolve) => {
-          this.runAnimation(nextValue, (value) => {
-            resolve(nextValue);
+    if (Array.isArray(updateValue)) {
+      let currentAnimation = 0;
 
-            if (callback) {
-              callback(value);
-            }
-          });
-        });
-      });
+      const onComplete = (value: number) => {
+        currentAnimation++;
+
+        if (currentAnimation === updateValue.length) {
+          callback && callback(value);
+
+          return;
+        }
+
+        this.runAnimation(updateValue[currentAnimation], onComplete);
+      };
+
+      this.runAnimation(updateValue[currentAnimation], onComplete);
     } else {
       this.runAnimation(updateValue, callback);
     }

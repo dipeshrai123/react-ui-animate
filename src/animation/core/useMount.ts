@@ -7,8 +7,8 @@ import type { AssignValue, UseFluidValueConfig } from './FluidController';
 
 export interface UseMountConfig {
   from: number;
-  enter: number | AssignValue;
-  exit: number | AssignValue;
+  enter: number | AssignValue | AssignValue[];
+  exit: number | AssignValue | AssignValue[];
   config?: UseFluidValueConfig;
 }
 
@@ -33,7 +33,7 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
         setAnimation(
           typeof enter === 'number'
             ? { toValue: enter, config: innerConfig }
-            : enter
+            : (enter as any)
         )
       );
     } else {
@@ -43,7 +43,7 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
               toValue: exit,
               config: innerConfig,
             }
-          : exit,
+          : (exit as any),
         () => {
           setMounted(false);
 

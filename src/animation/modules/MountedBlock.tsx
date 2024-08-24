@@ -9,8 +9,8 @@ interface MountedBlockProps {
   state: boolean;
   children: (animation: { value: any }) => React.ReactNode;
   from?: number;
-  enter?: number | AssignValue;
-  exit?: number | AssignValue;
+  enter?: number | AssignValue | AssignValue[];
+  exit?: number | AssignValue | AssignValue[];
   config?: UseAnimatedValueConfig;
 }
 
