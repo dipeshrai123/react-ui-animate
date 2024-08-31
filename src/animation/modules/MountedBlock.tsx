@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { useMountedValue } from '../hooks/useMountedValue';
+import { useMountedValue } from '../hooks/useMount';
 
-import type { UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import type { UseAnimatedValueConfig } from '../hooks/useValue';
 import type { AssignValue } from '../core/FluidController';
 
 interface MountedBlockProps {

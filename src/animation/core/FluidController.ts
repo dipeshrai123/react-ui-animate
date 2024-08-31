@@ -22,12 +22,10 @@ export interface UseFluidValueConfig {
   loop?: number | boolean;
 }
 
-type UpdateValue = {
+export type UpdateValue = {
   toValue?: number;
   config?: UseFluidValueConfig;
 };
-
-export type AssignValue = UpdateValue | UpdateValue[];
 
 export class FluidController {
   private fluid: FluidValue;
@@ -103,8 +101,8 @@ export class FluidController {
     }
   }
 
-  public async setFluid(
-    updateValue: AssignValue,
+  public setFluid(
+    updateValue: UpdateValue | UpdateValue[],
     callback?: (value: number) => void
   ) {
     if (!updateValue) {

@@ -1,4 +1,4 @@
-import { type UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import { type UseAnimatedValueConfig } from '../hooks/useValue';
 import { withConfig, type WithOnCallbacks } from './withConfig';
 
 interface WithTimingConfig

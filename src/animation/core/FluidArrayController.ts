@@ -1,6 +1,6 @@
 import { FluidController } from './FluidController';
 
-import type { AssignValue, UseFluidValueConfig } from './FluidController';
+import type { UpdateValue, UseFluidValueConfig } from './FluidController';
 
 export class FluidArrayController {
   private fluidControllers: FluidController[];
@@ -9,7 +9,7 @@ export class FluidArrayController {
     this.fluidControllers = values.map((v) => new FluidController(v, config));
   }
 
-  public setFluid(updateValue: AssignValue[], callback?: () => void) {
+  public setFluid(updateValue: UpdateValue[], callback?: () => void) {
     this.fluidControllers.map((fc, i) => {
       fc.setFluid(updateValue[i], callback);
     });

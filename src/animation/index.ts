@@ -3,12 +3,9 @@ export { MountedBlock, ScrollableBlock, TransitionBlock } from './modules';
 export {
   useAnimatedValue,
   type UseAnimatedValueConfig,
-} from './hooks/useAnimatedValue';
-export {
-  useMountedValue,
-  type UseMountedValueConfig,
-} from './hooks/useMountedValue';
-export { AnimationConfigUtils } from './animationType';
+} from './hooks/useValue';
+export { useMountedValue, type UseMountedValueConfig } from './hooks/useMount';
+export { ValueConfig } from './animationType';
 export {
   withSpring,
   withTiming,

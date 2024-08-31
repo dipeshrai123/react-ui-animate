@@ -1,4 +1,4 @@
-import type { UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import type { UseAnimatedValueConfig } from '../hooks/useValue';
 
 export interface WithOnCallbacks
   extends Pick<UseAnimatedValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
