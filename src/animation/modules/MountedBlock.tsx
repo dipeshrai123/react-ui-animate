@@ -3,14 +3,14 @@ import * as React from 'react';
 import { useMountedValue } from '../hooks/useMount';
 
 import type { UseAnimatedValueConfig } from '../hooks/useValue';
-import type { AssignValue } from '../core/FluidController';
+import type { UpdateValue } from '../core/FluidController';
 
 interface MountedBlockProps {
   state: boolean;
   children: (animation: { value: any }) => React.ReactNode;
   from?: number;
-  enter?: number | AssignValue | AssignValue[];
-  exit?: number | AssignValue | AssignValue[];
+  enter?: number | UpdateValue;
+  exit?: number | UpdateValue;
   config?: UseAnimatedValueConfig;
 }
 

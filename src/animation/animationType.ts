@@ -1,6 +1,6 @@
 import { Easing } from '@raidipesh78/re-motion';
 
-export const ValueConfig = {
+export const AnimationConfig = {
   ELASTIC: { mass: 1, friction: 18, tension: 250 },
   BOUNCE: { duration: 500, easing: Easing.bounce },
   EASE: { mass: 1, friction: 26, tension: 170 },

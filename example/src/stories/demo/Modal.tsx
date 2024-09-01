@@ -4,7 +4,7 @@ import {
   MountedBlock,
   animate,
   interpolate,
-  AnimationConfigUtils,
+  AnimationConfig,
   useOutsideClick,
 } from 'react-ui-animate';
 
@@ -19,7 +19,7 @@ const Modal = ({
   useOutsideClick(ref, onClose);
 
   return (
-    <MountedBlock state={visible} config={AnimationConfigUtils.ELASTIC}>
+    <MountedBlock state={visible} config={AnimationConfig.ELASTIC}>
       {(animation) => (
         <animate.div
           style={{

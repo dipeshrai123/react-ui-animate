@@ -5,7 +5,7 @@ export {
   type UseAnimatedValueConfig,
 } from './hooks/useValue';
 export { useMountedValue, type UseMountedValueConfig } from './hooks/useMount';
-export { ValueConfig } from './animationType';
+export { AnimationConfig } from './animationType';
 export {
   withSpring,
   withTiming,
@@ -14,6 +14,5 @@ export {
   withEase,
   withConfig,
   withDecay,
-  withLoop,
 } from './controllers';
 export { delay } from './helpers';

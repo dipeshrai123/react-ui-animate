@@ -1,4 +1,4 @@
-import { AnimationConfigUtils } from '../animationType';
+import { AnimationConfig } from '../animationType';
 import { withConfig, type WithOnCallbacks } from './withConfig';
 import { type UseAnimatedValueConfig } from '../hooks/useValue';
 
@@ -7,4 +7,4 @@ interface WithSpringConfig
     WithOnCallbacks {}
 
 export const withSpring = (toValue: number, config?: WithSpringConfig) =>
-  withConfig(toValue, { ...AnimationConfigUtils.ELASTIC, ...config });
+  withConfig(toValue, { ...AnimationConfig.ELASTIC, ...config });

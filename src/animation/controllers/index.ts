@@ -5,4 +5,3 @@ export { withEase } from './withEase';
 export { withSequence } from './withSequence';
 export { withSpring } from './withSpring';
 export { withTiming } from './withTiming';
-export { withLoop } from './withLoop';

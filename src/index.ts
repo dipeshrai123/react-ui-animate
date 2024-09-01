@@ -8,7 +8,7 @@ export {
 // react-ui-animate
 // Modules
 export {
-  AnimationConfigUtils,
+  AnimationConfig,
   MountedBlock,
   ScrollableBlock,
   TransitionBlock,
