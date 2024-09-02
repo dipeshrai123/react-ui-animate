@@ -134,17 +134,17 @@ x.value = withDelay(1000, withSpring(100));
 
 In this example, a spring animation to `100` will be applied after a 1-second delay.
 
-#### `useMountedValue()`
+#### `useMount()`
 
-The `useMountedValue()` hook facilitates managing the mounting and unmounting of a component with animations.
+The `useMount()` hook facilitates managing the mounting and unmounting of a component with animations.
 
 ```jsx
-import { useMountedValue } from 'react-ui-animate';
+import { useMount } from 'react-ui-animate';
 
 export default function App() {
   const [visible, setVisible] = useState(false);
 
-  const open = useMountedValue(visible, {
+  const open = useMount(visible, {
     from: 0,
     enter: 1,
     exit: 0,
@@ -157,8 +157,8 @@ export default function App() {
 In this example,
 
 1. A state variable `visible` determines whether the component is visible.
-2. The `useMountedValue` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
-3. The `open` function, returned by `useMountedValue`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
+2. The `useMount` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
+3. The `open` function, returned by `useMount`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
 
 ### Gestures
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import { useMountedValue, animate, bInterpolate } from 'react-ui-animate';
+import { useMount, animate, bInterpolate } from 'react-ui-animate';
 
-export const UseMountedValue: React.FC = () => {
+export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
-  const mountedValue = useMountedValue(open, {
+  const mountedValue = useMount(open, {
     from: 0,
     enter: 1,
     exit: 0,
