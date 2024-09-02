@@ -1,8 +1,8 @@
 import * as React from 'react';
 
-import { useMountedValue } from '../hooks/useMount';
+import { useMount } from '../hooks/useMount';
 
-import type { UseAnimatedValueConfig } from '../hooks/useValue';
+import type { UseValueConfig } from '../hooks/useValue';
 import type { UpdateValue } from '../core/FluidController';
 
 interface MountedBlockProps {
@@ -11,7 +11,7 @@ interface MountedBlockProps {
   from?: number;
   enter?: number | UpdateValue;
   exit?: number | UpdateValue;
-  config?: UseAnimatedValueConfig;
+  config?: UseValueConfig;
 }
 
 /**
@@ -19,9 +19,9 @@ interface MountedBlockProps {
  * @param { boolean } state - Boolean indicating the component should mount or unmount.
  * @param { function } children - Child as a function with `AnimatedValue` on `.value` property.
  * @param { number } } from - Number that dictates the beginning state for animation.
- * @param { number | { toValue: number, config: MountedValueConfig } } enter - Number that dictates the entry state for animation.
- * @param { number | { toValue: number, config: MountedValueConfig } } exit - Number that dictates the exit state for animation.
- * @param { UseAnimatedValueConfig } config - Animation configuration for overall animation.
+ * @param { number } enter - Number that dictates the entry state for animation.
+ * @param { number } exit - Number that dictates the exit state for animation.
+ * @param { UseValueConfig } config - Animation configuration for overall animation.
  */
 export const MountedBlock = ({
   state,
@@ -31,7 +31,7 @@ export const MountedBlock = ({
   exit = 0,
   config,
 }: MountedBlockProps) => {
-  const open = useMountedValue(state, {
+  const open = useMount(state, {
     from,
     enter,
     exit,

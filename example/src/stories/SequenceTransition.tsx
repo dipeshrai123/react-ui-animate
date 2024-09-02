@@ -1,6 +1,6 @@
 import {
   animate,
-  useAnimatedValue,
+  useValue,
   withSpring,
   withTiming,
   Easing,
@@ -8,7 +8,7 @@ import {
 } from 'react-ui-animate';
 
 export const SequenceTransition = () => {
-  const x = useAnimatedValue(0);
+  const x = useValue(0);
 
   return (
     <>

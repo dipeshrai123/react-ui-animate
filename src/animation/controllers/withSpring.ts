@@ -1,9 +1,9 @@
 import { AnimationConfig } from '../animationType';
 import { withConfig, type WithOnCallbacks } from './withConfig';
-import { type UseAnimatedValueConfig } from '../hooks/useValue';
+import { type UseValueConfig } from '../hooks/useValue';
 
 interface WithSpringConfig
-  extends Pick<UseAnimatedValueConfig, 'mass' | 'friction' | 'tension'>,
+  extends Pick<UseValueConfig, 'mass' | 'friction' | 'tension'>,
     WithOnCallbacks {}
 
 export const withSpring = (toValue: number, config?: WithSpringConfig) =>

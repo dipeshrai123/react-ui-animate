@@ -18,7 +18,7 @@ export {
 export { bInterpolate, interpolate } from './animation';
 
 // Hooks
-export { useAnimatedValue, useMountedValue } from './animation';
+export { useValue, useMount } from './animation';
 
 // Helpers and Utilities
 export {
@@ -48,7 +48,4 @@ export {
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
 
 // Types
-export type {
-  UseAnimatedValueConfig,
-  UseMountedValueConfig,
-} from './animation';
+export type { UseValueConfig, UseMountConfig } from './animation';

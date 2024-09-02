@@ -1,9 +1,9 @@
 import React from 'react';
-import { useAnimatedValue, animate, useDrag } from 'react-ui-animate';
+import { useValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
   const [open, setOpen] = React.useState(true);
-  const translateX = useAnimatedValue(0);
+  const translateX = useValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
     if (open) {

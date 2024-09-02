@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Decay animation implemented with configurations `velocity`, `deceleration` and `decay`.
 
 ```js
-const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
+const animation = useValue(0, { decay: true, velocity: 1 });
 ```
 
 ### Changed
@@ -37,10 +37,10 @@ const animation = useAnimatedValue(0, { decay: true, velocity: 1 });
 
 ### Added
 
-- `useAnimatedValue` can accept array of numbers
+- `useValue` can accept array of numbers
 
 ```jsx
-const animations = useAnimatedValue([0, 100, 200]);
+const animations = useValue([0, 100, 200]);
 ```
 
 And it can be updated like

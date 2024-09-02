@@ -1,19 +1,22 @@
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useMount, UseMountConfig } from '../core/useMount';
+import {
+  useMount as useInternalMount,
+  UseMountConfig as UseInternalMountConfig,
+} from '../core/useMount';
 
-export interface UseMountedValueConfig extends UseMountConfig {}
+export interface UseMountConfig extends UseInternalMountConfig {}
 
 /**
- * `useMountedValue` handles mounting and unmounting of a component which captures current state
+ * `useMount` handles mounting and unmounting of a component which captures current state
  * passed as an argument (`state`) and exposes the shadow state which handles the mount and unmount
  * of a component.
  *
  * @param { boolean } state - Boolean indicating the component should mount or unmount.
- * @param { UseAnimatedValueConfig } config - Animation configuration.
+ * @param { UseMountConfig } config - Animation configuration.
  */
-export function useMountedValue(state: boolean, config: UseMountedValueConfig) {
-  const mv = useMount(state, config);
+export function useMount(state: boolean, config: UseMountConfig) {
+  const mv = useInternalMount(state, config);
   return (
     cb: (value: { value: FluidValue }, mounted: boolean) => React.ReactNode
   ) => mv((a, m) => cb({ value: a }, m));

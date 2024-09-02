@@ -25,7 +25,7 @@ import { animate, useAnimatedValue } from 'react-ui-animate';
 
 export default function () {
   // Initialize an animated opacity value
-  const opacity = useAnimatedValue(0);
+  const opacity = useValue(0);
 
   return (
     <div>
@@ -52,12 +52,12 @@ In this example, clicking the "Animate Me" button smoothly changes the opacity o
 
 ### Key Features
 
-#### `useAnimatedValue()`
+#### `useValue()`
 
-The `useAnimatedValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
+The `useValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
 
 ```javascript
-const opacity = useAnimatedValue(0); // Start with opacity set to 0
+const opacity = useValue(0); // Start with opacity set to 0
 
 // Use in style
 style={{
@@ -70,10 +70,10 @@ onClick={() => (opacity.value = 1)} // Changes the opacity to 1
 
 #### `animate.div`
 
-`animate.div` is a special component designed to work with `useAnimatedValue()`. It simplifies animating elements by directly using animated values.
+`animate.div` is a special component designed to work with `useValue()`. It simplifies animating elements by directly using animated values.
 
 ```javascript
-const width = useAnimatedValue(100); // Start with a width of 100
+const width = useValue(100); // Start with a width of 100
 
 <animate.div
   style={{
@@ -89,9 +89,9 @@ const width = useAnimatedValue(100); // Start with a width of 100
 The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
 
 ```javascript
-import { useAnimatedValue, animate, interpolate } from 'react-ui-animate';
+import { useValue, animate, interpolate } from 'react-ui-animate';
 
-const width = useAnimatedValue(100); // Start with a width of 100
+const width = useValue(100); // Start with a width of 100
 
 <animate.div
   style={{
@@ -175,10 +175,10 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useAnimatedValue, animate, useDrag } from 'react-ui-animate';
+import { useValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
-  const translateX = useAnimatedValue(0);
+  const translateX = useValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
     translateX.value = down ? movementX : 0;

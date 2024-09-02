@@ -1,12 +1,12 @@
 import {
   animate,
   AnimationConfig,
-  useAnimatedValue,
+  useValue,
   withConfig,
 } from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
-  const x = useAnimatedValue(0);
+  const x = useValue(0);
 
   return (
     <>

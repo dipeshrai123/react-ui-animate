@@ -1,11 +1,11 @@
 import React from 'react';
-import { useAnimatedValue, animate, useGesture, clamp } from 'react-ui-animate';
+import { useValue, animate, useGesture, clamp } from 'react-ui-animate';
 
 export const Gestures = () => {
-  const x = useAnimatedValue(0, { immediate: true });
-  const y = useAnimatedValue(0, { immediate: true });
-  const s = useAnimatedValue(1, { immediate: true });
-  const rotate = useAnimatedValue(0);
+  const x = useValue(0, { immediate: true });
+  const y = useValue(0, { immediate: true });
+  const s = useValue(1, { immediate: true });
+  const rotate = useValue(0);
   const scaleRef = React.useRef(1);
   const rotateRef = React.useRef(0);
 

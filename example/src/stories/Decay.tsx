@@ -1,16 +1,16 @@
 import { useRef } from 'react';
 import {
   useDrag,
-  useAnimatedValue,
+  useValue,
   animate,
   interpolate,
   withDecay,
 } from 'react-ui-animate';
 
 export const Decay = () => {
-  const translateX = useAnimatedValue(0);
+  const translateX = useValue(0);
   const offsetX = useRef(0);
-  const animatedVelocityX = useAnimatedValue(0);
+  const animatedVelocityX = useValue(0);
 
   const bind = useDrag(({ down, movementX, velocityX }) => {
     animatedVelocityX.value = velocityX;

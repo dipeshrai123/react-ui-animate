@@ -1,5 +1,5 @@
 import {
-  useAnimatedValue,
+  useValue,
   animate,
   withSpring,
   withTiming,
@@ -9,7 +9,7 @@ import {
 } from 'react-ui-animate';
 
 export const ArrayValues = () => {
-  // const translateX = useAnimatedValue([0, 100, 200]);
+  // const translateX = useValue([0, 100, 200]);
   //
   // const animateLeft = () => {
   //   translateX.value = [

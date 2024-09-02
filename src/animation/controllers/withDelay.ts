@@ -1,8 +1,8 @@
-import { UseAnimatedValueConfig } from '../hooks/useValue';
+import { UseValueConfig } from '../hooks/useValue';
 
 export const withDelay = (
   delay: number,
-  animation: { toValue: number; config?: UseAnimatedValueConfig }
+  animation: { toValue: number; config?: UseValueConfig }
 ) => ({
   ...animation,
   config: {

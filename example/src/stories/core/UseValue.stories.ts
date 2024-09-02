@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { UseAnimatedValue as Example } from './useAnimatedValue';
+import { UseValue as Example } from './useValue';
 
 const meta = {
-  title: 'Core/useAnimatedValue()',
+  title: 'Core/useValue()',
   component: Example,
 } satisfies Meta<typeof Example>;
 

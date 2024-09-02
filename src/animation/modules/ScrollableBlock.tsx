@@ -1,12 +1,12 @@
 import * as React from 'react';
 
-import { useAnimatedValue, UseAnimatedValueConfig } from '../hooks/useValue';
+import { useValue, UseValueConfig } from '../hooks/useValue';
 
 interface ScrollableBlockProps {
   children?: (animation: { value: any }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
-  animationConfig?: UseAnimatedValueConfig;
+  animationConfig?: UseValueConfig;
 }
 
 /**
@@ -26,7 +26,7 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
     threshold = 0.2,
   } = props;
   const scrollableBlockRef = React.useRef<HTMLDivElement>(null);
-  const animation = useAnimatedValue(0, animationConfig); // 0: not intersecting | 1: intersecting
+  const animation = useValue(0, animationConfig); // 0: not intersecting | 1: intersecting
 
   React.useEffect(() => {
     const _scrollableBlock = scrollableBlockRef.current;

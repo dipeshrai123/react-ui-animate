@@ -1,12 +1,12 @@
 import * as React from 'react';
 
 import { bin } from '../../gestures/helpers/math';
-import { useAnimatedValue, UseAnimatedValueConfig } from '../hooks/useValue';
+import { useValue, UseValueConfig } from '../hooks/useValue';
 
 interface TransitionBlockProps {
   state: boolean;
   children: (animation: { value: any }) => React.ReactNode;
-  config?: UseAnimatedValueConfig;
+  config?: UseValueConfig;
 }
 
 /**
@@ -20,7 +20,7 @@ export const TransitionBlock = ({
   children,
   config,
 }: TransitionBlockProps) => {
-  const amv = useAnimatedValue(bin(state), config);
+  const amv = useValue(bin(state), config);
 
   return <>{children({ value: amv.value })}</>;
 };

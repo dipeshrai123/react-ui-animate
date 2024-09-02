@@ -3,23 +3,23 @@ import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useFluidValue } from '../core/useFluidValue';
 import { AnimationConfig } from '../animationType';
-
-import type { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
 import { getToValue } from '../helpers';
 
-export interface UseAnimatedValueConfig extends UseFluidValueConfig {}
+import type { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
+
+export interface UseValueConfig extends UseFluidValueConfig {}
 
 /**
- * `useAnimatedValue` returns an animation value with `.value` and `.currentValue` property which is
+ * `useValue` returns an animation value with `.value` and `.currentValue` property which is
  * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
  * a component. It doesn't cast any re-renders which can is very good for performance optimization.
  *
  * @param { number } initialValue - Initial value
- * @param { UseAnimatedValueConfig } config - Animation configuration object.
+ * @param { UseValueConfig } config - Animation configuration object.
  */
-export function useAnimatedValue<T extends number>(
+export function useValue<T extends number>(
   initialValue: T,
-  config?: UseAnimatedValueConfig
+  config?: UseValueConfig
 ) {
   const isInitialRender = useRef(true);
   const [animation, setAnimation] = useFluidValue(initialValue, {

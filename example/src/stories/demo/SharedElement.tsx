@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  useAnimatedValue,
+  useValue,
   MountedBlock,
   clamp,
   animate,
@@ -22,11 +22,11 @@ const IMAGES = [
 export function SharedElement() {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
-  const left = useAnimatedValue(0);
-  const top = useAnimatedValue(0);
-  const width = useAnimatedValue(0);
-  const height = useAnimatedValue(0);
-  const translateY = useAnimatedValue(0);
+  const left = useValue(0);
+  const top = useValue(0);
+  const width = useValue(0);
+  const height = useValue(0);
+  const translateY = useValue(0);
 
   const bind = useDrag(({ down, movementY }) => {
     translateY.value = down ? clamp(movementY, 0, 300) : 0;

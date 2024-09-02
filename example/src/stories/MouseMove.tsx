@@ -1,10 +1,10 @@
 import React from 'react';
-import { animate, useAnimatedValue, useMouseMove } from 'react-ui-animate';
+import { animate, useValue, useMouseMove } from 'react-ui-animate';
 
 export const MouseMove = () => {
   const [open, setOpen] = React.useState(true);
-  const x = useAnimatedValue(0);
-  const y = useAnimatedValue(0);
+  const x = useValue(0);
+  const y = useValue(0);
 
   const bind = useMouseMove(function ({ mouseX, mouseY }) {
     if (open) {

@@ -1,9 +1,9 @@
-import { animate, useAnimatedValue } from 'react-ui-animate';
+import { animate, useValue } from 'react-ui-animate';
 
 export function Loop() {
-  // const x = useAnimatedValue(0);
-  // const y = useAnimatedValue(0);
-  const rotateZ = useAnimatedValue(0, {
+  // const x = useValue(0);
+  // const y = useValue(0);
+  const rotateZ = useValue(0, {
     loop: 5,
   });
 

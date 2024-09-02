@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { animate, interpolate, useAnimatedValue } from 'react-ui-animate';
+import { animate, interpolate, useValue } from 'react-ui-animate';
 
 export const Interpolation = () => {
   const [open, setOpen] = useState(false);
-  const x = useAnimatedValue(open ? 500 : 0);
+  const x = useValue(open ? 500 : 0);
 
   return (
     <>

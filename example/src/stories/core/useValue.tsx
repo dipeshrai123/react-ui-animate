@@ -1,8 +1,8 @@
 import React from 'react';
-import { useAnimatedValue, animate, withSpring } from 'react-ui-animate';
+import { useValue, animate, withSpring } from 'react-ui-animate';
 
-export const UseAnimatedValue: React.FC = () => {
-  const width = useAnimatedValue(100);
+export const UseValue: React.FC = () => {
+  const width = useValue(100);
 
   return (
     <>

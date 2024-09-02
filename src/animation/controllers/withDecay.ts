@@ -1,8 +1,8 @@
-import type { UseAnimatedValueConfig } from '../hooks/useValue';
+import type { UseValueConfig } from '../hooks/useValue';
 import type { WithOnCallbacks } from './withConfig';
 
 interface WithDecayConfig
-  extends Pick<UseAnimatedValueConfig, 'velocity' | 'deceleration'>,
+  extends Pick<UseValueConfig, 'velocity' | 'deceleration'>,
     WithOnCallbacks {}
 
 export const withDecay = (config?: WithDecayConfig) => ({

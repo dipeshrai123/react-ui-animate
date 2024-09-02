@@ -1,8 +1,8 @@
-import { type UseAnimatedValueConfig } from '../hooks/useValue';
+import { type UseValueConfig } from '../hooks/useValue';
 import { withConfig, type WithOnCallbacks } from './withConfig';
 
 interface WithTimingConfig
-  extends Pick<UseAnimatedValueConfig, 'duration' | 'easing'>,
+  extends Pick<UseValueConfig, 'duration' | 'easing'>,
     WithOnCallbacks {}
 
 export const withTiming = (toValue: number, config?: WithTimingConfig) =>
