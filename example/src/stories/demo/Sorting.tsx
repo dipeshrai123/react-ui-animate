@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import {
-  useValue,
+  useValues,
   animate,
   useDrag,
   clamp,
@@ -13,9 +13,9 @@ const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
 export const Sorting = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
-  const animationY = useValue(ITEMS.map((_, i) => i * 70));
-  const animationX = useValue(ITEMS.map((_, i) => 0));
-  const zIndex = useValue(ITEMS.map((_, i) => 0));
+  const animationY = useValues(ITEMS.map((_, i) => i * 70));
+  const animationX = useValues(ITEMS.map((_, i) => 0));
+  const zIndex = useValues(ITEMS.map((_, i) => 0));
 
   const bind = useDrag(({ args: [i], down, movementY: my, movementX: mx }) => {
     const index = originalIndex.current.indexOf(i!);
