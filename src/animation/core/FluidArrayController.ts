@@ -9,7 +9,10 @@ export class FluidArrayController {
     this.fluidControllers = values.map((v) => new FluidController(v, config));
   }
 
-  public setFluid(updateValue: UpdateValue[], callback?: () => void) {
+  public setFluid(
+    updateValue: Array<UpdateValue | UpdateValue[]>,
+    callback?: () => void
+  ) {
     this.fluidControllers.map((fc, i) => {
       fc.setFluid(updateValue[i], callback);
     });

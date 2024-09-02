@@ -8,8 +8,8 @@ import { getToValue } from '../helpers';
 
 export interface UseMountConfig {
   from: number;
-  enter: number | UpdateValue;
-  exit: number | UpdateValue;
+  enter: number | UpdateValue | number[] | UpdateValue[];
+  exit: number | UpdateValue | number[] | UpdateValue[];
   config?: UseFluidValueConfig;
 }
 
@@ -30,15 +30,26 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
   useLayoutEffect(() => {
     if (state) {
       setMounted(true);
-      queueMicrotask(() => setAnimation(getToValue(enter, innerConfig)));
+      queueMicrotask(() =>
+        setAnimation(
+          Array.isArray(enter)
+            ? enter.map((e) => getToValue(e, innerConfig))
+            : getToValue(enter, innerConfig)
+        )
+      );
     } else {
-      setAnimation(getToValue(exit, innerConfig), () => {
-        setMounted(false);
-
-        animation
-          .getSubscriptions()
-          .forEach((s) => animation.removeSubscription(s));
-      });
+      setAnimation(
+        Array.isArray(exit)
+          ? exit.map((e) => getToValue(e, innerConfig))
+          : getToValue(exit, innerConfig),
+        () => {
+          setMounted(false);
+          // cleanup
+          animation
+            .getSubscriptions()
+            .forEach((s) => animation.removeSubscription(s));
+        }
+      );
     }
   }, [state]);
 

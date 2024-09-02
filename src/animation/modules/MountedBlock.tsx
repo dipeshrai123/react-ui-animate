@@ -1,17 +1,10 @@
 import * as React from 'react';
 
-import { useMount } from '../hooks/useMount';
+import { useMount, type UseMountConfig } from '../hooks';
 
-import type { UseValueConfig } from '../hooks/useValue';
-import type { UpdateValue } from '../core/FluidController';
-
-interface MountedBlockProps {
+interface MountedBlockProps extends Partial<UseMountConfig> {
   state: boolean;
   children: (animation: { value: any }) => React.ReactNode;
-  from?: number;
-  enter?: number | UpdateValue;
-  exit?: number | UpdateValue;
-  config?: UseValueConfig;
 }
 
 /**

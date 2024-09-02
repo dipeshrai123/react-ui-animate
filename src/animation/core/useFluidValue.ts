@@ -10,11 +10,14 @@ import {
 export const useFluidValue = <T extends number>(
   value: T,
   config?: UseFluidValueConfig
-): [FluidValue, (updateValue: UpdateValue, callback?: () => void) => void] => {
+): [
+  FluidValue,
+  (updateValue: UpdateValue | UpdateValue[], callback?: () => void) => void,
+] => {
   const fluidController = useRef(new FluidController(value, config)).current;
 
   const onUpdate = useCallback(
-    (updateValue: UpdateValue, callback?: () => void) => {
+    (updateValue: UpdateValue | UpdateValue[], callback?: () => void) => {
       fluidController.setFluid(updateValue, callback);
     },
     []

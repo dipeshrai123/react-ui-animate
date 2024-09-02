@@ -44,6 +44,4 @@ export const ArrayValues = () => {
       ))}
     </>
   );
-
-  return <div>Animation Array ( TODO )</div>;
 };

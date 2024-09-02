@@ -1,7 +1,12 @@
 export { interpolate, bInterpolate } from './interpolation';
 export { MountedBlock, ScrollableBlock, TransitionBlock } from './modules';
-export { useValue, type UseValueConfig } from './hooks/useValue';
-export { useMount, type UseMountConfig } from './hooks/useMount';
+export {
+  useValue,
+  useValues,
+  useMount,
+  type UseValueConfig,
+  type UseMountConfig,
+} from './hooks';
 export { AnimationConfig } from './animationType';
 export {
   withSpring,

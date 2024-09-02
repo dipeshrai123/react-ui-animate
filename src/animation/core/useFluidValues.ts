@@ -9,14 +9,20 @@ export const useFluidValues = <T extends number[]>(
   config?: UseFluidValueConfig
 ): [
   FluidValue[],
-  (updateValue: UpdateValue[], callback?: () => void) => void,
+  (
+    updateValue: Array<UpdateValue | UpdateValue[]>,
+    callback?: () => void
+  ) => void,
 ] => {
   const fluidController = useRef(
     new FluidArrayController(value, config)
   ).current;
 
   const onUpdate = useCallback(
-    (updateValue: UpdateValue[], callback?: () => void) => {
+    (
+      updateValue: UpdateValue[] | Array<UpdateValue[]>,
+      callback?: () => void
+    ) => {
       fluidController.setFluid(updateValue, callback);
     },
     []

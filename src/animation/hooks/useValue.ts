@@ -27,9 +27,16 @@ export function useValue<T extends number>(
     ...config,
   });
 
-  const updateAnimation = useCallback((value: number | UpdateValue) => {
-    queueMicrotask(() => setAnimation(getToValue(value)));
-  }, []);
+  const updateAnimation = useCallback(
+    (value: number | UpdateValue | number[] | UpdateValue[]) => {
+      if (Array.isArray(value)) {
+        queueMicrotask(() => setAnimation(value.map((v) => getToValue(v))));
+      } else {
+        queueMicrotask(() => setAnimation(getToValue(value)));
+      }
+    },
+    []
+  );
 
   useLayoutEffect(() => {
     if (!isInitialRender.current) {
@@ -40,7 +47,7 @@ export function useValue<T extends number>(
   }, [initialValue, config]);
 
   return {
-    set value(to: number | UpdateValue) {
+    set value(to: number | UpdateValue | number[] | UpdateValue[]) {
       updateAnimation(to);
     },
     get value(): FluidValue {
