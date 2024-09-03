@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Decay as Example } from './Decay';
+import { Mounted as Example } from './MountedBlock';
 
 const meta = {
-  title: 'Examples/Decay Animation',
+  title: 'Modules/MountedBlock',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const DecayAnimation: Story = {};
+export const MountedBlock: Story = {};

@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Scroll as Example } from './Scroll';
+import { Wheel as Example } from './Wheel';
 
 const meta = {
-  title: 'Examples/Scroll',
+  title: 'Gestures/Wheel',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Scroll: Story = {};
+export const Wheel: Story = {};

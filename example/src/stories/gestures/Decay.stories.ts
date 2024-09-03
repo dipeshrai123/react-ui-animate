@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { UseValue as Example } from './useValue';
+import { Decay as Example } from './Decay';
 
 const meta = {
-  title: 'Core/useValue()',
+  title: 'Gestures/Decay Animation',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Basic: Story = {};
+export const DecayAnimation: Story = {};

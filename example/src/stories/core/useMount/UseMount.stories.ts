@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Draggable as Example } from './Draggable';
+import { UseMount as Example } from './useMount';
 
 const meta = {
-  title: 'Examples/Draggable',
+  title: 'Core/useMount',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Draggable: Story = {};
+export const Basic: Story = {};

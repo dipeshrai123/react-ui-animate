@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ArrayValues as Example } from './ArrayValues';
+import { DynamicAnimation as Example } from './DynamicAnimation';
 
 const meta = {
-  title: 'Examples/Array Values',
+  title: 'Core/useValue',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ArrayValues: Story = {};
+export const DynamicAnimation: Story = {};
