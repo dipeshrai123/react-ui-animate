@@ -1,9 +1,10 @@
 import * as React from 'react';
+import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useValue, UseValueConfig } from '../hooks/useValue';
+import { useValue, type UseValueConfig } from '../hooks';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: any }) => React.ReactNode;
+  children?: (animation: { value: FluidValue }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
   animationConfig?: UseValueConfig;
@@ -16,7 +17,7 @@ interface ScrollableBlockProps {
  * @prop { function } children - child as a function with `AnimatedValue` as its first argument.
  * @prop { 'single' | 'both' } direction - single applies animation on enter once, both applies on enter and exit.
  * @prop { number } threshold - should be in range 0 to 1 which equivalent to `IntersectionObserver` threshold.
- * @prop { UseAnimatedValueConfig } animationConfig - Animation config
+ * @prop { UseValueConfig } animationConfig - Animation config
  */
 export const ScrollableBlock = (props: ScrollableBlockProps) => {
   const {
