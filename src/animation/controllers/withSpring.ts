@@ -1,6 +1,6 @@
 import { AnimationConfig } from '../animationType';
+import { type UseValueConfig } from '../hooks';
 import { withConfig, type WithOnCallbacks } from './withConfig';
-import { type UseValueConfig } from '../hooks/useValue';
 
 interface WithSpringConfig
   extends Pick<UseValueConfig, 'mass' | 'friction' | 'tension'>,

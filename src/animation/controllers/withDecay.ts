@@ -1,4 +1,4 @@
-import type { UseValueConfig } from '../hooks/useValue';
+import type { UseValueConfig } from '../hooks';
 import type { WithOnCallbacks } from './withConfig';
 
 interface WithDecayConfig

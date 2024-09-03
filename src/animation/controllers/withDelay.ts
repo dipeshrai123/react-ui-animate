@@ -1,4 +1,4 @@
-import { UseValueConfig } from '../hooks/useValue';
+import { UseValueConfig } from '../hooks';
 
 export const withDelay = (
   delay: number,

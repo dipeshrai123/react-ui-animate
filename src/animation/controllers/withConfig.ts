@@ -1,4 +1,4 @@
-import type { UseValueConfig } from '../hooks/useValue';
+import type { UseValueConfig } from '../hooks';
 
 export interface WithOnCallbacks
   extends Pick<UseValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
