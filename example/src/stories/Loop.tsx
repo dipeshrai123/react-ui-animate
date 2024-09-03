@@ -1,25 +1,23 @@
-import { animate, useValue } from 'react-ui-animate';
+import { animate, useValue, withTiming } from 'react-ui-animate';
+import { useLayoutEffect } from 'react';
 
 export function Loop() {
-  // const x = useValue(0);
-  // const y = useValue(0);
   const rotateZ = useValue(0, {
-    loop: 5,
+    onRest: (value) => {
+      if (value === 360) {
+        rotateZ.value = withTiming(0, { duration: 0 });
+      } else {
+        rotateZ.value = withTiming(360, { duration: 5000 });
+      }
+    },
   });
 
-  // useMouseMove(({ mouseX, mouseY }) => {
-  //   x.value = mouseX - 50;
-  //   y.value = mouseY - 50;
-  // });
+  useLayoutEffect(() => {
+    rotateZ.value = withTiming(360, { duration: 5000 });
+  }, []);
 
   return (
-    <animate.div
-      // style={{
-      //   translateX: x.value,
-      //   translateY: y.value,
-      // }}
-      onClick={() => (rotateZ.value = 100)}
-    >
+    <animate.div>
       <animate.div
         style={{
           width: 100,

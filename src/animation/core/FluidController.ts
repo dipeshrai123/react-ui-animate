@@ -19,7 +19,6 @@ export interface UseFluidValueConfig {
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
-  loop?: number | boolean;
 }
 
 export type UpdateValue = {
