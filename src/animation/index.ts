@@ -16,5 +16,6 @@ export {
   withEase,
   withConfig,
   withDecay,
+  withLoop,
 } from './controllers';
 export { delay } from './helpers';

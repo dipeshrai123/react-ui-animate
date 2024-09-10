@@ -1,31 +1,39 @@
-import { animate, useValue, withTiming } from 'react-ui-animate';
-import { useLayoutEffect } from 'react';
+import {
+  animate,
+  useValue,
+  withSequence,
+  withSpring,
+  withLoop,
+  withTiming,
+} from 'react-ui-animate';
 
 export function Loop() {
-  const rotateZ = useValue(0, {
-    onRest: (value) => {
-      if (value === 360) {
-        rotateZ.value = withTiming(0, { duration: 0 });
-      } else {
-        rotateZ.value = withTiming(360, { duration: 5000 });
-      }
-    },
-  });
+  const translateX = useValue(0);
 
-  useLayoutEffect(() => {
-    rotateZ.value = withTiming(360, { duration: 5000 });
-  }, []);
+  const runAnimation = () => {
+    // translateX.value = withLoop(
+    //   withSequence([withSpring(100), withSpring(0)]),
+    //   5
+    // );
+
+    // translateX.value = withLoop(withSpring(100), 5);
+
+    translateX.value = withSequence([
+      withSpring(100),
+      withSpring(0),
+      withLoop(withSequence([withTiming(100), withSpring(50)]), 5),
+    ]);
+  };
 
   return (
-    <animate.div>
-      <animate.div
-        style={{
-          width: 100,
-          height: 100,
-          backgroundColor: '#3399ff',
-          rotateZ: rotateZ.value,
-        }}
-      />
-    </animate.div>
+    <animate.div
+      onClick={runAnimation}
+      style={{
+        width: 100,
+        height: 100,
+        backgroundColor: '#3399ff',
+        translateX: translateX.value,
+      }}
+    />
   );
 }

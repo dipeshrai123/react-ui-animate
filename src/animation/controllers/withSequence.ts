@@ -1,8 +1,21 @@
 import { getToValue } from '../helpers';
 import { type UpdateValue } from '../core/FluidController';
 
-export const withSequence = (
-  animations: Array<UpdateValue | number>
+const flattenUpdateValues = (
+  animations: Array<UpdateValue | number | Array<UpdateValue | number>>
 ): UpdateValue[] => {
-  return animations.map((a) => getToValue(a) as UpdateValue);
+  return animations.reduce<UpdateValue[]>((acc, value) => {
+    if (Array.isArray(value)) {
+      acc.push(...flattenUpdateValues(value)); // Recursively flatten nested arrays
+    } else {
+      acc.push(getToValue(value) as UpdateValue); // Ensure each value is an UpdateValue
+    }
+    return acc;
+  }, []);
+};
+
+export const withSequence = (
+  animations: Array<UpdateValue | number | Array<UpdateValue | number>>
+): UpdateValue[] => {
+  return flattenUpdateValues(animations);
 };

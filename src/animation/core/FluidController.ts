@@ -19,6 +19,7 @@ export interface UseFluidValueConfig {
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
+  loop?: number;
 }
 
 export type UpdateValue = {
@@ -29,38 +30,14 @@ export type UpdateValue = {
 export class FluidController {
   private fluid: FluidValue;
   private defaultConfig?: UseFluidValueConfig;
+  private iterationsSoFar: number = 0;
 
   constructor(value: number, config?: UseFluidValueConfig) {
     this.fluid = new FluidValue(value);
     this.defaultConfig = config;
   }
 
-  private runAnimation(
-    updateValue: UpdateValue,
-    onComplete?: (value: number) => void
-  ) {
-    const config = { ...this.defaultConfig, ...updateValue.config };
-
-    this.fluid.removeAllListeners();
-    config?.onStart && config.onStart(this.fluid.get());
-
-    if (config?.onChange) {
-      this.fluid.addListener((value) => config?.onChange?.(value));
-    }
-
-    const onRest = ({
-      finished,
-      value,
-    }: {
-      finished: boolean;
-      value: number;
-    }) => {
-      if (finished) {
-        config?.onRest?.(value);
-        onComplete?.(value);
-      }
-    };
-
+  private getAnimation(updateValue: UpdateValue, config: UseFluidValueConfig) {
     if (isDefined(config?.duration) || config?.immediate) {
       if (!isDefined(updateValue.toValue)) {
         throw new Error('No `toValue` is defined');
@@ -73,7 +50,7 @@ export class FluidController {
         easing: config?.easing,
       };
 
-      timing(this.fluid, timingConfig).start(onRest);
+      return timing(this.fluid, timingConfig);
     } else if (config?.decay) {
       const decayConfig = {
         velocity: config?.velocity,
@@ -81,7 +58,7 @@ export class FluidController {
         delay: config?.delay,
       };
 
-      decay(this.fluid, decayConfig).start(onRest);
+      return decay(this.fluid, decayConfig);
     } else {
       if (!isDefined(updateValue.toValue)) {
         throw new Error('No `toValue` is defined');
@@ -96,8 +73,47 @@ export class FluidController {
         restDistance: config?.restDistance,
       };
 
-      spring(this.fluid, springConfig).start(onRest);
+      return spring(this.fluid, springConfig);
     }
+  }
+
+  private runAnimation(
+    updateValue: UpdateValue,
+    onComplete?: (value: number) => void
+  ) {
+    const config = { ...this.defaultConfig, ...updateValue.config };
+    const loopCount = config?.loop ?? 0;
+
+    this.fluid.removeAllListeners();
+    config?.onStart && config.onStart(this.fluid.get());
+
+    if (config?.onChange) {
+      this.fluid.addListener((value) => config?.onChange?.(value));
+    }
+
+    const animation = this.getAnimation(updateValue, config);
+
+    const handleRest = (result: { finished: boolean; value: number }) => {
+      if (result.finished) {
+        config?.onRest?.(result.value);
+        onComplete?.(result.value);
+      }
+    };
+
+    const loopAnimation = (result: { finished: boolean; value: number }) => {
+      if (result.finished) {
+        this.iterationsSoFar++;
+
+        if (loopCount === -1 || this.iterationsSoFar < loopCount) {
+          animation.reset();
+          animation.start(loopAnimation);
+        } else {
+          handleRest(result);
+        }
+      }
+    };
+
+    animation.start(isDefined(config?.loop) ? loopAnimation : handleRest);
   }
 
   public setFluid(

@@ -37,10 +37,10 @@ const animation = useValue(0, { decay: true, velocity: 1 });
 
 ### Added
 
-- `useValue` can accept array of numbers
+- `useValues` can accept array of numbers
 
 ```jsx
-const animations = useValue([0, 100, 200]);
+const animations = useValues([0, 100, 200]);
 ```
 
 And it can be updated like

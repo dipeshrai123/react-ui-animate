@@ -29,6 +29,7 @@ export {
   withEase,
   withConfig,
   withDecay,
+  withLoop,
   delay,
 } from './animation';
 
