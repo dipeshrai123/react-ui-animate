@@ -2,16 +2,16 @@ import { useRef } from 'react';
 import {
   animate,
   useDrag,
-  useAnimatedValue,
+  useValue,
   snapTo,
-  AnimationConfigUtils,
+  AnimationConfig,
 } from 'react-ui-animate';
 
 import '../index.css';
 
 export function SnapTo() {
-  const x = useAnimatedValue(0, { ...AnimationConfigUtils.ELASTIC });
-  const y = useAnimatedValue(0, { ...AnimationConfigUtils.ELASTIC });
+  const x = useValue(0, { ...AnimationConfig.ELASTIC });
+  const y = useValue(0, { ...AnimationConfig.ELASTIC });
   const offsetX = useRef(0);
   const offsetY = useRef(0);
 

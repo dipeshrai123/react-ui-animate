@@ -1,14 +1,13 @@
 export { interpolate, bInterpolate } from './interpolation';
 export { MountedBlock, ScrollableBlock, TransitionBlock } from './modules';
 export {
-  useAnimatedValue,
-  type UseAnimatedValueConfig,
-} from './hooks/useAnimatedValue';
-export {
-  useMountedValue,
-  type UseMountedValueConfig,
-} from './hooks/useMountedValue';
-export { AnimationConfigUtils } from './animationType';
+  useValue,
+  useValues,
+  useMount,
+  type UseValueConfig,
+  type UseMountConfig,
+} from './hooks';
+export { AnimationConfig } from './animationType';
 export {
   withSpring,
   withTiming,

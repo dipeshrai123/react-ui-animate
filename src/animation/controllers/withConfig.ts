@@ -1,12 +1,10 @@
-import type { UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import type { UseValueConfig } from '../hooks';
+import type { UpdateValue } from '../core/FluidController';
 
 export interface WithOnCallbacks
-  extends Pick<UseAnimatedValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
+  extends Pick<UseValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
 
-export const withConfig = (
-  toValue: number,
-  config?: UseAnimatedValueConfig
-) => ({
+export const withConfig = (toValue: number, config?: UseValueConfig): UpdateValue => ({
   toValue,
   config,
 });

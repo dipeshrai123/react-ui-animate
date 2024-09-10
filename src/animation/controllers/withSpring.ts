@@ -1,10 +1,14 @@
-import { AnimationConfigUtils } from '../animationType';
+import { AnimationConfig } from '../animationType';
+import { type UseValueConfig } from '../hooks';
 import { withConfig, type WithOnCallbacks } from './withConfig';
-import { type UseAnimatedValueConfig } from '../hooks/useAnimatedValue';
+import type { UpdateValue } from '../core/FluidController';
 
 interface WithSpringConfig
-  extends Pick<UseAnimatedValueConfig, 'mass' | 'friction' | 'tension'>,
+  extends Pick<UseValueConfig, 'mass' | 'friction' | 'tension'>,
     WithOnCallbacks {}
 
-export const withSpring = (toValue: number, config?: WithSpringConfig) =>
-  withConfig(toValue, { ...AnimationConfigUtils.ELASTIC, ...config });
+export const withSpring = (
+  toValue: number,
+  config?: WithSpringConfig
+): UpdateValue =>
+  withConfig(toValue, { ...AnimationConfig.ELASTIC, ...config });

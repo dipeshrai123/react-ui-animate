@@ -21,11 +21,11 @@ yarn add react-ui-animate
 The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Here’s how you can get started quickly:
 
 ```javascript
-import { animate, useAnimatedValue } from 'react-ui-animate';
+import { animate, useValue } from 'react-ui-animate';
 
 export default function () {
   // Initialize an animated opacity value
-  const opacity = useAnimatedValue(0);
+  const opacity = useValue(0);
 
   return (
     <div>
@@ -52,12 +52,12 @@ In this example, clicking the "Animate Me" button smoothly changes the opacity o
 
 ### Key Features
 
-#### `useAnimatedValue()`
+#### `useValue()`
 
-The `useAnimatedValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
+The `useValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
 
 ```javascript
-const opacity = useAnimatedValue(0); // Start with opacity set to 0
+const opacity = useValue(0); // Start with opacity set to 0
 
 // Use in style
 style={{
@@ -70,10 +70,10 @@ onClick={() => (opacity.value = 1)} // Changes the opacity to 1
 
 #### `animate.div`
 
-`animate.div` is a special component designed to work with `useAnimatedValue()`. It simplifies animating elements by directly using animated values.
+`animate.div` is a special component designed to work with `useValue()`. It simplifies animating elements by directly using animated values.
 
 ```javascript
-const width = useAnimatedValue(100); // Start with a width of 100
+const width = useValue(100); // Start with a width of 100
 
 <animate.div
   style={{
@@ -89,9 +89,9 @@ const width = useAnimatedValue(100); // Start with a width of 100
 The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
 
 ```javascript
-import { useAnimatedValue, animate, interpolate } from 'react-ui-animate';
+import { useValue, animate, interpolate } from 'react-ui-animate';
 
-const width = useAnimatedValue(100); // Start with a width of 100
+const width = useValue(100); // Start with a width of 100
 
 <animate.div
   style={{
@@ -134,17 +134,17 @@ x.value = withDelay(1000, withSpring(100));
 
 In this example, a spring animation to `100` will be applied after a 1-second delay.
 
-#### `useMountedValue()`
+#### `useMount()`
 
-The `useMountedValue()` hook facilitates managing the mounting and unmounting of a component with animations.
+The `useMount()` hook facilitates managing the mounting and unmounting of a component with animations.
 
 ```jsx
-import { useMountedValue } from 'react-ui-animate';
+import { useMount } from 'react-ui-animate';
 
 export default function App() {
   const [visible, setVisible] = useState(false);
 
-  const open = useMountedValue(visible, {
+  const open = useMount(visible, {
     from: 0,
     enter: 1,
     exit: 0,
@@ -157,8 +157,8 @@ export default function App() {
 In this example,
 
 1. A state variable `visible` determines whether the component is visible.
-2. The `useMountedValue` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
-3. The `open` function, returned by `useMountedValue`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
+2. The `useMount` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
+3. The `open` function, returned by `useMount`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
 
 ### Gestures
 
@@ -175,10 +175,10 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useAnimatedValue, animate, useDrag } from 'react-ui-animate';
+import { useValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
-  const translateX = useAnimatedValue(0);
+  const translateX = useValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
     translateX.value = down ? movementX : 0;

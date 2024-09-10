@@ -3,12 +3,13 @@ import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useFluidValue } from './useFluidValue';
 
-import type { AssignValue, UseFluidValueConfig } from './FluidController';
+import type { UpdateValue, UseFluidValueConfig } from './FluidController';
+import { getToValue } from '../helpers';
 
 export interface UseMountConfig {
   from: number;
-  enter: number | AssignValue;
-  exit: number | AssignValue;
+  enter: number | UpdateValue | number[] | UpdateValue[];
+  exit: number | UpdateValue | number[] | UpdateValue[];
   config?: UseFluidValueConfig;
 }
 
@@ -31,22 +32,19 @@ export const useMount = (state: boolean, config: UseMountConfig) => {
       setMounted(true);
       queueMicrotask(() =>
         setAnimation(
-          typeof enter === 'number'
-            ? { toValue: enter, config: innerConfig }
-            : enter
+          Array.isArray(enter)
+            ? enter.map((e) => getToValue(e, innerConfig))
+            : getToValue(enter, innerConfig)
         )
       );
     } else {
       setAnimation(
-        typeof exit === 'number'
-          ? {
-              toValue: exit,
-              config: innerConfig,
-            }
-          : exit,
+        Array.isArray(exit)
+          ? exit.map((e) => getToValue(e, innerConfig))
+          : getToValue(exit, innerConfig),
         () => {
           setMounted(false);
-
+          // cleanup
           animation
             .getSubscriptions()
             .forEach((s) => animation.removeSubscription(s));

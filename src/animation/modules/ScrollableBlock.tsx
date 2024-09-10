@@ -1,15 +1,13 @@
 import * as React from 'react';
+import { FluidValue } from '@raidipesh78/re-motion';
 
-import {
-  useAnimatedValue,
-  UseAnimatedValueConfig,
-} from '../hooks/useAnimatedValue';
+import { useValue, type UseValueConfig } from '../hooks';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: any }) => React.ReactNode;
+  children?: (animation: { value: FluidValue }) => React.ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
-  animationConfig?: UseAnimatedValueConfig;
+  animationConfig?: UseValueConfig;
 }
 
 /**
@@ -19,7 +17,7 @@ interface ScrollableBlockProps {
  * @prop { function } children - child as a function with `AnimatedValue` as its first argument.
  * @prop { 'single' | 'both' } direction - single applies animation on enter once, both applies on enter and exit.
  * @prop { number } threshold - should be in range 0 to 1 which equivalent to `IntersectionObserver` threshold.
- * @prop { UseAnimatedValueConfig } animationConfig - Animation config
+ * @prop { UseValueConfig } animationConfig - Animation config
  */
 export const ScrollableBlock = (props: ScrollableBlockProps) => {
   const {
@@ -29,7 +27,7 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
     threshold = 0.2,
   } = props;
   const scrollableBlockRef = React.useRef<HTMLDivElement>(null);
-  const animation = useAnimatedValue(0, animationConfig); // 0: not intersecting | 1: intersecting
+  const animation = useValue(0, animationConfig); // 0: not intersecting | 1: intersecting
 
   React.useEffect(() => {
     const _scrollableBlock = scrollableBlockRef.current;

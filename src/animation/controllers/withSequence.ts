@@ -1,13 +1,21 @@
 import { getToValue } from '../helpers';
-import { type AssignValue } from '../core/FluidController';
-import { type UpdateValue } from '../hooks/useAnimatedValue';
+import { type UpdateValue } from '../core/FluidController';
+
+const flattenUpdateValues = (
+  animations: Array<UpdateValue | number | Array<UpdateValue | number>>
+): UpdateValue[] => {
+  return animations.reduce<UpdateValue[]>((acc, value) => {
+    if (Array.isArray(value)) {
+      acc.push(...flattenUpdateValues(value));
+    } else {
+      acc.push(getToValue(value));
+    }
+    return acc;
+  }, []);
+};
 
 export const withSequence = (
-  animations: Array<UpdateValue | number>
-): AssignValue => {
-  return async (next: (arg: UpdateValue) => void) => {
-    for (const a of animations) {
-      await next(getToValue(a) as UpdateValue);
-    }
-  };
+  animations: Array<UpdateValue | number | Array<UpdateValue | number>>
+): UpdateValue[] => {
+  return flattenUpdateValues(animations);
 };
