@@ -21,7 +21,7 @@ yarn add react-ui-animate
 The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Here’s how you can get started quickly:
 
 ```javascript
-import { animate, useAnimatedValue } from 'react-ui-animate';
+import { animate, useValue } from 'react-ui-animate';
 
 export default function () {
   // Initialize an animated opacity value
