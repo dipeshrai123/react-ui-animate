@@ -1,28 +1,29 @@
 import {
   animate,
   useValue,
-  withSequence,
   withSpring,
   withLoop,
-  withTiming,
 } from 'react-ui-animate';
 
 export function Loop() {
   const translateX = useValue(0);
 
   const runAnimation = () => {
+    // Basic Loop
+    translateX.value = withLoop(withSpring(100), 5);
+
+    // Loop with sequence
     // translateX.value = withLoop(
     //   withSequence([withSpring(100), withSpring(0)]),
     //   5
     // );
 
-    // translateX.value = withLoop(withSpring(100), 5);
-
-    translateX.value = withSequence([
-      withSpring(100),
-      withSpring(0),
-      withLoop(withSequence([withTiming(100), withSpring(50)]), 5),
-    ]);
+    // Loop and Sequence nested
+    // translateX.value = withSequence([
+    //   withSpring(100),
+    //   withSpring(0),
+    //   withLoop(withSequence([withTiming(100), withSpring(50)]), 5),
+    // ]);
   };
 
   return (
