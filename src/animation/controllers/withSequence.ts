@@ -6,9 +6,9 @@ const flattenUpdateValues = (
 ): UpdateValue[] => {
   return animations.reduce<UpdateValue[]>((acc, value) => {
     if (Array.isArray(value)) {
-      acc.push(...flattenUpdateValues(value)); // Recursively flatten nested arrays
+      acc.push(...flattenUpdateValues(value));
     } else {
-      acc.push(getToValue(value) as UpdateValue); // Ensure each value is an UpdateValue
+      acc.push(getToValue(value));
     }
     return acc;
   }, []);

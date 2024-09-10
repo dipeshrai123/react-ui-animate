@@ -1,7 +1,7 @@
 import { AnimationConfig } from '../animationType';
 import { type UseValueConfig } from '../hooks';
 import { withConfig, type WithOnCallbacks } from './withConfig';
-import { UpdateValue } from '../core/FluidController';
+import type { UpdateValue } from '../core/FluidController';
 
 interface WithSpringConfig
   extends Pick<UseValueConfig, 'mass' | 'friction' | 'tension'>,
