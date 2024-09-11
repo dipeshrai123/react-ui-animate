@@ -1,6 +1,6 @@
 {
   "name": "react-ui-animate",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
   "peerDependencies": {
