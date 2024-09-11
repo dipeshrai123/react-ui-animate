@@ -7,7 +7,7 @@ import {
   UseFluidValueConfig,
 } from './FluidController';
 
-export const useFluidValue = <T extends number>(
+export const useFluidValue = <T extends number | string>(
   value: T,
   config?: UseFluidValueConfig
 ): [

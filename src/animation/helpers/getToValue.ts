@@ -1,8 +1,10 @@
 import { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
 
 export function getToValue(
-  value: number | UpdateValue,
+  value: number | string | UpdateValue,
   config?: UseFluidValueConfig
 ): UpdateValue {
-  return typeof value === 'number' ? { toValue: value, config } : value;
+  return typeof value === 'number' || typeof value === 'string'
+    ? { toValue: value, config }
+    : value;
 }

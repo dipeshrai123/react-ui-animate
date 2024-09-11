@@ -16,7 +16,7 @@ export interface UseValueConfig extends UseFluidValueConfig {}
  * @param { number } initialValue - Initial value
  * @param { UseValueConfig } config - Animation configuration object.
  */
-export function useValue<T extends number>(
+export function useValue<T extends number | string>(
   initialValue: T,
   config?: UseValueConfig
 ) {
@@ -27,7 +27,7 @@ export function useValue<T extends number>(
   });
 
   const updateAnimation = useCallback(
-    (value: number | UpdateValue | number[] | UpdateValue[]) => {
+    (value: string | number | UpdateValue | number[] | UpdateValue[]) => {
       if (Array.isArray(value)) {
         queueMicrotask(() => setAnimation(value.map((v) => getToValue(v))));
       } else {
@@ -46,7 +46,7 @@ export function useValue<T extends number>(
   }, [initialValue, config]);
 
   return {
-    set value(to: number | UpdateValue | number[] | UpdateValue[]) {
+    set value(to: number | string | UpdateValue | number[] | UpdateValue[]) {
       updateAnimation(to);
     },
     get value(): FluidValue {

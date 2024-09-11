@@ -1,4 +1,10 @@
-import { FluidValue, timing, decay, spring } from '@raidipesh78/re-motion';
+import {
+  FluidValue,
+  timing,
+  decay,
+  spring,
+  native,
+} from '@raidipesh78/re-motion';
 
 import { isDefined } from '../helpers';
 
@@ -13,9 +19,9 @@ export interface UseFluidValueConfig {
   immediate?: boolean;
   delay?: number;
   restDistance?: number;
-  onChange?: Fn<number, void>;
-  onRest?: Fn<number, void>;
-  onStart?: Fn<number, void>;
+  onChange?: Fn<number | string, void>;
+  onRest?: Fn<number | string, void>;
+  onStart?: Fn<number | string, void>;
   decay?: boolean;
   velocity?: number;
   deceleration?: number;
@@ -23,7 +29,7 @@ export interface UseFluidValueConfig {
 }
 
 export type UpdateValue = {
-  toValue?: number;
+  toValue?: number | string;
   config?: UseFluidValueConfig;
 };
 
@@ -32,13 +38,15 @@ export class FluidController {
   private defaultConfig?: UseFluidValueConfig;
   private iterationsSoFar: number = 0;
 
-  constructor(value: number, config?: UseFluidValueConfig) {
+  constructor(value: number | string, config?: UseFluidValueConfig) {
     this.fluid = new FluidValue(value);
     this.defaultConfig = config;
   }
 
   private getAnimation(updateValue: UpdateValue, config: UseFluidValueConfig) {
-    if (isDefined(config?.duration) || config?.immediate) {
+    if (typeof updateValue.toValue === 'string') {
+      return native(this.fluid, { toValue: updateValue.toValue });
+    } else if (isDefined(config?.duration) || config?.immediate) {
       if (!isDefined(updateValue.toValue)) {
         throw new Error('No `toValue` is defined');
       }

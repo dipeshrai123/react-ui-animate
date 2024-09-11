@@ -7,7 +7,7 @@ import { getToValue, AnimationConfig } from '../helpers';
 import { type UpdateValue } from '../core/FluidController';
 import { type UseValueConfig } from './useValue';
 
-export function useValues<T extends number[]>(
+export function useValues<T extends number[] | string[]>(
   initialValue: T,
   config?: UseValueConfig
 ) {
@@ -18,7 +18,9 @@ export function useValues<T extends number[]>(
   });
 
   const updateAnimation = useCallback(
-    (values: Array<number | number[] | UpdateValue | UpdateValue[]>) => {
+    (
+      values: Array<number | number[] | string | UpdateValue | UpdateValue[]>
+    ) => {
       const update = values.map((value) => {
         if (Array.isArray(value)) {
           return value.map((v) => getToValue(v));
@@ -40,7 +42,9 @@ export function useValues<T extends number[]>(
   }, [initialValue, config]);
 
   return {
-    set value(to: Array<number | number[] | UpdateValue | UpdateValue[]>) {
+    set value(
+      to: Array<number | number[] | string | UpdateValue | UpdateValue[]>
+    ) {
       updateAnimation(to);
     },
     get value(): FluidValue[] {

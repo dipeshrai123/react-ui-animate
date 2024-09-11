@@ -7,7 +7,7 @@
     "react": ">=16.8.0  || >=17.0.0 || >=18.0.0"
   },
   "dependencies": {
-    "@raidipesh78/re-motion": "^4.0.1"
+    "@raidipesh78/re-motion": "^4.1.0-alpha.0"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",

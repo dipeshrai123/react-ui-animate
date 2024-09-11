@@ -5,7 +5,7 @@ import type { UpdateValue, UseFluidValueConfig } from './FluidController';
 export class FluidArrayController {
   private fluidControllers: FluidController[];
 
-  constructor(values: number[], config?: UseFluidValueConfig) {
+  constructor(values: number[] | string[], config?: UseFluidValueConfig) {
     this.fluidControllers = values.map((v) => new FluidController(v, config));
   }
 
