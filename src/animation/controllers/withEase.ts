@@ -1,4 +1,4 @@
-import { AnimationConfig } from '../animationType';
+import { AnimationConfig } from '../helpers';
 import { withConfig, type WithOnCallbacks } from './withConfig';
 
 interface WithEaseConfig extends WithOnCallbacks {}

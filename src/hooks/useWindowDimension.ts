@@ -27,7 +27,7 @@ export function useWindowDimension(
     }
   };
 
-  // Reinitiate callback when dependency change
+  // Re-initiate callback when dependency change
   useEffect(() => {
     callbackRef.current = callback;
 

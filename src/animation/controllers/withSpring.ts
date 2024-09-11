@@ -1,4 +1,4 @@
-import { AnimationConfig } from '../animationType';
+import { AnimationConfig } from '../helpers';
 import { type UseValueConfig } from '../hooks';
 import { withConfig, type WithOnCallbacks } from './withConfig';
 import { UpdateValue } from '../core/FluidController';

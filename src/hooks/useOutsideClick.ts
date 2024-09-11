@@ -13,7 +13,7 @@ export function useOutsideClick(
     callbackRef.current = callback;
   }
 
-  // Reinitiate callback when dependency change
+  // Re-initiate callback when dependency change
   useEffect(() => {
     callbackRef.current = callback;
 

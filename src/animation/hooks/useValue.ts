@@ -2,8 +2,7 @@ import { useCallback, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useFluidValue } from '../core/useFluidValue';
-import { AnimationConfig } from '../animationType';
-import { getToValue } from '../helpers';
+import { getToValue, AnimationConfig } from '../helpers';
 
 import type { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
 
