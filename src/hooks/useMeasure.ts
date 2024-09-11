@@ -19,7 +19,7 @@ export function useMeasure(
   const elementRefs = useRef([]);
   const callbackRef = useRef<(event: MeasurementType) => void>(callback);
 
-  // Reinitiate callback when dependency change
+  // Re-initiate callback when dependency change
   useEffect(() => {
     callbackRef.current = callback;
 

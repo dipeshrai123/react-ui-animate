@@ -7,7 +7,6 @@ export {
   type UseValueConfig,
   type UseMountConfig,
 } from './hooks';
-export { AnimationConfig } from './animationType';
 export {
   withSpring,
   withTiming,
@@ -18,4 +17,4 @@ export {
   withDecay,
   withLoop,
 } from './controllers';
-export { delay } from './helpers';
+export { delay, AnimationConfig } from './helpers';

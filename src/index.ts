@@ -15,7 +15,7 @@ export {
 } from './animation';
 
 // Interpolation
-export { bInterpolate, interpolate } from './animation';
+export { interpolate, bInterpolate } from './animation';
 
 // Hooks
 export { useValue, useMount, useValues } from './animation';
