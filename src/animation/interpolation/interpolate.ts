@@ -36,8 +36,8 @@ export const interpolate = <T extends number | FluidValue>(
   }
 };
 
-export const bInterpolate = (
-  value: number | FluidValue,
+export const bInterpolate = <T extends number | FluidValue>(
+  value: T,
   minOutput: number | string,
   maxOutput: number | string,
   extrapolateConfig?: ExtrapolateConfig
