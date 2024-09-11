@@ -13,3 +13,4 @@ tsconfig.json
 *.mjs
 .prettierrc
 CHANGELOG.md
+.idea/
