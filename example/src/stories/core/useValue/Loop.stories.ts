@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { Loop as Example } from './Loop';
 
 const meta = {
-  title: 'Examples/Loop',
+  title: 'Core/useValue',
   component: Example,
 } satisfies Meta<typeof Example>;
 

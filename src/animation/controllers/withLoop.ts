@@ -1,4 +1,4 @@
-import { UpdateValue } from '../core/FluidController';
+import type { UpdateValue } from '../core/FluidController';
 
 export const withLoop = (
   updateValue: UpdateValue | UpdateValue[],
