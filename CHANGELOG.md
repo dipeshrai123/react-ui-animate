@@ -63,3 +63,9 @@ animations.value = [
 
 - with\* function config overrides bug fixed.
 - `useOutsideClick` hook immediate callback fire issue with modal fixed.
+
+## [4.1.1] - 2024-09-13
+
+### Fixed
+
+- `spring` animation with delay value crashes the page bug fixed (Re-motion).
