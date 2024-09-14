@@ -17,4 +17,4 @@ export {
   withDecay,
   withLoop,
 } from './controllers';
-export { delay, AnimationConfig } from './helpers';
+export { AnimationConfig } from './helpers';

@@ -4,6 +4,8 @@ import {
   decay,
   spring,
   native,
+  delay,
+  sequence,
 } from '@raidipesh78/re-motion';
 
 import { isDefined } from '../helpers';
@@ -53,7 +55,6 @@ export class FluidController {
 
       const timingConfig = {
         toValue: updateValue.toValue,
-        delay: config?.delay,
         duration: config?.immediate ? 0 : config?.duration,
         easing: config?.easing,
       };
@@ -63,7 +64,6 @@ export class FluidController {
       const decayConfig = {
         velocity: config?.velocity,
         deceleration: config?.deceleration,
-        delay: config?.delay,
       };
 
       return decay(this.fluid, decayConfig);
@@ -74,7 +74,6 @@ export class FluidController {
 
       const springConfig = {
         toValue: updateValue.toValue,
-        delay: config?.delay,
         mass: config?.mass,
         tension: config?.tension,
         friction: config?.friction,
@@ -91,6 +90,7 @@ export class FluidController {
   ) {
     const config = { ...this.defaultConfig, ...updateValue.config };
     const loopCount = config?.loop ?? 0;
+    const delayMS = config?.delay ?? 0;
 
     this.fluid.removeAllListeners();
     config?.onStart && config.onStart(this.fluid.get());
@@ -99,7 +99,10 @@ export class FluidController {
       this.fluid.addListener((value) => config?.onChange?.(value));
     }
 
-    const animation = this.getAnimation(updateValue, config);
+    const animation = sequence([
+      delay(delayMS),
+      this.getAnimation(updateValue, config),
+    ]);
 
     const handleRest = (result: { finished: boolean; value: number }) => {
       if (result.finished) {
