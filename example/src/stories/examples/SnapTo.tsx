@@ -7,7 +7,7 @@ import {
   AnimationConfig,
 } from 'react-ui-animate';
 
-import '../index.css';
+import '../../index.css';
 
 export function SnapTo() {
   const x = useValue(0, { ...AnimationConfig.ELASTIC });
