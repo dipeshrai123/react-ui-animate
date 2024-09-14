@@ -30,7 +30,6 @@ export {
   withConfig,
   withDecay,
   withLoop,
-  delay,
 } from './animation';
 
 // Hooks
