@@ -13,8 +13,10 @@ export {
   withSequence,
   withDelay,
   withEase,
-  withConfig,
   withDecay,
   withLoop,
 } from './controllers';
 export { AnimationConfig } from './helpers';
+
+// new api
+export { useValue as useNewValue } from './hooks/__new__/useValue';

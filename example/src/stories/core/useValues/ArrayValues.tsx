@@ -3,7 +3,6 @@ import {
   animate,
   withSpring,
   withTiming,
-  withConfig,
   AnimationConfig,
   withSequence,
 } from 'react-ui-animate';
@@ -18,7 +17,7 @@ export const ArrayValues = () => {
       withSequence([
         withSpring(200),
         withTiming(100, { duration: 3000 }),
-        withConfig(0, AnimationConfig.WOOBLE),
+        withSpring(0, AnimationConfig.WOOBLE),
       ]),
     ];
   };

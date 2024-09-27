@@ -1,14 +1,23 @@
-import { AnimationConfig } from '../helpers';
-import { type UseValueConfig } from '../hooks';
-import { withConfig, type WithOnCallbacks } from './withConfig';
-import type { UpdateValue } from '../core/FluidController';
+import { FluidValue, spring } from '@raidipesh78/re-motion';
 
-interface WithSpringConfig
-  extends Pick<UseValueConfig, 'mass' | 'friction' | 'tension'>,
-    WithOnCallbacks {}
+import { withConfig, type WithConfig } from '../helpers';
 
-export const withSpring = (
-  toValue: number,
-  config?: WithSpringConfig
-): UpdateValue =>
-  withConfig(toValue, { ...AnimationConfig.ELASTIC, ...config });
+interface WithSpringConfig extends WithConfig {
+  mass?: number;
+  friction?: number;
+  tension?: number;
+}
+
+export const withSpring =
+  (toValue: number, config?: WithSpringConfig): any =>
+  (value: FluidValue) =>
+    withConfig({
+      value,
+      animationController: spring(value, {
+        toValue,
+        mass: config?.mass,
+        friction: config?.friction,
+        tension: config?.tension,
+      }),
+      config,
+    });

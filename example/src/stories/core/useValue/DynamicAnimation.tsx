@@ -2,7 +2,7 @@ import {
   animate,
   AnimationConfig,
   useValue,
-  withConfig,
+  withTiming,
 } from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
@@ -21,7 +21,7 @@ export const DynamicAnimation = () => {
 
       <button
         onClick={() => {
-          x.value = withConfig(0, AnimationConfig.BOUNCE);
+          x.value = withTiming(0, AnimationConfig.BOUNCE);
         }}
       >
         ANIMATE LEFT
