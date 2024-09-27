@@ -1,5 +1,11 @@
 import React from 'react';
-import { animate, useNewValue, withSpring } from 'react-ui-animate';
+import {
+  animate,
+  useNewValue,
+  withSpring,
+  withTiming,
+  AnimationConfig,
+} from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
   const width = useNewValue(100);
@@ -17,14 +23,17 @@ export const UseValue: React.FC = () => {
       />
       <button
         onClick={() => {
-          width.value = withSpring(200, {
-            onStart: (v) => console.log('start', v),
-            onChange: (v) => console.log('change', v),
-            onRest: (v) => console.log('rest', v),
-          });
+          width.value = withTiming(50);
         }}
       >
-        Increase
+        TIMING
+      </button>
+      <button
+        onClick={() => {
+          width.value = withSpring(200, AnimationConfig.Spring.ELASTIC);
+        }}
+      >
+        SPRING
       </button>
     </>
   );

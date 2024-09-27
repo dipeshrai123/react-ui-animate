@@ -26,7 +26,6 @@ export {
   withTiming,
   withSequence,
   withDelay,
-  withEase,
   withDecay,
   withLoop,
 } from './animation';

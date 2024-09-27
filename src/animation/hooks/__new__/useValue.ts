@@ -1,14 +1,6 @@
 import { useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-/**
- * `useValue` returns an animation value with `.value` and `.currentValue` property which is
- * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
- * a component. It doesn't cast any re-renders which can is very good for performance optimization.
- *
- * @param { number | string } initialValue - Initial value
- */
-
 type Callback = (result: { finished: boolean; value: number }) => void;
 
 interface ControllerAnimation {
@@ -28,7 +20,6 @@ export function useValue(initialValue: number | string) {
       }
     ) {
       const { controller, callback } = to(animation);
-      console.log(callback);
       controller.start(callback);
     },
     get value(): FluidValue {

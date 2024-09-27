@@ -1,10 +1,10 @@
 import type { UseValueConfig } from '../hooks';
-import type { WithOnCallbacks } from './withConfig';
+import type { WithConfig } from '../helpers';
 import type { UpdateValue } from '../core/FluidController';
 
 interface WithDecayConfig
   extends Pick<UseValueConfig, 'velocity' | 'deceleration'>,
-    WithOnCallbacks {}
+    WithConfig {}
 
 export const withDecay = (config?: WithDecayConfig): UpdateValue => ({
   config: {
