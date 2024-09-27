@@ -1,6 +1,6 @@
 import { FluidValue, timing } from '@raidipesh78/re-motion';
 
-import { withConfig, type WithConfig } from '../helpers';
+import { withConfig, WithConfig } from '../helpers';
 
 interface WithTimingConfig extends WithConfig {
   duration?: number;

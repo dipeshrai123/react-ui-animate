@@ -4,7 +4,7 @@ import {
   useNewValue,
   withSpring,
   withTiming,
-  AnimationConfig,
+  withSequence,
 } from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
@@ -23,14 +23,14 @@ export const UseValue: React.FC = () => {
       />
       <button
         onClick={() => {
-          width.value = withTiming(50);
+          width.value = withSequence([withTiming(50), withSpring(0)]);
         }}
       >
         TIMING
       </button>
       <button
         onClick={() => {
-          width.value = withSpring(200, AnimationConfig.Spring.ELASTIC);
+          width.value = withSpring(200, { onRest: () => console.log('ok') });
         }}
       >
         SPRING

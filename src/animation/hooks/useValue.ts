@@ -22,7 +22,7 @@ export function useValue<T extends number | string>(
 ) {
   const isInitialRender = useRef(true);
   const [animation, setAnimation] = useFluidValue(initialValue, {
-    ...AnimationConfig.EASE,
+    ...AnimationConfig.Spring.EASE,
     ...config,
   });
 

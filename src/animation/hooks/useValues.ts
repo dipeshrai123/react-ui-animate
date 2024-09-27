@@ -13,7 +13,7 @@ export function useValues<T extends number[] | string[]>(
 ) {
   const isInitialRender = useRef(true);
   const [animation, setAnimation] = useFluidValues(initialValue, {
-    ...AnimationConfig.EASE,
+    ...AnimationConfig.Spring.EASE,
     ...config,
   });
 

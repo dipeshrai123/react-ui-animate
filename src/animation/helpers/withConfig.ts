@@ -1,12 +1,18 @@
 import { FluidValue, spring } from '@raidipesh78/re-motion';
 
-import type { UseValueConfig } from '../hooks';
-
-type CallbackResult = { finished: boolean; value: number };
 type ControllerAnimation = ReturnType<typeof spring>;
+type CallbackResult = { finished: boolean; value: number };
 
-export interface WithConfig
-  extends Pick<UseValueConfig, 'onRest' | 'onStart' | 'onChange'> {}
+export interface WithConfig {
+  onStart: (value: number | string) => void;
+  onChange: (value: number | string) => void;
+  onRest: (value: number | string) => void;
+}
+
+export interface WithConfigReturn {
+  controller: ControllerAnimation;
+  callback: (result: CallbackResult) => void;
+}
 
 export const withConfig = ({
   value,
@@ -15,8 +21,8 @@ export const withConfig = ({
 }: {
   value: FluidValue;
   animationController: ControllerAnimation;
-  config?: UseValueConfig;
-}) => {
+  config?: WithConfig;
+}): WithConfigReturn => {
   if (config?.onStart) {
     config?.onStart?.(value.get());
   }

@@ -19,6 +19,7 @@ export function useValue(initialValue: number | string) {
         callback: Callback;
       }
     ) {
+      animation.removeAllListeners();
       const { controller, callback } = to(animation);
       controller.start(callback);
     },
