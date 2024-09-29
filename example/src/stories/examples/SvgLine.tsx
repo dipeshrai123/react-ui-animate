@@ -1,12 +1,12 @@
-import { useValue, useDrag, animate, withTiming } from 'react-ui-animate';
+import { useValue, useDrag, animate, withSpring } from 'react-ui-animate';
 
 export function SVGLine() {
   const dragX = useValue(0);
   const followX = useValue(0);
 
   const circleBind = useDrag(({ movementX }) => {
-    dragX.value = withTiming(movementX, { duration: 0 });
-    followX.value = movementX;
+    dragX.value = movementX;
+    followX.value = withSpring(movementX);
   });
 
   return (

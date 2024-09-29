@@ -1,10 +1,4 @@
-import {
-  useScroll,
-  useValue,
-  interpolate,
-  animate,
-  useValues,
-} from 'react-ui-animate';
+import { useScroll, useValue, interpolate, animate } from 'react-ui-animate';
 
 export const Scroll = () => {
   const x = useValue(100);

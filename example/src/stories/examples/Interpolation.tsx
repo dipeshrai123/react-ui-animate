@@ -1,9 +1,13 @@
-import { useState } from 'react';
-import { animate, interpolate, useValue } from 'react-ui-animate';
+import { useLayoutEffect, useState } from 'react';
+import { animate, interpolate, useValue, withSpring } from 'react-ui-animate';
 
 export const Interpolation = () => {
-  const [open, setOpen] = useState(true);
-  const x = useValue(open ? 500 : 0);
+  const [open, setOpen] = useState(false);
+  const x = useValue(0);
+
+  useLayoutEffect(() => {
+    x.value = withSpring(open ? 500 : 0);
+  }, [open]);
 
   return (
     <>

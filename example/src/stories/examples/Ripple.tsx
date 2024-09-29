@@ -25,7 +25,7 @@ function Ripple({
         onRemove(id);
       },
     });
-  }, [animation, id, onRemove]);
+  }, [id]);
 
   return (
     <animate.div
