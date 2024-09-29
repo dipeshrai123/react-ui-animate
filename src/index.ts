@@ -28,7 +28,6 @@ export {
   withDelay,
   withDecay,
   withLoop,
-  withString,
   withEase,
 } from './animation';
 

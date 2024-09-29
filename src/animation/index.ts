@@ -8,7 +8,6 @@ export {
   withDelay,
   withDecay,
   withLoop,
-  withString,
   withEase,
 } from './controllers';
 export { AnimationConfig } from './helpers';

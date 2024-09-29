@@ -10,9 +10,9 @@ export function useValues(initialValue: number[] | string[]) {
     initialValue.map((val) => new FluidValue(val))
   ).current;
 
-  const updateValue = useCallback((to: ToValue[]) => {
+  const updateValue = useCallback((to: number[] | string[] | ToValue[]) => {
     to.forEach((fn, index) => {
-      const { controller, callback } = fn(animations[index]);
+      const { controller, callback } = getToValue(fn)(animations[index]);
       controller.start(callback);
     });
   }, []);
@@ -27,7 +27,7 @@ export function useValues(initialValue: number[] | string[]) {
   }, [initialValue]);
 
   return {
-    set value(to: ToValue[]) {
+    set value(to: number[] | string[] | ToValue[]) {
       updateValue(to);
     },
     get value(): FluidValue[] {

@@ -9,7 +9,7 @@ export function useValue(initialValue: number | string) {
   const isInitialRender = useRef(true);
   const animation = useRef(new FluidValue(initialValue)).current;
 
-  const updateValue = useCallback((to: ToValue) => {
+  const updateValue = useCallback((to: number | string | ToValue) => {
     const { controller, callback } = getToValue(to)(animation);
     controller.start(callback);
   }, []);
@@ -24,7 +24,7 @@ export function useValue(initialValue: number | string) {
   }, [initialValue]);
 
   return {
-    set value(to: ToValue) {
+    set value(to: number | string | ToValue) {
       updateValue(to);
     },
     get value(): FluidValue {

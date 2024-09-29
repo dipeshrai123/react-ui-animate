@@ -1,11 +1,9 @@
-import { withEase, withString } from '../controllers';
+import { withNative } from '../controllers';
 import { ToValue } from '../types';
 
 export function getToValue(val: string | number | ToValue): ToValue {
-  if (typeof val === 'number') {
-    return withEase(val);
-  } else if (typeof val === 'string') {
-    return withString(val);
+  if (typeof val === 'number' || typeof val === 'string') {
+    return withNative(val as string);
   } else {
     return val;
   }
