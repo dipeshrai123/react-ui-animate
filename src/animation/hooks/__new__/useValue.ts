@@ -16,12 +16,9 @@ export function useValue(initialValue: number | string) {
     set value(
       to: (animation: FluidValue) => {
         controller: ControllerAnimation;
-        callback: Callback;
       }
     ) {
-      animation.removeAllListeners();
-      const { controller, callback } = to(animation);
-      controller.start(callback);
+      to(animation).controller.start(() => {});
     },
     get value(): FluidValue {
       return animation;

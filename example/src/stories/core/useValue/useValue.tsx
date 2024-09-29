@@ -23,7 +23,19 @@ export const UseValue: React.FC = () => {
       />
       <button
         onClick={() => {
-          width.value = withSequence([withTiming(50), withSpring(0)]);
+          width.value = withSequence([
+            withTiming(50, {
+              duration: 5000,
+              onStart: () => console.log('timing start'),
+              onChange: () => console.log('timing change'),
+              onRest: () => console.log('timing rest'),
+            }),
+            withSpring(0, {
+              onStart: () => console.log('spring start'),
+              onChange: () => console.log('spring change'),
+              onRest: () => console.log('spring rest'),
+            }),
+          ]);
         }}
       >
         TIMING

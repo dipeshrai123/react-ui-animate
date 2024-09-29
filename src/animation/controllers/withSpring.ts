@@ -1,23 +1,24 @@
 import { FluidValue, spring } from '@raidipesh78/re-motion';
 
-import { withConfig, type WithConfig } from '../helpers';
-
-interface WithSpringConfig extends WithConfig {
+interface WithSpringConfig {
   mass?: number;
   friction?: number;
   tension?: number;
+  onStart?: (value: number | string) => void;
+  onChange?: (value: number | string) => void;
+  onRest?: (value: number | string) => void;
 }
 
 export const withSpring =
   (toValue: number, config?: WithSpringConfig): any =>
-  (value: FluidValue) =>
-    withConfig({
-      value,
-      animationController: spring(value, {
-        toValue,
-        mass: config?.mass,
-        friction: config?.friction,
-        tension: config?.tension,
-      }),
-      config,
-    });
+  (value: FluidValue) => ({
+    controller: spring(value, {
+      toValue,
+      mass: config?.mass,
+      friction: config?.friction,
+      tension: config?.tension,
+      onStart: config?.onStart,
+      onChange: config?.onChange,
+      onRest: config?.onRest,
+    }),
+  });

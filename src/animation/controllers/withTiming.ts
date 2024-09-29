@@ -1,21 +1,22 @@
 import { FluidValue, timing } from '@raidipesh78/re-motion';
 
-import { withConfig, WithConfig } from '../helpers';
-
-interface WithTimingConfig extends WithConfig {
+interface WithTimingConfig {
   duration?: number;
   easing?: (t: number) => number;
+  onStart?: (value: number | string) => void;
+  onChange?: (value: number | string) => void;
+  onRest?: (value: number | string) => void;
 }
 
 export const withTiming =
   (toValue: number, config?: WithTimingConfig): any =>
-  (value: FluidValue) =>
-    withConfig({
-      value,
-      animationController: timing(value, {
-        toValue,
-        duration: config?.duration,
-        easing: config?.easing,
-      }),
-      config,
-    });
+  (value: FluidValue) => ({
+    controller: timing(value, {
+      toValue,
+      duration: config?.duration,
+      easing: config?.easing,
+      onStart: config?.onStart,
+      onChange: config?.onChange,
+      onRest: config?.onRest,
+    }),
+  });
