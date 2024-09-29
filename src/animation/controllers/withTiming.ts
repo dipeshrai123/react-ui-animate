@@ -1,11 +1,10 @@
 import { FluidValue, timing } from '@raidipesh78/re-motion';
 
-interface WithTimingConfig {
+import type { WithCallbacks } from '../types';
+
+interface WithTimingConfig extends WithCallbacks {
   duration?: number;
   easing?: (t: number) => number;
-  onStart?: (value: number | string) => void;
-  onChange?: (value: number | string) => void;
-  onRest?: (value: number | string) => void;
 }
 
 export const withTiming =

@@ -1,11 +1,10 @@
 import { FluidValue, decay } from '@raidipesh78/re-motion';
 
-interface WithDecayConfig {
+import type { WithCallbacks } from '../types';
+
+interface WithDecayConfig extends WithCallbacks {
   velocity?: number;
   deceleration?: number;
-  onStart?: (value: number | string) => void;
-  onChange?: (value: number | string) => void;
-  onRest?: (value: number | string) => void;
 }
 
 export const withDecay =

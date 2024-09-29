@@ -10,3 +10,9 @@ export type ToValue = (animation: FluidValue) => {
   controller: Controller;
   callback?: EndCallback;
 };
+
+export interface WithCallbacks {
+  onStart?: (value: number | string) => void;
+  onChange?: (value: number | string) => void;
+  onRest?: (value: number | string) => void;
+}

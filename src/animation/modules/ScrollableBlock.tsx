@@ -1,21 +1,21 @@
-import * as React from 'react';
+import { ReactNode, useRef, useLayoutEffect } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useValue } from '../hooks';
-import { withSpring } from '../controllers';
+import { withEase } from '../controllers';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: FluidValue }) => React.ReactNode;
+  children?: (animation: { value: FluidValue }) => ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
 }
 
 export const ScrollableBlock = (props: ScrollableBlockProps) => {
   const { children, direction = 'single', threshold = 0.2 } = props;
-  const scrollableBlockRef = React.useRef<HTMLDivElement>(null);
+  const scrollableBlockRef = useRef<HTMLDivElement>(null);
   const animation = useValue(0); // 0: not intersecting | 1: intersecting
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     const _scrollableBlock = scrollableBlockRef.current;
 
     const observer = new IntersectionObserver(
@@ -23,9 +23,9 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
         const { isIntersecting } = entry;
 
         if (isIntersecting) {
-          animation.value = withSpring(1);
+          animation.value = withEase(1);
         } else {
-          if (direction === 'both') animation.value = withSpring(0);
+          if (direction === 'both') animation.value = withEase(0);
         }
       },
       {

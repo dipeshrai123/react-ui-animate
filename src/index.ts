@@ -7,12 +7,7 @@ export {
 
 // react-ui-animate
 // Modules
-export {
-  AnimationConfig,
-  MountedBlock,
-  ScrollableBlock,
-  TransitionBlock,
-} from './animation';
+export { AnimationConfig, MountedBlock, ScrollableBlock } from './animation';
 
 // Interpolation
 export { interpolate, bInterpolate } from './animation';

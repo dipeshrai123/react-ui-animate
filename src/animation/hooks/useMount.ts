@@ -1,23 +1,23 @@
 import { useState, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { getToValue } from '../helpers';
+import { withEase } from '../controllers';
 import { useValue } from './useValue';
 
 import type { ToValue } from '../types';
 
 export interface UseMountConfig {
   from?: number;
-  enter?: number | ToValue;
-  exit?: number | ToValue;
+  enter?: ToValue;
+  exit?: ToValue;
 }
 
 export const useMount = (state: boolean, config?: UseMountConfig) => {
   const [mounted, setMounted] = useState(state);
   const animationConfig = useRef({
     from: config?.from ?? 0,
-    enter: getToValue(config?.enter ?? 1),
-    exit: getToValue(config?.exit ?? 0),
+    enter: config?.enter ?? withEase(1),
+    exit: config?.exit ?? withEase(0),
   }).current;
 
   const animation = useValue(animationConfig.from);

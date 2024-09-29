@@ -1,13 +1,13 @@
 import { FluidValue, spring } from '@raidipesh78/re-motion';
+
 import { AnimationConfig } from '../helpers';
 
-interface WithSpringConfig {
+import type { WithCallbacks } from '../types';
+
+interface WithSpringConfig extends WithCallbacks {
   mass?: number;
   friction?: number;
   tension?: number;
-  onStart?: (value: number | string) => void;
-  onChange?: (value: number | string) => void;
-  onRest?: (value: number | string) => void;
 }
 
 export const withSpring =

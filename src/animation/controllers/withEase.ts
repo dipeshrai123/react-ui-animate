@@ -1,11 +1,9 @@
 import { withSpring } from './withSpring';
 import { AnimationConfig } from '../helpers';
 
-interface WithEaseConfig {
-  onStart?: (value: number | string) => void;
-  onChange?: (value: number | string) => void;
-  onRest?: (value: number | string) => void;
-}
+import type { WithCallbacks } from '../types';
+
+interface WithEaseConfig extends WithCallbacks {}
 
 export const withEase = (
   toValue: number,
