@@ -51,11 +51,13 @@ export default function () {
 }
 ```
 
-In this example, clicking the "Animate Me" button smoothly changes the opacity from 0 to 1.
+In this example, clicking the `Animate Me` button changes the opacity from 0 to 1.
 
-### Steps
+---
 
-#### Initialize
+### Implementation Steps
+
+#### 1. Initialize
 
 The `useValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
 
@@ -63,7 +65,7 @@ The `useValue()` hook is central to creating animations. It initializes an anima
 const opacity = useValue(0); // Initialize a animation value 0
 ```
 
-#### Apply
+#### 2. Apply
 
 `animate.div` is a special component designed to work with `useValue()`. It simplifies animating elements by directly using animated values.
 
@@ -81,7 +83,7 @@ const width = useValue(100); // Start with a width of 100
 />;
 ```
 
-#### Update
+#### 3. Update
 
 To update the value simply assign the initialized animated node with a value.
 
@@ -102,6 +104,7 @@ const width = useValue(100);
 
 In this example, `withSpring` runs spring animation when updating the value.
 
+---
 
 #### `interpolate`
 
@@ -123,7 +126,7 @@ const width = useValue(100);
 
 In this example, as the width changes from 100 to 200, the background color smoothly transitions from red to blue.
 
-#### Animation Modifiers
+#### Modifiers
 
 You can dynamically modify animation configurations by assigning values to an animated value using various animation functions.
 
@@ -142,7 +145,7 @@ x.value = withTiming(10, { duration: 5000 });
 To create sequential transitions using the `withSequence` function with dynamic modifiers like `withSpring` and `withTiming`:
 
 ```jsx
-x.value = withSequence([withSpring(50), withTiming(100), 200]);
+x.value = withSequence([withSpring(50), withTiming(100), withEase(200)]);
 ```
 
 #### `useMount()`
@@ -167,6 +170,8 @@ In this example,
 2. The `useMount` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
 3. The `open` function, returned by `useMount`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
 
+---
+
 ### Gestures
 
 The `react-ui-animate` library also provides several hooks for handling different types of gestures:
@@ -182,13 +187,13 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useValue, animate, useDrag } from 'react-ui-animate';
+import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable = () => {
   const translateX = useValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
-    translateX.value = down ? movementX : 0;
+    translateX.value = down ? movementX : withSpring(0);
   });
 
   return (
@@ -198,7 +203,7 @@ export const Draggable = () => {
         width: 100,
         height: 100,
         backgroundColor: '#3399ff',
-        translateX: translateX.value, // Use translateX with animated value
+        translateX: translateX.value,
       }}
     />
   );
