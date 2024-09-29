@@ -1,53 +1,31 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useFluidValue } from '../core/useFluidValue';
-import { getToValue, AnimationConfig } from '../helpers';
+import { getToValue } from '../helpers';
 
-import type { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
+import type { ToValue } from '../types';
 
-export interface UseValueConfig extends UseFluidValueConfig {}
-
-/**
- * `useValue` returns an animation value with `.value` and `.currentValue` property which is
- * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
- * a component. It doesn't cast any re-renders which can is very good for performance optimization.
- *
- * @param { number } initialValue - Initial value
- * @param { UseValueConfig } config - Animation configuration object.
- */
-export function useValue<T extends number | string>(
-  initialValue: T,
-  config?: UseValueConfig
-) {
+export function useValue(initialValue: number | string) {
   const isInitialRender = useRef(true);
-  const [animation, setAnimation] = useFluidValue(initialValue, {
-    ...AnimationConfig.Spring.EASE,
-    ...config,
-  });
+  const animation = useRef(new FluidValue(initialValue)).current;
 
-  const updateAnimation = useCallback(
-    (value: string | number | UpdateValue | number[] | UpdateValue[]) => {
-      if (Array.isArray(value)) {
-        queueMicrotask(() => setAnimation(value.map((v) => getToValue(v))));
-      } else {
-        queueMicrotask(() => setAnimation(getToValue(value)));
-      }
-    },
-    []
-  );
+  const updateValue = useCallback((to: ToValue) => {
+    const { controller, callback } = getToValue(to)(animation);
+    controller.start(callback);
+  }, []);
 
   useLayoutEffect(() => {
-    if (!isInitialRender.current) {
-      updateAnimation(initialValue);
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
     }
 
-    isInitialRender.current = false;
-  }, [initialValue, config]);
+    updateValue(getToValue(initialValue));
+  }, [initialValue]);
 
   return {
-    set value(to: number | string | UpdateValue | number[] | UpdateValue[]) {
-      updateAnimation(to);
+    set value(to: ToValue) {
+      updateValue(to);
     },
     get value(): FluidValue {
       return animation;

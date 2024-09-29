@@ -1,10 +1,12 @@
-import { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
+import { withEase, withString } from '../controllers';
+import { ToValue } from '../types';
 
-export function getToValue(
-  value: number | string | UpdateValue,
-  config?: UseFluidValueConfig
-): UpdateValue {
-  return typeof value === 'number' || typeof value === 'string'
-    ? { toValue: value, config }
-    : value;
+export function getToValue(val: string | number | ToValue): ToValue {
+  if (typeof val === 'number') {
+    return withEase(val);
+  } else if (typeof val === 'string') {
+    return withString(val);
+  } else {
+    return val;
+  }
 }

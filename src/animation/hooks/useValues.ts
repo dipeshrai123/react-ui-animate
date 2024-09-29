@@ -1,57 +1,40 @@
 import { useCallback, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useFluidValues } from '../core/useFluidValues';
-import { getToValue, AnimationConfig } from '../helpers';
+import type { ToValue } from '../types';
+import { getToValue } from '../helpers';
 
-import { type UpdateValue } from '../core/FluidController';
-import { type UseValueConfig } from './useValue';
-
-export function useValues<T extends number[] | string[]>(
-  initialValue: T,
-  config?: UseValueConfig
-) {
+export function useValues(initialValue: number[] | string[]) {
   const isInitialRender = useRef(true);
-  const [animation, setAnimation] = useFluidValues(initialValue, {
-    ...AnimationConfig.Spring.EASE,
-    ...config,
-  });
+  const animations = useRef(
+    initialValue.map((val) => new FluidValue(val))
+  ).current;
 
-  const updateAnimation = useCallback(
-    (
-      values: Array<number | number[] | string | UpdateValue | UpdateValue[]>
-    ) => {
-      const update = values.map((value) => {
-        if (Array.isArray(value)) {
-          return value.map((v) => getToValue(v));
-        } else {
-          return getToValue(value);
-        }
-      });
-      queueMicrotask(() => setAnimation(update));
-    },
-    []
-  );
+  const updateValue = useCallback((to: ToValue[]) => {
+    to.forEach((fn, index) => {
+      const { controller, callback } = fn(animations[index]);
+      controller.start(callback);
+    });
+  }, []);
 
   useLayoutEffect(() => {
-    if (!isInitialRender.current) {
-      updateAnimation(initialValue);
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
     }
 
-    isInitialRender.current = false;
-  }, [initialValue, config]);
+    updateValue(initialValue.map((v) => getToValue(v)));
+  }, [initialValue]);
 
   return {
-    set value(
-      to: Array<number | number[] | string | UpdateValue | UpdateValue[]>
-    ) {
-      updateAnimation(to);
+    set value(to: ToValue[]) {
+      updateValue(to);
     },
     get value(): FluidValue[] {
-      return animation;
+      return animations;
     },
     get currentValue() {
-      return animation.map((a) => a.get());
+      return animations.map((animation) => animation.get());
     },
   };
 }

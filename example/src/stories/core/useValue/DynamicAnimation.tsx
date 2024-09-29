@@ -21,7 +21,7 @@ export const DynamicAnimation = () => {
 
       <button
         onClick={() => {
-          x.value = withTiming(0, AnimationConfig.BOUNCE);
+          x.value = withTiming(0, AnimationConfig.Timing.BOUNCE);
         }}
       >
         ANIMATE LEFT

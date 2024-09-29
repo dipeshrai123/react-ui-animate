@@ -5,6 +5,7 @@ import {
   withTiming,
   Easing,
   withDecay,
+  withSequence,
 } from 'react-ui-animate';
 
 export const SequenceTransition = () => {
@@ -31,11 +32,11 @@ export const SequenceTransition = () => {
 
       <button
         onClick={() => {
-          x.value = [
+          x.value = withSequence([
             withTiming(200, { duration: 5000, easing: Easing.elastic() }),
             withSpring(400),
             withDecay({ velocity: 1 }),
-          ];
+          ]);
         }}
       >
         ANIMATE RIGHT

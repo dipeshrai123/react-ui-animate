@@ -1,12 +1,6 @@
 export { interpolate, bInterpolate } from './interpolation';
 export { MountedBlock, ScrollableBlock, TransitionBlock } from './modules';
-export {
-  useValue,
-  useValues,
-  useMount,
-  type UseValueConfig,
-  type UseMountConfig,
-} from './hooks';
+export { useValue, useMount, useValues, type UseMountConfig } from './hooks';
 export {
   withSpring,
   withTiming,
@@ -14,9 +8,7 @@ export {
   withDelay,
   withDecay,
   withLoop,
+  withString,
+  withEase,
 } from './controllers';
 export { AnimationConfig } from './helpers';
-
-// new api
-export { useValue as useNewValue } from './hooks/__new__/useValue';
-export { useMount as useNewMount } from './hooks/__new__/useMount';

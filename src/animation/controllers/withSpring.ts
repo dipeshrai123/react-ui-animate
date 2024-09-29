@@ -1,4 +1,5 @@
 import { FluidValue, spring } from '@raidipesh78/re-motion';
+import { AnimationConfig } from '../helpers';
 
 interface WithSpringConfig {
   mass?: number;
@@ -18,12 +19,8 @@ export const withSpring =
   (value: FluidValue) => ({
     controller: spring(value, {
       toValue,
-      mass: config?.mass,
-      friction: config?.friction,
-      tension: config?.tension,
-      onStart: config?.onStart,
-      onChange: config?.onChange,
-      onRest: config?.onRest,
+      ...AnimationConfig.Spring.ELASTIC,
+      ...config,
     }),
     callback,
   });

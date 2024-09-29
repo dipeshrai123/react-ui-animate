@@ -4,14 +4,14 @@ import {
   useDrag,
   useValue,
   snapTo,
-  AnimationConfig,
+  withSpring,
 } from 'react-ui-animate';
 
 import '../../index.css';
 
 export function SnapTo() {
-  const x = useValue(0, { ...AnimationConfig.ELASTIC });
-  const y = useValue(0, { ...AnimationConfig.ELASTIC });
+  const x = useValue(0);
+  const y = useValue(0);
   const offsetX = useRef(0);
   const offsetY = useRef(0);
 
@@ -24,8 +24,8 @@ export function SnapTo() {
         const snapX = snapTo(offsetX.current, velocityX, [0, 600]);
         const snapY = snapTo(offsetY.current, velocityY, [0, 600]);
 
-        x.value = snapX;
-        y.value = snapY;
+        x.value = withSpring(snapX);
+        y.value = withSpring(snapY);
 
         offsetX.current = snapX;
         offsetY.current = snapY;

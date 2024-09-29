@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { animate, interpolate, useValue } from 'react-ui-animate';
 
 export const Interpolation = () => {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const x = useValue(open ? 500 : 0);
 
   return (

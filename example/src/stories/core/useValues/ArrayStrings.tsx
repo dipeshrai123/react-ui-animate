@@ -1,14 +1,22 @@
-import { useValues, animate } from 'react-ui-animate';
+import { useValues, animate, withString } from 'react-ui-animate';
 
 export const ArrayStrings = () => {
   const translateX = useValues(['red', 'blue', 'green']);
 
   const animateLeft = () => {
-    translateX.value = ['red', 'blue', 'green'];
+    translateX.value = [
+      withString('red'),
+      withString('blue'),
+      withString('green'),
+    ];
   };
 
   const animateRight = () => {
-    translateX.value = ['green', 'red', 'blue'];
+    translateX.value = [
+      withString('green'),
+      withString('red'),
+      withString('blue'),
+    ];
   };
 
   return (
