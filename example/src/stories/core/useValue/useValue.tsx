@@ -24,10 +24,7 @@ export const UseValue: React.FC = () => {
       />
       <button
         onClick={() => {
-          width.value = withLoop(
-            withSequence([withTiming(100), withSpring(0)]),
-            2
-          );
+          width.value = withSequence([withTiming(100), withSpring(0)]);
         }}
       >
         TIMING

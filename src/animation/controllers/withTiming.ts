@@ -9,12 +9,19 @@ interface WithTimingConfig {
 }
 
 export const withTiming =
-  (toValue: number, config?: WithTimingConfig) => (value: FluidValue) =>
-    timing(value, {
+  (
+    toValue: number,
+    config?: WithTimingConfig,
+    callback?: (result: any) => void
+  ) =>
+  (value: FluidValue) => ({
+    controller: timing(value, {
       toValue,
       duration: config?.duration,
       easing: config?.easing,
       onStart: config?.onStart,
       onChange: config?.onChange,
       onRest: config?.onRest,
-    });
+    }),
+    callback,
+  });

@@ -19,3 +19,4 @@ export { AnimationConfig } from './helpers';
 
 // new api
 export { useValue as useNewValue } from './hooks/__new__/useValue';
+export { useMount as useNewMount } from './hooks/__new__/useMount';

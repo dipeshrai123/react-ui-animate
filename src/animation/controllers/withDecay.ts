@@ -5,8 +5,12 @@ interface WithDecayConfig {
   deceleration?: number;
 }
 
-export const withDecay = (config?: WithDecayConfig) => (value: FluidValue) =>
-  decay(value, {
-    velocity: config?.velocity,
-    deceleration: config?.deceleration,
+export const withDecay =
+  (config?: WithDecayConfig, callback?: (result: any) => void) =>
+  (value: FluidValue) => ({
+    controller: decay(value, {
+      velocity: config?.velocity,
+      deceleration: config?.deceleration,
+    }),
+    callback,
   });

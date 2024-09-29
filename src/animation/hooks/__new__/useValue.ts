@@ -1,14 +1,21 @@
 import { useRef } from 'react';
-import { FluidValue } from '@raidipesh78/re-motion';
-
-import { ControllerAnimation } from '../../controllers/types';
+import { FluidValue, spring } from '@raidipesh78/re-motion';
 
 export function useValue(initialValue: number | string) {
   const animation = useRef(new FluidValue(initialValue)).current;
 
   return {
-    set value(to: (animation: FluidValue) => ControllerAnimation) {
-      to(animation).start(() => {});
+    set value(
+      to: (animation: FluidValue) => {
+        controller: ReturnType<typeof spring>;
+        callback?: (result: {
+          finished: boolean;
+          value?: number | string;
+        }) => void;
+      }
+    ) {
+      const { controller, callback } = to(animation);
+      controller.start(callback);
     },
     get value(): FluidValue {
       return animation;

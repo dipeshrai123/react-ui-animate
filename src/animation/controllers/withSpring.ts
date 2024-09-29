@@ -10,8 +10,13 @@ interface WithSpringConfig {
 }
 
 export const withSpring =
-  (toValue: number, config?: WithSpringConfig) => (value: FluidValue) =>
-    spring(value, {
+  (
+    toValue: number,
+    config?: WithSpringConfig,
+    callback?: (result: any) => void
+  ) =>
+  (value: FluidValue) => ({
+    controller: spring(value, {
       toValue,
       mass: config?.mass,
       friction: config?.friction,
@@ -19,4 +24,6 @@ export const withSpring =
       onStart: config?.onStart,
       onChange: config?.onChange,
       onRest: config?.onRest,
-    });
+    }),
+    callback,
+  });

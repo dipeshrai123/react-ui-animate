@@ -18,7 +18,13 @@ export {
 export { interpolate, bInterpolate } from './animation';
 
 // Hooks
-export { useValue, useMount, useValues, useNewValue } from './animation';
+export {
+  useValue,
+  useMount,
+  useValues,
+  useNewValue,
+  useNewMount,
+} from './animation';
 
 // Helpers and Utilities
 export {

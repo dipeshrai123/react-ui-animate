@@ -1,8 +1,11 @@
 import { FluidValue, sequence } from '@raidipesh78/re-motion';
 
-import { ControllerAnimation } from './types';
-
 export const withSequence =
-  (animations: Array<(value: FluidValue) => ControllerAnimation>) =>
-  (value: FluidValue) =>
-    sequence(animations.map((a) => a(value)));
+  (
+    animations: Array<(value: FluidValue) => ReturnType<typeof sequence>>,
+    callback?: (result: any) => void
+  ) =>
+  (value: FluidValue) => ({
+    controller: sequence(animations.map((a) => a(value))),
+    callback,
+  });
