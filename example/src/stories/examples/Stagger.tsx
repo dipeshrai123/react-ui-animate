@@ -1,5 +1,13 @@
-import { Children, useState } from 'react';
-import { useValue, useScroll, animate, interpolate } from 'react-ui-animate';
+import { Children, useLayoutEffect, useState } from 'react';
+import {
+  useValue,
+  useScroll,
+  animate,
+  interpolate,
+  withSequence,
+  withSpring,
+  withDelay,
+} from 'react-ui-animate';
 
 const StaggerItem = ({
   y,
@@ -10,10 +18,18 @@ const StaggerItem = ({
   index: number;
   content: string;
 }) => {
-  const val = interpolate(y, [0, 500], [0, window.innerHeight - 50], {
-    extrapolate: 'clamp',
-  });
-  const top = useValue(val, { delay: index * 50 });
+  const top = useValue(0);
+
+  useLayoutEffect(() => {
+    top.value = withSequence([
+      withDelay(index * 50),
+      withSpring(
+        interpolate(y, [0, 500], [0, window.innerHeight - 50], {
+          extrapolate: 'clamp',
+        })
+      ),
+    ]);
+  }, [y, index]);
 
   return (
     <animate.span

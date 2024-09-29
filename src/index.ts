@@ -7,12 +7,7 @@ export {
 
 // react-ui-animate
 // Modules
-export {
-  AnimationConfig,
-  MountedBlock,
-  ScrollableBlock,
-  TransitionBlock,
-} from './animation';
+export { AnimationConfig, MountedBlock, ScrollableBlock } from './animation';
 
 // Interpolation
 export { interpolate, bInterpolate } from './animation';
@@ -26,10 +21,9 @@ export {
   withTiming,
   withSequence,
   withDelay,
-  withEase,
-  withConfig,
   withDecay,
   withLoop,
+  withEase,
 } from './animation';
 
 // Hooks
@@ -48,4 +42,4 @@ export {
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
 
 // Types
-export type { UseValueConfig, UseMountConfig } from './animation';
+export type { UseMountConfig } from './animation';

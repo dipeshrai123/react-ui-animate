@@ -1,12 +1,26 @@
-import { type UseValueConfig } from '../hooks';
-import { withConfig, type WithOnCallbacks } from './withConfig';
-import type { UpdateValue } from '../core/FluidController';
+import { FluidValue, timing } from '@raidipesh78/re-motion';
 
-interface WithTimingConfig
-  extends Pick<UseValueConfig, 'duration' | 'easing'>,
-    WithOnCallbacks {}
+import type { WithCallbacks } from '../types';
 
-export const withTiming = (
-  toValue: number,
-  config?: WithTimingConfig
-): UpdateValue => withConfig(toValue, { duration: 250, ...config });
+interface WithTimingConfig extends WithCallbacks {
+  duration?: number;
+  easing?: (t: number) => number;
+}
+
+export const withTiming =
+  (
+    toValue: number,
+    config?: WithTimingConfig,
+    callback?: (result: any) => void
+  ) =>
+  (value: FluidValue) => ({
+    controller: timing(value, {
+      toValue,
+      duration: config?.duration,
+      easing: config?.easing,
+      onStart: config?.onStart,
+      onChange: config?.onChange,
+      onRest: config?.onRest,
+    }),
+    callback,
+  });

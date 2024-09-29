@@ -6,7 +6,7 @@
 
 ### Install
 
-You can install react-ui-animate via npm or yarn:
+You can install react-ui-animate via `npm` or `yarn`:
 
 ```sh
 npm i react-ui-animate
@@ -24,15 +24,13 @@ The `react-ui-animate` library provides a straightforward way to add animations 
 import { animate, useValue } from 'react-ui-animate';
 
 export default function () {
-  // Initialize an animated opacity value
-  const opacity = useValue(0);
+  const opacity = useValue(0); // Initialize
 
   return (
-    <div>
-      {/* animate.div component uses the animated opacity value */}
+    <>
       <animate.div
         style={{
-          opacity: opacity.value, // using opacity with value property
+          opacity: opacity.value, // Apply
           width: 100,
           padding: 20,
           background: '#39F',
@@ -40,39 +38,40 @@ export default function () {
       >
         ANIMATED
       </animate.div>
-
-      {/* Clicking the button changes the opacity smoothly to 1 */}
-      <button onClick={() => (opacity.value = 1)}>Animate Me</button>
-    </div>
+      
+      <button 
+        onClick={() => {
+          opacity.value = 1 // Update
+        }}
+      >
+        Animate Me
+      </button>
+    </>
   );
 }
 ```
 
-In this example, clicking the "Animate Me" button smoothly changes the opacity of the animated block from 0 to 1.
+In this example, clicking the `Animate Me` button changes the opacity from 0 to 1.
 
-### Key Features
+---
 
-#### `useValue()`
+### Implementation Steps
+
+#### 1. Initialize
 
 The `useValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
 
 ```javascript
-const opacity = useValue(0); // Start with opacity set to 0
-
-// Use in style
-style={{
-  opacity: opacity.value, // Access the animated opacity value
-}}
-
-// Update the value on user interaction
-onClick={() => (opacity.value = 1)} // Changes the opacity to 1
+const opacity = useValue(0); // Initialize a animation value 0
 ```
 
-#### `animate.div`
+#### 2. Apply
 
 `animate.div` is a special component designed to work with `useValue()`. It simplifies animating elements by directly using animated values.
 
-```javascript
+```jsx
+import { useValue, animate } from 'react-ui-animate'
+
 const width = useValue(100); // Start with a width of 100
 
 <animate.div
@@ -84,6 +83,29 @@ const width = useValue(100); // Start with a width of 100
 />;
 ```
 
+#### 3. Update
+
+To update the value simply assign the initialized animated node with a value.
+
+```jsx
+import { useValue, withSpring } from 'react-ui-animate';
+
+const width = useValue(100);
+
+<button 
+  onClick={() => {
+      // Update
+      width.value = withSpring(400); 
+  }}
+>
+  Update
+</button>
+```
+
+In this example, `withSpring` runs spring animation when updating the value.
+
+---
+
 #### `interpolate`
 
 The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
@@ -91,7 +113,7 @@ The `interpolate()` function is useful for mapping values from one range to anot
 ```javascript
 import { useValue, animate, interpolate } from 'react-ui-animate';
 
-const width = useValue(100); // Start with a width of 100
+const width = useValue(100);
 
 <animate.div
   style={{
@@ -104,7 +126,7 @@ const width = useValue(100); // Start with a width of 100
 
 In this example, as the width changes from 100 to 200, the background color smoothly transitions from red to blue.
 
-#### Dynamic Animations and Sequence Transitions
+#### Modifiers
 
 You can dynamically modify animation configurations by assigning values to an animated value using various animation functions.
 
@@ -123,16 +145,8 @@ x.value = withTiming(10, { duration: 5000 });
 To create sequential transitions using the `withSequence` function with dynamic modifiers like `withSpring` and `withTiming`:
 
 ```jsx
-x.value = withSequence([withSpring(50), withTiming(100), 200]);
+x.value = withSequence([withSpring(50), withTiming(100), withEase(200)]);
 ```
-
-To delay an animation using the withDelay function:
-
-```jsx
-x.value = withDelay(1000, withSpring(100));
-```
-
-In this example, a spring animation to `100` will be applied after a 1-second delay.
 
 #### `useMount()`
 
@@ -144,11 +158,7 @@ import { useMount } from 'react-ui-animate';
 export default function App() {
   const [visible, setVisible] = useState(false);
 
-  const open = useMount(visible, {
-    from: 0,
-    enter: 1,
-    exit: 0,
-  });
+  const open = useMount(visible);
 
   return open((animation, mounted) => mounted && <animate.div />);
 }
@@ -159,6 +169,8 @@ In this example,
 1. A state variable `visible` determines whether the component is visible.
 2. The `useMount` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
 3. The `open` function, returned by `useMount`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
+
+---
 
 ### Gestures
 
@@ -175,13 +187,13 @@ The `react-ui-animate` library also provides several hooks for handling differen
 Here’s an example of using the useDrag hook to enable drag gestures:
 
 ```jsx
-import { useValue, animate, useDrag } from 'react-ui-animate';
+import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable = () => {
   const translateX = useValue(0);
 
   const bind = useDrag(function ({ down, movementX }) {
-    translateX.value = down ? movementX : 0;
+    translateX.value = down ? movementX : withSpring(0);
   });
 
   return (
@@ -191,7 +203,7 @@ export const Draggable = () => {
         width: 100,
         height: 100,
         backgroundColor: '#3399ff',
-        translateX: translateX.value, // Use translateX with animated value
+        translateX: translateX.value,
       }}
     />
   );

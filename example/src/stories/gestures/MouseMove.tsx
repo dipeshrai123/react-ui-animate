@@ -32,6 +32,7 @@ export const MouseMove = () => {
           position: 'fixed',
           top: 0,
           left: 0,
+          pointerEvents: 'none',
         }}
       />
       <div style={{ height: 2000 }} />

@@ -1,57 +1,30 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useFluidValues } from '../core/useFluidValues';
-import { getToValue, AnimationConfig } from '../helpers';
+import type { ToValue } from '../types';
+import { getToValue } from '../helpers';
 
-import { type UpdateValue } from '../core/FluidController';
-import { type UseValueConfig } from './useValue';
+export function useValues(initialValue: number[] | string[]) {
+  const animations = useRef(
+    initialValue.map((val) => new FluidValue(val))
+  ).current;
 
-export function useValues<T extends number[] | string[]>(
-  initialValue: T,
-  config?: UseValueConfig
-) {
-  const isInitialRender = useRef(true);
-  const [animation, setAnimation] = useFluidValues(initialValue, {
-    ...AnimationConfig.EASE,
-    ...config,
-  });
-
-  const updateAnimation = useCallback(
-    (
-      values: Array<number | number[] | string | UpdateValue | UpdateValue[]>
-    ) => {
-      const update = values.map((value) => {
-        if (Array.isArray(value)) {
-          return value.map((v) => getToValue(v));
-        } else {
-          return getToValue(value);
-        }
-      });
-      queueMicrotask(() => setAnimation(update));
-    },
-    []
-  );
-
-  useLayoutEffect(() => {
-    if (!isInitialRender.current) {
-      updateAnimation(initialValue);
-    }
-
-    isInitialRender.current = false;
-  }, [initialValue, config]);
+  const updateValue = useCallback((to: number[] | string[] | ToValue[]) => {
+    to.forEach((fn, index) => {
+      const { controller, callback } = getToValue(fn)(animations[index]);
+      controller.start(callback);
+    });
+  }, []);
 
   return {
-    set value(
-      to: Array<number | number[] | string | UpdateValue | UpdateValue[]>
-    ) {
-      updateAnimation(to);
+    set value(to: number[] | string[] | ToValue[]) {
+      updateValue(to);
     },
     get value(): FluidValue[] {
-      return animation;
+      return animations;
     },
     get currentValue() {
-      return animation.map((a) => a.get());
+      return animations.map((animation) => animation.get());
     },
   };
 }

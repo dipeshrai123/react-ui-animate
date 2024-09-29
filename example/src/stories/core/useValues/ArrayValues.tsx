@@ -1,11 +1,10 @@
 import {
-  useValues,
   animate,
   withSpring,
   withTiming,
-  withConfig,
   AnimationConfig,
   withSequence,
+  useValues,
 } from 'react-ui-animate';
 
 export const ArrayValues = () => {
@@ -18,13 +17,13 @@ export const ArrayValues = () => {
       withSequence([
         withSpring(200),
         withTiming(100, { duration: 3000 }),
-        withConfig(0, AnimationConfig.WOOBLE),
+        withSpring(0, AnimationConfig.Spring.WOBBLE),
       ]),
     ];
   };
 
   const animateRight = () => {
-    translateX.value = [100, 200, 300];
+    translateX.value = [withSpring(100), withSpring(200), withSpring(300)];
   };
 
   return (

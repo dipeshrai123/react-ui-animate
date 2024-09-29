@@ -1,13 +1,7 @@
-import type { UseValueConfig } from '../hooks';
-import type { UpdateValue } from '../core/FluidController';
+import { delay } from '@raidipesh78/re-motion';
 
-export const withDelay = (
-  delay: number,
-  animation: { toValue: number; config?: UseValueConfig }
-): UpdateValue => ({
-  ...animation,
-  config: {
-    ...animation.config,
-    delay,
-  },
-});
+export const withDelay =
+  (ms: number, callback?: (result: any) => void) => () => ({
+    controller: delay(ms),
+    callback,
+  });

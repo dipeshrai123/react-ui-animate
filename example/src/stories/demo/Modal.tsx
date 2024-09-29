@@ -19,7 +19,7 @@ const Modal = ({
   useOutsideClick(ref, onClose);
 
   return (
-    <MountedBlock state={visible} config={AnimationConfig.ELASTIC}>
+    <MountedBlock state={visible}>
       {(animation) => (
         <animate.div
           style={{

@@ -1,35 +1,21 @@
-import * as React from 'react';
+import { ReactNode, useRef, useLayoutEffect } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useValue, type UseValueConfig } from '../hooks';
+import { useValue } from '../hooks';
+import { withEase } from '../controllers';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: FluidValue }) => React.ReactNode;
+  children?: (animation: { value: FluidValue }) => ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
-  animationConfig?: UseValueConfig;
 }
 
-/**
- * ScrollableBlock - Higher order component to handle the entrance or exit animation
- * of a component when it enters or exit the viewport. Accepts child as a function with
- * `AnimatedValue` as its first argument which can be interpolated on input range [0, 1]
- * @prop { function } children - child as a function with `AnimatedValue` as its first argument.
- * @prop { 'single' | 'both' } direction - single applies animation on enter once, both applies on enter and exit.
- * @prop { number } threshold - should be in range 0 to 1 which equivalent to `IntersectionObserver` threshold.
- * @prop { UseValueConfig } animationConfig - Animation config
- */
 export const ScrollableBlock = (props: ScrollableBlockProps) => {
-  const {
-    children,
-    direction = 'single',
-    animationConfig,
-    threshold = 0.2,
-  } = props;
-  const scrollableBlockRef = React.useRef<HTMLDivElement>(null);
-  const animation = useValue(0, animationConfig); // 0: not intersecting | 1: intersecting
+  const { children, direction = 'single', threshold = 0.2 } = props;
+  const scrollableBlockRef = useRef<HTMLDivElement>(null);
+  const animation = useValue(0); // 0: not intersecting | 1: intersecting
 
-  React.useEffect(() => {
+  useLayoutEffect(() => {
     const _scrollableBlock = scrollableBlockRef.current;
 
     const observer = new IntersectionObserver(
@@ -37,9 +23,9 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
         const { isIntersecting } = entry;
 
         if (isIntersecting) {
-          animation.value = 1;
+          animation.value = withEase(1);
         } else {
-          if (direction === 'both') animation.value = 0;
+          if (direction === 'both') animation.value = withEase(0);
         }
       },
       {

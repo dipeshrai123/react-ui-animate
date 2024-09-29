@@ -3,10 +3,7 @@ import {
   MountedBlock,
   animate,
   bInterpolate,
-  withSequence,
-  withSpring,
   interpolate,
-  withConfig,
 } from 'react-ui-animate';
 
 export const Mounted: React.FC = () => {
@@ -14,10 +11,7 @@ export const Mounted: React.FC = () => {
 
   return (
     <>
-      <MountedBlock
-        state={open}
-        enter={withSequence([withSpring(0.5), withConfig(1)]) as any}
-      >
+      <MountedBlock state={open}>
         {(animation) => (
           <animate.div
             style={{

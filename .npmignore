@@ -6,7 +6,6 @@ example/
 *.log
 .gitignore
 .npmignore
-ecosystem.config.js
 /src
 package-lock.json
 tsconfig.json

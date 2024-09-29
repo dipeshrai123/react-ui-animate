@@ -1,8 +1,13 @@
+import { withSpring } from './withSpring';
 import { AnimationConfig } from '../helpers';
-import { withConfig, type WithOnCallbacks } from './withConfig';
-import type { UpdateValue } from '../core/FluidController';
 
-interface WithEaseConfig extends WithOnCallbacks {}
+import type { WithCallbacks } from '../types';
 
-export const withEase = (toValue: number, config?: WithEaseConfig): UpdateValue =>
-  withConfig(toValue, { ...AnimationConfig.EASE, ...config });
+interface WithEaseConfig extends WithCallbacks {}
+
+export const withEase = (
+  toValue: number,
+  config?: WithEaseConfig,
+  callback?: (result: any) => void
+) =>
+  withSpring(toValue, { ...AnimationConfig.Spring.EASE, ...config }, callback);

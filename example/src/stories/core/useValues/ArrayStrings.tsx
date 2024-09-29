@@ -1,12 +1,4 @@
-import {
-  useValues,
-  animate,
-  withSpring,
-  withTiming,
-  withConfig,
-  AnimationConfig,
-  withSequence,
-} from 'react-ui-animate';
+import { useValues, animate } from 'react-ui-animate';
 
 export const ArrayStrings = () => {
   const translateX = useValues(['red', 'blue', 'green']);

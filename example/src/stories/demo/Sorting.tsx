@@ -6,7 +6,7 @@ import {
   clamp,
   move,
   withSpring,
-  withConfig,
+  withTiming,
 } from 'react-ui-animate';
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
@@ -39,7 +39,7 @@ export const Sorting = () => {
       animationYValues[j] = withSpring(
         isActive ? index * 70 + my : newOrder.indexOf(j) * 70
       );
-      zIndexValues[j] = withConfig(isActive ? 1 : 0, { immediate: true });
+      zIndexValues[j] = withTiming(isActive ? 1 : 0, { duration: 0 });
       animationXValues[j] = withSpring(isActive ? mx : 0);
     }
 

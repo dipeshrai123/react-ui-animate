@@ -1,53 +1,21 @@
-import { useCallback, useLayoutEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import { useFluidValue } from '../core/useFluidValue';
-import { getToValue, AnimationConfig } from '../helpers';
+import { getToValue } from '../helpers';
 
-import type { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
+import type { ToValue } from '../types';
 
-export interface UseValueConfig extends UseFluidValueConfig {}
+export function useValue(initialValue: number | string) {
+  const animation = useRef(new FluidValue(initialValue)).current;
 
-/**
- * `useValue` returns an animation value with `.value` and `.currentValue` property which is
- * initialized when passed to argument (`initialValue`). The returned value persist until the lifetime of
- * a component. It doesn't cast any re-renders which can is very good for performance optimization.
- *
- * @param { number } initialValue - Initial value
- * @param { UseValueConfig } config - Animation configuration object.
- */
-export function useValue<T extends number | string>(
-  initialValue: T,
-  config?: UseValueConfig
-) {
-  const isInitialRender = useRef(true);
-  const [animation, setAnimation] = useFluidValue(initialValue, {
-    ...AnimationConfig.EASE,
-    ...config,
-  });
-
-  const updateAnimation = useCallback(
-    (value: string | number | UpdateValue | number[] | UpdateValue[]) => {
-      if (Array.isArray(value)) {
-        queueMicrotask(() => setAnimation(value.map((v) => getToValue(v))));
-      } else {
-        queueMicrotask(() => setAnimation(getToValue(value)));
-      }
-    },
-    []
-  );
-
-  useLayoutEffect(() => {
-    if (!isInitialRender.current) {
-      updateAnimation(initialValue);
-    }
-
-    isInitialRender.current = false;
-  }, [initialValue, config]);
+  const updateValue = useCallback((to: number | string | ToValue) => {
+    const { controller, callback } = getToValue(to)(animation);
+    controller.start(callback);
+  }, []);
 
   return {
-    set value(to: number | string | UpdateValue | number[] | UpdateValue[]) {
-      updateAnimation(to);
+    set value(to: number | string | ToValue) {
+      updateValue(to);
     },
     get value(): FluidValue {
       return animation;

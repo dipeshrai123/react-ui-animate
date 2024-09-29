@@ -1,14 +1,15 @@
-import type { UseValueConfig } from '../hooks';
-import type { WithOnCallbacks } from './withConfig';
-import type { UpdateValue } from '../core/FluidController';
+import { FluidValue, decay } from '@raidipesh78/re-motion';
 
-interface WithDecayConfig
-  extends Pick<UseValueConfig, 'velocity' | 'deceleration'>,
-    WithOnCallbacks {}
+import type { WithCallbacks } from '../types';
 
-export const withDecay = (config?: WithDecayConfig): UpdateValue => ({
-  config: {
-    decay: true,
-    ...config,
-  },
-});
+interface WithDecayConfig extends WithCallbacks {
+  velocity?: number;
+  deceleration?: number;
+}
+
+export const withDecay =
+  (config?: WithDecayConfig, callback?: (result: any) => void) =>
+  (value: FluidValue) => ({
+    controller: decay(value, { ...config }),
+    callback,
+  });

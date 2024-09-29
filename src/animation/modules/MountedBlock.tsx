@@ -1,42 +1,26 @@
-import * as React from 'react';
+import { ReactNode } from 'react';
+import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useMount, type UseMountConfig } from '../hooks';
-import { FluidValue } from '@raidipesh78/re-motion';
 
 interface MountedBlockProps extends Partial<UseMountConfig> {
   state: boolean;
-  children: (animation: { value: FluidValue }) => React.ReactNode;
+  children: (animation: { value: FluidValue }) => ReactNode;
 }
 
-/**
- * MountedBlock - Higher order component which handles mounting and unmounting of a component.
- * @param { boolean } state - Boolean indicating the component should mount or unmount.
- * @param { function } children - Child as a function with `AnimatedValue` on `.value` property.
- * @param { number } } from - Number that dictates the beginning state for animation.
- * @param { number } enter - Number that dictates the entry state for animation.
- * @param { number } exit - Number that dictates the exit state for animation.
- * @param { UseValueConfig } config - Animation configuration for overall animation.
- */
 export const MountedBlock = ({
   state,
   children,
-  from = 0,
-  enter = 1,
-  exit = 0,
-  config,
+  from,
+  enter,
+  exit,
 }: MountedBlockProps) => {
-  const open = useMount(state, {
-    from,
-    enter,
-    exit,
-    config,
-  });
+  const open = useMount(state, { from, enter, exit });
 
   return (
     <>
       {open(
-        (animation, mounted) =>
-          mounted && children({ value: animation.value as any })
+        (animation, mounted) => mounted && children({ value: animation.value })
       )}
     </>
   );

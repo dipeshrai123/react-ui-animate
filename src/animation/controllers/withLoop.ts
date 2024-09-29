@@ -1,19 +1,15 @@
-import type { UpdateValue } from '../core/FluidController';
+import { FluidValue, loop } from '@raidipesh78/re-motion';
 
-export const withLoop = (
-  updateValue: UpdateValue | UpdateValue[],
-  loop: number
-): UpdateValue[] => {
-  if (Array.isArray(updateValue)) {
-    let loopedValues: UpdateValue[] = [];
-    for (let i = 0; i < loop; i++) {
-      loopedValues = loopedValues.concat(updateValue);
-    }
-    return loopedValues;
-  } else {
-    return Array(loop).fill({
-      toValue: updateValue.toValue,
-      config: { ...updateValue.config, loop },
-    });
-  }
-};
+export const withLoop =
+  (
+    animations: (value: FluidValue) => {
+      controller: ReturnType<typeof loop>;
+      callback?: (result: any) => void;
+    },
+    iterations: number,
+    callback?: (result: any) => void
+  ) =>
+  (value: FluidValue) => ({
+    controller: loop(animations(value).controller, { iterations }),
+    callback,
+  });

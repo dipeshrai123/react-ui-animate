@@ -1,10 +1,16 @@
 import React from 'react';
-import { useValue, animate, useGesture, clamp } from 'react-ui-animate';
+import {
+  useValue,
+  animate,
+  useGesture,
+  clamp,
+  withSpring,
+} from 'react-ui-animate';
 
 export const Gestures = () => {
-  const x = useValue(0, { immediate: true });
-  const y = useValue(0, { immediate: true });
-  const s = useValue(1, { immediate: true });
+  const x = useValue(0);
+  const y = useValue(0);
+  const s = useValue(1);
   const rotate = useValue(0);
   const scaleRef = React.useRef(1);
   const rotateRef = React.useRef(0);
@@ -18,7 +24,7 @@ export const Gestures = () => {
       scaleRef.current += deltaY * -0.001;
       scaleRef.current = clamp(scaleRef.current, 0.125, 4);
 
-      s.value = scaleRef.current;
+      s.value = withSpring(scaleRef.current);
     },
   });
 

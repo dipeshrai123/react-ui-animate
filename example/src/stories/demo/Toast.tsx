@@ -3,6 +3,7 @@ import {
   animate,
   interpolate,
   MountedBlock,
+  withEase,
   withSequence,
   withTiming,
 } from 'react-ui-animate';
@@ -14,11 +15,11 @@ const Toast = ({ id, onEnd }: any) => {
     <MountedBlock
       state={visible}
       enter={withSequence([
-        1,
-        2,
+        withEase(1),
+        withEase(2),
         withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
       ])}
-      exit={{ toValue: 4, config: { onRest: () => onEnd(id) } }}
+      exit={withEase(4, { onRest: () => onEnd(id) })}
     >
       {(a) => (
         <animate.div

@@ -1,23 +1,50 @@
+import { useState, useLayoutEffect, useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-import {
-  useMount as useInternalMount,
-  UseMountConfig as UseInternalMountConfig,
-} from '../core/useMount';
+import { withEase } from '../controllers';
+import { useValue } from './useValue';
 
-export interface UseMountConfig extends UseInternalMountConfig {}
+import type { ToValue } from '../types';
 
-/**
- * `useMount` handles mounting and unmounting of a component which captures current state
- * passed as an argument (`state`) and exposes the shadow state which handles the mount and unmount
- * of a component.
- *
- * @param { boolean } state - Boolean indicating the component should mount or unmount.
- * @param { UseMountConfig } config - Animation configuration.
- */
-export function useMount(state: boolean, config: UseMountConfig) {
-  const mv = useInternalMount(state, config);
-  return (
-    cb: (value: { value: FluidValue }, mounted: boolean) => React.ReactNode
-  ) => mv((a, m) => cb({ value: a }, m));
+export interface UseMountConfig {
+  from?: number;
+  enter?: ToValue;
+  exit?: ToValue;
 }
+
+export const useMount = (state: boolean, config?: UseMountConfig) => {
+  const [mounted, setMounted] = useState(state);
+  const animationConfig = useRef({
+    from: config?.from ?? 0,
+    enter: config?.enter ?? withEase(1),
+    exit: config?.exit ?? withEase(0),
+  }).current;
+
+  const animation = useValue(animationConfig.from);
+  const enterAnimation = animationConfig.enter(animation.value);
+  const exitAnimation = animationConfig.exit(animation.value);
+
+  useLayoutEffect(() => {
+    if (state) {
+      setMounted(true);
+      queueMicrotask(() => {
+        enterAnimation.controller.start(enterAnimation.callback);
+      });
+    } else {
+      queueMicrotask(() => {
+        exitAnimation.controller.start((result: { finished: boolean }) => {
+          exitAnimation.callback?.(result);
+          if (result.finished) {
+            setMounted(false);
+          }
+        });
+      });
+    }
+  }, [state]);
+
+  return function (
+    fn: (animation: { value: FluidValue }, mounted: boolean) => React.ReactNode
+  ) {
+    return fn({ value: animation.value }, mounted);
+  };
+};

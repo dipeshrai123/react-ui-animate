@@ -1,10 +1,10 @@
-import { UpdateValue, UseFluidValueConfig } from '../core/FluidController';
+import { withNative } from '../controllers';
+import { ToValue } from '../types';
 
-export function getToValue(
-  value: number | string | UpdateValue,
-  config?: UseFluidValueConfig
-): UpdateValue {
-  return typeof value === 'number' || typeof value === 'string'
-    ? { toValue: value, config }
-    : value;
+export function getToValue(val: string | number | ToValue): ToValue {
+  if (typeof val === 'number' || typeof val === 'string') {
+    return withNative(val);
+  } else {
+    return val;
+  }
 }
