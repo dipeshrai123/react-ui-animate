@@ -16,6 +16,6 @@ export const AnimationConfig = {
     ELASTIC: { mass: 1, friction: 18, tension: 250 },
     EASE: { mass: 1, friction: 26, tension: 170 },
     STIFF: { mass: 1, friction: 18, tension: 350 },
-    WOOBLE: { mass: 1, friction: 8, tension: 250 },
+    WOBBLE: { mass: 1, friction: 8, tension: 250 },
   },
 };

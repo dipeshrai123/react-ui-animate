@@ -9,14 +9,12 @@ interface WithTimingConfig {
 }
 
 export const withTiming =
-  (toValue: number, config?: WithTimingConfig): any =>
-  (value: FluidValue) => ({
-    controller: timing(value, {
+  (toValue: number, config?: WithTimingConfig) => (value: FluidValue) =>
+    timing(value, {
       toValue,
       duration: config?.duration,
       easing: config?.easing,
       onStart: config?.onStart,
       onChange: config?.onChange,
       onRest: config?.onRest,
-    }),
-  });
+    });

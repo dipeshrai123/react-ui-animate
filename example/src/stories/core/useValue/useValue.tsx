@@ -5,10 +5,11 @@ import {
   withSpring,
   withTiming,
   withSequence,
+  withLoop,
 } from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
-  const width = useNewValue(100);
+  const width = useNewValue(200);
 
   return (
     <>
@@ -23,19 +24,10 @@ export const UseValue: React.FC = () => {
       />
       <button
         onClick={() => {
-          width.value = withSequence([
-            withTiming(50, {
-              duration: 5000,
-              onStart: () => console.log('timing start'),
-              onChange: () => console.log('timing change'),
-              onRest: () => console.log('timing rest'),
-            }),
-            withSpring(0, {
-              onStart: () => console.log('spring start'),
-              onChange: () => console.log('spring change'),
-              onRest: () => console.log('spring rest'),
-            }),
-          ]);
+          width.value = withLoop(
+            withSequence([withTiming(100), withSpring(0)]),
+            2
+          );
         }}
       >
         TIMING

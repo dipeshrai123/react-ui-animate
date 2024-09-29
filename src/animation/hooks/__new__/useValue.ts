@@ -1,24 +1,14 @@
 import { useRef } from 'react';
 import { FluidValue } from '@raidipesh78/re-motion';
 
-type Callback = (result: { finished: boolean; value: number }) => void;
-
-interface ControllerAnimation {
-  start: (callback: Callback) => void;
-  stop: () => void;
-  reset: () => void;
-}
+import { ControllerAnimation } from '../../controllers/types';
 
 export function useValue(initialValue: number | string) {
   const animation = useRef(new FluidValue(initialValue)).current;
 
   return {
-    set value(
-      to: (animation: FluidValue) => {
-        controller: ControllerAnimation;
-      }
-    ) {
-      to(animation).controller.start(() => {});
+    set value(to: (animation: FluidValue) => ControllerAnimation) {
+      to(animation).start(() => {});
     },
     get value(): FluidValue {
       return animation;
