@@ -1,7 +1,7 @@
 import typescript from "rollup-plugin-typescript2";
 import terser from '@rollup/plugin-terser';
 
-import pkg from "./package.json" assert { type: "json" };
+import pkg from "./package.json" with { type: "json" };
 
 export default {
   input: "src/index.ts",
