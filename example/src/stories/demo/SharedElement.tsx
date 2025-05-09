@@ -29,7 +29,9 @@ export function SharedElement() {
   const translateY = useValue(0);
 
   const bind = useDrag(({ down, movementY }) => {
-    translateY.value = down ? clamp(movementY, 0, 300) : 0;
+    translateY.value = down
+      ? withSpring(clamp(movementY, 0, 300))
+      : withSpring(0);
 
     if (!down && movementY > 200) {
       closeSharedElement();
