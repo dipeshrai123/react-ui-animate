@@ -44,7 +44,7 @@ export const useMount = (state: boolean, config?: UseMountConfig) => {
         };
       });
     }
-  }, [state, enterAnimation, exitAnimation, animation]);
+  }, [state, enterAnimation, exitAnimation]);
 
   return function (
     fn: (animation: { value: MotionValue }, mounted: boolean) => React.ReactNode
