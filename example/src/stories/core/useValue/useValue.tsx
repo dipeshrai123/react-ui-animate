@@ -8,7 +8,7 @@ import {
 } from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
-  const width = useValue(100);
+  const width = useValue<number>(100);
 
   return (
     <>

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   animate,
-  interpolate,
   MountedBlock,
   withEase,
   withSequence,
@@ -28,8 +27,8 @@ const Toast = ({ id, onEnd }: any) => {
             width: 240,
             backgroundColor: '#3399ff',
             borderRadius: 4,
-            height: interpolate(a.value, [0, 1, 2], [0, 100, 100]),
-            opacity: interpolate(a.value, [2, 3, 4], [1, 1, 0]),
+            height: a.value.to([0, 1, 2], [0, 100, 100]),
+            opacity: a.value.to([2, 3, 4], [1, 1, 0]),
           }}
         >
           <animate.div
@@ -40,7 +39,7 @@ const Toast = ({ id, onEnd }: any) => {
               backgroundColor: '#333',
               height: 5,
               borderRadius: 4,
-              width: interpolate(a.value, [2, 3], ['0%', '100%'], {
+              width: a.value.to([2, 3], ['0%', '100%'], {
                 extrapolate: 'clamp',
               }),
             }}

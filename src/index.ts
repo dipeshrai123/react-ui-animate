@@ -1,19 +1,16 @@
 // Core
 export {
   Easing,
-  makeFluid as makeAnimated,
-  fluid as animate,
+  makeMotion as makeAnimated,
+  motion as animate,
 } from '@raidipesh78/re-motion';
 
 // react-ui-animate
 // Modules
 export { AnimationConfig, MountedBlock, ScrollableBlock } from './animation';
 
-// Interpolation
-export { interpolate, bInterpolate } from './animation';
-
 // Hooks
-export { useValue, useMount, useValues } from './animation';
+export { useValue, useMount } from './animation';
 
 // Helpers and Utilities
 export {
@@ -28,6 +25,9 @@ export {
 
 // Hooks
 export { useMeasure, useOutsideClick, useWindowDimension } from './hooks';
+
+// Interpolation
+export { interpolateNumbers } from './animation';
 
 // gestures/hooks
 export {

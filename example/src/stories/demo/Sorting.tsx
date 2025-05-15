@@ -1,21 +1,24 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useRef } from 'react';
 import {
-  useValues,
   animate,
   useDrag,
   clamp,
   move,
-  withSpring,
-  withTiming,
+  withEase,
+  useValue,
 } from 'react-ui-animate';
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
 export const Sorting = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
-  const animationY = useValues(ITEMS.map((_, i) => i * 70));
-  const animationX = useValues(ITEMS.map((_, i) => 0));
-  const zIndex = useValues(ITEMS.map((_, i) => 0));
+  const animationY = Array.from({ length: ITEMS.length }).map((_, i) =>
+    useValue(i * 70)
+  );
+  const zIndex = Array.from({ length: ITEMS.length }).map((_, i) =>
+    useValue<number>(0)
+  );
 
   const bind = useDrag(({ args: [i], down, movementY: my, movementX: mx }) => {
     const index = originalIndex.current.indexOf(i!);
@@ -30,27 +33,21 @@ export const Sorting = () => {
       originalIndex.current = newOrder;
     }
 
-    const animationYValues = [];
-    const zIndexValues = [];
-    const animationXValues = [];
-
     for (let j = 0; j < ITEMS.length; j++) {
       const isActive = down && j === i;
-      animationYValues[j] = withSpring(
+      animationY[j].value = withEase(
         isActive ? index * 70 + my : newOrder.indexOf(j) * 70
       );
-      zIndexValues[j] = withTiming(isActive ? 1 : 0, { duration: 0 });
-      animationXValues[j] = withSpring(isActive ? mx : 0);
-    }
+      zIndex[j].value = isActive ? 1 : 0;
 
-    animationY.value = animationYValues;
-    zIndex.value = zIndexValues;
-    animationX.value = animationXValues;
+      // zIndexValues[j] = withTiming(isActive ? 1 : 0, { duration: 0 });
+      // animationXValues[j] = withSpring(isActive ? mx : 0);
+    }
   });
 
   return (
     <div style={{ position: 'relative', width: 300, margin: '40px auto' }}>
-      {animationY.value.map((y, i) => (
+      {animationY.map((y, i) => (
         <animate.div
           key={i}
           {...bind(i)}
@@ -70,10 +67,9 @@ export const Sorting = () => {
             boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
             border: '1px solid #e1e1e1',
             borderRadius: 4,
-            translateX: animationX.value[i],
-            translateY: y,
+            translateY: y.value,
             cursor: 'grabbing',
-            zIndex: zIndex.value[i],
+            zIndex: zIndex[i].value,
           }}
         >
           {ITEMS[i]}

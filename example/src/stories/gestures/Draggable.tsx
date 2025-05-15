@@ -3,7 +3,7 @@ import { useValue, animate, useDrag } from 'react-ui-animate';
 
 export const Draggable = () => {
   const [open, setOpen] = React.useState(true);
-  const translateX = useValue(0);
+  const translateX = useValue<number>(0);
 
   const bind = useDrag(function ({ down, movementX }) {
     if (open) {

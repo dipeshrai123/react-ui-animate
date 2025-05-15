@@ -17,8 +17,8 @@ export const Gestures = () => {
 
   const bind = useGesture({
     onDrag: function ({ offsetX, offsetY }) {
-      x.value = offsetX;
-      y.value = offsetY;
+      x.value = withSpring(offsetX);
+      y.value = withSpring(offsetY);
     },
     onWheel: function ({ deltaY }) {
       scaleRef.current += deltaY * -0.001;
@@ -34,7 +34,7 @@ export const Gestures = () => {
         <button
           onClick={() => {
             rotateRef.current -= 90;
-            rotate.value = rotateRef.current;
+            rotate.value = withSpring(rotateRef.current);
           }}
         >
           ROTATE LEFT
@@ -42,7 +42,7 @@ export const Gestures = () => {
         <button
           onClick={() => {
             rotateRef.current += 90;
-            rotate.value = rotateRef.current;
+            rotate.value = withSpring(rotateRef.current);
           }}
         >
           ROTATE RIGHT

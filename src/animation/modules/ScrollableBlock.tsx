@@ -1,11 +1,11 @@
 import { ReactNode, useRef, useLayoutEffect } from 'react';
-import { FluidValue } from '@raidipesh78/re-motion';
+import { MotionValue } from '@raidipesh78/re-motion';
 
 import { useValue } from '../hooks';
 import { withEase } from '../controllers';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: FluidValue }) => ReactNode;
+  children?: (animation: { value: MotionValue }) => ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
 }
