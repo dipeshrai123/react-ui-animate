@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   animate,
   useDrag,
@@ -13,12 +13,8 @@ const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
 export const Sorting = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
-  const animationY = Array.from({ length: ITEMS.length }).map((_, i) =>
-    useValue(i * 70)
-  );
-  const zIndex = Array.from({ length: ITEMS.length }).map((_, i) =>
-    useValue<number>(0)
-  );
+  const animationY = useMemo(() => ITEMS.map((_, i) => useValue(i * 70)), []);
+  const zIndex = useMemo(() => ITEMS.map(() => useValue<number>(0)), []);
 
   const bind = useDrag(({ args: [i], down, movementY: my, movementX: mx }) => {
     const index = originalIndex.current.indexOf(i!);
