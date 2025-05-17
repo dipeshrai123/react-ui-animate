@@ -34,6 +34,14 @@ export const UseValue: React.FC = () => {
         NATIVE UPDATE
       </button>
 
+      <button
+        onClick={() => {
+          width.value = withSpring(width.currentValue + 100);
+        }}
+      >
+        UPDATING PREVIOUS VALUE
+      </button>
+
       <animate.div
         style={{
           width: width.value,

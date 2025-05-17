@@ -1,5 +1,5 @@
 export { MountedBlock, ScrollableBlock } from './modules';
-export { useValue, useMount, type UseMountConfig } from './hooks';
+export { useValue, useMount, type UseMountConfig, useValues } from './hooks';
 export {
   withSpring,
   withTiming,

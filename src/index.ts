@@ -10,7 +10,7 @@ export {
 export { AnimationConfig, MountedBlock, ScrollableBlock } from './animation';
 
 // Hooks
-export { useValue, useMount } from './animation';
+export { useValue, useMount, useValues } from './animation';
 
 // Helpers and Utilities
 export {
