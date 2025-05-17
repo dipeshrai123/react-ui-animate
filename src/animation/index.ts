@@ -2,9 +2,8 @@ export { MountedBlock, ScrollableBlock } from './modules';
 export {
   useValue,
   useMount,
-  type UseMountConfig,
-  useValues,
   useAnimatedList,
+  type UseMountConfig,
 } from './hooks';
 export {
   withSpring,

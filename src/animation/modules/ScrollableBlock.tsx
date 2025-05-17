@@ -3,9 +3,10 @@ import { MotionValue } from '@raidipesh78/re-motion';
 
 import { useValue } from '../hooks';
 import { withEase } from '../controllers';
+import { type Primitive } from '../types';
 
 interface ScrollableBlockProps {
-  children?: (animation: { value: MotionValue }) => ReactNode;
+  children?: (animation: MotionValue<Primitive>) => ReactNode;
   direction?: 'single' | 'both';
   threshold?: number;
 }
@@ -13,7 +14,7 @@ interface ScrollableBlockProps {
 export const ScrollableBlock = (props: ScrollableBlockProps) => {
   const { children, direction = 'single', threshold = 0.2 } = props;
   const scrollableBlockRef = useRef<HTMLDivElement>(null);
-  const animation = useValue(0); // 0: not intersecting | 1: intersecting
+  const [animation, setAnimation] = useValue(0); // 0: not intersecting | 1: intersecting
 
   useLayoutEffect(() => {
     const _scrollableBlock = scrollableBlockRef.current;
@@ -23,9 +24,11 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
         const { isIntersecting } = entry;
 
         if (isIntersecting) {
-          animation.value = withEase(1);
+          setAnimation(withEase(1));
         } else {
-          if (direction === 'both') animation.value = withEase(0);
+          if (direction === 'both') {
+            setAnimation(withEase(0));
+          }
         }
       },
       {
@@ -45,9 +48,5 @@ export const ScrollableBlock = (props: ScrollableBlockProps) => {
     };
   }, []);
 
-  return (
-    <div ref={scrollableBlockRef}>
-      {children && children({ value: animation.value })}
-    </div>
-  );
+  return <div ref={scrollableBlockRef}>{children && children(animation)}</div>;
 };

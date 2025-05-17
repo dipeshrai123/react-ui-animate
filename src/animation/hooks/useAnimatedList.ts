@@ -2,7 +2,7 @@ import { useRef, useState, useLayoutEffect } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
 
 import { UseMountConfig } from './useMount';
-import { Value } from '../Value'; // Import the class, not the hook
+import { Value } from '../Value';
 
 export type AnimatedItem<T> = {
   key: string;
@@ -28,7 +28,6 @@ export function useAnimatedList<T>(
     const nextKeys = new Set(items.map(getKey));
     const newItems: AnimatedItem<T>[] = [];
 
-    // 1. Add new items
     items.forEach((item) => {
       const key = getKey(item);
       if (!itemsRef.current.has(key)) {
@@ -45,7 +44,6 @@ export function useAnimatedList<T>(
       forceUpdate((c) => c + 1);
     }
 
-    // 2. Remove missing items
     itemsRef.current.forEach(({ value }, key) => {
       if (!nextKeys.has(key)) {
         value.set({

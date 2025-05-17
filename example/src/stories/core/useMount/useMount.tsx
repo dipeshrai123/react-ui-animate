@@ -15,6 +15,21 @@ export const UseMount: React.FC = () => {
         ANIMATE ME
       </button>
 
+      {mountedValue((animation, mounted) => {
+        return (
+          mounted && (
+            <animate.div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'teal',
+                opacity: animation.value,
+              }}
+            />
+          )
+        );
+      })}
+
       {mountedValue(
         (animation, mounted) =>
           mounted && (

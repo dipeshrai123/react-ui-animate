@@ -2,10 +2,11 @@ import { ReactNode } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
 
 import { useMount, type UseMountConfig } from '../hooks';
+import { type Primitive } from '../types';
 
 interface MountedBlockProps extends Partial<UseMountConfig> {
   state: boolean;
-  children: (animation: { value: MotionValue }) => ReactNode;
+  children: (animation: MotionValue<Primitive>) => ReactNode;
 }
 
 export const MountedBlock = ({
@@ -17,11 +18,5 @@ export const MountedBlock = ({
 }: MountedBlockProps) => {
   const open = useMount(state, { from, enter, exit });
 
-  return (
-    <>
-      {open(
-        (animation, mounted) => mounted && children({ value: animation.value })
-      )}
-    </>
-  );
+  return <>{open((animation, mounted) => mounted && children(animation))}</>;
 };

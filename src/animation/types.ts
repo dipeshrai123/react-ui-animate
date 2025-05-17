@@ -1,3 +1,5 @@
+export type Primitive = number | string;
+
 export interface WithCallbacks {
   onStart?: (value: number | string) => void;
   onChange?: (value: number | string) => void;
