@@ -1,9 +1,35 @@
 import React from 'react';
-import { animate, useMount } from 'react-ui-animate';
+import {
+  animate,
+  useMount,
+  withDecay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-ui-animate';
 
 export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
-  const mountedValue = useMount(open);
+  const mountedValue = useMount(open, {
+    from: { width: 200, opacity: 0, translateX: 0 },
+    enter: {
+      width: 300,
+      opacity: 1,
+      translateX: withTiming(200, { duration: 5000 }),
+    },
+    exit: {
+      width: 100,
+      opacity: 1,
+      translateX: withSequence(
+        [
+          withTiming(100, { duration: 2000 }),
+          withDecay({ velocity: 1 }),
+          withSpring(50),
+        ],
+        { onRest: () => console.log('onRest') }
+      ),
+    },
+  });
 
   return (
     <>
@@ -15,62 +41,21 @@ export const UseMount: React.FC = () => {
         ANIMATE ME
       </button>
 
-      {mountedValue((animation, mounted) => {
+      {mountedValue(({ width, opacity, translateX }, mounted) => {
         return (
           mounted && (
             <animate.div
               style={{
-                width: 100,
+                width: width,
+                opacity,
+                translateX,
                 height: 100,
                 backgroundColor: 'teal',
-                opacity: animation.value,
               }}
             />
           )
         );
       })}
-
-      {mountedValue(
-        (animation, mounted) =>
-          mounted && (
-            <>
-              <animate.div
-                style={{
-                  width: animation.value.to([0, 1], [100, 300]),
-                  height: animation.value.to([0, 1], [100, 200]),
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
-                  ),
-                  translateX: 45,
-                }}
-              />
-              <animate.div
-                style={{
-                  width: animation.value.to([0, 1], [100, 400]),
-                  height: animation.value.to([0, 1], [100, 50]),
-                  border: '1px solid black',
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
-                  ),
-                  translateX: 45,
-                }}
-              />
-              <animate.div
-                style={{
-                  width: animation.value.to([0, 1], [100, 500]),
-                  height: 100,
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
-                  ),
-                  translateX: 45,
-                }}
-              />
-            </>
-          )
-      )}
     </>
   );
 };

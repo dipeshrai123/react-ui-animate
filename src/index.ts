@@ -7,10 +7,10 @@ export {
 
 // react-ui-animate
 // Modules
-export { AnimationConfig, MountedBlock, ScrollableBlock } from './animation';
+export { AnimationConfig } from './animation';
 
 // Hooks
-export { useValue, useMount, useAnimatedList } from './animation';
+export { useValue, useMount } from './animation';
 
 // Helpers and Utilities
 export {
@@ -40,6 +40,3 @@ export {
 
 // gestures/helpers
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
-
-// Types
-export type { UseMountConfig } from './animation';
