@@ -32,7 +32,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:minor": "npm version --no-git-tag-version minor",
     "version:major": "npm version --no-git-tag-version major",
-    "version:patch": "npm version --no-git-tag-version patch"
+    "version:patch": "npm version --no-git-tag-version patch",
+    "publish:next": "npm publish --tag next",
+    "publish:latest": "npm publish --tag latest"
   },
   "repository": {
     "type": "git",

@@ -177,10 +177,10 @@ import React from 'react';
 import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable: React.FC = () => {
-  const translateX = useValue(0);
+  const [translateX, setTranslateX] = useValue(0);
 
   const bind = useDrag(({ down, movementX }) => {
-    translateX.setValue(down ? movementX : withSpring(0));
+    setTranslateX(down ? movementX : withSpring(0));
   });
 
   return (
@@ -190,7 +190,7 @@ export const Draggable: React.FC = () => {
         width: 100,
         height: 100,
         backgroundColor: '#3399ff',
-        translateX: translateX.value,
+        translateX,
       }}
     />
   );
