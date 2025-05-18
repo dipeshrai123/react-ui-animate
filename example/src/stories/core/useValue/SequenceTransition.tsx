@@ -9,7 +9,7 @@ import {
 } from 'react-ui-animate';
 
 export const SequenceTransition = () => {
-  const x = useValue(0);
+  const [x, setX] = useValue(0);
 
   return (
     <>
@@ -18,13 +18,13 @@ export const SequenceTransition = () => {
           width: 100,
           height: 100,
           backgroundColor: 'red',
-          translateX: x.value,
+          translateX: x,
         }}
       />
 
       <button
         onClick={() => {
-          x.value = withTiming(0);
+          setX(withTiming(0));
         }}
       >
         ANIMATE LEFT
@@ -32,11 +32,13 @@ export const SequenceTransition = () => {
 
       <button
         onClick={() => {
-          x.value = withSequence([
-            withTiming(200, { duration: 5000, easing: Easing.elastic() }),
-            withSpring(400),
-            withDecay({ velocity: 1 }),
-          ]);
+          setX(
+            withSequence([
+              withTiming(200, { duration: 5000, easing: Easing.elastic() }),
+              withSpring(400),
+              withDecay({ velocity: 1 }),
+            ])
+          );
         }}
       >
         ANIMATE RIGHT

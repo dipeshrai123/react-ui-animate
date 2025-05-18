@@ -8,43 +8,35 @@ import {
 } from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
-  const width = useValue<number>(100);
+  const [width, setWidth] = useValue(100);
 
   return (
     <>
       <button
         onClick={() => {
-          width.value = withSequence([withTiming(100), withSpring(0)]);
+          setWidth(withSequence([withTiming(100), withSpring(0)]));
         }}
       >
         SEQUENCE ( 100 to 0 )
       </button>
       <button
         onClick={() => {
-          width.value = withSpring(200);
+          setWidth(withSpring(200));
         }}
       >
         SPRING ( to 200 )
       </button>
       <button
         onClick={() => {
-          width.value = 400;
+          setWidth(400);
         }}
       >
-        NATIVE UPDATE
-      </button>
-
-      <button
-        onClick={() => {
-          width.value = withSpring(width.currentValue + 100);
-        }}
-      >
-        UPDATING PREVIOUS VALUE
+        IMMEDIATE UPDATE (400)
       </button>
 
       <animate.div
         style={{
-          width: width.value,
+          width,
           height: 100,
           backgroundColor: 'red',
           left: 0,

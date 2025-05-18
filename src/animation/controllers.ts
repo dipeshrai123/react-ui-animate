@@ -62,6 +62,7 @@ interface WithDecayOptions {
   onStart?: () => void;
   onChange?: (v: number | string) => void;
   onRest?: () => void;
+  clamp?: [number, number];
 }
 
 export const withDecay = (options: WithDecayOptions): DriverConfig => ({
@@ -71,13 +72,26 @@ export const withDecay = (options: WithDecayOptions): DriverConfig => ({
     onStart: options?.onStart,
     onChange: options?.onChange,
     onComplete: options?.onRest,
+    clamp: options?.clamp,
   },
 });
 
-export const withSequence = (steps: DriverConfig[]): DriverConfig => ({
+interface WithSequenceOptions {
+  onStart?: () => void;
+  onChange?: (v: number | string) => void;
+  onRest?: () => void;
+}
+
+export const withSequence = (
+  steps: DriverConfig[],
+  options?: WithSequenceOptions
+): DriverConfig => ({
   type: 'sequence',
   options: {
     steps,
+    onStart: options?.onStart,
+    onChange: options?.onChange,
+    onComplete: options?.onRest,
   },
 });
 
@@ -88,13 +102,23 @@ export const withDelay = (delay: number): DriverConfig => ({
   },
 });
 
+interface WithLoopOptions {
+  onStart?: () => void;
+  onChange?: (v: number | string) => void;
+  onRest?: () => void;
+}
+
 export const withLoop = (
   controller: DriverConfig,
-  iterations: number
+  iterations: number,
+  options?: WithLoopOptions
 ): DriverConfig => ({
   type: 'loop',
   options: {
     controller,
     iterations,
+    onStart: options?.onStart,
+    onChange: options?.onChange,
+    onComplete: options?.onRest,
   },
 });

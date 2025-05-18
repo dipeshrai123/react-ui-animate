@@ -16,16 +16,18 @@ function Ripple({
   y: number;
   onRemove: (id: number) => void;
 }) {
-  const animation = useValue(0);
+  const [animation, setAnimation] = useValue(0);
 
   useLayoutEffect(() => {
-    animation.value = withTiming(1, {
-      duration: 800,
-      onRest: () => {
-        onRemove(id);
-      },
-    });
-  }, [id, animation, onRemove]);
+    setAnimation(
+      withTiming(1, {
+        duration: 800,
+        onRest: () => {
+          onRemove(id);
+        },
+      })
+    );
+  }, [id, setAnimation, onRemove]);
 
   return (
     <animate.div
@@ -37,8 +39,8 @@ function Ripple({
         left: x,
         top: y,
         backgroundColor: 'white',
-        scale: animation.value.to([0, 1], [0, 4]),
-        opacity: animation.value.to([0, 1], [1, 0]),
+        scale: animation.to([0, 1], [0, 4]),
+        opacity: animation.to([0, 1], [1, 0]),
         userSelect: 'none',
       }}
     />

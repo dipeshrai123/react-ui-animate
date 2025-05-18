@@ -7,6 +7,7 @@ import {
   spring,
   timing,
 } from '@raidipesh78/re-motion';
+
 import { DriverConfig, ToValue } from './types';
 
 export class Value<V extends number | string> {
@@ -33,13 +34,27 @@ export class Value<V extends number | string> {
       if (type === 'sequence') {
         const steps = options?.steps ?? [];
         const controllers = steps.map((step) => this.buildDriver(step));
-        sequence(controllers).start();
+        const ctrl = sequence(controllers);
+
+        // Handle onComplete manually here, until we fix on re-motion
+        if (options?.onComplete) {
+          ctrl.setOnComplete?.(options?.onComplete);
+        }
+
+        ctrl.start();
         return;
       }
 
       if (type === 'loop') {
         const inner = this.buildDriver(options!.controller!);
-        loop(inner, options?.iterations!).start();
+        const ctrl = loop(inner, options?.iterations!);
+
+        // Handle onComplete manually here, until we fix on re-motion
+        if (options?.onComplete) {
+          ctrl.setOnComplete?.(options?.onComplete);
+        }
+
+        ctrl.start();
         return;
       }
 

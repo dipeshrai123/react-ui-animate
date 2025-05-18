@@ -1,16 +1,11 @@
-import {
-  animate,
-  useValue,
-  withSpring,
-  withLoop,
-} from 'react-ui-animate';
+import { animate, useValue, withSpring, withLoop } from 'react-ui-animate';
 
 export function Loop() {
-  const translateX = useValue(0);
+  const [translateX, setTranslateX] = useValue(0);
 
   const runAnimation = () => {
     // Basic Loop
-    translateX.value = withLoop(withSpring(100), 5);
+    setTranslateX(withLoop(withSpring(100), 5));
 
     // Loop with sequence
     // translateX.value = withLoop(
@@ -33,7 +28,7 @@ export function Loop() {
         width: 100,
         height: 100,
         backgroundColor: '#3399ff',
-        translateX: translateX.value,
+        translateX,
       }}
     />
   );

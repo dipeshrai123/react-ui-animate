@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import {
   animate,
-  MountedBlock,
+  useMount,
   withEase,
   withSequence,
   withTiming,
@@ -10,45 +10,47 @@ import {
 const Toast = ({ id, onEnd }: any) => {
   const [visible, setVisible] = useState(true);
 
+  const mount = useMount(visible, {
+    enter: withSequence([
+      withEase(1),
+      withEase(2),
+      withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
+    ]),
+    exit: withEase(4, { onRest: () => onEnd(id) }),
+  });
+
   return (
-    <MountedBlock
-      state={visible}
-      enter={withSequence([
-        withEase(1),
-        withEase(2),
-        withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
-      ])}
-      exit={withEase(4, { onRest: () => onEnd(id) })}
-    >
-      {(a) => {
-        return (
-          <animate.div
-            style={{
-              position: 'relative',
-              width: 240,
-              backgroundColor: '#3399ff',
-              borderRadius: 4,
-              height: a.value.to([0, 1, 2], [0, 100, 100]),
-              opacity: a.value.to([2, 3, 4], [1, 1, 0]),
-            }}
-          >
+    <>
+      {mount(
+        (a, m) =>
+          m && (
             <animate.div
               style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                backgroundColor: '#333',
-                height: 5,
+                position: 'relative',
+                width: 240,
+                backgroundColor: '#3399ff',
                 borderRadius: 4,
-                width: a.value.to([2, 3], ['0%', '100%'], {
-                  extrapolate: 'clamp',
-                }),
+                height: a.to([0, 1, 2], [0, 100, 100]),
+                opacity: a.to([2, 3, 4], [1, 1, 0]),
               }}
-            />
-          </animate.div>
-        );
-      }}
-    </MountedBlock>
+            >
+              <animate.div
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  backgroundColor: '#333',
+                  height: 5,
+                  borderRadius: 4,
+                  width: a.to([2, 3], ['0%', '100%'], {
+                    extrapolate: 'clamp',
+                  }),
+                }}
+              />
+            </animate.div>
+          )
+      )}
+    </>
   );
 };
 

@@ -3,11 +3,11 @@ import { animate, useValue, withSpring } from 'react-ui-animate';
 
 export const Interpolation = () => {
   const [open, setOpen] = useState(false);
-  const x = useValue(0);
+  const [x, setX] = useValue(0);
 
   useLayoutEffect(() => {
-    x.value = withSpring(open ? 500 : 0);
-  }, [open, x]);
+    setX(withSpring(open ? 500 : 0));
+  }, [open, setX]);
 
   return (
     <>
@@ -15,8 +15,8 @@ export const Interpolation = () => {
         style={{
           width: 100,
           height: 100,
-          backgroundColor: x.value.to([0, 500], ['red', 'blue']),
-          translateX: x.value,
+          backgroundColor: x.to([0, 500], ['red', 'blue']),
+          translateX: x,
         }}
       />
 
