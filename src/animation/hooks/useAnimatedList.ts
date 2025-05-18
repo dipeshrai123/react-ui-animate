@@ -1,98 +1,132 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
+
 import { Value } from '../Value';
 import { withSpring } from '../controllers';
 import type { DriverConfig } from '../types';
 
-/**
- * Configuration for mount/unmount animations
- */
-export interface UseAnimatedListConfig {
-  /** Initial value for each item's animation */
+interface UseAnimatedListConfigSingle {
   from?: number;
-  /** Animation to apply when an item enters */
   enter?: DriverConfig;
-  /** Animation to apply when an item exits */
   exit?: DriverConfig;
 }
 
-/**
- * An animated list item with direct animation prop
- */
-export type AnimatedListItem<T> = {
-  /** Unique key for the item */
-  key: string;
-  /** The original item */
-  item: T;
-  /**
-   * The MotionValue driving this item's animation.
-   * - For enter: animates from `from` to `enter`
-   * - For exit: animates from current to `exit` then item is removed
-   */
-  animation: MotionValue<number>;
-};
+interface UseAnimatedListConfigMulti<I extends Record<string, number>> {
+  from: I;
+  enter?: Partial<Record<keyof I, DriverConfig>>;
+  exit?: Partial<Record<keyof I, DriverConfig>>;
+}
 
-/**
- * Hook that animates a list of items on enter/exit.
- * New items play the 'enter' animation immediately,
- * removed items play the 'exit' animation before being removed.
- */
 export function useAnimatedList<T>(
   items: T[],
   getKey: (item: T) => string,
-  config?: UseAnimatedListConfig
-): AnimatedListItem<T>[] {
-  // Defaults for from, enter, exit
-  const fromVal = config?.from ?? 0;
-  const enterCfg = config?.enter ?? withSpring(1);
-  const exitCfg = config?.exit ?? withSpring(0);
+  config?: UseAnimatedListConfigSingle
+): Array<{ key: string; item: T; animation: MotionValue<number> }>;
 
-  // Store map of key -> { value, item }
-  const itemsRef = useRef(new Map<string, { value: Value<number>; item: T }>());
+export function useAnimatedList<T, I extends Record<string, number>>(
+  items: T[],
+  getKey: (item: T) => string,
+  config: UseAnimatedListConfigMulti<I>
+): Array<{
+  key: string;
+  item: T;
+  animation: Record<keyof I, MotionValue<number>>;
+}>;
+
+export function useAnimatedList(
+  items: any[],
+  getKey: (item: any) => string,
+  config: any = {}
+) {
+  const isMulti = typeof config.from === 'object' && config.from !== null;
+  const fromObj: Record<string, number> = isMulti
+    ? config.from
+    : { value: config.from ?? 0 };
+
+  const enterObj: Record<string, DriverConfig> = {};
+  const exitObj: Record<string, DriverConfig> = {};
+  Object.keys(fromObj).forEach((key) => {
+    enterObj[key] =
+      (isMulti ? config.enter?.[key] : config.enter) ?? withSpring(1);
+    exitObj[key] =
+      (isMulti ? config.exit?.[key] : config.exit) ?? withSpring(0);
+  });
+
+  const itemsRef = useRef(
+    new Map<string, { values: Record<string, Value<number>>; item: any }>()
+  );
+  const exitingRef = useRef(new Set<string>());
   const [, forceUpdate] = useState(0);
 
   useLayoutEffect(() => {
     const nextKeys = new Set(items.map(getKey));
 
-    // 1. Add and animate new items
     for (const item of items) {
       const key = getKey(item);
       if (!itemsRef.current.has(key)) {
-        const val = new Value<number>(fromVal);
-        val.set(enterCfg);
-        itemsRef.current.set(key, { value: val, item });
+        const values: Record<string, Value<number>> = {};
+        Object.entries(fromObj).forEach(([prop, fromVal]) => {
+          const val = new Value<number>(fromVal);
+          val.set(enterObj[prop]);
+          values[prop] = val;
+        });
+        itemsRef.current.set(key, { values, item });
         forceUpdate((c) => c + 1);
       } else {
-        // Update the stored item data
         itemsRef.current.get(key)!.item = item;
       }
     }
 
-    // 2. Animate and remove old items
-    itemsRef.current.forEach(({ value }, key) => {
-      if (!nextKeys.has(key)) {
-        value.set({
-          ...exitCfg,
-          options: {
-            ...exitCfg.options,
-            onComplete: () => {
-              itemsRef.current.delete(key);
-              forceUpdate((c) => c + 1);
-              exitCfg.options?.onComplete?.();
-              value.destroy();
+    itemsRef.current.forEach(({ values }, key) => {
+      if (!nextKeys.has(key) && !exitingRef.current.has(key)) {
+        exitingRef.current.add(key);
+        const props = Object.keys(values);
+        props.forEach((prop, index) => {
+          const base = exitObj[prop];
+          values[prop].set({
+            ...base,
+            options: {
+              ...base.options,
+              onComplete: () => {
+                if (index === props.length - 1) {
+                  itemsRef.current.delete(key);
+                  exitingRef.current.delete(key);
+                  forceUpdate((c) => c + 1);
+                  base.options?.onComplete?.();
+                  values[prop].destroy();
+                }
+              },
             },
-          },
+          });
         });
       }
     });
-  }, [items, getKey, config?.from, config?.enter, config?.exit]);
+  }, [
+    items,
+    getKey,
+    JSON.stringify(fromObj),
+    JSON.stringify(enterObj),
+    JSON.stringify(exitObj),
+  ]);
 
-  // Return array of AnimatedListItem
   return Array.from(itemsRef.current.entries()).map(
-    ([key, { value, item }]) => ({
-      key,
-      item,
-      animation: value.value,
-    })
+    ([key, { values, item }]) => {
+      if (!isMulti) {
+        return {
+          key,
+          item,
+          animation: values['value'].value,
+        };
+      }
+      const animMap: Record<string, MotionValue<number>> = {};
+      Object.entries(values).forEach(([prop, val]) => {
+        animMap[prop] = val.value;
+      });
+      return {
+        key,
+        item,
+        animation: animMap as Record<keyof any, MotionValue<number>>,
+      };
+    }
   );
 }
