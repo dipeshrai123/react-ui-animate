@@ -1,4 +1,4 @@
-export { useValue, useMount } from './hooks';
+export { useValue, useMount, useAnimatedList } from './hooks';
 export {
   withSpring,
   withTiming,

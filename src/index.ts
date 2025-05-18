@@ -10,7 +10,7 @@ export {
 export { AnimationConfig } from './animation';
 
 // Hooks
-export { useValue, useMount } from './animation';
+export { useValue, useMount, useAnimatedList } from './animation';
 
 // Helpers and Utilities
 export {
