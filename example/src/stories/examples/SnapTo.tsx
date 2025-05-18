@@ -10,28 +10,28 @@ import {
 import '../../index.css';
 
 export function SnapTo() {
-  const x = useValue<number>(0);
-  const y = useValue<number>(0);
-  const offsetX = useRef(0);
-  const offsetY = useRef(0);
+  const [{ x, y }, setXY] = useValue({ x: 0, y: 0 });
+  const offset = useRef({ x: 0, y: 0 });
 
   const bind = useDrag(
     ({ movementX, movementY, velocityX, velocityY, down }) => {
       if (!down) {
-        offsetX.current = movementX + offsetX.current;
-        offsetY.current = movementY + offsetY.current;
+        offset.current = {
+          x: movementX + offset.current.x,
+          y: movementY + offset.current.y,
+        };
 
-        const snapX = snapTo(offsetX.current, velocityX, [0, 600]);
-        const snapY = snapTo(offsetY.current, velocityY, [0, 600]);
+        const snapX = snapTo(offset.current.x, velocityX, [0, 600]);
+        const snapY = snapTo(offset.current.y, velocityY, [0, 600]);
 
-        x.value = withSpring(snapX);
-        y.value = withSpring(snapY);
+        setXY({ x: withSpring(snapX), y: withSpring(snapY) });
 
-        offsetX.current = snapX;
-        offsetY.current = snapY;
+        offset.current = { x: snapX, y: snapY };
       } else {
-        x.value = movementX + offsetX.current;
-        y.value = movementY + offsetY.current;
+        setXY({
+          x: movementX + offset.current.x,
+          y: movementY + offset.current.y,
+        });
       }
     }
   );
@@ -44,8 +44,8 @@ export function SnapTo() {
         width: 200,
         height: 200,
         position: 'fixed',
-        left: x.value,
-        top: y.value,
+        left: x,
+        top: y,
         boxShadow: '0px 4px 6px rgba(0,0,0,0.2)',
         borderRadius: 10,
         cursor: 'grab',

@@ -5,15 +5,15 @@ import {
   clamp,
   move,
   withEase,
-  useValues,
+  useValue,
 } from 'react-ui-animate';
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
 export const Sorting = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
-  const animationY = useValues(ITEMS.map((_, i) => i * 70));
-  const zIndex = useValues<number>(ITEMS.map(() => 0));
+  const [animationY, setAnimationY] = useValue(ITEMS.map((_, i) => i * 70));
+  const [zIndex, setZIndex] = useValue(ITEMS.map(() => 0));
 
   const bind = useDrag(({ args: [i], down, movementY: my, movementX: mx }) => {
     const index = originalIndex.current.indexOf(i!);
@@ -36,13 +36,13 @@ export const Sorting = () => {
       v[j] = isActive ? 1 : 0;
     }
 
-    animationY.values = a;
-    zIndex.values = v;
+    setAnimationY(a);
+    setZIndex(v);
   });
 
   return (
     <div style={{ position: 'relative', width: 300, margin: '40px auto' }}>
-      {animationY.values.map((y, i) => (
+      {animationY.map((y, i) => (
         <animate.div
           key={i}
           {...bind(i)}
@@ -64,7 +64,7 @@ export const Sorting = () => {
             borderRadius: 4,
             translateY: y,
             cursor: 'grabbing',
-            zIndex: zIndex.values[i],
+            zIndex: zIndex[i],
           }}
         >
           {ITEMS[i]}

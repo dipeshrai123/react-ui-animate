@@ -6,6 +6,7 @@ import {
   withSequence,
   withSpring,
   withDelay,
+  withTiming,
 } from 'react-ui-animate';
 
 const StaggerItem = ({
@@ -17,18 +18,20 @@ const StaggerItem = ({
   index: number;
   content: string;
 }) => {
-  const top = useValue(0);
+  const [top, setTop] = useValue(0);
 
   useLayoutEffect(() => {
-    top.value = withSequence([withDelay(index * 50), withSpring(y)]);
-  }, [y, index, top]);
+    setTop(
+      withSequence([withDelay(index * 50), withTiming(y, { duration: 0 })])
+    );
+  }, [y, index, setTop]);
 
   return (
     <animate.span
       style={{
         display: 'inline-block',
         border: '1px solid black',
-        translateY: top.value,
+        translateY: top,
         fontSize: 40,
       }}
     >

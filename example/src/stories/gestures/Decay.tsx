@@ -2,19 +2,22 @@ import { useRef } from 'react';
 import { useDrag, useValue, animate, withDecay } from 'react-ui-animate';
 
 export const Decay = () => {
-  const translateX = useValue<number>(0);
+  const [translateX, setTranslateX] = useValue(0);
   const offsetX = useRef(0);
-  const animatedVelocityX = useValue<number>(0);
+  const [animatedVelocityX, setAnimatedVelocityX] = useValue(0);
 
   const bind = useDrag(({ down, movementX, velocityX }) => {
-    animatedVelocityX.value = velocityX;
+    setAnimatedVelocityX(velocityX);
 
-    translateX.value = down
-      ? movementX + offsetX.current
-      : withDecay({
-          velocity: velocityX,
-          onChange: (v) => (offsetX.current = v as number),
-        });
+    setTranslateX(
+      down
+        ? movementX + offsetX.current
+        : withDecay({
+            velocity: velocityX,
+            onChange: (v) => (offsetX.current = v as number),
+            clamp: [0, 400],
+          })
+    );
   });
 
   return (
@@ -24,8 +27,10 @@ export const Decay = () => {
         width: 100,
         height: 100,
         backgroundColor: '#3399ff',
-        translateX: translateX.value,
-        skewX: animatedVelocityX.value.to([-10, 10], [-40, 40]),
+        translateX: translateX,
+        skewX: animatedVelocityX.to([-10, 10], [-40, 40], {
+          extrapolate: 'clamp',
+        }),
       }}
     />
   );

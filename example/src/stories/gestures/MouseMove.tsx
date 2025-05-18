@@ -3,13 +3,13 @@ import { animate, useValue, useMouseMove } from 'react-ui-animate';
 
 export const MouseMove = () => {
   const [open, setOpen] = React.useState(true);
-  const x = useValue<number>(0);
-  const y = useValue<number>(0);
+  const [x, setX] = useValue(0);
+  const [y, setY] = useValue(0);
 
   const bind = useMouseMove(function ({ mouseX, mouseY }) {
     if (open) {
-      x.value = mouseX;
-      y.value = mouseY;
+      setX(mouseX);
+      setY(mouseY);
     }
   });
 
@@ -27,8 +27,8 @@ export const MouseMove = () => {
           width: 100,
           height: 100,
           backgroundColor: '#ff0000',
-          translateX: x.value,
-          translateY: y.value,
+          translateX: x,
+          translateY: y,
           position: 'fixed',
           top: 0,
           left: 0,

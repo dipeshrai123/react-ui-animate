@@ -19,6 +19,7 @@ export type DriverConfig = {
     damping?: number;
     mass?: number;
     velocity?: number;
+    clamp?: [number, number];
     steps?: DriverConfig[];
     onStart?: () => void;
     onChange?: (v: string | number) => void;

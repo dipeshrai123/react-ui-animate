@@ -6,20 +6,22 @@ import {
 } from 'react-ui-animate';
 
 export const Scroll = () => {
-  const x = useValue(100);
-  const color = useValue<string>('yellow');
-  const position = useValue<string>('fixed');
+  const [x, setX] = useValue(100);
+  const [color, setColor] = useValue('yellow');
+  const [position, setPosition] = useValue('fixed');
   const bind = useScroll(function (event) {
-    x.value = interpolateNumbers(event.scrollY, [0, 200], [100, 300], {
-      extrapolate: 'clamp',
-    });
+    setX(
+      interpolateNumbers(event.scrollY, [0, 200], [100, 300], {
+        extrapolate: 'clamp',
+      })
+    );
 
     if (event.scrollY > 100) {
-      position.value = 'absolute';
-      color.value = 'red';
+      setPosition('absolute');
+      setColor('red');
     } else {
-      position.value = 'fixed';
-      color.value = 'yellow';
+      setPosition('fixed');
+      setColor('yellow');
     }
   });
 
@@ -36,14 +38,14 @@ export const Scroll = () => {
         }}
       >
         <animate.div
-          onClick={() => (color.value = 'red')}
+          onClick={() => setColor('red')}
           style={{
             width: 100,
             height: 100,
-            backgroundColor: color.value,
+            backgroundColor: color,
             top: 100,
-            left: x.value,
-            position: position.value,
+            left: x,
+            position,
           }}
         />
         <div style={{ height: 2000 }} />

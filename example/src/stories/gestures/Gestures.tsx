@@ -8,23 +8,23 @@ import {
 } from 'react-ui-animate';
 
 export const Gestures = () => {
-  const x = useValue(0);
-  const y = useValue(0);
-  const s = useValue(1);
-  const rotate = useValue(0);
+  const [x, setX] = useValue(0);
+  const [y, setY] = useValue(0);
+  const [s, setS] = useValue(1);
+  const [rotate, setRotate] = useValue(0);
   const scaleRef = React.useRef(1);
   const rotateRef = React.useRef(0);
 
   const bind = useGesture({
     onDrag: function ({ offsetX, offsetY }) {
-      x.value = withSpring(offsetX);
-      y.value = withSpring(offsetY);
+      setX(withSpring(offsetX));
+      setY(withSpring(offsetY));
     },
     onWheel: function ({ deltaY }) {
       scaleRef.current += deltaY * -0.001;
       scaleRef.current = clamp(scaleRef.current, 0.125, 4);
 
-      s.value = withSpring(scaleRef.current);
+      setS(withSpring(scaleRef.current));
     },
   });
 
@@ -34,7 +34,7 @@ export const Gestures = () => {
         <button
           onClick={() => {
             rotateRef.current -= 90;
-            rotate.value = withSpring(rotateRef.current);
+            setRotate(withSpring(rotateRef.current));
           }}
         >
           ROTATE LEFT
@@ -42,7 +42,7 @@ export const Gestures = () => {
         <button
           onClick={() => {
             rotateRef.current += 90;
-            rotate.value = withSpring(rotateRef.current);
+            setRotate(withSpring(rotateRef.current));
           }}
         >
           ROTATE RIGHT
@@ -59,10 +59,10 @@ export const Gestures = () => {
             left: 0,
             top: 0,
             backgroundColor: '#3399ff',
-            translateX: x.value,
-            translateY: y.value,
-            scale: s.value,
-            rotateZ: rotate.value,
+            translateX: x,
+            translateY: y,
+            scale: s,
+            rotateZ: rotate,
             color: 'white',
             display: 'flex',
             justifyContent: 'center',

@@ -62,6 +62,7 @@ interface WithDecayOptions {
   onStart?: () => void;
   onChange?: (v: number | string) => void;
   onRest?: () => void;
+  clamp?: [number, number];
 }
 
 export const withDecay = (options: WithDecayOptions): DriverConfig => ({
@@ -71,6 +72,7 @@ export const withDecay = (options: WithDecayOptions): DriverConfig => ({
     onStart: options?.onStart,
     onChange: options?.onChange,
     onComplete: options?.onRest,
+    clamp: options?.clamp,
   },
 });
 
