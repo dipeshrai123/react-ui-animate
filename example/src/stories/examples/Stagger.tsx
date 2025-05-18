@@ -3,6 +3,7 @@ import {
   useValue,
   useScroll,
   animate,
+  interpolate,
   withSequence,
   withSpring,
   withDelay,
@@ -20,8 +21,15 @@ const StaggerItem = ({
   const top = useValue(0);
 
   useLayoutEffect(() => {
-    top.value = withSequence([withDelay(index * 50), withSpring(y)]);
-  }, [y, index, top]);
+    top.value = withSequence([
+      withDelay(index * 50),
+      withSpring(
+        interpolate(y, [0, 500], [0, window.innerHeight - 50], {
+          extrapolate: 'clamp',
+        })
+      ),
+    ]);
+  }, [y, index]);
 
   return (
     <animate.span

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollableBlock, animate } from 'react-ui-animate';
+import { ScrollableBlock, animate, bInterpolate } from 'react-ui-animate';
 
 export const SCBlock: React.FC = () => {
   return (
@@ -13,7 +13,11 @@ export const SCBlock: React.FC = () => {
               height: 500,
               backgroundColor: '#3399ff',
               opacity: animation.value,
-              translateY: animation.value.to([0, 1], [500, 0]),
+              transform: bInterpolate(
+                animation.value,
+                'translateY(500px)',
+                'translateY(0px)'
+              ),
             }}
           />
         )}

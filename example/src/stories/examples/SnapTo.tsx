@@ -10,8 +10,8 @@ import {
 import '../../index.css';
 
 export function SnapTo() {
-  const x = useValue<number>(0);
-  const y = useValue<number>(0);
+  const x = useValue(0);
+  const y = useValue(0);
   const offsetX = useRef(0);
   const offsetY = useRef(0);
 

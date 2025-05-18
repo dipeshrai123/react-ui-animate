@@ -6,7 +6,7 @@ import {
 } from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
-  const x = useValue<number>(0);
+  const x = useValue(0);
 
   return (
     <>

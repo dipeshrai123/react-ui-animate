@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { UseValues as Example } from './useValue';
+import { ArrayStrings as Example } from './ArrayStrings';
 
 const meta = {
   title: 'Core/useValues',
@@ -10,4 +10,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const UseValues: Story = {};
+export const ArrayStrings: Story = {};

@@ -1,11 +1,11 @@
 import { ReactNode } from 'react';
-import { MotionValue } from '@raidipesh78/re-motion';
+import { FluidValue } from '@raidipesh78/re-motion';
 
 import { useMount, type UseMountConfig } from '../hooks';
 
 interface MountedBlockProps extends Partial<UseMountConfig> {
   state: boolean;
-  children: (animation: { value: MotionValue }) => ReactNode;
+  children: (animation: { value: FluidValue }) => ReactNode;
 }
 
 export const MountedBlock = ({

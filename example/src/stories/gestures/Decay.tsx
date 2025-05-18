@@ -1,10 +1,16 @@
 import { useRef } from 'react';
-import { useDrag, useValue, animate, withDecay } from 'react-ui-animate';
+import {
+  useDrag,
+  useValue,
+  animate,
+  interpolate,
+  withDecay,
+} from 'react-ui-animate';
 
 export const Decay = () => {
-  const translateX = useValue<number>(0);
+  const translateX = useValue(0);
   const offsetX = useRef(0);
-  const animatedVelocityX = useValue<number>(0);
+  const animatedVelocityX = useValue(0);
 
   const bind = useDrag(({ down, movementX, velocityX }) => {
     animatedVelocityX.value = velocityX;
@@ -25,7 +31,7 @@ export const Decay = () => {
         height: 100,
         backgroundColor: '#3399ff',
         translateX: translateX.value,
-        skewX: animatedVelocityX.value.to([-10, 10], [-40, 40]),
+        skewX: interpolate(animatedVelocityX.value, [-10, 10], [-40, 40]),
       }}
     />
   );

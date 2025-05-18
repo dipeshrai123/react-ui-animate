@@ -1,16 +1,11 @@
-import {
-  useScroll,
-  useValue,
-  interpolateNumbers,
-  animate,
-} from 'react-ui-animate';
+import { useScroll, useValue, interpolate, animate } from 'react-ui-animate';
 
 export const Scroll = () => {
   const x = useValue(100);
-  const color = useValue<string>('yellow');
-  const position = useValue<string>('fixed');
+  const color = useValue('yellow');
+  const position = useValue('fixed');
   const bind = useScroll(function (event) {
-    x.value = interpolateNumbers(event.scrollY, [0, 200], [100, 300], {
+    x.value = interpolate(event.scrollY, [0, 200], [100, 300], {
       extrapolate: 'clamp',
     });
 

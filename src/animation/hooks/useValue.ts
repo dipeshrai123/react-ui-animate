@@ -1,60 +1,27 @@
-import { MotionValue } from '@raidipesh78/re-motion';
-import { useEffect, useRef } from 'react';
+import { useCallback, useRef } from 'react';
+import { FluidValue } from '@raidipesh78/re-motion';
 
-import { Value } from '../Value';
-import { ToValue } from '../types';
+import { getToValue } from '../helpers';
 
-export function useValue<V extends number | string>(initialValue: V) {
-  const ref = useRef<Value<V> | null>(null);
+import type { ToValue } from '../types';
 
-  if (!ref.current) {
-    ref.current = new Value(initialValue);
-  }
+export function useValue(initialValue: number | string) {
+  const animation = useRef(new FluidValue(initialValue)).current;
 
-  useEffect(() => {
-    return () => {
-      ref.current?.destroy();
-      ref.current = null;
-    };
+  const updateValue = useCallback((to: number | string | ToValue) => {
+    const { controller, callback } = getToValue(to)(animation);
+    controller.start(callback);
   }, []);
 
   return {
-    get value(): MotionValue<V> {
-      return ref.current!.value;
+    set value(to: number | string | ToValue) {
+      updateValue(to);
     },
-    set value(u: MotionValue<V> | ToValue<V>) {
-      ref.current!.set(u);
+    get value(): FluidValue {
+      return animation;
     },
-    get currentValue(): V {
-      return ref.current!.value.current;
-    },
-  };
-}
-
-export function useValues<V extends number | string>(initialValues: V[]) {
-  const ref = useRef<Value<V>[] | null>(null);
-
-  if (ref.current === null) {
-    ref.current = initialValues.map((v) => new Value(v));
-  }
-
-  useEffect(() => {
-    return () => {
-      ref.current?.forEach((v) => v.destroy());
-    };
-  }, []);
-
-  return {
-    get values(): MotionValue<V>[] {
-      return ref.current!.map((v) => v.value);
-    },
-    set values(newValues: (MotionValue<V> | ToValue<V>)[]) {
-      newValues.forEach((v, i) => {
-        ref.current?.[i]?.set(v);
-      });
-    },
-    get currentValues(): V[] {
-      return ref.current!.map((v) => v.current);
+    get currentValue() {
+      return animation.get();
     },
   };
 }

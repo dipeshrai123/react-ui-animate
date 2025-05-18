@@ -1,1 +1,1 @@
-export { interpolateNumbers } from './interpolateNumbers';
+export { interpolate, bInterpolate } from './interpolate';

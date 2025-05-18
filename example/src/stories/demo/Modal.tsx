@@ -1,6 +1,12 @@
 import { useRef, useState } from 'react';
 
-import { MountedBlock, animate, useOutsideClick } from 'react-ui-animate';
+import {
+  MountedBlock,
+  animate,
+  interpolate,
+  AnimationConfig,
+  useOutsideClick,
+} from 'react-ui-animate';
 
 const Modal = ({
   visible,
@@ -37,7 +43,7 @@ const Modal = ({
               backgroundColor: 'white',
               borderRadius: 4,
               padding: 20,
-              scale: animation.value.to([0, 1], [0.5, 1]),
+              scale: interpolate(animation.value, [0, 1], [0.5, 1]),
             }}
           >
             <button onClick={onClose}>CLOSE MODAL</button>

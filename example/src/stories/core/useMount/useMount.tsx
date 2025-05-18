@@ -1,5 +1,5 @@
 import React from 'react';
-import { animate, useMount } from 'react-ui-animate';
+import { animate, bInterpolate, useMount } from 'react-ui-animate';
 
 export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
@@ -21,34 +21,37 @@ export const UseMount: React.FC = () => {
             <>
               <animate.div
                 style={{
-                  width: animation.value.to([0, 1], [100, 300]),
-                  height: animation.value.to([0, 1], [100, 200]),
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
+                  width: bInterpolate(animation.value, 100, 300),
+                  height: bInterpolate(animation.value, 100, 200),
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
                   ),
                   translateX: 45,
                 }}
               />
               <animate.div
                 style={{
-                  width: animation.value.to([0, 1], [100, 400]),
-                  height: animation.value.to([0, 1], [100, 50]),
+                  width: bInterpolate(animation.value, 100, 400),
+                  height: bInterpolate(animation.value, 100, 50),
                   border: '1px solid black',
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
                   ),
                   translateX: 45,
                 }}
               />
               <animate.div
                 style={{
-                  width: animation.value.to([0, 1], [100, 500]),
+                  width: bInterpolate(animation.value, 100, 500),
                   height: 100,
-                  backgroundColor: animation.value.to(
-                    [0, 1],
-                    ['red', '#3399ff']
+                  backgroundColor: bInterpolate(
+                    animation.value,
+                    'red',
+                    '#3399ff'
                   ),
                   translateX: 45,
                 }}

@@ -1,6 +1,7 @@
-import React, { useCallback, useState } from 'react';
+import { useState } from 'react';
 import {
   animate,
+  interpolate,
   MountedBlock,
   withEase,
   withSequence,
@@ -20,34 +21,32 @@ const Toast = ({ id, onEnd }: any) => {
       ])}
       exit={withEase(4, { onRest: () => onEnd(id) })}
     >
-      {(a) => {
-        return (
+      {(a) => (
+        <animate.div
+          style={{
+            position: 'relative',
+            width: 240,
+            backgroundColor: '#3399ff',
+            borderRadius: 4,
+            height: interpolate(a.value, [0, 1, 2], [0, 100, 100]),
+            opacity: interpolate(a.value, [2, 3, 4], [1, 1, 0]),
+          }}
+        >
           <animate.div
             style={{
-              position: 'relative',
-              width: 240,
-              backgroundColor: '#3399ff',
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              backgroundColor: '#333',
+              height: 5,
               borderRadius: 4,
-              height: a.value.to([0, 1, 2], [0, 100, 100]),
-              opacity: a.value.to([2, 3, 4], [1, 1, 0]),
+              width: interpolate(a.value, [2, 3], ['0%', '100%'], {
+                extrapolate: 'clamp',
+              }),
             }}
-          >
-            <animate.div
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                backgroundColor: '#333',
-                height: 5,
-                borderRadius: 4,
-                width: a.value.to([2, 3], ['0%', '100%'], {
-                  extrapolate: 'clamp',
-                }),
-              }}
-            />
-          </animate.div>
-        );
-      }}
+          />
+        </animate.div>
+      )}
     </MountedBlock>
   );
 };
@@ -60,10 +59,6 @@ export const ToastComp = () => {
   const generateToast = () => {
     setElements((prev) => [...prev, { id: uniqueId++ }]);
   };
-
-  const handleEnd = useCallback((id: number) => {
-    setElements((els) => els.filter((e) => e.id !== id));
-  }, []);
 
   return (
     <>
@@ -91,7 +86,15 @@ export const ToastComp = () => {
         }}
       >
         {elements.map((e) => {
-          return <Toast key={e.id} id={e.id} onEnd={handleEnd} />;
+          return (
+            <Toast
+              key={e.id}
+              id={e.id}
+              onEnd={(id: any) =>
+                setElements((els) => els.filter((e) => e.id !== id))
+              }
+            />
+          );
         })}
       </div>
     </>

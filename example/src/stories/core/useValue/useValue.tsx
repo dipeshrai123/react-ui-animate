@@ -8,7 +8,7 @@ import {
 } from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
-  const width = useValue<number>(100);
+  const width = useValue(100);
 
   return (
     <>
@@ -32,14 +32,6 @@ export const UseValue: React.FC = () => {
         }}
       >
         NATIVE UPDATE
-      </button>
-
-      <button
-        onClick={() => {
-          width.value = withSpring(width.currentValue + 100);
-        }}
-      >
-        UPDATING PREVIOUS VALUE
       </button>
 
       <animate.div

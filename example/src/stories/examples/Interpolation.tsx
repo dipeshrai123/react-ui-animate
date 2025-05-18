@@ -1,5 +1,5 @@
 import { useLayoutEffect, useState } from 'react';
-import { animate, useValue, withSpring } from 'react-ui-animate';
+import { animate, interpolate, useValue, withSpring } from 'react-ui-animate';
 
 export const Interpolation = () => {
   const [open, setOpen] = useState(false);
@@ -7,7 +7,7 @@ export const Interpolation = () => {
 
   useLayoutEffect(() => {
     x.value = withSpring(open ? 500 : 0);
-  }, [open, x]);
+  }, [open]);
 
   return (
     <>
@@ -15,7 +15,7 @@ export const Interpolation = () => {
         style={{
           width: 100,
           height: 100,
-          backgroundColor: x.value.to([0, 500], ['red', 'blue']),
+          backgroundColor: interpolate(x.value, [0, 500], ['red', 'blue']),
           translateX: x.value,
         }}
       />

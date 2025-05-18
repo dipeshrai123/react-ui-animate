@@ -1,5 +1,5 @@
 import { MouseEvent, useLayoutEffect, useState } from 'react';
-import { animate, useValue, withTiming } from 'react-ui-animate';
+import { animate, bInterpolate, useValue, withTiming } from 'react-ui-animate';
 
 import '../../index.css';
 
@@ -25,7 +25,7 @@ function Ripple({
         onRemove(id);
       },
     });
-  }, [id, animation, onRemove]);
+  }, [id]);
 
   return (
     <animate.div
@@ -37,8 +37,8 @@ function Ripple({
         left: x,
         top: y,
         backgroundColor: 'white',
-        scale: animation.value.to([0, 1], [0, 4]),
-        opacity: animation.value.to([0, 1], [1, 0]),
+        scale: bInterpolate(animation.value, 0, 4),
+        opacity: bInterpolate(animation.value, 1, 0),
         userSelect: 'none',
       }}
     />
