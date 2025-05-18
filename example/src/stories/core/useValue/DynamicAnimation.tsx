@@ -6,7 +6,7 @@ import {
 } from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
-  const x = useValue<number>(0);
+  const [x, setX] = useValue(0);
 
   return (
     <>
@@ -15,13 +15,13 @@ export const DynamicAnimation = () => {
           width: 100,
           height: 100,
           backgroundColor: 'red',
-          translateX: x.value,
+          translateX: x,
         }}
       />
 
       <button
         onClick={() => {
-          x.value = withTiming(0, AnimationConfig.Timing.BOUNCE);
+          setX(withTiming(0, AnimationConfig.Timing.BOUNCE));
         }}
       >
         ANIMATE LEFT
@@ -29,7 +29,7 @@ export const DynamicAnimation = () => {
 
       <button
         onClick={() => {
-          x.value = 100;
+          setX(100);
         }}
       >
         ANIMATE RIGHT

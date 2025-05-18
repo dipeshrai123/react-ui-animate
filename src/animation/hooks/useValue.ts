@@ -17,9 +17,9 @@ type Output<V extends Primitive, I extends Input<V>> = I extends V
 type SetterParam<V extends Primitive, I extends Input<V>> = I extends V
   ? MotionValue<V> | ToValue<V>
   : I extends V[]
-  ? { [K in keyof I]: MotionValue<V> | ToValue<V> }
+  ? Partial<{ [K in keyof I]: MotionValue<V> | ToValue<V> }>
   : I extends Record<string, V>
-  ? { [K in keyof I]: MotionValue<V> | ToValue<V> }
+  ? Partial<{ [K in keyof I]: MotionValue<V> | ToValue<V> }>
   : never;
 
 export function useValue<V extends Primitive, I extends Input<V>>(
@@ -73,15 +73,20 @@ export function useValue<V extends Primitive, I extends Input<V>>(
   ) => {
     const entries = storeRef.current!;
     if (Array.isArray(initial)) {
-      const arr = to as Array<MotionValue<V> | ToValue<V>>;
-      arr.forEach((u, i) => {
-        entries[i][1].set(u);
+      const updates = to as Partial<Array<MotionValue<V> | ToValue<V>>>;
+      Object.entries(updates).forEach(([i, val]) => {
+        const index = Number(i);
+        if (!isNaN(index) && val !== undefined) {
+          entries[index]?.[1].set(val);
+        }
       });
-    } else if (typeof initial === 'object') {
-      const obj = to as Record<string, MotionValue<V> | ToValue<V>>;
-      for (const [k, u] of Object.entries(obj)) {
-        const pair = entries.find(([ek]) => ek === k)!;
-        pair[1].set(u);
+    } else if (typeof initial === 'object' && initial !== null) {
+      const updates = to as Partial<
+        Record<string, MotionValue<V> | ToValue<V>>
+      >;
+      for (const [k, v] of Object.entries(updates)) {
+        const entry = entries.find(([ek]) => ek === k);
+        if (entry && v !== undefined) entry[1].set(v);
       }
     } else {
       entries[0][1].set(to as MotionValue<V> | ToValue<V>);

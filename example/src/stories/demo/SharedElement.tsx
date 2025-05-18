@@ -1,13 +1,13 @@
 import React from 'react';
 import {
   useValue,
-  MountedBlock,
   clamp,
   animate,
   withTiming,
   withSequence,
   withSpring,
   useDrag,
+  useMount,
 } from 'react-ui-animate';
 
 const BOX_SIZE = 200;
@@ -22,16 +22,18 @@ const IMAGES = [
 export function SharedElement() {
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
-  const left = useValue(0);
-  const top = useValue(0);
-  const width = useValue(0);
-  const height = useValue(0);
-  const translateY = useValue(0);
+  const [{ left, top, width, height, translateY }, setValue] = useValue({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    translateY: 0,
+  });
 
   const bind = useDrag(({ down, movementY }) => {
-    translateY.value = down
-      ? withSpring(clamp(movementY, 0, 300))
-      : withSpring(0);
+    setValue({
+      translateY: down ? withSpring(clamp(movementY, 0, 300)) : withSpring(0),
+    });
 
     if (!down && movementY > 200) {
       closeSharedElement();
@@ -43,40 +45,44 @@ export function SharedElement() {
       const activeBox = document.getElementById(`box-${activeIndex}`);
       const clientRect = activeBox!.getBoundingClientRect();
 
-      left.value = withSequence([
-        withTiming(clientRect.left, { duration: 0 }),
-        withSpring(0),
-      ]);
-      top.value = withSequence([
-        withTiming(clientRect.top, { duration: 0 }),
-        withSpring(0),
-      ]);
-
-      width.value = withSequence([
-        withTiming(clientRect.width, { duration: 0 }),
-        withSpring(window.innerWidth),
-      ]);
-
-      height.value = withSequence([
-        withTiming(clientRect.height, { duration: 0 }),
-        withSpring(window.innerHeight),
-      ]);
+      setValue({
+        left: withSequence([
+          withTiming(clientRect.left, { duration: 0 }),
+          withSpring(0),
+        ]),
+        top: withSequence([
+          withTiming(clientRect.top, { duration: 0 }),
+          withSpring(0),
+        ]),
+        width: withSequence([
+          withTiming(clientRect.width, { duration: 0 }),
+          withSpring(window.innerWidth),
+        ]),
+        height: withSequence([
+          withTiming(clientRect.height, { duration: 0 }),
+          withSpring(window.innerHeight),
+        ]),
+      });
     }
-  }, [activeIndex, height, left, top, width]);
+  }, [activeIndex, setValue]);
 
   const closeSharedElement = () => {
     if (activeIndex !== null) {
       const activeBox = document.getElementById(`box-${activeIndex}`);
       const clientRect = activeBox!.getBoundingClientRect();
 
-      left.value = withSpring(clientRect.left);
-      top.value = withSpring(clientRect.top);
-      width.value = withSpring(clientRect.width);
-      height.value = withSpring(clientRect.height, {
-        onRest: () => setActiveIndex(null),
+      setValue({
+        left: withSpring(clientRect.left),
+        top: withSpring(clientRect.top),
+        width: withSpring(clientRect.width),
+        height: withSpring(clientRect.height, {
+          onRest: () => setActiveIndex(null),
+        }),
       });
     }
   };
+
+  const mount = useMount(activeIndex !== null);
 
   return (
     <>
@@ -114,41 +120,42 @@ export function SharedElement() {
         })}
       </div>
 
-      <MountedBlock state={activeIndex !== null}>
-        {() => (
-          <animate.div
-            style={{
-              position: 'fixed',
-              left: 0,
-              top: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'none',
-            }}
-          >
+      {mount(
+        (_, m) =>
+          m && (
             <animate.div
-              {...bind()}
               style={{
-                position: 'absolute',
-                left: left.value,
-                top: top.value,
-                width: width.value,
-                height: height.value,
-                translateY: translateY.value,
-                color: 'white',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'grabbing',
-                backgroundImage: `url(${IMAGES[activeIndex!]})`,
-                backgroundSize: 'cover',
+                position: 'fixed',
+                left: 0,
+                top: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'none',
               }}
             >
-              <span style={{ userSelect: 'none' }}>Pull Down</span>
+              <animate.div
+                {...bind()}
+                style={{
+                  position: 'absolute',
+                  left,
+                  top,
+                  width,
+                  height,
+                  translateY,
+                  color: 'white',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  cursor: 'grabbing',
+                  backgroundImage: `url(${IMAGES[activeIndex!]})`,
+                  backgroundSize: 'cover',
+                }}
+              >
+                <span style={{ userSelect: 'none' }}>Pull Down</span>
+              </animate.div>
             </animate.div>
-          </animate.div>
-        )}
-      </MountedBlock>
+          )
+      )}
     </>
   );
 }
