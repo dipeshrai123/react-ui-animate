@@ -3,7 +3,6 @@ import {
   animate,
   useMount,
   withDecay,
-  withLoop,
   withSequence,
   withSpring,
   withTiming,
@@ -21,12 +20,11 @@ export const UseMount: React.FC = () => {
     exit: {
       width: 100,
       opacity: 1,
-      // translateX: withSequence([
-      //   withTiming(0, { duration: 2000 }),
-      //   withDecay({ velocity: 1 }),
-      //   withSpring(50),
-      // ]),
-      translateX: withLoop(withTiming(100, { duration: 1000 }), 5),
+      translateX: withSequence([
+        withTiming(0, { duration: 2000 }),
+        withDecay({ velocity: 1 }),
+        withSpring(100),
+      ]),
     },
   });
 
