@@ -6,194 +6,181 @@
 
 ### Install
 
-You can install react-ui-animate via `npm` or `yarn`:
+You can install `react-ui-animate` via `npm` or `yarn`:
 
 ```sh
-npm i react-ui-animate
+npm install react-ui-animate
 ```
 
 ```sh
 yarn add react-ui-animate
 ```
 
-### Getting Started
+---
 
-The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Here’s how you can get started quickly:
+## Getting Started
 
-```javascript
-import { animate, useValue } from 'react-ui-animate';
+The `react-ui-animate` library provides a straightforward way to add animations and gestures to your React components. Below are some common use cases.
 
-export default function () {
-  const opacity = useValue(0); // Initialize
+### 1. useValue
+
+Use `useValue` to initialize and update an animated value.
+
+```tsx
+import React from 'react';
+import {
+  animate,
+  useValue,
+  withSpring,
+  withTiming,
+  withSequence,
+} from 'react-ui-animate';
+
+export const UseValue: React.FC = () => {
+  const [width, setWidth] = useValue(100);
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          setWidth(withSequence([withTiming(100), withSpring(0)]));
+        }}
+      >
+        SEQUENCE (100 → 0)
+      </button>
+      <button
+        onClick={() => {
+          setWidth(withSpring(200));
+        }}
+      >
+        SPRING (→ 200)
+      </button>
+      <button
+        onClick={() => {
+          setWidth(400);
+        }}
+      >
+        IMMEDIATE (→ 400)
+      </button>
+
+      <animate.div
+        style={{
+          width,
+          height: 100,
+          backgroundColor: 'red',
+          left: 0,
+          top: 0,
+        }}
+      />
+    </>
+  );
+};
+```
+
+### 2. useMount
+
+Use `useMount` to animate component mount and unmount transitions.
+
+```tsx
+import React from 'react';
+import {
+  animate,
+  useMount,
+  withDecay,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-ui-animate';
+
+export const UseMount: React.FC = () => {
+  const [open, setOpen] = React.useState(true);
+  const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });
+
+  return (
+    <>
+      {mounted(
+        (animation, isMounted) =>
+          isMounted && (
+            <animate.div
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'teal',
+                opacity: animation,
+              }}
+            />
+          )
+      )}
+
+      <button onClick={() => setOpen((prev) => !prev)}>ANIMATE ME</button>
+    </>
+  );
+};
+```
+
+### 3. Interpolation
+
+Interpolate values for complex mappings like color transitions or movement.
+
+```tsx
+import React, { useLayoutEffect, useState } from 'react';
+import { animate, useValue, withSpring } from 'react-ui-animate';
+
+export const Interpolation: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const [x, setX] = useValue(0);
+
+  useLayoutEffect(() => {
+    setX(withSpring(open ? 500 : 0));
+  }, [open, setX]);
 
   return (
     <>
       <animate.div
         style={{
-          opacity: opacity.value, // Apply
           width: 100,
-          padding: 20,
-          background: '#39F',
+          height: 100,
+          backgroundColor: x.to([0, 500], ['red', 'blue']),
+          translateX: x,
         }}
-      >
-        ANIMATED
-      </animate.div>
-      
-      <button 
-        onClick={() => {
-          opacity.value = 1 // Update
-        }}
-      >
-        Animate Me
-      </button>
+      />
+
+      <button onClick={() => setOpen((p) => !p)}>ANIMATE ME</button>
     </>
   );
-}
+};
 ```
-
-In this example, clicking the `Animate Me` button changes the opacity from 0 to 1.
 
 ---
 
-### Implementation Steps
+## API Overview
 
-#### 1. Initialize
+- **`useValue(initial)`**: Initializes an animated value.
+- **`animate`**: JSX wrapper for animatable elements (`animate.div`, `animate.span`, etc.).
+- **Modifiers**: `withSpring`, `withTiming`, `withDecay`, `withSequence`, `withEase` — functions to define animation behavior.
+- **`useMount(state, config)`**: Manages mount/unmount transitions. `config` includes `from`, `enter`, and `exit` values.
 
-The `useValue()` hook is central to creating animations. It initializes an animated value and allows you to seamlessly update it to create dynamic effects.
+## Gestures
 
-```javascript
-const opacity = useValue(0); // Initialize a animation value 0
-```
+`react-ui-animate` also provides hooks for handling gestures:
 
-#### 2. Apply
+- `useDrag`
+- `useMouseMove`
+- `useScroll`
+- `useWheel`
+- `useGesture`
 
-`animate.div` is a special component designed to work with `useValue()`. It simplifies animating elements by directly using animated values.
+**Example: `useDrag`**
 
-```jsx
-import { useValue, animate } from 'react-ui-animate'
-
-const width = useValue(100); // Start with a width of 100
-
-<animate.div
-  style={{
-    width: width.value,
-    height: 100,
-    backgroundColor: '#39f',
-  }}
-/>;
-```
-
-#### 3. Update
-
-To update the value simply assign the initialized animated node with a value.
-
-```jsx
-import { useValue, withSpring } from 'react-ui-animate';
-
-const width = useValue(100);
-
-<button 
-  onClick={() => {
-      // Update
-      width.value = withSpring(400); 
-  }}
->
-  Update
-</button>
-```
-
-In this example, `withSpring` runs spring animation when updating the value.
-
----
-
-#### `interpolate`
-
-The `interpolate()` function is useful for mapping values from one range to another, enabling more complex animations.
-
-```javascript
-import { useValue, animate, interpolate } from 'react-ui-animate';
-
-const width = useValue(100);
-
-<animate.div
-  style={{
-    width: width.value,
-    height: 100,
-    backgroundColor: interpolate(width.value, [100, 200], ['red', 'blue']),
-  }}
-/>;
-```
-
-In this example, as the width changes from 100 to 200, the background color smoothly transitions from red to blue.
-
-#### Modifiers
-
-You can dynamically modify animation configurations by assigning values to an animated value using various animation functions.
-
-To apply a spring animation and update the value to `10`:
-
-```jsx
-x.value = withSpring(10);
-```
-
-To apply a timing animation with a duration of 5000 milliseconds:
-
-```jsx
-x.value = withTiming(10, { duration: 5000 });
-```
-
-To create sequential transitions using the `withSequence` function with dynamic modifiers like `withSpring` and `withTiming`:
-
-```jsx
-x.value = withSequence([withSpring(50), withTiming(100), withEase(200)]);
-```
-
-#### `useMount()`
-
-The `useMount()` hook facilitates managing the mounting and unmounting of a component with animations.
-
-```jsx
-import { useMount } from 'react-ui-animate';
-
-export default function App() {
-  const [visible, setVisible] = useState(false);
-
-  const open = useMount(visible);
-
-  return open((animation, mounted) => mounted && <animate.div />);
-}
-```
-
-In this example,
-
-1. A state variable `visible` determines whether the component is visible.
-2. The `useMount` hook takes `visible` as an argument and provides animation states for mounting and unmounting.
-3. The `open` function, returned by `useMount`, is used to conditionally render `animate.div` based on the `mounted` boolean and apply the transition animation.
-
----
-
-### Gestures
-
-The `react-ui-animate` library also provides several hooks for handling different types of gestures:
-
-1. `useDrag`: Handles drag gestures on elements.
-2. `useMouseMove`: Handles mouse movements.
-3. `useScroll`: Handles scrolling of the document.
-4. `useWheel`: Handles wheel rotation gestures.
-5. `useGesture`: Handles combinations of various gestures.
-
-**Example**: `useDrag`
-
-Here’s an example of using the useDrag hook to enable drag gestures:
-
-```jsx
+```tsx
+import React from 'react';
 import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
-export const Draggable = () => {
+export const Draggable: React.FC = () => {
   const translateX = useValue(0);
 
-  const bind = useDrag(function ({ down, movementX }) {
-    translateX.value = down ? movementX : withSpring(0);
+  const bind = useDrag(({ down, movementX }) => {
+    translateX.setValue(down ? movementX : withSpring(0));
   });
 
   return (
@@ -210,11 +197,9 @@ export const Draggable = () => {
 };
 ```
 
-In this example, the blue block can be dragged horizontally by clicking and dragging.
-
 ## Documentation
 
-For detailed documentation and examples, visit the official [react-ui-animate documentation](http://react-ui-animate.js.org/).
+For detailed documentation and examples, visit the official [react-ui-animate documentation](https://react-ui-animate.js.org/).
 
 ## License
 
