@@ -100,13 +100,23 @@ export const withDelay = (delay: number): DriverConfig => ({
   },
 });
 
+interface WithLoopOptions {
+  onStart?: () => void;
+  onChange?: (v: number | string) => void;
+  onRest?: () => void;
+}
+
 export const withLoop = (
   controller: DriverConfig,
-  iterations: number
+  iterations: number,
+  options?: WithLoopOptions
 ): DriverConfig => ({
   type: 'loop',
   options: {
     controller,
     iterations,
+    onStart: options?.onStart,
+    onChange: options?.onChange,
+    onComplete: options?.onRest,
   },
 });
