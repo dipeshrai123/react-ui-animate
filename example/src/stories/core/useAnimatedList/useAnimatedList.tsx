@@ -15,25 +15,36 @@ type Item = {
 export const UseAnimatedList: React.FC = () => {
   const [items, setItems] = useState<Item[]>([]);
 
-  const animatedList = useAnimatedList<
-    Item,
-    { opacity: number; translateX: number }
-  >(items, (item) => item.id, {
-    from: {
-      opacity: 0,
-      translateX: 0,
-    },
+  // const animatedList = useAnimatedList<
+  //   Item,
+  //   { opacity: number; translateX: number }
+  // >(items, (item) => item.id, {
+  //   from: {
+  //     opacity: 0,
+  //     translateX: 0,
+  //   },
+  //   enter: {
+  //     opacity: withSpring(1),
+  //     translateX: withSpring(100),
+  //   },
+  //   exit: {
+  //     translateX: withSequence([
+  //       withSpring(50),
+  //       withTiming(0, { duration: 2000 }),
+  //     ]),
+  //     opacity: withSpring(1),
+  //   },
+  // });
+
+  const animatedList = useAnimatedList(items, (item) => item.id, {
+    from: { translateX: 0 },
     enter: {
-      opacity: withSpring(1),
-      translateX: withSpring(100),
-    },
-    exit: {
       translateX: withSequence([
-        withSpring(50),
-        withTiming(0, { duration: 2000 }),
+        withSpring(100),
+        withTiming(200, { duration: 2000 }),
       ]),
-      opacity: withSpring(1),
     },
+    exit: { translateX: 0 },
   });
 
   const addItem = () => {
@@ -49,14 +60,13 @@ export const UseAnimatedList: React.FC = () => {
     <>
       <button onClick={() => addItem()}>ADD NEW ITEM</button>
       {animatedList
-        .map(({ animation: { opacity, translateX }, item }) => (
+        .map(({ animation, item }) => (
           <animate.div
             key={item.id}
             onClick={() => removeItem(item.id)}
             style={{
-              opacity,
-              translateX,
-              height: opacity.to([0, 1], [0, 100]),
+              height: 100,
+              translateX: animation.translateX,
               width: 100,
               backgroundColor: 'red',
               left: 0,

@@ -3,30 +3,26 @@ import { MotionValue } from '@raidipesh78/re-motion';
 
 import { Value } from '../Value';
 import { withSpring } from '../controllers';
-import type { DriverConfig } from '../types';
-
-interface UseAnimatedListConfigSingle {
-  from?: number;
-  enter?: DriverConfig;
-  exit?: DriverConfig;
-}
-
-interface UseAnimatedListConfigMulti<I extends Record<string, number>> {
-  from: I;
-  enter?: Partial<Record<keyof I, DriverConfig>>;
-  exit?: Partial<Record<keyof I, DriverConfig>>;
-}
+import type { DriverConfig, ToValue } from '../types';
 
 export function useAnimatedList<T>(
   items: T[],
   getKey: (item: T) => string,
-  config?: UseAnimatedListConfigSingle
+  config?: {
+    from?: number;
+    enter?: ToValue<number>;
+    exit?: ToValue<number>;
+  }
 ): Array<{ key: string; item: T; animation: MotionValue<number> }>;
 
 export function useAnimatedList<T, I extends Record<string, number>>(
   items: T[],
   getKey: (item: T) => string,
-  config: UseAnimatedListConfigMulti<I>
+  config: {
+    from: I;
+    enter?: Partial<{ [K in keyof I]: ToValue<I[K]> }>;
+    exit?: Partial<{ [K in keyof I]: ToValue<I[K]> }>;
+  }
 ): Array<{
   key: string;
   item: T;
@@ -45,11 +41,25 @@ export function useAnimatedList(
 
   const enterObj: Record<string, DriverConfig> = {};
   const exitObj: Record<string, DriverConfig> = {};
+
   Object.keys(fromObj).forEach((key) => {
-    enterObj[key] =
-      (isMulti ? config.enter?.[key] : config.enter) ?? withSpring(1);
-    exitObj[key] =
-      (isMulti ? config.exit?.[key] : config.exit) ?? withSpring(0);
+    const rawEnter = isMulti ? config.enter?.[key] : config.enter;
+    if (typeof rawEnter === 'number') {
+      enterObj[key] = withSpring(rawEnter);
+    } else if (rawEnter) {
+      enterObj[key] = rawEnter;
+    } else {
+      enterObj[key] = withSpring(1);
+    }
+
+    const rawExit = isMulti ? config.exit?.[key] : config.exit;
+    if (typeof rawExit === 'number') {
+      exitObj[key] = withSpring(rawExit);
+    } else if (rawExit) {
+      exitObj[key] = rawExit;
+    } else {
+      exitObj[key] = withSpring(0);
+    }
   });
 
   const itemsRef = useRef(
@@ -118,14 +128,14 @@ export function useAnimatedList(
           animation: values['value'].value,
         };
       }
-      const animMap: Record<string, MotionValue<number>> = {};
+      const anims: Record<string, MotionValue<number>> = {};
       Object.entries(values).forEach(([prop, val]) => {
-        animMap[prop] = val.value;
+        anims[prop] = val.value;
       });
       return {
         key,
         item,
-        animation: animMap as Record<keyof any, MotionValue<number>>,
+        animation: anims as Record<keyof any, MotionValue<number>>,
       };
     }
   );
