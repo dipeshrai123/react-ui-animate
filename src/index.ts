@@ -1,18 +1,8 @@
-// Core
 export {
   Easing,
   makeMotion as makeAnimated,
   motion as animate,
 } from '@raidipesh78/re-motion';
-
-// react-ui-animate
-// Modules
-export { AnimationConfig } from './animation';
-
-// Hooks
-export { useValue, useMount, useAnimatedList } from './animation';
-
-// Helpers and Utilities
 export {
   withSpring,
   withTiming,
@@ -21,15 +11,13 @@ export {
   withDecay,
   withLoop,
   withEase,
+  useValue,
+  useMount,
+  useAnimatedList,
+  AnimationConfig,
+  interpolateNumbers,
 } from './animation';
-
-// Hooks
 export { useMeasure, useOutsideClick, useWindowDimension } from './hooks';
-
-// Interpolation
-export { interpolateNumbers } from './animation';
-
-// gestures/hooks
 export {
   useDrag,
   useGesture,
@@ -37,6 +25,4 @@ export {
   useScroll,
   useWheel,
 } from './gestures/hooks';
-
-// gestures/helpers
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
