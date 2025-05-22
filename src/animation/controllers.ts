@@ -18,9 +18,9 @@ export const withSpring = (
     type: 'spring',
     to,
     options: {
-      stiffness: options?.tension ?? 100,
-      damping: options?.friction ?? 10,
-      mass: options?.mass ?? 1,
+      stiffness: options?.tension ?? AnimationConfig.Spring.ELASTIC.tension,
+      damping: options?.friction ?? AnimationConfig.Spring.ELASTIC.friction,
+      mass: options?.mass ?? AnimationConfig.Spring.ELASTIC.mass,
       onStart: options?.onStart,
       onChange: options?.onChange,
       onComplete: options?.onRest,
