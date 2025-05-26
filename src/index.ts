@@ -2,6 +2,7 @@ export {
   Easing,
   makeMotion as makeAnimated,
   motion as animate,
+  combine,
 } from '@raidipesh78/re-motion';
 export {
   withSpring,
