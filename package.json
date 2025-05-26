@@ -1,13 +1,13 @@
 {
   "name": "react-ui-animate",
-  "version": "5.0.0-alpha.5",
+  "version": "5.0.0-alhpa.6",
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
   "peerDependencies": {
     "react": ">=16.8.0  || >=17.0.0 || >=18.0.0"
   },
   "dependencies": {
-    "@raidipesh78/re-motion": "^5.0.0-alpha.12"
+    "@raidipesh78/re-motion": "^5.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
