@@ -9,9 +9,29 @@ import {
 
 export const UseValue: React.FC = () => {
   const [width, setWidth] = useValue(100);
+  const [backgroundColor, setBackgroundColor] = useValue('black');
 
   return (
     <>
+      <button onClick={() => setBackgroundColor(withSpring('red'))}>
+        Change to Red
+      </button>
+      <button
+        onClick={() =>
+          setBackgroundColor(withTiming('#3399ff', { duration: 5000 }))
+        }
+      >
+        Change to #3399ff
+      </button>
+
+      <animate.div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: backgroundColor,
+        }}
+      />
+
       <button
         onClick={() => {
           setWidth(withSequence([withTiming(100), withSpring(0)]));
