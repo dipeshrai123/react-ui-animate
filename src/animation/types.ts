@@ -8,7 +8,7 @@ export interface WithCallbacks {
 
 export type DriverConfig = {
   type: 'spring' | 'timing' | 'decay' | 'sequence' | 'delay' | 'loop';
-  to?: number;
+  to?: Primitive;
   options?: {
     controller?: DriverConfig;
     iterations?: number;

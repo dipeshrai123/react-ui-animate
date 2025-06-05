@@ -1,5 +1,5 @@
 import { AnimationConfig } from './AnimationConfig';
-import { DriverConfig } from './types';
+import { DriverConfig, Primitive } from './types';
 
 interface WithSpringOptions {
   mass?: number;
@@ -11,7 +11,7 @@ interface WithSpringOptions {
 }
 
 export const withSpring = (
-  to: number,
+  to: Primitive,
   options?: WithSpringOptions
 ): DriverConfig => {
   return {
@@ -29,7 +29,7 @@ export const withSpring = (
 };
 
 export const withEase = (
-  to: number,
+  to: Primitive,
   options?: WithSpringOptions
 ): DriverConfig =>
   withSpring(to, { ...options, ...AnimationConfig.Spring.EASE });
@@ -43,7 +43,7 @@ interface WithTimingOptions {
 }
 
 export const withTiming = (
-  to: number,
+  to: Primitive,
   options?: WithTimingOptions
 ): DriverConfig => ({
   type: 'timing',
