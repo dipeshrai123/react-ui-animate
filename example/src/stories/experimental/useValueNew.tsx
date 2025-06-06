@@ -75,12 +75,27 @@ export const UseValue: React.FC = () => {
           setObj(
             withTiming(
               { x: 0, y: 0, width: 300, height: 100 },
-              { onRest: () => console.log('Animation complete') }
+              {
+                onStart: () => console.log('START'),
+                onRest: () => console.log('Animation complete'),
+              }
             )
           )
         }
       >
         Timing
+      </button>
+      <button
+        onClick={() =>
+          setObj(
+            withDecay(1, {
+              onStart: () => console.log('START'),
+              onRest: () => console.log('Animation complete'),
+            })
+          )
+        }
+      >
+        Decay
       </button>
       <button onClick={() => setObj({ x: 0, y: 0, width: 100, height: 100 })}>
         Immediate

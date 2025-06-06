@@ -47,11 +47,25 @@ export function useValue(initial: any) {
     }
   };
 
+  const filterCallbackOptions = (options: any, condition: boolean) => {
+    const { onStart, onChange, onComplete, ...rest } = options;
+
+    if (condition) {
+      return {
+        ...rest,
+        onStart: options?.onStart,
+        onChange: options?.onChange,
+        onComplete: options?.onComplete,
+      };
+    }
+
+    return rest;
+  };
+
   const set = (to: any) => {
     if (Array.isArray(initial)) {
-      // if array
       const mvArray = value as MotionValue<Primitive>[];
-      mvArray.forEach((mv, index) => {
+      mvArray.forEach((mv, index, arr) => {
         if (Array.isArray(to)) {
           mv.set(to[index]);
         } else if (typeof to === 'object') {
@@ -59,21 +73,24 @@ export function useValue(initial: any) {
             mv,
             to.type,
             to.type === 'decay' ? null : to.to[index],
-            to.options
+            filterCallbackOptions(to.options, index === arr.length - 1)
           );
         }
       });
     } else if (typeof initial === 'object') {
-      // if object
       const mvObject = value as Record<string, MotionValue<Primitive>>;
-      Object.entries(mvObject).forEach(([key, mv]) => {
+
+      Object.entries(mvObject).forEach(([key, mv], index, arr) => {
         if (typeof to === 'object') {
           if (to.hasOwnProperty(key)) {
-            // { x: 100, y: 100 }
             mv.set(to[key]);
-          } else if (to.type && typeof to.to === 'object') {
-            // withSpring({ x: 100, y: 100 }
-            runAnimation(mv, to.type, to.to[key], to.options);
+          } else if (to.type) {
+            runAnimation(
+              mv,
+              to.type,
+              typeof to.to === 'object' ? to.to[key] : null,
+              filterCallbackOptions(to.options, index === arr.length - 1)
+            );
           }
         }
       });
