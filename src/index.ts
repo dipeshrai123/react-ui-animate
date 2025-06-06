@@ -27,3 +27,5 @@ export {
   useWheel,
 } from './gestures/hooks';
 export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
+
+export * as __experimental from './animation/__experimental';
