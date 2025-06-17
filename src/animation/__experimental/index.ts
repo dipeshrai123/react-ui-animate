@@ -1,5 +1,12 @@
 import { useMemo } from 'react';
-import { decay, MotionValue, spring, timing } from '@raidipesh78/re-motion';
+import {
+  decay,
+  MotionValue,
+  sequence,
+  spring,
+  timing,
+  parallel,
+} from '@raidipesh78/re-motion';
 
 import { Primitive } from '../types';
 import { AnimationConfig } from '../AnimationConfig';
@@ -21,29 +28,21 @@ export function useValue(initial: any) {
     }
   }, [initial]);
 
-  const runAnimation = (
+  const buildAnimation = (
     mv: MotionValue<Primitive>,
     type: 'spring' | 'timing' | 'decay',
     target: any,
     options: any
   ) => {
-    switch (type) {
-      case 'spring':
-        spring(mv, target, options).start();
-        break;
-      case 'timing':
-        timing(mv, target, options).start();
-        break;
-      case 'decay':
-        decay(
-          mv as MotionValue<number>,
-          options.velocity ?? 0,
-          options
-        ).start();
-        break;
-      default:
-        console.warn(`Unsupported animation type: ${type}`);
-        break;
+    if (type === 'spring') {
+      return spring(mv, target, options);
+    } else if (type === 'timing') {
+      return timing(mv, target, options);
+    } else if (type === 'decay') {
+      return decay(mv as MotionValue<number>, options.velocity ?? 0, options);
+    } else {
+      console.warn(`Unsupported animation type: ${type}`);
+      return { start: () => {} };
     }
   };
 
@@ -69,37 +68,99 @@ export function useValue(initial: any) {
         if (Array.isArray(to)) {
           mv.set(to[index]);
         } else if (typeof to === 'object') {
-          runAnimation(
-            mv,
-            to.type,
-            to.type === 'decay' ? null : to.to[index],
-            filterCallbackOptions(to.options, index === arr.length - 1)
-          );
+          if (to.type === 'sequence') {
+            const animations = to.animations.map((a: any) => {
+              return buildAnimation(
+                mv,
+                a.type,
+                a.type === 'decay' ? null : a.to[index],
+                a.options
+              );
+            });
+            sequence(animations).start();
+          } else if (to.type === 'loop') {
+          } else {
+            buildAnimation(
+              mv,
+              to.type,
+              to.type === 'decay' ? null : to.to[index],
+              filterCallbackOptions(to.options, index === arr.length - 1)
+            ).start();
+          }
         }
       });
     } else if (typeof initial === 'object') {
       const mvObject = value as Record<string, MotionValue<Primitive>>;
 
       Object.entries(mvObject).forEach(([key, mv], index, arr) => {
-        if (typeof to === 'object') {
-          if (to.hasOwnProperty(key)) {
-            mv.set(to[key]);
-          } else if (to.type) {
-            runAnimation(
-              mv,
-              to.type,
-              typeof to.to === 'object' ? to.to[key] : null,
-              filterCallbackOptions(to.options, index === arr.length - 1)
-            );
-          }
+        if (typeof to !== 'object') return;
+
+        if (to.hasOwnProperty(key)) {
+          mv.set(to[key]);
+          return;
         }
+
+        if (to.type === 'sequence') {
+          const steps = to.animations.map((step: any) => {
+            const ctrls = Object.entries(mvObject)
+              .map(([k, m], idx, arr) => {
+                if (
+                  step.type === 'decay' ||
+                  (step.to && step.to[k] !== undefined)
+                ) {
+                  return buildAnimation(
+                    m,
+                    step.type,
+                    step.type === 'decay' ? null : step.to[k],
+                    filterCallbackOptions(step.options, idx === arr.length - 1)
+                  );
+                }
+                return null;
+              })
+              .filter(Boolean) as any[];
+
+            return parallel(ctrls);
+          });
+
+          sequence(steps).start();
+          return;
+        }
+
+        if (to.type === 'loop') {
+          return;
+        }
+
+        if (to.type === 'decay') {
+          buildAnimation(
+            mv,
+            'decay',
+            null,
+            filterCallbackOptions(to.options, index === arr.length - 1)
+          ).start();
+          return;
+        }
+
+        const target = (to.to as any)[key];
+        buildAnimation(
+          mv,
+          to.type,
+          target,
+          filterCallbackOptions(to.options, index === arr.length - 1)
+        ).start();
       });
     } else {
-      // if primitive
       const mv = value as MotionValue<Primitive>;
 
       if (typeof to === 'object') {
-        runAnimation(mv, to.type, to.to, to.options);
+        if (to.type === 'sequence') {
+          const animations = to.animations.map((a: any) => {
+            return buildAnimation(mv, a.type, a.to, a.options);
+          });
+          sequence(animations).start();
+        } else if (to.type === 'loop') {
+        } else {
+          buildAnimation(mv, to.type, to.to, to.options).start();
+        }
       } else if (typeof to === 'number' || typeof to === 'string') {
         mv.set(to);
       }
@@ -144,4 +205,9 @@ export const withDecay = (velocity: number, options?: any) => ({
     onChange: options?.onChange,
     onComplete: options?.onRest,
   },
+});
+
+export const withSequence = (animations: any[]) => ({
+  type: 'sequence',
+  animations,
 });

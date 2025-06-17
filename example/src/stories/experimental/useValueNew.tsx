@@ -1,7 +1,8 @@
 import React from 'react';
 import { animate, __experimental } from 'react-ui-animate';
 
-const { useValue, withSpring, withTiming, withDecay } = __experimental;
+const { useValue, withSpring, withTiming, withDecay, withSequence } =
+  __experimental;
 
 export const UseValue: React.FC = () => {
   const [x, setX] = useValue(0);
@@ -14,6 +15,13 @@ export const UseValue: React.FC = () => {
       <button onClick={() => setX(withSpring(100))}>Spring 100</button>
       <button onClick={() => setX(withTiming(0))}>Timing 0</button>
       <button onClick={() => setX(withDecay(1))}>Decay</button>
+      <button
+        onClick={() =>
+          setX(withSequence([withSpring(100), withTiming(200), withDecay(1)]))
+        }
+      >
+        Sequence
+      </button>
       <button onClick={() => setX(200)}>Immediate</button>
       <animate.div
         style={{
@@ -48,6 +56,19 @@ export const UseValue: React.FC = () => {
         Timing Values
       </button>
       <button onClick={() => setValues(withDecay(1))}>Decay Values</button>
+      <button
+        onClick={() =>
+          setValues(
+            withSequence([
+              withTiming([100, 200, 300]),
+              withSpring([0, 0, 0]),
+              withDecay(0.5),
+            ])
+          )
+        }
+      >
+        Sequence Values
+      </button>
       <button onClick={() => setValues([0, 0, 0])}>Immediate</button>
       {values.map((value, index) => (
         <animate.div
@@ -97,9 +118,24 @@ export const UseValue: React.FC = () => {
       >
         Decay
       </button>
+      <button
+        onClick={() =>
+          setObj(
+            withSequence([
+              withSpring({ x: 100, y: 100 }),
+              withTiming({ width: 200, height: 200 }),
+              withTiming({ x: 0, y: 0 }, { duration: 3000 }),
+              withDecay(0.5),
+            ])
+          )
+        }
+      >
+        Sequence
+      </button>
       <button onClick={() => setObj({ x: 0, y: 0, width: 100, height: 100 })}>
         Immediate
       </button>
+
       <animate.div
         style={{
           width: obj.width,
