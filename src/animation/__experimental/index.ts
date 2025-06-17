@@ -7,6 +7,7 @@ import {
   timing,
   parallel,
   loop,
+  delay,
 } from '@raidipesh78/re-motion';
 
 import { Primitive } from '../types';
@@ -31,7 +32,7 @@ export function useValue(initial: any) {
 
   const buildAnimation = (
     mv: MotionValue<Primitive>,
-    type: 'spring' | 'timing' | 'decay',
+    type: 'spring' | 'timing' | 'decay' | 'delay',
     target: any,
     options: any
   ) => {
@@ -41,6 +42,8 @@ export function useValue(initial: any) {
       return timing(mv, target, options);
     } else if (type === 'decay') {
       return decay(mv as MotionValue<number>, options.velocity ?? 0, options);
+    } else if (type === 'delay') {
+      return delay(options.delay);
     } else {
       console.warn(`Unsupported animation type: ${type}`);
       return {
@@ -138,6 +141,10 @@ export function useValue(initial: any) {
 
         if (to.type === 'sequence') {
           const steps = to.animations.map((step: any) => {
+            if (step.type === 'delay') {
+              return delay(step.options.delay);
+            }
+
             const ctrls = Object.entries(mvObject)
               .map(([k, m], idx, arr) => {
                 if (
@@ -313,5 +320,12 @@ export const withLoop = (animation: any, iterations: number) => ({
   animation,
   options: {
     iterations: iterations ?? 1,
+  },
+});
+
+export const withDelay = (delayTime: number) => ({
+  type: 'delay',
+  options: {
+    delay: delayTime,
   },
 });

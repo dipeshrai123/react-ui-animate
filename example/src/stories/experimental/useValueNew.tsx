@@ -1,8 +1,15 @@
 import React from 'react';
 import { animate, __experimental } from 'react-ui-animate';
 
-const { useValue, withSpring, withTiming, withDecay, withSequence, withLoop } =
-  __experimental;
+const {
+  useValue,
+  withSpring,
+  withTiming,
+  withDecay,
+  withSequence,
+  withLoop,
+  withDelay,
+} = __experimental;
 
 export const UseValue: React.FC = () => {
   const [x, setX] = useValue(0);
@@ -20,7 +27,14 @@ export const UseValue: React.FC = () => {
       <button onClick={() => setX(withDecay(1))}>Decay</button>
       <button
         onClick={() =>
-          setX(withSequence([withSpring(100), withTiming(200), withDecay(1)]))
+          setX(
+            withSequence([
+              withSpring(100),
+              withDelay(2000),
+              withTiming(200),
+              withDecay(1),
+            ])
+          )
         }
       >
         Sequence
@@ -130,6 +144,7 @@ export const UseValue: React.FC = () => {
             withSequence([
               withSpring({ x: 100, y: 100 }),
               withTiming({ width: 200, height: 200 }),
+              withDelay(4000),
               withTiming({ x: 0, y: 0 }, { duration: 3000 }),
               withDecay(0.5),
             ])
