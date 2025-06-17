@@ -6,6 +6,7 @@ import {
   spring,
   timing,
   parallel,
+  loop,
 } from '@raidipesh78/re-motion';
 
 import { Primitive } from '../types';
@@ -42,7 +43,13 @@ export function useValue(initial: any) {
       return decay(mv as MotionValue<number>, options.velocity ?? 0, options);
     } else {
       console.warn(`Unsupported animation type: ${type}`);
-      return { start: () => {} };
+      return {
+        start() {},
+        pause() {},
+        resume() {},
+        cancel() {},
+        reset() {},
+      };
     }
   };
 
@@ -79,6 +86,35 @@ export function useValue(initial: any) {
             });
             sequence(animations).start();
           } else if (to.type === 'loop') {
+            const inner = to.animation;
+
+            if (inner.type === 'sequence') {
+              const steps = inner.animations.map((step: any) =>
+                buildAnimation(
+                  mv,
+                  step.type,
+                  step.type === 'decay' ? null : step.to[index],
+                  filterCallbackOptions(step.options, index === arr.length - 1)
+                )
+              );
+              loop(sequence(steps), to.options.iterations).start();
+            } else {
+              loop(
+                buildAnimation(
+                  mv,
+                  inner.type,
+                  inner.type === 'decay'
+                    ? null
+                    : Array.isArray(inner.to)
+                    ? inner.to[index]
+                    : inner.to,
+                  filterCallbackOptions(inner.options, index === arr.length - 1)
+                ),
+                to.options.iterations
+              ).start();
+            }
+
+            return;
           } else {
             buildAnimation(
               mv,
@@ -127,6 +163,43 @@ export function useValue(initial: any) {
         }
 
         if (to.type === 'loop') {
+          const inner = to.animation;
+
+          let ctl;
+          if (inner.type === 'sequence') {
+            const steps = inner.animations.map((step: any) => {
+              const ctrls = Object.entries(mvObject)
+                .map(([k, m], i, arr) => {
+                  const hasKey = step.to?.[k] !== undefined;
+                  if (step.type === 'decay' || hasKey) {
+                    return buildAnimation(
+                      m,
+                      step.type,
+                      step.type === 'decay' ? null : step.to[k],
+                      filterCallbackOptions(step.options, i === arr.length - 1)
+                    );
+                  }
+
+                  return null;
+                })
+                .filter(Boolean) as any[];
+              return parallel(ctrls);
+            });
+            ctl = sequence(steps);
+          } else {
+            const ctrls = Object.entries(mvObject).map(([k, m], i, arr) => {
+              return buildAnimation(
+                m,
+                inner.type,
+                inner.type === 'decay' ? null : inner.to?.[k] ?? inner.to,
+                filterCallbackOptions(inner.options, i === arr.length - 1)
+              );
+            });
+            ctl = parallel(ctrls as any);
+          }
+
+          loop(ctl, to.options.iterations).start();
+          return;
           return;
         }
 
@@ -158,6 +231,29 @@ export function useValue(initial: any) {
           });
           sequence(animations).start();
         } else if (to.type === 'loop') {
+          const inner = to.animation;
+
+          let ctl;
+          if (inner.type === 'sequence') {
+            const steps = inner.animations.map((step: any) => {
+              return buildAnimation(
+                mv,
+                step.type,
+                step.to,
+                filterCallbackOptions(step.options, true)
+              );
+            });
+            ctl = sequence(steps);
+          } else {
+            ctl = buildAnimation(
+              mv,
+              inner.type,
+              inner.to,
+              filterCallbackOptions(inner.options, true)
+            );
+          }
+
+          loop(ctl as any, to.options.iterations).start();
         } else {
           buildAnimation(mv, to.type, to.to, to.options).start();
         }
@@ -210,4 +306,12 @@ export const withDecay = (velocity: number, options?: any) => ({
 export const withSequence = (animations: any[]) => ({
   type: 'sequence',
   animations,
+});
+
+export const withLoop = (animation: any, iterations: number) => ({
+  type: 'loop',
+  animation,
+  options: {
+    iterations: iterations ?? 1,
+  },
 });

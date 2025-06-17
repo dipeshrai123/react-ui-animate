@@ -1,7 +1,7 @@
 import React from 'react';
 import { animate, __experimental } from 'react-ui-animate';
 
-const { useValue, withSpring, withTiming, withDecay, withSequence } =
+const { useValue, withSpring, withTiming, withDecay, withSequence, withLoop } =
   __experimental;
 
 export const UseValue: React.FC = () => {
@@ -14,6 +14,9 @@ export const UseValue: React.FC = () => {
     <>
       <button onClick={() => setX(withSpring(100))}>Spring 100</button>
       <button onClick={() => setX(withTiming(0))}>Timing 0</button>
+      <button onClick={() => setX(withLoop(withSpring(100), 5))}>
+        Loop 0 to 100
+      </button>
       <button onClick={() => setX(withDecay(1))}>Decay</button>
       <button
         onClick={() =>
@@ -54,6 +57,9 @@ export const UseValue: React.FC = () => {
       </button>
       <button onClick={() => setValues(withTiming([100, 200, 300]))}>
         Timing Values
+      </button>
+      <button onClick={() => setValues(withLoop(withSpring([0, 100, 200]), 3))}>
+        Loop Values
       </button>
       <button onClick={() => setValues(withDecay(1))}>Decay Values</button>
       <button
@@ -131,6 +137,21 @@ export const UseValue: React.FC = () => {
         }
       >
         Sequence
+      </button>
+      <button
+        onClick={() =>
+          setObj(
+            withLoop(
+              withSequence([
+                withTiming({ x: 100, width: 200 }),
+                withTiming({ x: 0, width: 100 }),
+              ]),
+              5
+            )
+          )
+        }
+      >
+        Loop
       </button>
       <button onClick={() => setObj({ x: 0, y: 0, width: 100, height: 100 })}>
         Immediate
