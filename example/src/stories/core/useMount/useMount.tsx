@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-  animate,
-  useMount,
-  withDecay,
-  withSequence,
-  withSpring,
-  withTiming,
-} from 'react-ui-animate';
+import { animate, __experimental } from 'react-ui-animate';
+
+const { useMount } = __experimental;
 
 export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
@@ -40,7 +35,7 @@ export const UseMount: React.FC = () => {
                 width: 100,
                 height: 100,
                 backgroundColor: 'teal',
-                opacity: a,
+                opacity: a as any,
               }}
             />
           )

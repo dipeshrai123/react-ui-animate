@@ -31,7 +31,7 @@ export function useValue<T extends Base>(
     }
 
     return new MotionValue(initial);
-  }, [initial]) as ValueReturn<T>;
+  }, []) as ValueReturn<T>;
 
   function set(to: Base | Descriptor) {
     if (Array.isArray(initial)) {
@@ -168,6 +168,7 @@ function handleObject(
   mvs: Record<string, MotionValue<Primitive>>,
   to: Record<string, Primitive> | Descriptor
 ) {
+  console.log(to);
   if ('type' in to && to.type === 'sequence' && isDescriptor(to)) {
     const animations = to.options?.animations ?? [];
     const ctrls = animations.map((step) => {
