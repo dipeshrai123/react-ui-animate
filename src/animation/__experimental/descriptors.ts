@@ -6,30 +6,57 @@ interface Callbacks {
   onComplete?: () => void;
 }
 
-export interface DriverOptions {
-  spring: {
-    stiffness?: number;
-    damping?: number;
-    mass?: number;
-  } & Callbacks;
-  timing: {
-    duration?: number;
-    easing?: (t: number) => number;
-  } & Callbacks;
-  decay: Callbacks;
+interface SpringOptions {
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
 }
 
-interface Descriptor {
-  type: 'spring' | 'timing' | 'decay' | 'delay' | 'sequence' | 'loop';
-  to?: Primitive | Primitive[] | Record<string, Primitive>;
-  options?: any;
+interface TimingOptions {
+  duration?: number;
+  easing?: (t: number) => number;
+}
+
+interface DecayOptions {
+  velocity?: number;
+}
+
+interface SequenceOptions {
   animations?: any;
+}
+
+interface DelayOptions {
+  delay?: number;
+}
+
+interface LoopOptions {
+  iterations?: number;
   animation?: any;
+}
+
+export type DriverType =
+  | 'spring'
+  | 'timing'
+  | 'decay'
+  | 'delay'
+  | 'sequence'
+  | 'loop';
+
+export interface Descriptor {
+  type: DriverType;
+  to?: Primitive | Primitive[] | Record<string, Primitive>;
+  options?: SpringOptions &
+    TimingOptions &
+    DecayOptions &
+    SequenceOptions &
+    DelayOptions &
+    LoopOptions &
+    Callbacks;
 }
 
 export const withSpring = (
   to: Descriptor['to'],
-  opts?: DriverOptions['spring']
+  opts?: SpringOptions & Callbacks
 ): Descriptor => ({
   type: 'spring',
   to,
@@ -45,7 +72,7 @@ export const withSpring = (
 
 export const withTiming = (
   to: Descriptor['to'],
-  opts?: DriverOptions['timing']
+  opts?: TimingOptions & Callbacks
 ): Descriptor => ({
   type: 'timing',
   to,
@@ -60,7 +87,7 @@ export const withTiming = (
 
 export const withDecay = (
   velocity: number,
-  opts?: DriverOptions['decay']
+  opts?: DecayOptions & Callbacks
 ): Descriptor => ({
   type: 'decay',
   options: {
@@ -76,9 +103,9 @@ export const withDelay = (ms: number): Descriptor => ({
   options: { delay: ms },
 });
 
-export const withSequence = (descriptors: Descriptor[]): Descriptor => ({
+export const withSequence = (animations: Descriptor[]): Descriptor => ({
   type: 'sequence',
-  animations: descriptors,
+  options: { animations },
 });
 
 export const withLoop = (
@@ -86,6 +113,5 @@ export const withLoop = (
   iterations = Infinity
 ): Descriptor => ({
   type: 'loop',
-  animation,
-  options: { iterations },
+  options: { animation, iterations },
 });

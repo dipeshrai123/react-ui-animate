@@ -7,9 +7,9 @@ import {
   delay,
 } from '@raidipesh78/re-motion';
 
-import { Primitive } from '../types';
-
-type DriverType = 'spring' | 'timing' | 'decay' | 'delay';
+import { filterCallbackOptions } from './helpers';
+import type { Primitive } from '../types';
+import type { DriverType } from './descriptors';
 
 export function buildAnimation(
   mv: MotionValue<Primitive>,
@@ -36,7 +36,7 @@ export function buildParallel(
 ) {
   return parallel(
     Object.entries(mvMap)
-      .map(([key, mv], i, arr) => {
+      .map(([key, mv], i) => {
         const shouldRun =
           step.type === 'decay' ||
           step.type === 'delay' ||
@@ -48,13 +48,11 @@ export function buildParallel(
           to: step.to?.[key] ?? null,
           options: step.options ?? {},
         };
-        const opts = { ...step.options };
-        if (i !== arr.length - 1) {
-          delete opts.onStart;
-          delete opts.onChange;
-          delete opts.onComplete;
-        }
-        return buildAnimation(mv, { ...descriptor, options: opts });
+
+        return buildAnimation(mv, {
+          ...descriptor,
+          options: filterCallbackOptions(step.options, i === 0),
+        });
       })
       .filter((c): c is any => !!c)
   );

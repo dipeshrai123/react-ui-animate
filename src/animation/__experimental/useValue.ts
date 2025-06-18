@@ -2,8 +2,9 @@ import { useMemo } from 'react';
 import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
-import { Primitive } from '../types';
 import { filterCallbackOptions } from './helpers';
+import type { Primitive } from '../types';
+import type { Descriptor } from './descriptors';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 
@@ -13,9 +14,11 @@ type ValueReturn<T> = T extends Primitive
   ? MotionValue<Widen<Primitive>>[]
   : { [K in keyof T]: MotionValue<Widen<T[K]>> };
 
-export function useValue<
-  T extends Primitive | Primitive[] | Record<string, Primitive>
->(initial: T): [ValueReturn<T>, (to: any) => void] {
+type To = Primitive | Primitive[] | Record<string, Primitive>;
+
+export function useValue<T extends To>(
+  initial: T
+): [ValueReturn<T>, (to: To | Descriptor) => void] {
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
       return initial.map((v) => new MotionValue(v));
@@ -30,7 +33,7 @@ export function useValue<
     return new MotionValue(initial);
   }, [initial]) as ValueReturn<T>;
 
-  function set(to: any) {
+  function set(to: To | Descriptor) {
     if (Array.isArray(initial)) {
       handleArray(value as MotionValue<Primitive>[], to);
     } else if (typeof initial === 'object') {
