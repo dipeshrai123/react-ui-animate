@@ -35,7 +35,10 @@ export function useValue<T extends Base>(
 
   function set(to: Base | Descriptor) {
     if (Array.isArray(initial)) {
-      handleArray(value as Array<MotionValue<Primitive>>, to);
+      handleArray(
+        value as Array<MotionValue<Primitive>>,
+        to as Primitive[] | Descriptor
+      );
     } else if (typeof initial === 'object') {
       handleObject(value as Record<string, MotionValue<Primitive>>, to);
     } else {
@@ -83,12 +86,19 @@ function handlePrimitive(
   buildAnimation(mv, to).start();
 }
 
-function handleArray(mvs: MotionValue<Primitive>[], to: any) {
+function handleArray(
+  mvs: Array<MotionValue<Primitive>>,
+  to: Primitive[] | Descriptor
+) {
   mvs.forEach((mv, i) => {
     if (Array.isArray(to)) {
       mv.set(to[i]);
-    } else if (to.type === 'sequence') {
-      const ctrls = to.animations.map((step: any) =>
+      return;
+    }
+
+    if (to.type === 'sequence') {
+      const animations = to.options?.animations ?? [];
+      const ctrls = animations.map((step) =>
         buildAnimation(mv, {
           ...step,
           to:
@@ -98,36 +108,44 @@ function handleArray(mvs: MotionValue<Primitive>[], to: any) {
         })
       );
       sequence(ctrls).start();
-    } else if (to.type === 'loop') {
-      const inner = to.animation;
-      const innerCtrl =
-        inner.type === 'sequence'
-          ? sequence(
-              inner.animations.map((step: any) =>
-                buildAnimation(mv, {
-                  ...step,
-                  to:
-                    step.type !== 'decay' && Array.isArray(step.to)
-                      ? step.to[i]
-                      : step.to,
-                })
-              )
-            )
-          : buildAnimation(mv, {
-              ...inner,
-              to:
-                inner.type !== 'decay' && Array.isArray(inner.to)
-                  ? inner.to[i]
-                  : inner.to,
-            });
-      loop(innerCtrl, to.options.iterations).start();
-    } else {
-      // single spring/timing/decay/delay
-      buildAnimation(mv, {
-        ...to,
-        to: to.type !== 'decay' && Array.isArray(to.to) ? to.to[i] : to.to,
-      }).start();
+      return;
     }
+
+    if (to.type === 'loop') {
+      const inner = to.options?.animation;
+      if (!inner) return;
+
+      if (inner.type === 'sequence') {
+        const animations = inner.options?.animations ?? [];
+        const ctrls = animations.map((step) =>
+          buildAnimation(mv, {
+            ...step,
+            to:
+              step.type !== 'decay' && Array.isArray(step.to)
+                ? step.to[i]
+                : step.to,
+          })
+        );
+
+        loop(sequence(ctrls), to.options?.iterations ?? 0).start();
+        return;
+      }
+
+      const ctrl = buildAnimation(mv, {
+        ...inner,
+        to:
+          inner.type !== 'decay' && Array.isArray(inner.to)
+            ? inner.to[i]
+            : inner.to,
+      });
+      loop(ctrl, to.options?.iterations ?? 0).start();
+      return;
+    }
+
+    buildAnimation(mv, {
+      ...to,
+      to: to.type !== 'decay' && Array.isArray(to.to) ? to.to[i] : to.to,
+    }).start();
   });
 }
 
