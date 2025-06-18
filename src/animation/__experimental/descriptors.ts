@@ -6,7 +6,7 @@ interface Callbacks {
   onComplete?: () => void;
 }
 
-interface DriverOptions {
+export interface DriverOptions {
   spring: {
     stiffness?: number;
     damping?: number;

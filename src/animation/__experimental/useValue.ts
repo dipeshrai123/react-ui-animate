@@ -3,6 +3,7 @@ import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
 import { Primitive } from '../types';
+import { filterCallbackOptions } from './helpers';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 
@@ -126,7 +127,7 @@ function handleObject(mvs: Record<string, MotionValue<Primitive>>, to: any) {
     return;
   }
 
-  Object.entries(mvs).forEach(([key, mv]) => {
+  Object.entries(mvs).forEach(([key, mv], idx) => {
     if (to.hasOwnProperty(key)) {
       mv.set(to[key]);
     } else if (to.type === 'loop') {
@@ -144,8 +145,17 @@ function handleObject(mvs: Record<string, MotionValue<Primitive>>, to: any) {
           : buildAnimation(mv, { ...inner, to: inner.to[key] ?? inner.to });
       loop(innerCtrl, to.options.iterations).start();
     } else {
+      if (to.type === 'decay') {
+        buildAnimation(mv, {
+          ...to,
+          options: filterCallbackOptions(to.options, idx === 0),
+        }).start();
+        return;
+      }
+
       buildAnimation(mv, {
         ...to,
+        options: filterCallbackOptions(to.options, idx === 0),
         to: to.to[key] ?? to.to,
       }).start();
     }

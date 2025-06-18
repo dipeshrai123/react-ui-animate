@@ -106,7 +106,15 @@ export const UseValue: React.FC = () => {
 
       <button
         onClick={() =>
-          setObj(withSpring({ x: 100, y: 100, width: 200, height: 200 }))
+          setObj(
+            withSpring(
+              { x: 100, y: 100, width: 200, height: 200 },
+              {
+                onStart: () => console.log('START'),
+                onComplete: () => console.log('Animation complete'),
+              }
+            )
+          )
         }
       >
         Spring
