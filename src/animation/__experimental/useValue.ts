@@ -14,11 +14,11 @@ type ValueReturn<T> = T extends Primitive
   ? MotionValue<Widen<Primitive>>[]
   : { [K in keyof T]: MotionValue<Widen<T[K]>> };
 
-type To = Primitive | Primitive[] | Record<string, Primitive>;
+type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
-export function useValue<T extends To>(
+export function useValue<T extends Base>(
   initial: T
-): [ValueReturn<T>, (to: To | Descriptor) => void] {
+): [ValueReturn<T>, (to: Base | Descriptor) => void] {
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
       return initial.map((v) => new MotionValue(v));
@@ -33,41 +33,54 @@ export function useValue<T extends To>(
     return new MotionValue(initial);
   }, [initial]) as ValueReturn<T>;
 
-  function set(to: To | Descriptor) {
+  function set(to: Base | Descriptor) {
     if (Array.isArray(initial)) {
-      handleArray(value as MotionValue<Primitive>[], to);
+      handleArray(value as Array<MotionValue<Primitive>>, to);
     } else if (typeof initial === 'object') {
       handleObject(value as Record<string, MotionValue<Primitive>>, to);
     } else {
-      handlePrimitive(value as MotionValue<Primitive>, to);
+      handlePrimitive(
+        value as MotionValue<Primitive>,
+        to as Primitive | Descriptor
+      );
     }
   }
 
   return [value, set] as const;
 }
 
-function handlePrimitive(mv: MotionValue<Primitive>, to: any) {
+function handlePrimitive(
+  mv: MotionValue<Primitive>,
+  to: Primitive | Descriptor
+) {
   if (typeof to === 'number' || typeof to === 'string') {
     mv.set(to);
     return;
   }
 
   if (to.type === 'sequence') {
-    const ctrls = to.animations.map((step: any) => buildAnimation(mv, step));
+    const animations = to.options?.animations ?? [];
+    const ctrls = animations.map((step) => buildAnimation(mv, step));
     sequence(ctrls).start();
-  } else if (to.type === 'loop') {
-    // build inner once, then wrap in loop
-    const innerCtrl =
-      to.animation.type === 'sequence'
-        ? sequence(
-            to.animation.animations.map((s: any) => buildAnimation(mv, s))
-          )
-        : buildAnimation(mv, to.animation);
-    loop(innerCtrl, to.options.iterations).start();
-  } else {
-    // spring / timing / decay / delay
-    buildAnimation(mv, to).start();
+    return;
   }
+
+  if (to.type === 'loop') {
+    const animation = to.options?.animation;
+    if (!animation) return;
+
+    if (animation.type === 'sequence') {
+      const animations = animation.options?.animations ?? [];
+      const ctrls = animations.map((step) => buildAnimation(mv, step));
+      loop(sequence(ctrls), to.options?.iterations ?? 0).start();
+      return;
+    }
+
+    loop(buildAnimation(mv, animation), to.options?.iterations ?? 0).start();
+    return;
+  }
+
+  buildAnimation(mv, to).start();
 }
 
 function handleArray(mvs: MotionValue<Primitive>[], to: any) {

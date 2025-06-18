@@ -22,7 +22,7 @@ interface DecayOptions {
 }
 
 interface SequenceOptions {
-  animations?: any;
+  animations?: Descriptor[];
 }
 
 interface DelayOptions {
@@ -31,7 +31,7 @@ interface DelayOptions {
 
 interface LoopOptions {
   iterations?: number;
-  animation?: any;
+  animation?: Descriptor;
 }
 
 export type DriverType =
