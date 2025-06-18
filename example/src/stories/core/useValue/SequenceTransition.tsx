@@ -1,12 +1,7 @@
-import {
-  animate,
-  useValue,
-  withSpring,
-  withTiming,
-  Easing,
-  withDecay,
-  withSequence,
-} from 'react-ui-animate';
+import { animate, Easing, __experimental } from 'react-ui-animate';
+
+const { useValue, withSpring, withTiming, withDecay, withSequence } =
+  __experimental;
 
 export const SequenceTransition = () => {
   const [x, setX] = useValue(0);
@@ -36,7 +31,7 @@ export const SequenceTransition = () => {
             withSequence([
               withTiming(200, { duration: 5000, easing: Easing.elastic() }),
               withSpring(400),
-              withDecay({ velocity: 1 }),
+              withDecay(1),
             ])
           );
         }}
