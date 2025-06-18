@@ -8,13 +8,6 @@ import type { Primitive } from '../types';
 
 type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
-export function useMount(
-  isOpen: boolean,
-  config?: { from?: Base; enter?: Base; exit?: Base }
-): (
-  fn: (value: MotionValue<number>, mounted: boolean) => React.ReactNode
-) => React.ReactNode;
-
 export function useMount<I extends Record<string, number>>(
   isOpen: boolean,
   config: {
@@ -24,7 +17,7 @@ export function useMount<I extends Record<string, number>>(
   }
 ): (
   fn: (
-    values: Record<keyof I, MotionValue<number>>,
+    values: Record<keyof I, MotionValue<Primitive>>,
     mounted: boolean
   ) => React.ReactNode
 ) => React.ReactNode;
@@ -35,7 +28,6 @@ export function useMount(isOpen: boolean, config: any = {}) {
   const from = config.from;
   const enter = config.enter;
   const exit = config.exit;
-  const isMulti = typeof config.from === 'object';
 
   const [values, setValues] = useValue(from);
 
@@ -69,16 +61,10 @@ export function useMount(isOpen: boolean, config: any = {}) {
     }
   }, [isOpen, JSON.stringify(enter), JSON.stringify(exit)]);
 
-  if (!isMulti) {
-    const single = (values as any).value as MotionValue<number>;
-    return (fn: (v: MotionValue<number>, m: boolean) => React.ReactNode) =>
-      fn(single, mounted);
-  }
-
   return (
     fn: (
-      vals: Record<string, MotionValue<number>>,
+      vals: Record<string, MotionValue<Primitive>>,
       m: boolean
     ) => React.ReactNode
-  ) => fn(values as any, mounted);
+  ) => fn(values as Record<string, MotionValue<Primitive>>, mounted);
 }
