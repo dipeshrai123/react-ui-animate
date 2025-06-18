@@ -1,38 +1,36 @@
 import { Primitive } from '../types';
 
+interface Callbacks {
+  onStart?: () => void;
+  onChange?: () => void;
+  onComplete?: () => void;
+}
+
 interface DriverOptions {
   spring: {
     stiffness?: number;
     damping?: number;
     mass?: number;
-    onStart?: () => void;
-    onChange?: (v: Primitive) => void;
-    onComplete?: () => void;
-  };
+  } & Callbacks;
   timing: {
     duration?: number;
     easing?: (t: number) => number;
-    onStart?: () => void;
-    onChange?: (v: Primitive) => void;
-    onComplete?: () => void;
-  };
-  decay: {
-    velocity?: number;
-    onStart?: () => void;
-    onChange?: (v: Primitive) => void;
-    onComplete?: () => void;
-  };
-  delay: {
-    delay: number;
-  };
+  } & Callbacks;
+  decay: Callbacks;
 }
 
-export const withSpring = <
-  T extends Primitive | Primitive[] | Record<string, Primitive>
->(
-  to: T,
+interface Descriptor {
+  type: 'spring' | 'timing' | 'decay' | 'delay' | 'sequence' | 'loop';
+  to?: Primitive | Primitive[] | Record<string, Primitive>;
+  options?: any;
+  animations?: any;
+  animation?: any;
+}
+
+export const withSpring = (
+  to: Descriptor['to'],
   opts?: DriverOptions['spring']
-) => ({
+): Descriptor => ({
   type: 'spring',
   to,
   options: {
@@ -45,40 +43,49 @@ export const withSpring = <
   },
 });
 
-export const withTiming = (to: any, opts: any = {}): any => ({
+export const withTiming = (
+  to: Descriptor['to'],
+  opts?: DriverOptions['timing']
+): Descriptor => ({
   type: 'timing',
   to,
   options: {
-    duration: opts.duration,
-    easing: opts.easing,
-    onStart: opts.onStart,
-    onChange: opts.onChange,
-    onComplete: opts.onRest,
+    duration: opts?.duration,
+    easing: opts?.easing,
+    onStart: opts?.onStart,
+    onChange: opts?.onChange,
+    onComplete: opts?.onComplete,
   },
 });
 
-export const withDecay = (velocity: number, opts: any = {}): any => ({
+export const withDecay = (
+  velocity: number,
+  opts?: DriverOptions['decay']
+): Descriptor => ({
   type: 'decay',
   options: {
     velocity,
-    onStart: opts.onStart,
-    onChange: opts.onChange,
-    onComplete: opts.onRest,
+    onStart: opts?.onStart,
+    onChange: opts?.onChange,
+    onComplete: opts?.onComplete,
   },
 });
 
-export const withDelay = (ms: number): any => ({
+export const withDelay = (ms: number): Descriptor => ({
   type: 'delay',
   options: { delay: ms },
 });
 
-export const withSequence = (steps: any[]) => ({
-  type: 'sequence' as const,
-  animations: steps,
+export const withSequence = (descriptors: Descriptor[]): Descriptor => ({
+  type: 'sequence',
+  animations: descriptors,
 });
 
-export const withLoop = (animation: any, iterations = Infinity) => ({
-  type: 'loop' as const,
+export const withLoop = (
+  animation: Descriptor,
+  iterations = Infinity
+): Descriptor => ({
+  type: 'loop',
   animation,
   options: { iterations },
 });

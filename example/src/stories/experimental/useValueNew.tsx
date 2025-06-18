@@ -118,7 +118,7 @@ export const UseValue: React.FC = () => {
               { x: 0, y: 0, width: 300, height: 100 },
               {
                 onStart: () => console.log('START'),
-                onRest: () => console.log('Animation complete'),
+                onComplete: () => console.log('Animation complete'),
               }
             )
           )
@@ -131,7 +131,7 @@ export const UseValue: React.FC = () => {
           setObj(
             withDecay(1, {
               onStart: () => console.log('START'),
-              onRest: () => console.log('Animation complete'),
+              onComplete: () => console.log('Animation complete'),
             })
           )
         }
@@ -158,8 +158,10 @@ export const UseValue: React.FC = () => {
           setObj(
             withLoop(
               withSequence([
-                withTiming({ x: 100, width: 200 }),
-                withTiming({ x: 0, width: 100 }),
+                withTiming({ x: 100 }),
+                withTiming({ y: 100 }),
+                withTiming({ x: 0 }),
+                withTiming({ y: 0 }),
               ]),
               5
             )
