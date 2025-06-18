@@ -2,49 +2,72 @@ import { useLayoutEffect, useState } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
 
 import { useValue } from './useValue';
-import { withSpring, withTiming } from './descriptors';
-import type { Descriptor } from './descriptors';
+import { isDescriptor } from './helpers';
+import { withSpring, type Descriptor } from './descriptors';
+import type { Primitive } from '../types';
+
+type Base = Primitive | Primitive[] | Record<string, Primitive>;
+
+export function useMount(
+  isOpen: boolean,
+  config?: { from?: Base; enter?: Base; exit?: Base }
+): (
+  fn: (value: MotionValue<number>, mounted: boolean) => React.ReactNode
+) => React.ReactNode;
+
+export function useMount<I extends Record<string, number>>(
+  isOpen: boolean,
+  config: {
+    from: I;
+    enter?: Base | Descriptor;
+    exit?: Base | Descriptor;
+  }
+): (
+  fn: (
+    values: Record<keyof I, MotionValue<number>>,
+    mounted: boolean
+  ) => React.ReactNode
+) => React.ReactNode;
 
 export function useMount(isOpen: boolean, config: any = {}) {
   const [mounted, setMounted] = useState(isOpen);
 
-  const isMulti = typeof config.from === 'object' && config.from !== null;
-  const fromObj: Record<string, number> = isMulti
-    ? config.from
-    : { value: config.from ?? 0 };
+  const from = config.from;
+  const enter = config.enter;
+  const exit = config.exit;
+  const isMulti = typeof config.from === 'object';
 
-  const enterRaw: Record<string, any> = {};
-  const exitRaw: Record<string, any> = {};
-
-  Object.keys(fromObj).forEach((key) => {
-    enterRaw[key] = isMulti ? config.enter?.[key] ?? 1 : config.enter ?? 1;
-    exitRaw[key] = isMulti ? config.exit?.[key] ?? 0 : config.exit ?? 0;
-  });
-
-  const [values, setValues] = useValue(fromObj as any) as [
-    Record<string, MotionValue<number>>,
-    (to: Descriptor | Record<string, any>) => void
-  ];
+  const [values, setValues] = useValue(from);
 
   useLayoutEffect(() => {
     if (isOpen) {
       setMounted(true);
       queueMicrotask(() => {
-        setValues(withSpring(enterRaw));
+        setValues(isDescriptor(enter) ? enter : withSpring(enter));
       });
     } else {
       queueMicrotask(() => {
         setValues(
-          withTiming(exitRaw, {
-            duration: 5000,
-            onComplete: () => {
-              setMounted(false);
-            },
-          })
+          isDescriptor(exit)
+            ? {
+                ...exit,
+                options: {
+                  ...exit.options,
+                  onComplete: () => {
+                    exit.options?.onComplete?.();
+                    setMounted(false);
+                  },
+                },
+              }
+            : withSpring(exit, {
+                onComplete() {
+                  setMounted(false);
+                },
+              })
         );
       });
     }
-  }, [isOpen, JSON.stringify(enterRaw), JSON.stringify(exitRaw)]);
+  }, [isOpen, JSON.stringify(enter), JSON.stringify(exit)]);
 
   if (!isMulti) {
     const single = (values as any).value as MotionValue<number>;

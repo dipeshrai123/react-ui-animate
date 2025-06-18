@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
-import { filterCallbackOptions } from './helpers';
+import { filterCallbackOptions, isDescriptor } from './helpers';
 import type { Primitive } from '../types';
 import type { Descriptor } from './descriptors';
 
@@ -155,20 +155,10 @@ function handleArray(
   });
 }
 
-function isDescriptor(x: unknown): x is Descriptor {
-  return (
-    typeof x === 'object' &&
-    x !== null &&
-    'type' in x &&
-    typeof (x as any).type === 'string'
-  );
-}
-
 function handleObject(
   mvs: Record<string, MotionValue<Primitive>>,
   to: Record<string, Primitive> | Descriptor
 ) {
-  console.log(to);
   if ('type' in to && to.type === 'sequence' && isDescriptor(to)) {
     const animations = to.options?.animations ?? [];
     const ctrls = animations.map((step) => {
