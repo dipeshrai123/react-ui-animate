@@ -9,7 +9,7 @@ import {
 
 import { filterCallbackOptions } from './helpers';
 import type { Primitive } from '../types';
-import type { DriverType } from './descriptors';
+import type { Descriptor } from './descriptors';
 
 export function buildAnimation(
   mv: MotionValue<Primitive>,
@@ -32,7 +32,7 @@ export function buildAnimation(
 
 export function buildParallel(
   mvMap: Record<string, MotionValue<Primitive>>,
-  step: { type: DriverType; to?: Record<string, any>; options?: any }
+  step: Descriptor
 ) {
   return parallel(
     Object.entries(mvMap)
@@ -40,17 +40,14 @@ export function buildParallel(
         const shouldRun =
           step.type === 'decay' ||
           step.type === 'delay' ||
-          (step.to && step.to[key] !== undefined);
+          (step.to &&
+            (step.to as Record<string, Primitive>)[key] !== undefined);
+
         if (!shouldRun) return null;
 
-        const descriptor = {
-          type: step.type,
-          to: step.to?.[key] ?? null,
-          options: step.options ?? {},
-        };
-
         return buildAnimation(mv, {
-          ...descriptor,
+          type: step.type,
+          to: (step.to as Record<string, Primitive>)?.[key] ?? null,
           options: filterCallbackOptions(step.options, i === 0),
         });
       })
