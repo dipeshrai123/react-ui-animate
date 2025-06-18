@@ -67,7 +67,7 @@ function handlePrimitive(
   if (to.type === 'sequence') {
     const animations = to.options?.animations ?? [];
     const ctrls = animations.map((step) => buildAnimation(mv, step));
-    sequence(ctrls).start();
+    sequence(ctrls, to.options).start();
     return;
   }
 
@@ -110,7 +110,7 @@ function handleArray(
               : step.to,
         })
       );
-      sequence(ctrls).start();
+      sequence(ctrls, filterCallbackOptions(to.options, i === 0)).start();
       return;
     }
 
@@ -130,7 +130,10 @@ function handleArray(
           })
         );
 
-        loop(sequence(ctrls), to.options?.iterations ?? 0).start();
+        loop(
+          sequence(ctrls, filterCallbackOptions(inner.options, i === 0)),
+          to.options?.iterations ?? 0
+        ).start();
         return;
       }
 
@@ -175,7 +178,7 @@ function handleObject(
       return buildParallel(mvs, step);
     });
 
-    sequence(ctrls).start();
+    sequence(ctrls, to.options).start();
     return;
   }
 
@@ -201,7 +204,12 @@ function handleObject(
             to: s.to,
           })
         );
-        loop(sequence(ctrls), to.options?.iterations ?? 0).start();
+
+        loop(
+          sequence(ctrls, filterCallbackOptions(inner.options, idx === 0)),
+          to.options?.iterations ?? 0
+        ).start();
+
         return;
       }
 

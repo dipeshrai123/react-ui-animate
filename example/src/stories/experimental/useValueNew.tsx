@@ -28,12 +28,17 @@ export const UseValue: React.FC = () => {
       <button
         onClick={() =>
           setX(
-            withSequence([
-              withSpring(100),
-              withDelay(2000),
-              withTiming(200),
-              withDecay(1),
-            ])
+            withSequence(
+              [withSpring(100), withDelay(2000), withTiming(200), withDecay(1)],
+              {
+                onStart() {
+                  console.log('primitive sequence started');
+                },
+                onComplete() {
+                  console.log('Primitive sequence completed');
+                },
+              }
+            )
           )
         }
       >
@@ -72,18 +77,48 @@ export const UseValue: React.FC = () => {
       <button onClick={() => setValues(withTiming([100, 200, 300]))}>
         Timing Values
       </button>
-      <button onClick={() => setValues(withLoop(withSpring([0, 100, 200]), 3))}>
-        Loop Values
+      <button
+        onClick={() =>
+          setValues(
+            withLoop(
+              withSequence(
+                [
+                  withTiming([0, 0, 0]),
+                  withTiming([200, 100, 50]),
+                  withDecay(0.5),
+                ],
+                {
+                  onStart() {
+                    console.log('STARTED');
+                  },
+                }
+              ),
+              3
+            )
+          )
+        }
+      >
+        Loop SEQUENCE Values
       </button>
       <button onClick={() => setValues(withDecay(1))}>Decay Values</button>
       <button
         onClick={() =>
           setValues(
-            withSequence([
-              withTiming([100, 200, 300]),
-              withSpring([0, 0, 0]),
-              withDecay(0.5),
-            ])
+            withSequence(
+              [
+                withTiming([100, 200, 300]),
+                withSpring([0, 0, 0]),
+                withDecay(0.5),
+              ],
+              {
+                onStart() {
+                  console.log('array sequence started');
+                },
+                onComplete() {
+                  console.log('array sequence completed');
+                },
+              }
+            )
           )
         }
       >
@@ -149,13 +184,23 @@ export const UseValue: React.FC = () => {
       <button
         onClick={() =>
           setObj(
-            withSequence([
-              withSpring({ x: 100, y: 100 }),
-              withTiming({ width: 200, height: 200 }),
-              withDelay(4000),
-              withTiming({ x: 0, y: 0 }, { duration: 3000 }),
-              withDecay(0.5),
-            ])
+            withSequence(
+              [
+                withSpring({ x: 100, y: 100 }),
+                withTiming({ width: 200, height: 200 }),
+                withDelay(4000),
+                withTiming({ x: 0, y: 0 }, { duration: 3000 }),
+                withDecay(0.5),
+              ],
+              {
+                onStart() {
+                  console.log('obj sequence started');
+                },
+                onComplete() {
+                  console.log('obj sequence completed');
+                },
+              }
+            )
           )
         }
       >

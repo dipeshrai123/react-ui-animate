@@ -103,9 +103,17 @@ export const withDelay = (ms: number): Descriptor => ({
   options: { delay: ms },
 });
 
-export const withSequence = (animations: Descriptor[]): Descriptor => ({
+export const withSequence = (
+  animations: Descriptor[],
+  opts?: Callbacks
+): Descriptor => ({
   type: 'sequence',
-  options: { animations },
+  options: {
+    animations,
+    onStart: opts?.onStart,
+    onChange: opts?.onChange,
+    onComplete: opts?.onComplete,
+  },
 });
 
 export const withLoop = (
@@ -113,5 +121,8 @@ export const withLoop = (
   iterations = Infinity
 ): Descriptor => ({
   type: 'loop',
-  options: { animation, iterations },
+  options: {
+    animation,
+    iterations,
+  },
 });

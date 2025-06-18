@@ -1,7 +1,5 @@
-import type { Descriptor } from './descriptors';
-
 export function filterCallbackOptions(
-  options: Descriptor['options'] = {},
+  options: Record<string, any> = {},
   attach: boolean
 ) {
   if (attach) return options;
