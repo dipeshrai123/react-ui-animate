@@ -16,11 +16,11 @@ export const UseMount: React.FC = () => {
     }),
   });
 
-  // const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });
+  const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });
 
   return (
     <>
-      {/* {mounted(
+      {mounted(
         (a, m) =>
           m && (
             <animate.div
@@ -32,7 +32,7 @@ export const UseMount: React.FC = () => {
               }}
             />
           )
-      )} */}
+      )}
 
       <button
         onClick={() => {

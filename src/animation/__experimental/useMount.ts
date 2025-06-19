@@ -8,7 +8,7 @@ import type { Primitive } from '../types';
 
 type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
-export function useMount<I extends Record<string, number>>(
+export function useMount<I extends Primitive | Record<string, number>>(
   isOpen: boolean,
   config: {
     from: I;
