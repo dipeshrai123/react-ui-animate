@@ -1,35 +1,44 @@
-import { animate, useValue, withSpring, withLoop } from 'react-ui-animate';
+import {
+  animate,
+  useValue,
+  withDecay,
+  withLoop,
+  withSequence,
+  withTiming,
+} from 'react-ui-animate';
 
 export function Loop() {
   const [translateX, setTranslateX] = useValue(0);
 
   const runAnimation = () => {
-    // Basic Loop
-    setTranslateX(withLoop(withSpring(100), 5));
-
-    // Loop with sequence
-    // translateX.value = withLoop(
-    //   withSequence([withSpring(100), withSpring(0)]),
-    //   5
-    // );
-
-    // Loop and Sequence nested
-    // translateX.value = withSequence([
-    //   withSpring(100),
-    //   withSpring(0),
-    //   withLoop(withSequence([withTiming(100), withSpring(50)]), 5),
-    // ]);
+    setTranslateX(
+      withLoop(
+        withSequence([withTiming(50), withTiming(0)], {
+          onComplete: () => {
+            console.log('called');
+          },
+        }),
+        2,
+        {
+          onComplete: () => {
+            setTranslateX(withDecay(1));
+          },
+        }
+      )
+    );
   };
 
   return (
-    <animate.div
-      onClick={runAnimation}
-      style={{
-        width: 100,
-        height: 100,
-        backgroundColor: '#3399ff',
-        translateX,
-      }}
-    />
+    <>
+      <button onClick={runAnimation}>ANIMATE</button>
+      <animate.div
+        style={{
+          width: 100,
+          height: 100,
+          backgroundColor: '#3399ff',
+          translateX,
+        }}
+      />
+    </>
   );
 }

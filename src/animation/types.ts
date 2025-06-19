@@ -2,7 +2,7 @@ export type Primitive = number | string;
 
 export interface Callbacks {
   onStart?: () => void;
-  onChange?: () => void;
+  onChange?: (v: Primitive) => void;
   onComplete?: () => void;
 }
 

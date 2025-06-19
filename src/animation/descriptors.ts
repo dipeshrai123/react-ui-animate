@@ -58,13 +58,12 @@ export const withDelay = (ms: number): Descriptor => ({
 
 export const withSequence = (
   animations: Descriptor[],
-  opts?: Callbacks
+  opts?: Omit<Callbacks, 'onChange'>
 ): Descriptor => ({
   type: 'sequence',
   options: {
     animations,
     onStart: opts?.onStart,
-    onChange: opts?.onChange,
     onComplete: opts?.onComplete,
   },
 });
@@ -72,14 +71,13 @@ export const withSequence = (
 export const withLoop = (
   animation: Descriptor,
   iterations = Infinity,
-  opts?: Callbacks
+  opts?: Omit<Callbacks, 'onChange'>
 ): Descriptor => ({
   type: 'loop',
   options: {
     animation,
     iterations,
     onStart: opts?.onStart,
-    onChange: opts?.onChange,
     onComplete: opts?.onComplete,
   },
 });
