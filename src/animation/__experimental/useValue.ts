@@ -78,11 +78,15 @@ function handlePrimitive(
     if (animation.type === 'sequence') {
       const animations = animation.options?.animations ?? [];
       const ctrls = animations.map((step) => buildAnimation(mv, step));
-      loop(sequence(ctrls), to.options?.iterations ?? 0).start();
+      loop(sequence(ctrls), to.options?.iterations ?? 0, to.options).start();
       return;
     }
 
-    loop(buildAnimation(mv, animation), to.options?.iterations ?? 0).start();
+    loop(
+      buildAnimation(mv, animation),
+      to.options?.iterations ?? 0,
+      to.options
+    ).start();
     return;
   }
 
@@ -132,7 +136,8 @@ function handleArray(
 
         loop(
           sequence(ctrls, filterCallbackOptions(inner.options, i === 0)),
-          to.options?.iterations ?? 0
+          to.options?.iterations ?? 0,
+          filterCallbackOptions(to.options, i === 0)
         ).start();
         return;
       }
@@ -144,7 +149,11 @@ function handleArray(
             ? inner.to[i]
             : inner.to,
       });
-      loop(ctrl, to.options?.iterations ?? 0).start();
+      loop(
+        ctrl,
+        to.options?.iterations ?? 0,
+        filterCallbackOptions(to.options, i === 0)
+      ).start();
       return;
     }
 
@@ -198,7 +207,8 @@ function handleObject(
 
         loop(
           sequence(ctrls, filterCallbackOptions(inner.options, idx === 0)),
-          to.options?.iterations ?? 0
+          to.options?.iterations ?? 0,
+          filterCallbackOptions(to.options, idx === 0)
         ).start();
 
         return;
@@ -209,7 +219,8 @@ function handleObject(
           ...inner,
           to: (inner.to as Record<string, Primitive>)[key] ?? inner.to,
         }),
-        to.options?.iterations ?? 0
+        to.options?.iterations ?? 0,
+        filterCallbackOptions(to.options, idx === 0)
       ).start();
       return;
     }

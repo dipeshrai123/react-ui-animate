@@ -21,7 +21,20 @@ export const UseValue: React.FC = () => {
     <>
       <button onClick={() => setX(withSpring(100))}>Spring 100</button>
       <button onClick={() => setX(withTiming(0))}>Timing 0</button>
-      <button onClick={() => setX(withLoop(withSpring(100), 5))}>
+      <button
+        onClick={() =>
+          setX(
+            withLoop(withSpring(100), 5, {
+              onStart() {
+                console.log('Loop started');
+              },
+              onComplete() {
+                console.log('Loop completed');
+              },
+            })
+          )
+        }
+      >
         Loop 0 to 100
       </button>
       <button onClick={() => setX(withDecay(1))}>Decay</button>
@@ -81,19 +94,20 @@ export const UseValue: React.FC = () => {
         onClick={() =>
           setValues(
             withLoop(
-              withSequence(
-                [
-                  withTiming([0, 0, 0]),
-                  withTiming([200, 100, 50]),
-                  withDecay(0.5),
-                ],
-                {
-                  onStart() {
-                    console.log('STARTED');
-                  },
-                }
-              ),
-              3
+              withSequence([
+                withTiming([0, 0, 0]),
+                withTiming([200, 100, 50]),
+                withDecay(0.5),
+              ]),
+              3,
+              {
+                onStart() {
+                  console.log('Loop started');
+                },
+                onComplete() {
+                  console.log('Loop completed');
+                },
+              }
             )
           )
         }
@@ -206,6 +220,7 @@ export const UseValue: React.FC = () => {
       >
         Sequence
       </button>
+      {/* CALLBACKS NOT FIRING PROPERLY ON object withLoop and sequence */}
       <button
         onClick={() =>
           setObj(
@@ -216,7 +231,15 @@ export const UseValue: React.FC = () => {
                 withTiming({ x: 0 }),
                 withTiming({ y: 0 }),
               ]),
-              5
+              5,
+              {
+                onStart() {
+                  console.log('Loop started');
+                },
+                onComplete() {
+                  console.log('Loop completed');
+                },
+              }
             )
           )
         }

@@ -118,11 +118,15 @@ export const withSequence = (
 
 export const withLoop = (
   animation: Descriptor,
-  iterations = Infinity
+  iterations = Infinity,
+  opts?: Callbacks
 ): Descriptor => ({
   type: 'loop',
   options: {
     animation,
     iterations,
+    onStart: opts?.onStart,
+    onChange: opts?.onChange,
+    onComplete: opts?.onComplete,
   },
 });
