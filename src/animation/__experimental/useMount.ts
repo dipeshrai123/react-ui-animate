@@ -6,28 +6,44 @@ import { isDescriptor } from './helpers';
 import { withSpring, type Descriptor } from './descriptors';
 import type { Primitive } from '../types';
 
-type Base = Primitive | Primitive[] | Record<string, Primitive>;
+type ConfigSingle<T extends Primitive> = {
+  from?: T;
+  enter?: T | Descriptor;
+  exit?: T | Descriptor;
+};
 
-export function useMount<I extends Primitive | Record<string, number>>(
+type ConfigMulti<I extends Record<string, Primitive>> = {
+  from: I;
+  enter?: I | Descriptor;
+  exit?: I | Descriptor;
+};
+
+export function useMount<T extends Primitive = number>(
   isOpen: boolean,
-  config: {
-    from: I;
-    enter?: Base | Descriptor;
-    exit?: Base | Descriptor;
-  }
+  config?: ConfigSingle<T>
+): (
+  fn: (value: MotionValue<T>, mounted: boolean) => React.ReactNode
+) => React.ReactNode;
+
+export function useMount<I extends Record<string, Primitive>>(
+  isOpen: boolean,
+  config: ConfigMulti<I>
 ): (
   fn: (
-    values: Record<keyof I, MotionValue<Primitive>>,
+    values: { [K in keyof I]: MotionValue<I[K]> },
     mounted: boolean
   ) => React.ReactNode
 ) => React.ReactNode;
 
-export function useMount(isOpen: boolean, config: any = {}) {
+export function useMount(
+  isOpen: boolean,
+  config: any = {}
+): (fn: (values: any, mounted: boolean) => React.ReactNode) => React.ReactNode {
   const [mounted, setMounted] = useState(isOpen);
 
-  const from = config.from;
-  const enter = config.enter;
-  const exit = config.exit;
+  const from = config.from ?? 0;
+  const enter = config.enter ?? 1;
+  const exit = config.exit ?? 0;
 
   const [values, setValues] = useValue(from);
 
@@ -61,10 +77,6 @@ export function useMount(isOpen: boolean, config: any = {}) {
     }
   }, [isOpen, JSON.stringify(enter), JSON.stringify(exit)]);
 
-  return (
-    fn: (
-      vals: Record<string, MotionValue<Primitive>>,
-      m: boolean
-    ) => React.ReactNode
-  ) => fn(values as Record<string, MotionValue<Primitive>>, mounted);
+  return (fn: (vals: any, m: boolean) => React.ReactNode) =>
+    fn(values as any, mounted);
 }
