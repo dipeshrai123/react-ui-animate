@@ -1,13 +1,7 @@
 import { Children, useLayoutEffect, useState } from 'react';
-import {
-  useValue,
-  useScroll,
-  animate,
-  withSequence,
-  withSpring,
-  withDelay,
-  withTiming,
-} from 'react-ui-animate';
+import { useScroll, animate, __experimental } from 'react-ui-animate';
+
+const { useValue, withSequence, withDelay, withTiming } = __experimental;
 
 const StaggerItem = ({
   y,

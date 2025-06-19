@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
@@ -19,8 +19,6 @@ type Base = Primitive | Primitive[] | Record<string, Primitive>;
 export function useValue<T extends Base>(
   initial: T
 ): [ValueReturn<T>, (to: Base | Descriptor) => void] {
-  const activeCtrl = useRef<ReturnType<typeof sequence> | null>(null);
-
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
       return initial.map((v) => new MotionValue(v));
@@ -36,9 +34,6 @@ export function useValue<T extends Base>(
   }, []) as ValueReturn<T>;
 
   function set(to: Base | Descriptor) {
-    activeCtrl.current?.cancel?.();
-    activeCtrl.current = null;
-
     let ctrl: any = null;
 
     if (Array.isArray(initial)) {
@@ -58,10 +53,7 @@ export function useValue<T extends Base>(
       );
     }
 
-    if (ctrl) {
-      activeCtrl.current = ctrl;
-      ctrl.start();
-    }
+    if (ctrl) ctrl.start();
   }
 
   return [value, set] as const;

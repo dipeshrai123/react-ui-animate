@@ -13,17 +13,17 @@ import type { Descriptor } from './descriptors';
 
 export function buildAnimation(
   mv: MotionValue<Primitive>,
-  { type, to, options = {} }: any
+  { type, to, options = {} }: Descriptor
 ) {
   switch (type) {
     case 'spring':
-      return spring(mv, to, options);
+      return spring(mv, to as Primitive, options);
     case 'timing':
-      return timing(mv, to, options);
+      return timing(mv, to as Primitive, options);
     case 'decay':
       return decay(mv as MotionValue<number>, options.velocity ?? 0, options);
     case 'delay':
-      return delay(options.delay);
+      return delay(options.delay ?? 0);
     default:
       console.warn(`Unsupported animation type: ${type}`);
       return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
