@@ -43,10 +43,7 @@ export function SharedElement() {
 
       setValue(
         withSequence([
-          withTiming(
-            { left, top, width, height, translateY: 0 },
-            { duration: 0 }
-          ),
+          withTiming({ left, top, width, height }, { duration: 0 }),
           withSpring(
             {
               left: 0,

@@ -4,9 +4,10 @@ import {
   useDrag,
   clamp,
   move,
-  withEase,
-  useValue,
+  __experimental,
 } from 'react-ui-animate';
+
+const { useValue, withSpring } = __experimental;
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
@@ -32,11 +33,11 @@ export const Sorting = () => {
     const v = [];
     for (let j = 0; j < ITEMS.length; j++) {
       const isActive = down && j === i;
-      a[j] = withEase(isActive ? index * 70 + my : newOrder.indexOf(j) * 70);
+      a[j] = isActive ? index * 70 + my : newOrder.indexOf(j) * 70;
       v[j] = isActive ? 1 : 0;
     }
 
-    setAnimationY(a);
+    setAnimationY(withSpring(a, { damping: 20 }));
     setZIndex(v);
   });
 
