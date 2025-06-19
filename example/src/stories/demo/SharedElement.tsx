@@ -1,14 +1,8 @@
 import React from 'react';
-import {
-  useValue,
-  clamp,
-  animate,
-  withTiming,
-  withSequence,
-  withSpring,
-  useDrag,
-  useMount,
-} from 'react-ui-animate';
+import { clamp, animate, useDrag, __experimental } from 'react-ui-animate';
+
+const { useValue, withTiming, withSpring, withSequence, useMount } =
+  __experimental;
 
 const BOX_SIZE = 200;
 
@@ -31,9 +25,11 @@ export function SharedElement() {
   });
 
   const bind = useDrag(({ down, movementY }) => {
-    setValue({
-      translateY: down ? withSpring(clamp(movementY, 0, 300)) : withSpring(0),
-    });
+    setValue(
+      withSpring({
+        translateY: down ? clamp(movementY, 0, 300) : 0,
+      })
+    );
 
     if (!down && movementY > 200) {
       closeSharedElement();
@@ -42,27 +38,28 @@ export function SharedElement() {
 
   React.useLayoutEffect(() => {
     if (activeIndex !== null) {
-      const activeBox = document.getElementById(`box-${activeIndex}`);
-      const clientRect = activeBox!.getBoundingClientRect();
+      const box = document.getElementById(`box-${activeIndex}`)!;
+      const { left, top, width, height } = box.getBoundingClientRect();
 
-      setValue({
-        left: withSequence([
-          withTiming(clientRect.left, { duration: 0 }),
-          withSpring(0),
-        ]),
-        top: withSequence([
-          withTiming(clientRect.top, { duration: 0 }),
-          withSpring(0),
-        ]),
-        width: withSequence([
-          withTiming(clientRect.width, { duration: 0 }),
-          withSpring(window.innerWidth),
-        ]),
-        height: withSequence([
-          withTiming(clientRect.height, { duration: 0 }),
-          withSpring(window.innerHeight),
-        ]),
-      });
+      setValue(
+        withSequence([
+          withTiming(
+            { left, top, width, height, translateY: 0 },
+            { duration: 0 }
+          ),
+          withSpring(
+            {
+              left: 0,
+              top: 0,
+              width: window.innerWidth,
+              height: window.innerHeight,
+            },
+            {
+              damping: 14,
+            }
+          ),
+        ])
+      );
     }
   }, [activeIndex, setValue]);
 
@@ -71,14 +68,21 @@ export function SharedElement() {
       const activeBox = document.getElementById(`box-${activeIndex}`);
       const clientRect = activeBox!.getBoundingClientRect();
 
-      setValue({
-        left: withSpring(clientRect.left),
-        top: withSpring(clientRect.top),
-        width: withSpring(clientRect.width),
-        height: withSpring(clientRect.height, {
-          onRest: () => setActiveIndex(null),
-        }),
-      });
+      setValue(
+        withSpring(
+          {
+            left: clientRect.left,
+            top: clientRect.top,
+            width: clientRect.width,
+            height: clientRect.height,
+            translateY: 0,
+          },
+          {
+            onComplete: () => setActiveIndex(null),
+            damping: 14,
+          }
+        )
+      );
     }
   };
 
