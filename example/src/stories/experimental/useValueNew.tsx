@@ -70,6 +70,7 @@ export const UseValue: React.FC = () => {
       />
 
       <button onClick={() => setBg(withSpring('blue'))}>Spring Blue</button>
+      <button onClick={() => setBg(withSpring('purple'))}>Spring Purple</button>
       <button onClick={() => setBg(withTiming('red', { duration: 2000 }))}>
         Timing Red
       </button>
