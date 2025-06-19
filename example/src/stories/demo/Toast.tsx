@@ -1,7 +1,11 @@
-import React, { useCallback, useState } from 'react';
-import { animate, __experimental } from 'react-ui-animate';
-
-const { useMount, withSpring, withSequence, withTiming } = __experimental;
+import { useCallback, useState } from 'react';
+import {
+  animate,
+  useMount,
+  withSpring,
+  withSequence,
+  withTiming,
+} from 'react-ui-animate';
 
 const Toast = ({ id, onEnd }: any) => {
   const [visible, setVisible] = useState(true);

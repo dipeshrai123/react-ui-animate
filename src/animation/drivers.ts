@@ -8,8 +8,7 @@ import {
 } from '@raidipesh78/re-motion';
 
 import { filterCallbackOptions } from './helpers';
-import type { Primitive } from '../types';
-import type { Descriptor } from './descriptors';
+import type { Primitive, Descriptor } from './types';
 
 export function buildAnimation(
   mv: MotionValue<Primitive>,

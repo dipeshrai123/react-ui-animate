@@ -22,7 +22,7 @@ function Ripple({
     setAnimation(
       withTiming(1, {
         duration: 800,
-        onRest: () => {
+        onComplete: () => {
           onRemove(id);
         },
       })

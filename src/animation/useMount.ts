@@ -3,8 +3,8 @@ import { MotionValue } from '@raidipesh78/re-motion';
 
 import { useValue } from './useValue';
 import { isDescriptor } from './helpers';
-import { withSpring, type Descriptor } from './descriptors';
-import type { Primitive } from '../types';
+import { withSpring } from './descriptors';
+import type { Primitive, Descriptor } from './types';
 
 type ConfigSingle<T extends Primitive> = {
   from?: T;

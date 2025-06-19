@@ -1,4 +1,4 @@
-import type { Descriptor } from './descriptors';
+import type { Descriptor } from './types';
 
 export function filterCallbackOptions(
   options: Record<string, any> = {},

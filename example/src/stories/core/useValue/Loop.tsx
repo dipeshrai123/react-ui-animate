@@ -1,6 +1,4 @@
-import { animate, __experimental } from 'react-ui-animate';
-
-const { useValue, withSpring, withLoop } = __experimental;
+import { animate, useValue, withSpring, withLoop } from 'react-ui-animate';
 
 export function Loop() {
   const [translateX, setTranslateX] = useValue(0);

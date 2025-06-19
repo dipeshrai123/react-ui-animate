@@ -1,6 +1,9 @@
-import { __experimental, animate, AnimationConfig } from 'react-ui-animate';
-
-const { useValue, withTiming } = __experimental;
+import {
+  useValue,
+  withTiming,
+  animate,
+  AnimationConfig,
+} from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
   const [x, setX] = useValue(0);

@@ -1,58 +1,11 @@
-import { Primitive } from '../types';
-
-interface Callbacks {
-  onStart?: () => void;
-  onChange?: () => void;
-  onComplete?: () => void;
-}
-
-interface SpringOptions {
-  stiffness?: number;
-  damping?: number;
-  mass?: number;
-}
-
-interface TimingOptions {
-  duration?: number;
-  easing?: (t: number) => number;
-}
-
-interface DecayOptions {
-  velocity?: number;
-}
-
-interface SequenceOptions {
-  animations?: Descriptor[];
-}
-
-interface DelayOptions {
-  delay?: number;
-}
-
-interface LoopOptions {
-  iterations?: number;
-  animation?: Descriptor;
-}
-
-export type DriverType =
-  | 'spring'
-  | 'timing'
-  | 'decay'
-  | 'delay'
-  | 'sequence'
-  | 'loop';
-
-export interface Descriptor {
-  type: DriverType;
-  to?: Primitive | Primitive[] | Record<string, Primitive>;
-  options?: SpringOptions &
-    TimingOptions &
-    DecayOptions &
-    SequenceOptions &
-    DelayOptions &
-    LoopOptions &
-    Callbacks;
-}
+import { AnimationConfig } from './AnimationConfig';
+import {
+  Callbacks,
+  DecayOptions,
+  Descriptor,
+  SpringOptions,
+  TimingOptions,
+} from './types';
 
 export const withSpring = (
   to: Descriptor['to'],
@@ -61,9 +14,9 @@ export const withSpring = (
   type: 'spring',
   to,
   options: {
-    stiffness: opts?.stiffness,
-    damping: opts?.damping,
-    mass: opts?.mass,
+    stiffness: opts?.stiffness ?? AnimationConfig.Spring.NATURAL.stiffness,
+    damping: opts?.damping ?? AnimationConfig.Spring.NATURAL.damping,
+    mass: opts?.mass ?? AnimationConfig.Spring.NATURAL.mass,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,

@@ -1,7 +1,11 @@
 import React from 'react';
-import { animate, __experimental } from 'react-ui-animate';
-
-const { useValue, withSpring, withTiming, withSequence } = __experimental;
+import {
+  animate,
+  useValue,
+  withSpring,
+  withTiming,
+  withSequence,
+} from 'react-ui-animate';
 
 export const UseValue: React.FC = () => {
   const [width, setWidth] = useValue(100);

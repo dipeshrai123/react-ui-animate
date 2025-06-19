@@ -9,15 +9,7 @@ export const Decay = () => {
   const bind = useDrag(({ down, movementX, velocityX }) => {
     setAnimatedVelocityX(velocityX);
 
-    setTranslateX(
-      down
-        ? movementX + offsetX.current
-        : withDecay({
-            velocity: velocityX,
-            onChange: (v) => (offsetX.current = v as number),
-            clamp: [0, 400],
-          })
-    );
+    setTranslateX(down ? movementX + offsetX.current : withDecay(velocityX));
   });
 
   return (

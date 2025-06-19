@@ -1,8 +1,6 @@
 import { useRef, useState } from 'react';
 
-import { __experimental, animate, useOutsideClick } from 'react-ui-animate';
-
-const { useMount } = __experimental;
+import { useMount, animate, useOutsideClick } from 'react-ui-animate';
 
 const Modal = ({
   visible,

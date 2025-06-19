@@ -1,7 +1,12 @@
-import { animate, Easing, __experimental } from 'react-ui-animate';
-
-const { useValue, withSpring, withTiming, withDecay, withSequence } =
-  __experimental;
+import {
+  animate,
+  Easing,
+  useValue,
+  withSpring,
+  withTiming,
+  withDecay,
+  withSequence,
+} from 'react-ui-animate';
 
 export const SequenceTransition = () => {
   const [x, setX] = useValue(0);

@@ -3,8 +3,7 @@ import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
 import { filterCallbackOptions, isDescriptor } from './helpers';
-import type { Primitive } from '../types';
-import type { Descriptor } from './descriptors';
+import type { Primitive, Descriptor } from './types';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 

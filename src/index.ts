@@ -1,9 +1,12 @@
+// Core
 export {
   Easing,
   makeMotion as makeAnimated,
   motion as animate,
   combine,
 } from '@raidipesh78/re-motion';
+
+// Animation
 export {
   withSpring,
   withTiming,
@@ -11,14 +14,16 @@ export {
   withDelay,
   withDecay,
   withLoop,
-  withEase,
   useValue,
   useMount,
-  useAnimatedList,
   AnimationConfig,
   interpolateNumbers,
 } from './animation';
+
+// Hooks
 export { useMeasure, useOutsideClick, useWindowDimension } from './hooks';
+
+// Gestures
 export {
   useDrag,
   useGesture,
@@ -26,6 +31,6 @@ export {
   useScroll,
   useWheel,
 } from './gestures/hooks';
-export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';
 
-export * as __experimental from './animation/__experimental';
+// Utility functions for gestures
+export { bin, clamp, mix, rubberClamp, move, snapTo } from './gestures/helpers';

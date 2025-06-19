@@ -24,7 +24,7 @@ export function SnapTo() {
         const snapX = snapTo(offset.current.x, velocityX, [0, 600]);
         const snapY = snapTo(offset.current.y, velocityY, [0, 600]);
 
-        setXY({ x: withSpring(snapX), y: withSpring(snapY) });
+        setXY(withSpring({ x: snapX, y: snapY }));
 
         offset.current = { x: snapX, y: snapY };
       } else {

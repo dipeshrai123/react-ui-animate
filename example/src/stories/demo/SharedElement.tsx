@@ -1,8 +1,14 @@
 import React from 'react';
-import { clamp, animate, useDrag, __experimental } from 'react-ui-animate';
-
-const { useValue, withTiming, withSpring, withSequence, useMount } =
-  __experimental;
+import {
+  clamp,
+  animate,
+  useDrag,
+  useValue,
+  withTiming,
+  withSpring,
+  withSequence,
+  useMount,
+} from 'react-ui-animate';
 
 const BOX_SIZE = 200;
 

@@ -4,10 +4,9 @@ import {
   useDrag,
   clamp,
   move,
-  __experimental,
+  useValue,
+  withSpring,
 } from 'react-ui-animate';
-
-const { useValue, withSpring } = __experimental;
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 

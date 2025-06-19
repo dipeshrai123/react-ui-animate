@@ -1,7 +1,11 @@
 import React from 'react';
-import { animate, __experimental } from 'react-ui-animate';
-
-const { useMount, withSequence, withTiming, withSpring } = __experimental;
+import {
+  animate,
+  useMount,
+  withSequence,
+  withTiming,
+  withSpring,
+} from 'react-ui-animate';
 
 export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
