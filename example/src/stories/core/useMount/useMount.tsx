@@ -12,8 +12,6 @@ export const UseMount: React.FC = () => {
       withSpring({ width: 300 }),
     ]),
     exit: withSpring({
-      width: 100,
-      opacity: 1,
       translateX: 0,
     }),
   });
