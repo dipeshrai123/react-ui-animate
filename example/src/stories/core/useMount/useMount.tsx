@@ -11,14 +11,11 @@ export const UseMount: React.FC = () => {
       withTiming({ translateX: 100, opacity: 1, rotate: 0 }),
       withSpring({ width: 300 }),
     ]),
-    exit: withSequence([
-      withSpring({
-        width: 100,
-        opacity: 1,
-        translateX: 0,
-      }),
-      withTiming({ rotate: 360 }, { duration: 5000 }),
-    ]),
+    exit: withSpring({
+      width: 100,
+      opacity: 1,
+      translateX: 0,
+    }),
   });
 
   // const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });

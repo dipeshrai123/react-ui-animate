@@ -233,10 +233,13 @@ function handleObject(
       return;
     }
 
+    const toKey = (to.to as Record<string, Primitive>)[key];
+    if (toKey === undefined) return;
+
     buildAnimation(mv, {
       ...to,
       options: filterCallbackOptions(to.options, idx === 0),
-      to: (to.to as Record<string, Primitive>)[key] ?? to.to,
+      to: toKey,
     }).start();
   });
 }
