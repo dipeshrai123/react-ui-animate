@@ -1,55 +1,49 @@
-import { RefObject, useEffect } from 'react';
-
-import { clamp } from '../utils';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-interface ScrollEvent {
+export interface WheelEvent {
   movement: { x: number; y: number };
   offset: { x: number; y: number };
   velocity: { x: number; y: number };
-  event: Event;
+  event: globalThis.WheelEvent;
   cancel?: () => void;
 }
 
-class ScrollGesture extends Gesture<ScrollEvent> {
+export class WheelGesture extends Gesture<WheelEvent> {
   private attachedEl: HTMLElement | null = null;
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
   private velocity = { x: 0, y: 0 };
 
-  private prevScroll = { x: 0, y: 0 };
   private lastTime = 0;
   private endTimeout?: number;
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const scroll = this.onScroll.bind(this);
-
-    element.addEventListener('scroll', scroll, { passive: true });
+    const wheel = this.onWheel.bind(this);
+    element.addEventListener('wheel', wheel, { passive: false });
 
     return () => {
-      element.removeEventListener('scroll', scroll);
+      element.removeEventListener('wheel', wheel);
       if (this.endTimeout != null) clearTimeout(this.endTimeout);
     };
   }
 
-  private onScroll(e: Event) {
+  private onWheel(e: globalThis.WheelEvent) {
     if (!this.attachedEl) return;
+    e.preventDefault();
 
-    const now = Date.now();
+    const now = e.timeStamp;
     const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
     this.lastTime = now;
 
-    const x = this.attachedEl.scrollLeft;
-    const y = this.attachedEl.scrollTop;
-
-    const dx = x - this.prevScroll.x;
-    const dy = y - this.prevScroll.y;
-    this.prevScroll = { x, y };
+    const dx = e.deltaX;
+    const dy = e.deltaY;
 
     this.movement = { x: dx, y: dy };
-    this.offset = { x, y };
+    this.offset.x += dx;
+    this.offset.y += dy;
 
     const rawX = dx / dt / 1000;
     const rawY = dy / dt / 1000;
@@ -79,17 +73,4 @@ class ScrollGesture extends Gesture<ScrollEvent> {
       });
     }, 150);
   }
-}
-
-export function useScroll<T extends HTMLElement>(
-  ref: RefObject<T>,
-  onScroll: (e: ScrollEvent) => void
-): void {
-  useEffect(() => {
-    if (!ref.current) return;
-    const gesture = new ScrollGesture();
-    gesture.onChange(onScroll).onEnd(onScroll);
-    const cleanup = gesture.attach(ref.current);
-    return cleanup;
-  }, [ref, onScroll]);
 }

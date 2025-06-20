@@ -1,9 +1,7 @@
-import { RefObject, useEffect } from 'react';
-
-import { clamp } from '../utils';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-interface MoveEvent {
+export interface MoveEvent {
   movement: { x: number; y: number };
   offset: { x: number; y: number };
   velocity: { x: number; y: number };
@@ -11,7 +9,7 @@ interface MoveEvent {
   cancel?: () => void;
 }
 
-class MoveGesture extends Gesture<MoveEvent> {
+export class MoveGesture extends Gesture<MoveEvent> {
   private prev = { x: 0, y: 0 };
   private lastTime = 0;
   private attachedEl: HTMLElement | null = null;
@@ -95,17 +93,4 @@ class MoveGesture extends Gesture<MoveEvent> {
       cancel: () => {},
     });
   }
-}
-
-export function useMove<T extends HTMLElement>(
-  ref: RefObject<T>,
-  onMove: (e: MoveEvent) => void
-): void {
-  useEffect(() => {
-    if (!ref.current) return;
-    const gesture = new MoveGesture();
-    gesture.onChange(onMove).onEnd(onMove);
-    const cleanup = gesture.attach(ref.current);
-    return cleanup;
-  }, [ref, onMove]);
 }

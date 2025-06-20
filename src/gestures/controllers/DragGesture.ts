@@ -1,9 +1,7 @@
-import { RefObject, useEffect } from 'react';
-
-import { clamp } from '../utils';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-interface DragEvent {
+export interface DragEvent {
   down: boolean;
   movement: { x: number; y: number };
   offset: { x: number; y: number };
@@ -12,13 +10,13 @@ interface DragEvent {
   cancel: () => void;
 }
 
-interface DragConfig {
+export interface DragConfig {
   threshold?: number;
   axis?: 'x' | 'y';
   initial?: () => { x: number; y: number };
 }
 
-class DragGesture extends Gesture<DragEvent> {
+export class DragGesture extends Gesture<DragEvent> {
   private config: DragConfig;
   private prev = { x: 0, y: 0 };
   private lastTime = 0;
@@ -163,18 +161,4 @@ class DragGesture extends Gesture<DragEvent> {
       this.activePointerId = null;
     }
   }
-}
-
-export function useDrag<T extends HTMLElement>(
-  ref: RefObject<T>,
-  onDrag: (e: DragEvent) => void,
-  config?: DragConfig
-): void {
-  useEffect(() => {
-    if (!ref.current) return;
-    const gesture = new DragGesture(config);
-    gesture.onChange(onDrag).onEnd(onDrag);
-    const cleanup = gesture.attach(ref.current);
-    return cleanup;
-  }, [ref, onDrag, config]);
 }

@@ -1,51 +1,53 @@
-import { RefObject, useEffect } from 'react';
-
-import { clamp } from '../utils';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-export interface WheelGestureEvent {
+export interface ScrollEvent {
   movement: { x: number; y: number };
   offset: { x: number; y: number };
   velocity: { x: number; y: number };
-  event: globalThis.WheelEvent;
+  event: Event;
   cancel?: () => void;
 }
 
-export class WheelGesture extends Gesture<WheelGestureEvent> {
+export class ScrollGesture extends Gesture<ScrollEvent> {
   private attachedEl: HTMLElement | null = null;
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
   private velocity = { x: 0, y: 0 };
 
+  private prevScroll = { x: 0, y: 0 };
   private lastTime = 0;
   private endTimeout?: number;
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const wheel = this.onWheel.bind(this);
-    element.addEventListener('wheel', wheel, { passive: false });
+    const scroll = this.onScroll.bind(this);
+
+    element.addEventListener('scroll', scroll, { passive: true });
 
     return () => {
-      element.removeEventListener('wheel', wheel);
+      element.removeEventListener('scroll', scroll);
       if (this.endTimeout != null) clearTimeout(this.endTimeout);
     };
   }
 
-  private onWheel(e: globalThis.WheelEvent) {
+  private onScroll(e: Event) {
     if (!this.attachedEl) return;
-    e.preventDefault();
 
-    const now = e.timeStamp;
+    const now = Date.now();
     const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
     this.lastTime = now;
 
-    const dx = e.deltaX;
-    const dy = e.deltaY;
+    const x = this.attachedEl.scrollLeft;
+    const y = this.attachedEl.scrollTop;
+
+    const dx = x - this.prevScroll.x;
+    const dy = y - this.prevScroll.y;
+    this.prevScroll = { x, y };
 
     this.movement = { x: dx, y: dy };
-    this.offset.x += dx;
-    this.offset.y += dy;
+    this.offset = { x, y };
 
     const rawX = dx / dt / 1000;
     const rawY = dy / dt / 1000;
@@ -75,17 +77,4 @@ export class WheelGesture extends Gesture<WheelGestureEvent> {
       });
     }, 150);
   }
-}
-
-export function useWheel<T extends HTMLElement>(
-  ref: RefObject<T>,
-  onWheel: (e: WheelGestureEvent) => void
-): void {
-  useEffect(() => {
-    if (!ref.current) return;
-    const gesture = new WheelGesture();
-    gesture.onChange(onWheel).onEnd(onWheel);
-    const cleanup = gesture.attach(ref.current);
-    return cleanup;
-  }, [ref, onWheel]);
 }
