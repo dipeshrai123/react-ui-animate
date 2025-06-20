@@ -20,67 +20,70 @@ interface DragConfig {
 
 class DragGesture extends Gesture<DragEvent> {
   private config: DragConfig;
-  private start: { x: number; y: number };
-  private prev: { x: number; y: number };
-  private lastTime: number;
+  private prev = { x: 0, y: 0 };
+  private lastTime = 0;
+
+  private movement = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
+  private start = { x: 0, y: 0 };
+  private offset = { x: 0, y: 0 };
+
   private activePointerId: number | null = null;
   private attachedEl: HTMLElement | null = null;
-  private pointerDownPos: { x: number; y: number } = { x: 0, y: 0 };
-  private thresholdPassed: boolean = false;
+  private pointerDownPos = { x: 0, y: 0 };
+  private thresholdPassed = false;
 
   constructor(config: DragConfig = {}) {
     super();
-
     this.config = config;
-    this.start = { x: 0, y: 0 };
-    this.prev = { x: 0, y: 0 };
-    this.lastTime = 0;
   }
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const downHandler = this.handlePointerDown.bind(this);
-    const moveHandler = this.handlePointerMove.bind(this);
-    const upHandler = this.handlePointerUp.bind(this);
+    const down = this.onDown.bind(this);
+    const move = this.onMove.bind(this);
+    const up = this.onUp.bind(this);
 
-    element.addEventListener('pointerdown', downHandler, { passive: false });
-    window.addEventListener('pointermove', moveHandler, { passive: false });
-    window.addEventListener('pointerup', upHandler);
-    window.addEventListener('pointercancel', upHandler);
+    element.addEventListener('pointerdown', down, { passive: false });
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
 
     return () => {
-      element.removeEventListener('pointerdown', downHandler);
-      window.removeEventListener('pointermove', moveHandler);
-      window.removeEventListener('pointerup', upHandler);
-      window.removeEventListener('pointercancel', upHandler);
+      element.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
     };
   }
 
-  private handlePointerDown(e: PointerEvent) {
+  private onDown(e: PointerEvent) {
     if (e.button !== 0 || !this.attachedEl) return;
     this.attachedEl.setPointerCapture(e.pointerId);
     this.activePointerId = e.pointerId;
 
+    this.start =
+      this.thresholdPassed === false && this.start.x === 0 && this.start.y === 0
+        ? this.config.initial?.() ?? { x: 0, y: 0 }
+        : { ...this.offset };
+    this.offset = { ...this.start };
+
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
     this.thresholdPassed = false;
-
-    const init = this.config.initial?.() ?? { x: e.clientX, y: e.clientY };
-    this.start = { x: init.x, y: init.y };
-
     this.prev = { x: e.clientX, y: e.clientY };
     this.lastTime = e.timeStamp;
 
-    this.emit({
+    this.emitChange({
       down: true,
       movement: { x: 0, y: 0 },
-      offset: { x: 0, y: 0 },
+      offset: { ...this.offset },
       velocity: { x: 0, y: 0 },
       event: e,
       cancel: this.cancel.bind(this),
     });
   }
 
-  private handlePointerMove(e: PointerEvent) {
+  private onMove(e: PointerEvent) {
     if (this.activePointerId !== e.pointerId) return;
     e.preventDefault();
 
@@ -93,68 +96,65 @@ class DragGesture extends Gesture<DragEvent> {
       this.thresholdPassed = true;
     }
 
-    const dx = e.clientX - this.prev.x;
-    const dy = e.clientY - this.prev.y;
     const dt = Math.max((e.timeStamp - this.lastTime) / 1000, 1e-6);
     this.lastTime = e.timeStamp;
-
+    const dx = e.clientX - this.prev.x;
+    const dy = e.clientY - this.prev.y;
     const rawX = dx / dt / 1000;
     const rawY = dy / dt / 1000;
-    const velocity = {
+    this.velocity = {
       x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
       y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
     };
 
-    const movementRaw = {
-      x: e.clientX - this.start.x,
-      y: e.clientY - this.start.y,
+    const moveRaw = {
+      x: e.clientX - this.pointerDownPos.x,
+      y: e.clientY - this.pointerDownPos.y,
+    };
+    this.movement = {
+      x: this.config.axis === 'y' ? 0 : moveRaw.x,
+      y: this.config.axis === 'x' ? 0 : moveRaw.y,
     };
 
-    const movement = {
-      x: this.config.axis === 'y' ? 0 : movementRaw.x,
-      y: this.config.axis === 'x' ? 0 : movementRaw.y,
+    this.offset = {
+      x: this.start.x + this.movement.x,
+      y: this.start.y + this.movement.y,
     };
 
     this.prev = { x: e.clientX, y: e.clientY };
 
-    this.emit({
+    this.emitChange({
       down: true,
-      movement,
-      offset: movement,
-      velocity,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
       event: e,
       cancel: this.cancel.bind(this),
     });
   }
 
-  private handlePointerUp(e: PointerEvent) {
+  private onUp(e: PointerEvent) {
     if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
     this.attachedEl.releasePointerCapture(e.pointerId);
-    this.emit({
+
+    this.emitChange({
       down: false,
-      movement: { x: 0, y: 0 },
-      offset: { x: 0, y: 0 },
-      velocity: { x: 0, y: 0 },
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
       event: e,
       cancel: this.cancel.bind(this),
     });
-    this.activePointerId = null;
-  }
-
-  private emit(
-    data: Omit<DragEvent, 'event' | 'cancel'> & {
-      event: PointerEvent;
-      cancel: DragEvent['cancel'];
-    }
-  ) {
-    this.emitChange({
-      ...data,
-      event: data.event,
-      cancel: data.cancel,
+    this.emitEnd({
+      down: false,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
+      event: e,
+      cancel: this.cancel.bind(this),
     });
-    if (!data.down) {
-      this.emitEnd({ ...data, event: data.event, cancel: data.cancel });
-    }
+
+    this.activePointerId = null;
   }
 
   private cancel() {

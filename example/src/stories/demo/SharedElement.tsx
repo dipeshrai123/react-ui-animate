@@ -31,7 +31,9 @@ export function SharedElement() {
     translateY: 0,
   });
 
-  useDrag(ref, ({ down, movement }) => {
+  useDrag(ref, ({ down, movement, offset }) => {
+    console.log(offset);
+
     setValue(
       withSpring({
         translateY: down ? clamp(movement.y, 0, 300) : 0,
