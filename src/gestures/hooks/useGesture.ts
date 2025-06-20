@@ -1,20 +1,24 @@
 import { RefObject, useEffect } from 'react';
 
-import { type DragConfig, DragGesture } from '../controllers/DragGesture';
-import { MoveGesture } from '../controllers//MoveGesture';
-import { ScrollGesture } from '../controllers/ScrollGesture';
-import { WheelGesture } from '../controllers/WheelGesture';
+import {
+  type DragConfig,
+  type DragEvent,
+  DragGesture,
+} from '../controllers/DragGesture';
+import { type MoveEvent, MoveGesture } from '../controllers//MoveGesture';
+import { type ScrollEvent, ScrollGesture } from '../controllers/ScrollGesture';
+import { type WheelEvent, WheelGesture } from '../controllers/WheelGesture';
 
-type HandlerMap<T, C = any> = Partial<{
-  drag: { callback: (e: T) => void; config?: C };
-  move: { callback: (e: T) => void };
-  scroll: { callback: (e: T) => void };
-  wheel: { callback: (e: T) => void };
+type HandlerMap = Partial<{
+  drag: { callback: (e: DragEvent) => void; config?: DragConfig };
+  move: { callback: (e: MoveEvent) => void };
+  scroll: { callback: (e: ScrollEvent) => void };
+  wheel: { callback: (e: WheelEvent) => void };
 }>;
 
 export function useGesture<T extends HTMLElement>(
   ref: RefObject<T>,
-  handlers: HandlerMap<any, any> = {}
+  handlers: HandlerMap = {}
 ) {
   useEffect(() => {
     const el = ref.current;
