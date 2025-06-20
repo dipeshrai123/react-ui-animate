@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   clamp,
   animate,
@@ -20,6 +20,7 @@ const IMAGES = [
 ];
 
 export function SharedElement() {
+  const ref = useRef(null);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
   const [{ left, top, width, height, translateY }, setValue] = useValue({
@@ -30,14 +31,14 @@ export function SharedElement() {
     translateY: 0,
   });
 
-  const bind = useDrag(({ down, movementY }) => {
+  useDrag(ref, ({ down, movement }) => {
     setValue(
       withSpring({
-        translateY: down ? clamp(movementY, 0, 300) : 0,
+        translateY: down ? clamp(movement.y, 0, 300) : 0,
       })
     );
 
-    if (!down && movementY > 200) {
+    if (movement.y > 200 && !down) {
       closeSharedElement();
     }
   });
@@ -141,7 +142,7 @@ export function SharedElement() {
               }}
             >
               <animate.div
-                {...bind()}
+                ref={ref}
                 style={{
                   position: 'absolute',
                   left,
