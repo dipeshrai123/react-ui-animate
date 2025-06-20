@@ -1,7 +1,5 @@
 import { useRef, useEffect, RefObject, DependencyList } from 'react';
 
-import { attachEvents } from '../gestures/helpers/eventAttacher';
-
 export function useOutsideClick(
   elementRef: RefObject<HTMLElement>,
   callback: (event: MouseEvent) => void,
@@ -13,7 +11,6 @@ export function useOutsideClick(
     callbackRef.current = callback;
   }
 
-  // Re-initiate callback when dependency change
   useEffect(() => {
     callbackRef.current = callback;
 
@@ -38,11 +35,10 @@ export function useOutsideClick(
       }
     };
 
-    const subscribe = attachEvents(
-      [document],
-      [['mousedown', handleOutsideClick]]
-    );
+    document.addEventListener('mousedown', handleOutsideClick);
 
-    return () => subscribe && subscribe();
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
   }, []);
 }

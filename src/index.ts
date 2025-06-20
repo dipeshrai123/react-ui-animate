@@ -12,5 +12,3 @@ export * from './hooks';
 export * from './gestures';
 
 export * from './utils';
-
-export * as __experimental__ from './gestures/__experimental__';

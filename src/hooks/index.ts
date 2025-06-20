@@ -1,3 +1,3 @@
-export * from "./useOutsideClick";
-export * from "./useMeasure";
-export * from "./useWindowDimension";
+export { useOutsideClick } from './useOutsideClick';
+export { useMeasure } from './useMeasure';
+export { useWindowDimension } from './useWindowDimension';

@@ -1,5 +1,4 @@
-export { useDrag } from './useDrag';
-export { useGesture } from './useGesture';
-export { useMouseMove } from './useMouseMove';
-export { useScroll } from './useScroll';
-export { useWheel } from './useWheel';
+export { useDrag } from './DragGesture';
+export { useMove } from './MoveGesture';
+export { useScroll } from './ScrollGesture';
+export { useWheel } from './WheelGesture';
