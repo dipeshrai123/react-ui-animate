@@ -9,4 +9,4 @@ export {
   withTiming,
 } from './descriptors';
 export { AnimationConfig } from './AnimationConfig';
-export { interpolateNumbers } from './interpolation';
+export { to } from './to';

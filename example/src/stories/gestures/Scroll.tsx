@@ -1,9 +1,4 @@
-import {
-  useScroll,
-  useValue,
-  interpolateNumbers,
-  animate,
-} from 'react-ui-animate';
+import { useScroll, useValue, to, animate, withSpring } from 'react-ui-animate';
 
 export const Scroll = () => {
   const [x, setX] = useValue(100);
@@ -11,9 +6,11 @@ export const Scroll = () => {
   const [position, setPosition] = useValue('fixed');
   const bind = useScroll(function (event) {
     setX(
-      interpolateNumbers(event.scrollY, [0, 200], [100, 300], {
-        extrapolate: 'clamp',
-      })
+      withSpring(
+        to(event.scrollY, [0, 200], [100, 300], {
+          extrapolate: 'clamp',
+        })
+      )
     );
 
     if (event.scrollY > 100) {

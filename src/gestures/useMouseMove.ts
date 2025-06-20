@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { MouseMoveEventType } from '../types';
-import { MouseMoveGesture } from '../controllers';
+import { MouseMoveEventType } from './types';
+import { MouseMoveGesture } from './controllers';
 import { useRecognizer } from './useRecognizer';
 
 export function useMouseMove(callback: (event: MouseMoveEventType) => void) {

@@ -1,6 +1,6 @@
+import { clamp } from '../../utils';
 import { attachEvents } from '../helpers/eventAttacher';
 import { Vector2 } from '../types';
-import { clamp } from '../helpers/math';
 import { withDefault } from '../helpers/withDefault';
 import { Gesture } from './Gesture';
 

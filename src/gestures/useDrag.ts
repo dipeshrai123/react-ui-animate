@@ -1,7 +1,7 @@
 import * as React from 'react';
 
-import { DragEventType, UseDragConfig } from '../types';
-import { DragGesture } from '../controllers';
+import { DragEventType, UseDragConfig } from './types';
+import { DragGesture } from './controllers';
 import { useRecognizer } from './useRecognizer';
 
 export function useDrag(

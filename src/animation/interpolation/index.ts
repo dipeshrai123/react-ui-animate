@@ -1,1 +1,0 @@
-export { interpolateNumbers } from './interpolateNumbers';

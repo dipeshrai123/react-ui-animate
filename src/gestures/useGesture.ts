@@ -4,13 +4,13 @@ import {
   MouseMoveGesture,
   ScrollGesture,
   WheelGesture,
-} from '../controllers';
+} from './controllers';
 import {
   DragEventType,
   WheelEventType,
   ScrollEventType,
   MouseMoveEventType,
-} from '../types';
+} from './types';
 import { useRecognizer } from './useRecognizer';
 
 export function useGesture({
