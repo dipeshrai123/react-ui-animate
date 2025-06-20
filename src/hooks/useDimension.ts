@@ -18,20 +18,23 @@ export function useDimension(
   }, [callback, ...deps]);
 
   useEffect(() => {
-    const observer = new ResizeObserver(([entry]) => {
-      const { clientWidth, clientHeight } = entry.target;
+    const handle = () => {
+      const root = document.documentElement;
+      const { clientWidth: width, clientHeight: height } = root;
       const { innerWidth, innerHeight } = window;
+      cbRef.current({ width, height, innerWidth, innerHeight });
+    };
 
-      cbRef.current({
-        width: clientWidth,
-        height: clientHeight,
-        innerWidth,
-        innerHeight,
-      });
-    });
-
+    const observer = new ResizeObserver(handle);
     observer.observe(document.documentElement);
 
-    return () => observer.unobserve(document.documentElement);
+    window.addEventListener('resize', handle);
+
+    handle();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', handle);
+    };
   }, []);
 }
