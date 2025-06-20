@@ -14,21 +14,27 @@ interface ScrollEvent {
 class ScrollGesture extends Gesture<ScrollEvent> {
   private attachedEl: HTMLElement | null = null;
 
+  private movement = { x: 0, y: 0 };
+  private offset = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
+
   private prevScroll = { x: 0, y: 0 };
   private lastTime = 0;
   private endTimeout?: number;
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const handler = this.handleScroll.bind(this);
-    element.addEventListener('scroll', handler, { passive: true });
+    const scroll = this.onScroll.bind(this);
+
+    element.addEventListener('scroll', scroll, { passive: true });
+
     return () => {
-      element.removeEventListener('scroll', handler);
+      element.removeEventListener('scroll', scroll);
       if (this.endTimeout != null) clearTimeout(this.endTimeout);
     };
   }
 
-  private handleScroll(e: Event) {
+  private onScroll(e: Event) {
     if (!this.attachedEl) return;
 
     const now = Date.now();
@@ -40,30 +46,34 @@ class ScrollGesture extends Gesture<ScrollEvent> {
 
     const dx = x - this.prevScroll.x;
     const dy = y - this.prevScroll.y;
+    this.prevScroll = { x, y };
+
+    this.movement = { x: dx, y: dy };
+    this.offset = { x, y };
 
     const rawX = dx / dt / 1000;
     const rawY = dy / dt / 1000;
-    const velocity = {
+    this.velocity = {
       x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
       y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
     };
 
-    this.prevScroll = { x, y };
-
     this.emitChange({
-      movement: { x: dx, y: dy },
-      offset: { x, y },
-      velocity,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
       event: e,
-      cancel: () => {},
+      cancel: () => {
+        if (this.endTimeout != null) clearTimeout(this.endTimeout);
+      },
     });
 
     if (this.endTimeout != null) clearTimeout(this.endTimeout);
     this.endTimeout = window.setTimeout(() => {
       this.emitEnd({
-        movement: { x: 0, y: 0 },
-        offset: { x, y },
-        velocity: { x: 0, y: 0 },
+        movement: { ...this.movement },
+        offset: { ...this.offset },
+        velocity: { ...this.velocity },
         event: e,
         cancel: () => {},
       });

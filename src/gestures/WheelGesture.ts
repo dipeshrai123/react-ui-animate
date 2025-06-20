@@ -14,22 +14,25 @@ export interface WheelGestureEvent {
 export class WheelGesture extends Gesture<WheelGestureEvent> {
   private attachedEl: HTMLElement | null = null;
 
-  private lastTime = 0;
+  private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
+
+  private lastTime = 0;
   private endTimeout?: number;
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const handler = this.handleWheel.bind(this);
-    element.addEventListener('wheel', handler, { passive: false });
+    const wheel = this.onWheel.bind(this);
+    element.addEventListener('wheel', wheel, { passive: false });
 
     return () => {
-      element.removeEventListener('wheel', handler);
+      element.removeEventListener('wheel', wheel);
       if (this.endTimeout != null) clearTimeout(this.endTimeout);
     };
   }
 
-  private handleWheel(e: globalThis.WheelEvent) {
+  private onWheel(e: globalThis.WheelEvent) {
     if (!this.attachedEl) return;
     e.preventDefault();
 
@@ -40,30 +43,33 @@ export class WheelGesture extends Gesture<WheelGestureEvent> {
     const dx = e.deltaX;
     const dy = e.deltaY;
 
+    this.movement = { x: dx, y: dy };
     this.offset.x += dx;
     this.offset.y += dy;
 
     const rawX = dx / dt / 1000;
     const rawY = dy / dt / 1000;
-    const velocity = {
+    this.velocity = {
       x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
       y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
     };
 
     this.emitChange({
-      movement: { x: dx, y: dy },
+      movement: { ...this.movement },
       offset: { ...this.offset },
-      velocity,
+      velocity: { ...this.velocity },
       event: e,
-      cancel: () => {},
+      cancel: () => {
+        if (this.endTimeout != null) clearTimeout(this.endTimeout);
+      },
     });
 
     if (this.endTimeout != null) clearTimeout(this.endTimeout);
     this.endTimeout = window.setTimeout(() => {
       this.emitEnd({
-        movement: { x: 0, y: 0 },
+        movement: { ...this.movement },
         offset: { ...this.offset },
-        velocity: { x: 0, y: 0 },
+        velocity: { ...this.velocity },
         event: e,
         cancel: () => {},
       });

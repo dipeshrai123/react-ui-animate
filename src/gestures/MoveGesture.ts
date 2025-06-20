@@ -15,23 +15,27 @@ class MoveGesture extends Gesture<MoveEvent> {
   private prev = { x: 0, y: 0 };
   private lastTime = 0;
   private attachedEl: HTMLElement | null = null;
+
+  private movement = { x: 0, y: 0 };
+  private offset = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
   private startPos: { x: number; y: number } | null = null;
 
   attach(element: HTMLElement): () => void {
     this.attachedEl = element;
-    const moveHandler = this.handlePointerMove.bind(this);
-    const leaveHandler = this.handlePointerLeave.bind(this);
+    const move = this.onMove.bind(this);
+    const leave = this.onLeave.bind(this);
 
-    element.addEventListener('pointermove', moveHandler, { passive: false });
-    element.addEventListener('pointerleave', leaveHandler);
+    element.addEventListener('pointermove', move, { passive: false });
+    element.addEventListener('pointerleave', leave);
 
     return () => {
-      element.removeEventListener('pointermove', moveHandler);
-      element.removeEventListener('pointerleave', leaveHandler);
+      element.removeEventListener('pointermove', move);
+      element.removeEventListener('pointerleave', leave);
     };
   }
 
-  private handlePointerMove(e: PointerEvent) {
+  private onMove(e: PointerEvent) {
     if (!this.attachedEl) return;
     const now = e.timeStamp;
 
@@ -42,40 +46,51 @@ class MoveGesture extends Gesture<MoveEvent> {
     }
 
     const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
+    this.lastTime = now;
+
     const dx = e.clientX - this.prev.x;
     const dy = e.clientY - this.prev.y;
     this.prev = { x: e.clientX, y: e.clientY };
-    this.lastTime = now;
 
-    const movement = {
+    this.movement = {
       x: e.clientX - this.startPos.x,
       y: e.clientY - this.startPos.y,
     };
 
     const rect = this.attachedEl.getBoundingClientRect();
-    const offset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    this.offset = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
 
-    const rawX = dx / dt / 1000;
-    const rawY = dy / dt / 1000;
-    const velocity = {
-      x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
-      y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
+    const rawVx = dx / dt / 1000;
+    const rawVy = dy / dt / 1000;
+    this.velocity = {
+      x: clamp(rawVx, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
+      y: clamp(rawVy, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
     };
 
     this.emitChange({
-      movement,
-      offset,
-      velocity,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
       event: e,
-      cancel: () => {},
+      cancel: () => this.onLeave(e),
     });
   }
 
-  private handlePointerLeave(e: PointerEvent) {
+  private onLeave(e: PointerEvent) {
+    this.emitChange({
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
+      event: e,
+      cancel: () => {},
+    });
     this.emitEnd({
-      movement: { x: 0, y: 0 },
-      offset: { x: 0, y: 0 },
-      velocity: { x: 0, y: 0 },
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
       event: e,
       cancel: () => {},
     });
