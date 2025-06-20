@@ -17,10 +17,11 @@ export const UseMount: React.FC = () => {
     ]),
     exit: withSpring({
       translateX: 0,
+      width: 200,
     }),
   });
 
-  const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });
+  const mounted = useMount(open);
 
   return (
     <>

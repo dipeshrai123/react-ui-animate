@@ -12,19 +12,11 @@ export function Loop() {
 
   const runAnimation = () => {
     setTranslateX(
-      withLoop(
-        withSequence([withTiming(50), withTiming(0)], {
-          onComplete: () => {
-            console.log('called');
-          },
-        }),
-        2,
-        {
-          onComplete: () => {
-            setTranslateX(withDecay(1));
-          },
-        }
-      )
+      withLoop(withSequence([withTiming(50), withTiming(0)]), 2, {
+        onComplete: () => {
+          setTranslateX(withDecay(1));
+        },
+      })
     );
   };
 

@@ -13,9 +13,8 @@ export const AnimationConfig = {
     LINEAR: { duration: 500, easing: Easing.linear },
   },
   Spring: {
-    NATURAL: { mass: 1, damping: 14, stiffness: 170 },
     ELASTIC: { mass: 1, damping: 18, stiffness: 250 },
-    EASE: { mass: 1, damping: 26, stiffness: 170 },
+    EASE: { mass: 1, damping: 20, stiffness: 158 },
     STIFF: { mass: 1, damping: 18, stiffness: 350 },
     WOBBLE: { mass: 1, damping: 8, stiffness: 250 },
   },

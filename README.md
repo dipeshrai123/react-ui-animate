@@ -157,7 +157,7 @@ export const Interpolation: React.FC = () => {
 
 - **`useValue(initial)`**: Initializes an animated value.
 - **`animate`**: JSX wrapper for animatable elements (`animate.div`, `animate.span`, etc.).
-- **Modifiers**: `withSpring`, `withTiming`, `withDecay`, `withSequence`, `withEase` — functions to define animation behavior.
+- **Modifiers**: `withSpring`, `withTiming`, `withDecay`, `withSequence` — functions to define animation behavior.
 - **`useMount(state, config)`**: Manages mount/unmount transitions. `config` includes `from`, `enter`, and `exit` values.
 
 ## Gestures

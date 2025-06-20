@@ -13,7 +13,7 @@ export const Decay = () => {
       down
         ? movementX + offsetX.current
         : withDecay(velocityX, {
-            onChange: (v) => (offsetX.current = v as number),
+            onChange: (v) => (offsetX.current = v),
           })
     );
   });
