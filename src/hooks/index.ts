@@ -1,3 +1,3 @@
 export { useOutsideClick } from './useOutsideClick';
 export { useMeasure } from './useMeasure';
-export { useWindowDimension } from './useWindowDimension';
+export { useDimension } from './useDimension';

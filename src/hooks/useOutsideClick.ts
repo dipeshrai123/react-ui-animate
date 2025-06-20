@@ -1,44 +1,33 @@
 import { useRef, useEffect, RefObject, DependencyList } from 'react';
 
 export function useOutsideClick(
-  elementRef: RefObject<HTMLElement>,
-  callback: (event: MouseEvent) => void,
-  deps?: DependencyList
-) {
-  const callbackRef = useRef<(event: MouseEvent) => void>();
-
-  if (!callbackRef.current) {
-    callbackRef.current = callback;
-  }
+  ref: RefObject<HTMLElement>,
+  callback: (event: MouseEvent | TouchEvent) => void,
+  deps: DependencyList = []
+): void {
+  const cbRef = useRef(callback);
 
   useEffect(() => {
-    callbackRef.current = callback;
-
-    return () => {
-      callbackRef.current = () => false;
-    };
-  }, deps);
+    cbRef.current = callback;
+  }, [callback, ...deps]);
 
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      const target = e.target as Node;
+    function onClick(event: MouseEvent | TouchEvent) {
+      const el = ref.current;
+      const target = event.target as Node | null;
 
-      if (!target || !target.isConnected) {
-        return;
+      if (!el || !target || !target.isConnected) return;
+      if (!el.contains(target)) {
+        cbRef.current(event);
       }
+    }
 
-      const isOutside =
-        elementRef.current && !elementRef.current.contains(target);
-
-      if (isOutside) {
-        callbackRef.current && callbackRef.current(e);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('touchstart', onClick);
 
     return () => {
-      document.removeEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('touchstart', onClick);
     };
-  }, []);
+  }, [ref]);
 }
