@@ -54,8 +54,8 @@ const Stagger = ({ y, children }: any) => {
 export default function App() {
   const [y, setY] = useState(0);
 
-  useScroll(({ scrollY }) => {
-    setY(scrollY);
+  useScroll(window, ({ offset }) => {
+    setY(offset.y);
   });
 
   return (

@@ -20,8 +20,8 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
   private lastTime = 0;
   private endTimeout?: number;
 
-  attach(element: HTMLElement): () => void {
-    this.attachedEl = element;
+  attach(element: HTMLElement | Window): () => void {
+    this.attachedEl = element instanceof HTMLElement ? element : null;
     const scroll = this.onScroll.bind(this);
 
     element.addEventListener('scroll', scroll, { passive: true });
@@ -33,14 +33,12 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
   }
 
   private onScroll(e: Event) {
-    if (!this.attachedEl) return;
-
     const now = Date.now();
     const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
     this.lastTime = now;
 
-    const x = this.attachedEl.scrollLeft;
-    const y = this.attachedEl.scrollTop;
+    const x = this.attachedEl ? this.attachedEl.scrollLeft : window.scrollX;
+    const y = this.attachedEl ? this.attachedEl.scrollTop : window.scrollY;
 
     const dx = x - this.prevScroll.x;
     const dy = y - this.prevScroll.y;
