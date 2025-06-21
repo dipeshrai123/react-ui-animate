@@ -2,33 +2,26 @@ import React from 'react';
 import {
   animate,
   useMount,
-  withDecay,
   withSequence,
-  withSpring,
   withTiming,
+  withSpring,
 } from 'react-ui-animate';
 
 export const UseMount: React.FC = () => {
   const [open, setOpen] = React.useState(true);
-  // const mountedValue = useMount(open, {
-  //   from: { width: 200, opacity: 0, translateX: 0 },
-  //   enter: {
-  //     width: 300,
-  //     opacity: 1,
-  //     translateX: withTiming(200, { duration: 5000 }),
-  //   },
-  //   exit: {
-  //     width: 100,
-  //     opacity: 1,
-  //     translateX: withSequence([
-  //       withTiming(0, { duration: 2000 }),
-  //       withDecay({ velocity: 1 }),
-  //       withSpring(100),
-  //     ]),
-  //   },
-  // });
+  const mountedValue = useMount(open, {
+    from: { width: 200, opacity: 0, translateX: 0, rotate: 0 },
+    enter: withSequence([
+      withTiming({ translateX: 100, opacity: 1, rotate: 0 }),
+      withSpring({ width: 300 }),
+    ]),
+    exit: withSpring({
+      translateX: 0,
+      width: 200,
+    }),
+  });
 
-  const mounted = useMount(open, { from: 0, enter: 1, exit: 0 });
+  const mounted = useMount(open);
 
   return (
     <>
@@ -54,7 +47,7 @@ export const UseMount: React.FC = () => {
         ANIMATE ME
       </button>
 
-      {/* {mountedValue(({ width, opacity, translateX }, mounted) => {
+      {mountedValue(({ width, opacity, translateX, rotate }, mounted) => {
         return (
           mounted && (
             <animate.div
@@ -64,11 +57,12 @@ export const UseMount: React.FC = () => {
                 translateX,
                 height: 100,
                 backgroundColor: 'teal',
+                rotate,
               }}
             />
           )
         );
-      })} */}
+      })}
     </>
   );
 };

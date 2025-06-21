@@ -1,30 +1,55 @@
 export type Primitive = number | string;
 
-export interface WithCallbacks {
-  onStart?: (value: number | string) => void;
-  onChange?: (value: number | string) => void;
-  onRest?: (value: number | string) => void;
+export interface Callbacks {
+  onStart?: () => void;
+  onChange?: (v: number) => void;
+  onComplete?: () => void;
 }
 
-export type DriverConfig = {
-  type: 'spring' | 'timing' | 'decay' | 'sequence' | 'delay' | 'loop';
-  to?: Primitive;
-  options?: {
-    controller?: DriverConfig;
-    iterations?: number;
-    delay?: number;
-    duration?: number;
-    easing?: (t: number) => number;
-    stiffness?: number;
-    damping?: number;
-    mass?: number;
-    velocity?: number;
-    clamp?: [number, number];
-    steps?: DriverConfig[];
-    onStart?: () => void;
-    onChange?: (v: string | number) => void;
-    onComplete?: () => void;
-  };
-};
+export interface SpringOptions {
+  stiffness?: number;
+  damping?: number;
+  mass?: number;
+}
 
-export type ToValue<V> = DriverConfig | V;
+export interface TimingOptions {
+  duration?: number;
+  easing?: (t: number) => number;
+}
+
+export interface DecayOptions {
+  velocity?: number;
+}
+
+export interface SequenceOptions {
+  animations?: Descriptor[];
+}
+
+export interface DelayOptions {
+  delay?: number;
+}
+
+export interface LoopOptions {
+  iterations?: number;
+  animation?: Descriptor;
+}
+
+export type DriverType =
+  | 'spring'
+  | 'timing'
+  | 'decay'
+  | 'delay'
+  | 'sequence'
+  | 'loop';
+
+export interface Descriptor {
+  type: DriverType;
+  to?: Primitive | Primitive[] | Record<string, Primitive>;
+  options?: SpringOptions &
+    TimingOptions &
+    DecayOptions &
+    SequenceOptions &
+    DelayOptions &
+    LoopOptions &
+    Callbacks;
+}

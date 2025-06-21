@@ -1,26 +1,26 @@
 import { RefObject, useEffect } from 'react';
 
-import { type WheelEvent, WheelGesture } from '../controllers/WheelGesture';
+import { type MoveEvent, MoveGesture } from '../controllers/MoveGesture';
 
-export function useWheel(
+export function useMove(
   refs: Window,
-  onWheel: (e: WheelEvent & { index: 0 }) => void
+  onMove: (e: MoveEvent & { index: 0 }) => void
 ): void;
 
-export function useWheel<T extends HTMLElement>(
+export function useMove<T extends HTMLElement>(
   refs: RefObject<T> | Array<RefObject<T>>,
-  onWheel: (e: WheelEvent & { index: number }) => void
+  onMove: (e: MoveEvent & { index: number }) => void
 ): void;
 
-export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
+export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
   if (refs === window) {
     useEffect(() => {
-      const g = new WheelGesture();
-      const handler = (e: WheelEvent) => onWheel({ ...e, index: 0 });
+      const g = new MoveGesture();
+      const handler = (e: MoveEvent) => onMove({ ...e, index: 0 });
       g.onChange(handler).onEnd(handler);
       const cleanup = g.attach(window);
       return cleanup;
-    }, [onWheel]);
+    }, [onMove]);
     return;
   }
 
@@ -31,8 +31,8 @@ export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
     const cleanups = list
       .map((r, i) => {
         if (!r.current) return null;
-        const g = new WheelGesture();
-        const handler = (e: WheelEvent) => onWheel({ ...e, index: i });
+        const g = new MoveGesture();
+        const handler = (e: MoveEvent) => onMove({ ...e, index: i });
         g.onChange(handler).onEnd(handler);
         return g.attach(r.current);
       })
@@ -41,5 +41,5 @@ export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [...list.map((r) => r.current), onWheel]);
+  }, [...list.map((r) => r.current), onMove]);
 }

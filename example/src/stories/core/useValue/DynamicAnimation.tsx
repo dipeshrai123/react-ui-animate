@@ -1,9 +1,4 @@
-import {
-  animate,
-  AnimationConfig,
-  useValue,
-  withTiming,
-} from 'react-ui-animate';
+import { useValue, withTiming, animate, withDecay } from 'react-ui-animate';
 
 export const DynamicAnimation = () => {
   const [x, setX] = useValue(0);
@@ -21,7 +16,7 @@ export const DynamicAnimation = () => {
 
       <button
         onClick={() => {
-          setX(withTiming(0, AnimationConfig.Timing.BOUNCE));
+          setX(withTiming(0));
         }}
       >
         ANIMATE LEFT
@@ -29,7 +24,7 @@ export const DynamicAnimation = () => {
 
       <button
         onClick={() => {
-          setX(100);
+          setX(withDecay(1));
         }}
       >
         ANIMATE RIGHT

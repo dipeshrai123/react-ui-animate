@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   useValue,
   animate,
-  useGesture,
   clamp,
   withSpring,
+  useDrag,
+  useWheel,
 } from 'react-ui-animate';
 
 export const Gestures = () => {
@@ -14,18 +15,17 @@ export const Gestures = () => {
   const [rotate, setRotate] = useValue(0);
   const scaleRef = React.useRef(1);
   const rotateRef = React.useRef(0);
+  const ref = useRef(null);
 
-  const bind = useGesture({
-    onDrag: function ({ offsetX, offsetY }) {
-      setX(withSpring(offsetX));
-      setY(withSpring(offsetY));
-    },
-    onWheel: function ({ deltaY }) {
-      scaleRef.current += deltaY * -0.001;
-      scaleRef.current = clamp(scaleRef.current, 0.125, 4);
+  useDrag(ref, ({ offset, down }) => {
+    setX(withSpring(offset.x));
+    setY(withSpring(offset.y));
+  });
 
-      setS(withSpring(scaleRef.current));
-    },
+  useWheel(ref, ({ movement }) => {
+    scaleRef.current += movement.y * -0.001;
+    scaleRef.current = clamp(scaleRef.current, 0.125, 4);
+    setS(withSpring(scaleRef.current));
   });
 
   return (
@@ -51,7 +51,7 @@ export const Gestures = () => {
 
       <div>
         <animate.div
-          {...bind()}
+          ref={ref}
           style={{
             width: 100,
             height: 100,

@@ -1,8 +1,8 @@
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   animate,
   useMount,
-  withEase,
+  withSpring,
   withSequence,
   withTiming,
 } from 'react-ui-animate';
@@ -11,18 +11,27 @@ const Toast = ({ id, onEnd }: any) => {
   const [visible, setVisible] = useState(true);
 
   const mount = useMount(visible, {
+    from: { opacity: 0, height: 0, progress: 0 },
     enter: withSequence([
-      withEase(1),
-      withEase(2),
-      withTiming(3, { duration: 2000, onRest: () => setVisible(false) }),
+      withSpring(
+        {
+          opacity: 1,
+          height: 100,
+        },
+        { damping: 14 }
+      ),
+      withTiming(
+        { progress: 1 },
+        { duration: 2000, onComplete: () => setVisible(false) }
+      ),
     ]),
-    exit: withEase(4, { onRest: () => onEnd(id) }),
+    exit: withSpring({ opacity: 0 }, { onComplete: () => onEnd(id) }),
   });
 
   return (
     <>
       {mount(
-        (a, m) =>
+        ({ height, opacity, progress }, m) =>
           m && (
             <animate.div
               style={{
@@ -30,8 +39,9 @@ const Toast = ({ id, onEnd }: any) => {
                 width: 240,
                 backgroundColor: '#3399ff',
                 borderRadius: 4,
-                height: a.to([0, 1, 2], [0, 100, 100]),
-                opacity: a.to([2, 3, 4], [1, 1, 0]),
+                height,
+                opacity,
+                scale: height.to([0, 100], [0.8, 1]),
               }}
             >
               <animate.div
@@ -42,9 +52,7 @@ const Toast = ({ id, onEnd }: any) => {
                   backgroundColor: '#333',
                   height: 5,
                   borderRadius: 4,
-                  width: a.to([2, 3], ['0%', '100%'], {
-                    extrapolate: 'clamp',
-                  }),
+                  width: progress.to([0, 1], ['0%', '100%']),
                 }}
               />
             </animate.div>

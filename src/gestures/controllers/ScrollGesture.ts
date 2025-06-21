@@ -1,107 +1,78 @@
-import { attachEvents } from '../helpers/eventAttacher';
-import { Vector2 } from '../types';
-import { clamp } from '../helpers/math';
-import { withDefault } from '../helpers/withDefault';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-export class ScrollGesture extends Gesture {
-  isActiveID?: any;
-  movement: Vector2 = withDefault(0, 0);
-  previousMovement: Vector2 = withDefault(0, 0);
-  direction: Vector2 = withDefault(0, 0);
-  velocity: Vector2 = withDefault(0, 0);
+export interface ScrollEvent {
+  movement: { x: number; y: number };
+  offset: { x: number; y: number };
+  velocity: { x: number; y: number };
+  event: Event;
+  cancel?: () => void;
+}
 
-  // @override
-  // initialize the events
-  _initEvents() {
-    if (this.targetElement) {
-      this._subscribe = attachEvents(
-        [this.targetElement],
-        [['scroll', this.scrollElementListener.bind(this)]]
-      );
-    } else {
-      this._subscribe = attachEvents(
-        [window],
-        [['scroll', this.scrollListener.bind(this)]]
-      );
-    }
-  }
+export class ScrollGesture extends Gesture<ScrollEvent> {
+  private attachedEl: HTMLElement | null = null;
 
-  _handleCallback() {
-    if (this.callback) {
-      this.callback({
-        isScrolling: this.isActive,
-        scrollX: this.movement.x,
-        scrollY: this.movement.y,
-        velocityX: this.velocity.x,
-        velocityY: this.velocity.y,
-        directionX: this.direction.x,
-        directionY: this.direction.y,
-      });
-    }
-  }
+  private movement = { x: 0, y: 0 };
+  private offset = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
 
-  onScroll({ x, y }: Vector2) {
-    const now: number = Date.now();
-    const deltaTime = Math.min(now - this.lastTimeStamp, 64);
-    this.lastTimeStamp = now;
-    const t = deltaTime / 1000; // seconds
+  private prevScroll = { x: 0, y: 0 };
+  private lastTime = 0;
+  private endTimeout?: number;
 
-    this.movement = { x, y };
+  attach(element: HTMLElement | Window): () => void {
+    this.attachedEl = element instanceof HTMLElement ? element : null;
+    const scroll = this.onScroll.bind(this);
 
-    // Clear if scrolling
-    if (this.isActiveID !== -1) {
-      this.isActive = true;
-      clearTimeout(this.isActiveID);
-    }
+    element.addEventListener('scroll', scroll, { passive: true });
 
-    this.isActiveID = setTimeout(() => {
-      this.isActive = false;
-      this.direction = { x: 0, y: 0 };
-
-      // Reset Velocity
-      this.velocity = { x: 0, y: 0 };
-
-      this._handleCallback(); // Debounce 250milliseconds
-    }, 250);
-
-    const diffX = this.movement.x - this.previousMovement.x;
-    const diffY = this.movement.y - this.previousMovement.y;
-
-    this.direction = {
-      x: Math.sign(diffX),
-      y: Math.sign(diffY),
+    return () => {
+      element.removeEventListener('scroll', scroll);
+      if (this.endTimeout != null) clearTimeout(this.endTimeout);
     };
+  }
 
+  private onScroll(e: Event) {
+    const now = Date.now();
+    const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
+    this.lastTime = now;
+
+    const x = this.attachedEl ? this.attachedEl.scrollLeft : window.scrollX;
+    const y = this.attachedEl ? this.attachedEl.scrollTop : window.scrollY;
+
+    const dx = x - this.prevScroll.x;
+    const dy = y - this.prevScroll.y;
+    this.prevScroll = { x, y };
+
+    this.movement = { x: dx, y: dy };
+    this.offset = { x, y };
+
+    const rawX = dx / dt / 1000;
+    const rawY = dy / dt / 1000;
     this.velocity = {
-      x: clamp(
-        diffX / t / 1000,
-        -1 * Gesture._VELOCITY_LIMIT,
-        Gesture._VELOCITY_LIMIT
-      ),
-      y: clamp(
-        diffY / t / 1000,
-        -1 * Gesture._VELOCITY_LIMIT,
-        Gesture._VELOCITY_LIMIT
-      ),
+      x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
+      y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
     };
 
-    this.previousMovement = {
-      x: this.movement.x,
-      y: this.movement.y,
-    };
+    this.emitChange({
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
+      event: e,
+      cancel: () => {
+        if (this.endTimeout != null) clearTimeout(this.endTimeout);
+      },
+    });
 
-    this._handleCallback();
-  }
-
-  scrollListener() {
-    const { pageYOffset: y, pageXOffset: x } = window;
-    this.onScroll({ x, y });
-  }
-
-  scrollElementListener() {
-    const x = this.targetElement?.scrollLeft || 0;
-    const y = this.targetElement?.scrollTop || 0;
-    this.onScroll({ x, y });
+    if (this.endTimeout != null) clearTimeout(this.endTimeout);
+    this.endTimeout = window.setTimeout(() => {
+      this.emitEnd({
+        movement: { ...this.movement },
+        offset: { ...this.offset },
+        velocity: { ...this.velocity },
+        event: e,
+        cancel: () => {},
+      });
+    }, 150);
   }
 }

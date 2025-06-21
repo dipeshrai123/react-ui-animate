@@ -1,39 +1,40 @@
-import { useWheel } from 'react-ui-animate';
+import { useRef } from 'react';
+import { animate, useValue, useWheel, withSpring } from 'react-ui-animate';
 
 export const Wheel = () => {
-  const bind = useWheel(function (event) {
-    console.log('WHEEL', event);
+  const ref = useRef(null);
+  const [progress, setProgress] = useValue(0);
+
+  useWheel(ref, function ({ velocity }) {
+    setProgress(withSpring(velocity.y));
   });
 
   return (
     <>
-      <div
-        {...bind()}
+      <animate.div
+        ref={ref}
         style={{
           width: 500,
           height: 500,
           overflowY: 'auto',
           backgroundColor: '#3399ff',
+          borderRadius: progress.to([-5, 0, 5], [100, 0, 100]),
+          position: 'relative',
         }}
       >
+        <div
+          style={{
+            position: 'absolute',
+            top: 250,
+            left: 250,
+            transform: 'translate(-50%, -50%)',
+            color: 'white',
+          }}
+        >
+          WHEEL SCROLL ME
+        </div>
         <div style={{ height: 2000 }} />
-      </div>
-
-      <div style={{ height: 2000 }} />
-
-      {Array(5)
-        .fill(null)
-        .map((_, i) => (
-          <div
-            key={i}
-            style={{
-              width: 100,
-              height: 100,
-              backgroundColor: '#3399ff',
-              marginBottom: 10,
-            }}
-          />
-        ))}
+      </animate.div>
     </>
   );
 };
