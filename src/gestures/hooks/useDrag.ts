@@ -7,15 +7,28 @@ import {
 } from '../controllers/DragGesture';
 
 export function useDrag<T extends HTMLElement>(
-  ref: RefObject<T>,
-  onDrag: (e: DragEvent) => void,
+  refs: RefObject<T> | Array<RefObject<T>>,
+  onDrag: (e: DragEvent & { index: number }) => void,
   config?: DragConfig
 ): void {
   useEffect(() => {
-    if (!ref.current) return;
-    const gesture = new DragGesture(config);
-    gesture.onChange(onDrag).onEnd(onDrag);
-    const cleanup = gesture.attach(ref.current);
-    return cleanup;
-  }, [ref, onDrag, config]);
+    const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
+    const cleanups = list
+      .map((r, i) => {
+        if (!r.current) return null;
+        const g = new DragGesture(config);
+        const handler = (e: DragEvent) => onDrag({ ...e, index: i });
+        g.onChange(handler).onEnd(handler);
+        return g.attach(r.current);
+      })
+      .filter((fn): fn is () => void => !!fn);
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+    };
+  }, [
+    ...(Array.isArray(refs) ? refs.map((r) => r.current) : [refs.current]),
+    onDrag,
+    config,
+  ]);
 }
