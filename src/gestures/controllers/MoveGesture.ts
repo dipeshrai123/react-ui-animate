@@ -78,13 +78,6 @@ export class MoveGesture extends Gesture<MoveEvent> {
   }
 
   private onLeave(e: PointerEvent) {
-    this.emitChange({
-      movement: { ...this.movement },
-      offset: { ...this.offset },
-      velocity: { ...this.velocity },
-      event: e,
-      cancel: () => {},
-    });
     this.emitEnd({
       movement: { ...this.movement },
       offset: { ...this.offset },

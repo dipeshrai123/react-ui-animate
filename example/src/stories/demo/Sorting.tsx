@@ -20,6 +20,7 @@ export const Sorting = () => {
 
   useDrag(boxes, ({ index: i, down, movement }) => {
     const index = originalIndex.current.indexOf(i!);
+
     const newIndex = clamp(
       Math.round((index * 70 + movement.y) / 70),
       0,

@@ -135,14 +135,6 @@ export class DragGesture extends Gesture<DragEvent> {
     if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
     this.attachedEl.releasePointerCapture(e.pointerId);
 
-    this.emitChange({
-      down: false,
-      movement: { ...this.movement },
-      offset: { ...this.offset },
-      velocity: { ...this.velocity },
-      event: e,
-      cancel: this.cancel.bind(this),
-    });
     this.emitEnd({
       down: false,
       movement: { ...this.movement },
