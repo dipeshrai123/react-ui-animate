@@ -5,7 +5,7 @@ import {
   useValue,
   withSequence,
   withDelay,
-  withTiming,
+  withSpring,
 } from 'react-ui-animate';
 
 const StaggerItem = ({
@@ -20,9 +20,7 @@ const StaggerItem = ({
   const [top, setTop] = useValue(0);
 
   useLayoutEffect(() => {
-    setTop(
-      withSequence([withDelay(index * 50), withTiming(y, { duration: 0 })])
-    );
+    setTop(withSequence([withDelay(index * 50), withSpring(y)]));
   }, [y, index, setTop]);
 
   return (
@@ -61,7 +59,7 @@ export default function App() {
   return (
     <div
       style={{
-        height: 5000,
+        height: '190vh',
       }}
     >
       <div
