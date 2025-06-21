@@ -8,7 +8,7 @@ export function useScroll(
 ): void;
 
 export function useScroll<T extends HTMLElement>(
-  refs: Window | RefObject<T> | Array<RefObject<T>>,
+  refs: RefObject<T> | Array<RefObject<T>>,
   onScroll: (e: ScrollEvent & { index: number }) => void
 ): void;
 

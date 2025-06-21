@@ -2,10 +2,30 @@ import { RefObject, useEffect } from 'react';
 
 import { type WheelEvent, WheelGesture } from '../controllers/WheelGesture';
 
+export function useWheel(
+  refs: Window,
+  onWheel: (e: WheelEvent & { index: 0 }) => void
+): void;
+
 export function useWheel<T extends HTMLElement>(
   refs: RefObject<T> | Array<RefObject<T>>,
   onWheel: (e: WheelEvent & { index: number }) => void
-): void {
+): void;
+
+export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
+  if (refs === window) {
+    useEffect(() => {
+      const g = new WheelGesture();
+      const handler = (e: WheelEvent) => onWheel({ ...e, index: 0 });
+      g.onChange(handler).onEnd(handler);
+      const cleanup = g.attach(window);
+      return cleanup;
+    }, [onWheel]);
+    return;
+  }
+
+  const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
+
   useEffect(() => {
     const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
     const cleanups = list
@@ -21,8 +41,5 @@ export function useWheel<T extends HTMLElement>(
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [
-    ...(Array.isArray(refs) ? refs.map((r) => r.current) : [refs.current]),
-    onWheel,
-  ]);
+  }, [...list.map((r) => r.current), onWheel]);
 }

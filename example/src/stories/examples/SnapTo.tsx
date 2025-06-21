@@ -12,33 +12,32 @@ import '../../index.css';
 export function SnapTo() {
   const [{ x, y }, setXY] = useValue({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
+  const ref = useRef(null);
 
-  const bind = useDrag(
-    ({ movementX, movementY, velocityX, velocityY, down }) => {
-      if (!down) {
-        offset.current = {
-          x: movementX + offset.current.x,
-          y: movementY + offset.current.y,
-        };
+  useDrag(ref, ({ movement, velocity, down }) => {
+    if (!down) {
+      offset.current = {
+        x: movement.x + offset.current.x,
+        y: movement.y + offset.current.y,
+      };
 
-        const snapX = snapTo(offset.current.x, velocityX, [0, 600]);
-        const snapY = snapTo(offset.current.y, velocityY, [0, 600]);
+      const snapX = snapTo(offset.current.x, velocity.x, [0, 600]);
+      const snapY = snapTo(offset.current.y, velocity.y, [0, 600]);
 
-        setXY(withSpring({ x: snapX, y: snapY }));
+      setXY(withSpring({ x: snapX, y: snapY }));
 
-        offset.current = { x: snapX, y: snapY };
-      } else {
-        setXY({
-          x: movementX + offset.current.x,
-          y: movementY + offset.current.y,
-        });
-      }
+      offset.current = { x: snapX, y: snapY };
+    } else {
+      setXY({
+        x: movement.x + offset.current.x,
+        y: movement.y + offset.current.y,
+      });
     }
-  );
+  });
 
   return (
     <animate.div
-      {...bind()}
+      ref={ref}
       style={{
         backgroundColor: '#3399ff',
         width: 200,
