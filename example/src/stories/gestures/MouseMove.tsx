@@ -10,7 +10,7 @@ export const MouseMove = () => {
     []
   );
 
-  useMove(refs, function ({ event }) {
+  useMove(refs, function ({ event, index }) {
     if (open) {
       setX(event.clientX);
       setY(event.clientY);

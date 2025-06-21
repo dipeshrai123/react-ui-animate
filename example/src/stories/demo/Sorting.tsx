@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { createRef, useRef } from 'react';
 import {
   animate,
   useDrag,
@@ -14,11 +14,14 @@ export const Sorting = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
   const [animationY, setAnimationY] = useValue(ITEMS.map((_, i) => i * 70));
   const [zIndex, setZIndex] = useValue(ITEMS.map(() => 0));
+  const boxes = useRef(
+    ITEMS.map((_, i) => createRef<HTMLDivElement>())
+  ).current;
 
-  const bind = useDrag(({ args: [i], down, movementY: my, movementX: mx }) => {
+  useDrag(boxes, ({ index: i, down, movement }) => {
     const index = originalIndex.current.indexOf(i!);
     const newIndex = clamp(
-      Math.round((index * 70 + my) / 70),
+      Math.round((index * 70 + movement.y) / 70),
       0,
       ITEMS.length - 1
     );
@@ -32,11 +35,11 @@ export const Sorting = () => {
     const v = [];
     for (let j = 0; j < ITEMS.length; j++) {
       const isActive = down && j === i;
-      a[j] = isActive ? index * 70 + my : newOrder.indexOf(j) * 70;
+      a[j] = isActive ? index * 70 + movement.y : newOrder.indexOf(j) * 70;
       v[j] = isActive ? 1 : 0;
     }
 
-    setAnimationY(withSpring(a, { damping: 20 }));
+    setAnimationY(withSpring(a));
     setZIndex(v);
   });
 
@@ -45,7 +48,7 @@ export const Sorting = () => {
       {animationY.map((y, i) => (
         <animate.div
           key={i}
-          {...bind(i)}
+          ref={boxes[i]}
           style={{
             padding: 20,
             marginBottom: 20,

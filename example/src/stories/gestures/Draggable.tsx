@@ -1,39 +1,20 @@
 import React, { useRef, useState } from 'react';
-import {
-  useValue,
-  animate,
-  __experimental__,
-  withSpring,
-} from 'react-ui-animate';
-
-const { useDrag, useScroll, useWheel } = __experimental__;
+import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable = () => {
   const ref = useRef<HTMLDivElement>(null);
   const [translateX, setTranslateX] = useValue(0);
   const [enabled, setEnabled] = useState(true);
 
-  // useDrag(
-  //   ref,
-  //   ({ down, movement }) => {
-  //     if (enabled) {
-  //       setTranslateX(down ? withSpring(movement.x) : withSpring(0));
-  //     }
-  //   },
-  //   { threshold: 100 }
-  // );
-
-  // useScroll(
-  //   ref,
-  //   ({ velocity }) => {
-  //     console.log(velocity);
-  //   },
-  //   { velocityLimit: 20 }
-  // );
-
-  useWheel(ref, (obj) => {
-    console.log(obj);
-  });
+  useDrag(
+    ref,
+    ({ down, movement }) => {
+      if (enabled) {
+        setTranslateX(down ? withSpring(movement.x) : withSpring(0));
+      }
+    },
+    { threshold: 100 }
+  );
 
   return (
     <>

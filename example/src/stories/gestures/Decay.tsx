@@ -5,14 +5,15 @@ export const Decay = () => {
   const [translateX, setTranslateX] = useValue(0);
   const offsetX = useRef(0);
   const [animatedVelocityX, setAnimatedVelocityX] = useValue(0);
+  const ref = useRef(null);
 
-  const bind = useDrag(({ down, movementX, velocityX }) => {
-    setAnimatedVelocityX(velocityX);
+  useDrag(ref, ({ down, movement, velocity }) => {
+    setAnimatedVelocityX(velocity.x);
 
     setTranslateX(
       down
-        ? movementX + offsetX.current
-        : withDecay(velocityX, {
+        ? movement.x + offsetX.current
+        : withDecay(velocity.x, {
             onChange: (v) => (offsetX.current = v),
           })
     );
@@ -20,7 +21,7 @@ export const Decay = () => {
 
   return (
     <animate.div
-      {...bind()}
+      ref={ref}
       style={{
         width: 100,
         height: 100,
