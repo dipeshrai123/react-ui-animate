@@ -33,7 +33,7 @@ export const UseMount: React.FC = () => {
                 width: 100,
                 height: 100,
                 backgroundColor: 'teal',
-                opacity: a as any,
+                opacity: a,
               }}
             />
           )
