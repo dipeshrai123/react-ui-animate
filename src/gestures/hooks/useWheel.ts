@@ -27,7 +27,6 @@ export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
   const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
 
   useEffect(() => {
-    const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
     const cleanups = list
       .map((r, i) => {
         if (!r.current) return null;

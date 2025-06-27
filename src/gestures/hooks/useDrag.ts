@@ -11,8 +11,9 @@ export function useDrag<T extends HTMLElement>(
   onDrag: (e: DragEvent & { index: number }) => void,
   config?: DragConfig
 ): void {
+  const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
+
   useEffect(() => {
-    const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
     const cleanups = list
       .map((r, i) => {
         if (!r.current) return null;
@@ -26,9 +27,5 @@ export function useDrag<T extends HTMLElement>(
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [
-    ...(Array.isArray(refs) ? refs.map((r) => r.current) : [refs.current]),
-    onDrag,
-    config,
-  ]);
+  }, [...list.map((r) => r.current), onDrag, config]);
 }

@@ -27,7 +27,6 @@ export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
   const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
 
   useEffect(() => {
-    const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
     const cleanups = list
       .map((r, i) => {
         if (!r.current) return null;
