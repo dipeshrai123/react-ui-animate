@@ -1,6 +1,7 @@
 import { RefObject, useEffect } from 'react';
 
 import { type WheelEvent, WheelGesture } from '../controllers/WheelGesture';
+import { useLatest } from './useLatest';
 
 export function useWheel(
   refs: Window,
@@ -13,10 +14,12 @@ export function useWheel<T extends HTMLElement>(
 ): void;
 
 export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
+  const handlerRef = useLatest(onWheel);
+
   if (refs === window) {
     useEffect(() => {
       const g = new WheelGesture();
-      const handler = (e: WheelEvent) => onWheel({ ...e, index: 0 });
+      const handler = (e: WheelEvent) => handlerRef.current({ ...e, index: 0 });
       g.onChange(handler).onEnd(handler);
       const cleanup = g.attach(window);
       return cleanup;
@@ -31,7 +34,8 @@ export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
       .map((r, i) => {
         if (!r.current) return null;
         const g = new WheelGesture();
-        const handler = (e: WheelEvent) => onWheel({ ...e, index: i });
+        const handler = (e: WheelEvent) =>
+          handlerRef.current({ ...e, index: i });
         g.onChange(handler).onEnd(handler);
         return g.attach(r.current);
       })
@@ -40,5 +44,5 @@ export function useWheel<T extends HTMLElement>(refs: any, onWheel: any): void {
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [...list.map((r) => r.current), onWheel]);
+  }, []);
 }

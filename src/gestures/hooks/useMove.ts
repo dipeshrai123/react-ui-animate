@@ -1,6 +1,7 @@
 import { RefObject, useEffect } from 'react';
 
 import { type MoveEvent, MoveGesture } from '../controllers/MoveGesture';
+import { useLatest } from './useLatest';
 
 export function useMove(
   refs: Window,
@@ -13,10 +14,12 @@ export function useMove<T extends HTMLElement>(
 ): void;
 
 export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
+  const handlerRef = useLatest(onMove);
+
   if (refs === window) {
     useEffect(() => {
       const g = new MoveGesture();
-      const handler = (e: MoveEvent) => onMove({ ...e, index: 0 });
+      const handler = (e: MoveEvent) => handlerRef.current({ ...e, index: 0 });
       g.onChange(handler).onEnd(handler);
       const cleanup = g.attach(window);
       return cleanup;
@@ -31,7 +34,8 @@ export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
       .map((r, i) => {
         if (!r.current) return null;
         const g = new MoveGesture();
-        const handler = (e: MoveEvent) => onMove({ ...e, index: i });
+        const handler = (e: MoveEvent) =>
+          handlerRef.current({ ...e, index: i });
         g.onChange(handler).onEnd(handler);
         return g.attach(r.current);
       })
@@ -40,5 +44,5 @@ export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [...list.map((r) => r.current), onMove]);
+  }, []);
 }

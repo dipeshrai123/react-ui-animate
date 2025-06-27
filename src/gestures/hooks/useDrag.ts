@@ -5,6 +5,7 @@ import {
   type DragEvent,
   DragGesture,
 } from '../controllers/DragGesture';
+import { useLatest } from './useLatest';
 
 export function useDrag<T extends HTMLElement>(
   refs: RefObject<T> | Array<RefObject<T>>,
@@ -12,13 +13,16 @@ export function useDrag<T extends HTMLElement>(
   config?: DragConfig
 ): void {
   const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
+  const handlerRef = useLatest(onDrag);
+  const configRef = useLatest(config);
 
   useEffect(() => {
     const cleanups = list
       .map((r, i) => {
         if (!r.current) return null;
-        const g = new DragGesture(config);
-        const handler = (e: DragEvent) => onDrag({ ...e, index: i });
+        const g = new DragGesture(configRef.current);
+        const handler = (e: DragEvent) =>
+          handlerRef.current({ ...e, index: i });
         g.onChange(handler).onEnd(handler);
         return g.attach(r.current);
       })
@@ -27,5 +31,5 @@ export function useDrag<T extends HTMLElement>(
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [...list.map((r) => r.current), onDrag, config]);
+  }, []);
 }

@@ -1,6 +1,7 @@
 import { RefObject, useEffect } from 'react';
 
 import { type ScrollEvent, ScrollGesture } from '../controllers/ScrollGesture';
+import { useLatest } from './useLatest';
 
 export function useScroll(
   refs: Window,
@@ -16,10 +17,13 @@ export function useScroll<T extends HTMLElement>(
   refs: any,
   onScroll: any
 ): void {
+  const handlerRef = useLatest(onScroll);
+
   if (refs === window) {
     useEffect(() => {
       const g = new ScrollGesture();
-      const handler = (e: ScrollEvent) => onScroll({ ...e, index: 0 });
+      const handler = (e: ScrollEvent) =>
+        handlerRef.current({ ...e, index: 0 });
       g.onChange(handler).onEnd(handler);
       const cleanup = g.attach(window);
       return cleanup;
@@ -34,7 +38,8 @@ export function useScroll<T extends HTMLElement>(
       .map((r, i) => {
         if (!r.current) return null;
         const g = new ScrollGesture();
-        const handler = (e: ScrollEvent) => onScroll({ ...e, index: i });
+        const handler = (e: ScrollEvent) =>
+          handlerRef.current({ ...e, index: i });
         g.onChange(handler).onEnd(handler);
         return g.attach(r.current);
       })
@@ -43,5 +48,5 @@ export function useScroll<T extends HTMLElement>(
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, [...list.map((r) => r.current), onScroll]);
+  }, []);
 }
