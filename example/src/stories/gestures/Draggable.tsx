@@ -6,15 +6,11 @@ export const Draggable = () => {
   const [translateX, setTranslateX] = useValue(0);
   const [enabled, setEnabled] = useState(true);
 
-  useDrag(
-    ref,
-    ({ down, movement }) => {
-      if (enabled) {
-        setTranslateX(down ? withSpring(movement.x) : withSpring(0));
-      }
-    },
-    { threshold: 100 }
-  );
+  useDrag(ref, ({ down, movement }) => {
+    if (enabled) {
+      setTranslateX(down ? withSpring(movement.x) : withSpring(0));
+    }
+  });
 
   return (
     <>
@@ -31,7 +27,12 @@ export const Draggable = () => {
           overflowY: 'scroll',
         }}
       >
-        <div style={{ height: 1000 }} />
+        <div
+          onClick={() => {
+            console.log('clicked');
+          }}
+          style={{ height: 1000 }}
+        />
       </animate.div>
     </>
   );

@@ -26,6 +26,7 @@ export class DragGesture extends Gesture<DragEvent> {
   private start = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
 
+  private pointerCaptured = false;
   private activePointerId: number | null = null;
   private attachedEl: HTMLElement | null = null;
   private pointerDownPos = { x: 0, y: 0 };
@@ -57,8 +58,8 @@ export class DragGesture extends Gesture<DragEvent> {
 
   private onDown(e: PointerEvent) {
     if (e.button !== 0 || !this.attachedEl) return;
-    this.attachedEl.setPointerCapture(e.pointerId);
     this.activePointerId = e.pointerId;
+    this.pointerCaptured = false;
 
     this.start =
       this.thresholdPassed === false && this.start.x === 0 && this.start.y === 0
@@ -82,8 +83,7 @@ export class DragGesture extends Gesture<DragEvent> {
   }
 
   private onMove(e: PointerEvent) {
-    if (this.activePointerId !== e.pointerId) return;
-    e.preventDefault();
+    if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
 
     const threshold = this.config.threshold ?? 0;
     if (!this.thresholdPassed) {
@@ -92,6 +92,13 @@ export class DragGesture extends Gesture<DragEvent> {
       const dist = Math.hypot(dxTotal, dyTotal);
       if (dist < threshold) return;
       this.thresholdPassed = true;
+
+      this.attachedEl.setPointerCapture(e.pointerId);
+      this.pointerCaptured = true;
+    }
+
+    if (this.pointerCaptured) {
+      e.preventDefault();
     }
 
     const dt = Math.max((e.timeStamp - this.lastTime) / 1000, 1e-6);
@@ -145,6 +152,7 @@ export class DragGesture extends Gesture<DragEvent> {
     });
 
     this.activePointerId = null;
+    this.pointerCaptured = false;
   }
 
   private cancel() {
