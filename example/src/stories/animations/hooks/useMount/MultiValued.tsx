@@ -7,8 +7,9 @@ import {
   withSpring,
 } from 'react-ui-animate';
 
-export const UseMount: React.FC = () => {
+const Example: React.FC = () => {
   const [open, setOpen] = React.useState(true);
+
   const mountedValue = useMount(open, {
     from: { width: 200, opacity: 0, translateX: 0, rotate: 0 },
     enter: withSequence([
@@ -21,32 +22,8 @@ export const UseMount: React.FC = () => {
     }),
   });
 
-  const mounted = useMount(open);
-
   return (
     <>
-      {mounted(
-        (a, m) =>
-          m && (
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: 'teal',
-                opacity: a,
-              }}
-            />
-          )
-      )}
-
-      <button
-        onClick={() => {
-          setOpen((prev) => !prev);
-        }}
-      >
-        ANIMATE ME
-      </button>
-
       {mountedValue(({ width, opacity, translateX, rotate }, mounted) => {
         return (
           mounted && (
@@ -58,11 +35,23 @@ export const UseMount: React.FC = () => {
                 height: 100,
                 backgroundColor: 'teal',
                 rotate,
+                borderRadius: 4,
               }}
             />
           )
         );
       })}
+
+      <button
+        className="mt"
+        onClick={() => {
+          setOpen((prev) => !prev);
+        }}
+      >
+        ANIMATE ME
+      </button>
     </>
   );
 };
+
+export default Example;

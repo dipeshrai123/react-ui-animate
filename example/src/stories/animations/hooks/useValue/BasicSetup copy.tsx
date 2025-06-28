@@ -10,7 +10,7 @@ import {
   withDelay,
 } from 'react-ui-animate';
 
-export const UseValue: React.FC = () => {
+const Example: React.FC = () => {
   const [x, setX] = useValue(0);
   const [bg, setBg] = useValue('red');
   const [values, setValues] = useValue([100, 200, 300]);
@@ -264,3 +264,5 @@ export const UseValue: React.FC = () => {
     </>
   );
 };
+
+export default Example;

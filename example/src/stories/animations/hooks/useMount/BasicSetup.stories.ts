@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { UseValue as Example } from './useValue';
+import Example from './BasicSetup';
 
 const meta = {
-  title: 'Core/useValue',
+  title: 'Animations/Hooks/useMount',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const UpdatingValue: Story = {};
+export const BasicSetup: Story = {};

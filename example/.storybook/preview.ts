@@ -7,13 +7,6 @@ const preview: Preview = {
     options: {
       storySort: {
         method: 'alphabetical',
-        order: [
-          'Core',
-          ['useValue', 'useMount'],
-          'Gestures',
-          'Demo',
-          'Examples',
-        ],
       },
     },
     controls: {
