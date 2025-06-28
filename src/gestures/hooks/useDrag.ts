@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject, useEffect, useRef } from 'react';
 
 import {
   type DragConfig,
@@ -12,24 +12,30 @@ export function useDrag<T extends HTMLElement>(
   onDrag: (e: DragEvent & { index: number }) => void,
   config?: DragConfig
 ): void {
-  const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
+  const list = Array.isArray(refs) ? refs : [refs];
   const handlerRef = useLatest(onDrag);
   const configRef = useLatest(config);
+
+  const gesturesRef = useRef<DragGesture[]>(
+    list.map((_, i) => {
+      const g = new DragGesture(configRef.current);
+      const handler = (e: DragEvent) => handlerRef.current({ ...e, index: i });
+      g.onChange(handler).onEnd(handler);
+      return g;
+    })
+  );
 
   useEffect(() => {
     const cleanups = list
       .map((r, i) => {
-        if (!r.current) return null;
-        const g = new DragGesture(configRef.current);
-        const handler = (e: DragEvent) =>
-          handlerRef.current({ ...e, index: i });
-        g.onChange(handler).onEnd(handler);
-        return g.attach(r.current);
+        const el = r.current;
+        if (!el) return null;
+        return gesturesRef.current[i].attach(el);
       })
       .filter((fn): fn is () => void => !!fn);
 
     return () => {
       cleanups.forEach((fn) => fn());
     };
-  }, []);
+  }, [list]);
 }

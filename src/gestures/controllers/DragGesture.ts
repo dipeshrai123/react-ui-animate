@@ -28,7 +28,8 @@ export class DragGesture extends Gesture<DragEvent> {
 
   private pointerCaptured = false;
   private activePointerId: number | null = null;
-  private attachedEl: HTMLElement | null = null;
+  private attachedEls = new Set<HTMLElement>();
+  private activeEl: HTMLElement | null = null;
   private pointerDownPos = { x: 0, y: 0 };
   private thresholdPassed = false;
 
@@ -37,19 +38,27 @@ export class DragGesture extends Gesture<DragEvent> {
     this.config = config;
   }
 
-  attach(element: HTMLElement): () => void {
-    this.attachedEl = element;
+  attach(elements: HTMLElement | HTMLElement[]): () => void {
+    const els = Array.isArray(elements) ? elements : [elements];
     const down = this.onDown.bind(this);
     const move = this.onMove.bind(this);
     const up = this.onUp.bind(this);
 
-    element.addEventListener('pointerdown', down, { passive: false });
+    els.forEach((el) => {
+      this.attachedEls.add(el);
+      el.addEventListener('pointerdown', down, { passive: false });
+    });
+
     window.addEventListener('pointermove', move, { passive: false });
     window.addEventListener('pointerup', up);
     window.addEventListener('pointercancel', up);
 
     return () => {
-      element.removeEventListener('pointerdown', down);
+      els.forEach((el) => {
+        el.removeEventListener('pointerdown', down);
+        this.attachedEls.delete(el);
+      });
+
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
@@ -57,7 +66,12 @@ export class DragGesture extends Gesture<DragEvent> {
   }
 
   private onDown(e: PointerEvent) {
-    if (e.button !== 0 || !this.attachedEl) return;
+    if (e.button !== 0) return;
+
+    const target = e.currentTarget as HTMLElement;
+    if (!this.attachedEls.has(target)) return;
+
+    this.activeEl = target;
     this.activePointerId = e.pointerId;
     this.pointerCaptured = false;
 
@@ -83,7 +97,7 @@ export class DragGesture extends Gesture<DragEvent> {
   }
 
   private onMove(e: PointerEvent) {
-    if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
+    if (this.activePointerId !== e.pointerId || !this.activeEl) return;
 
     const threshold = this.config.threshold ?? 0;
     if (!this.thresholdPassed) {
@@ -93,7 +107,7 @@ export class DragGesture extends Gesture<DragEvent> {
       if (dist < threshold) return;
       this.thresholdPassed = true;
 
-      this.attachedEl.setPointerCapture(e.pointerId);
+      this.activeEl.setPointerCapture(e.pointerId);
       this.pointerCaptured = true;
     }
 
@@ -139,8 +153,8 @@ export class DragGesture extends Gesture<DragEvent> {
   }
 
   private onUp(e: PointerEvent) {
-    if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
-    this.attachedEl.releasePointerCapture(e.pointerId);
+    if (this.activePointerId !== e.pointerId || !this.activeEl) return;
+    this.activeEl.releasePointerCapture(e.pointerId);
 
     this.emitEnd({
       down: false,
@@ -156,9 +170,10 @@ export class DragGesture extends Gesture<DragEvent> {
   }
 
   private cancel() {
-    if (this.attachedEl && this.activePointerId !== null) {
-      this.attachedEl.releasePointerCapture(this.activePointerId);
+    if (this.activeEl && this.activePointerId !== null) {
+      this.activeEl.releasePointerCapture(this.activePointerId);
       this.activePointerId = null;
+      this.activeEl = null;
     }
   }
 }
