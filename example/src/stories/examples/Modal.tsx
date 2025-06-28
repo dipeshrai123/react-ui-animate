@@ -42,10 +42,30 @@ const Modal = ({
                   borderRadius: 4,
                   padding: 20,
                   scale: a.to([0, 1], [0.5, 1]),
+                  translateY: a.to([0, 1], [-100, 0]),
                 }}
               >
-                <button onClick={onClose}>CLOSE MODAL</button>
-                <div>MODAL CONTENT</div>
+                <button
+                  style={{
+                    position: 'absolute',
+                    right: 20,
+                    top: 20,
+                  }}
+                  onClick={onClose}
+                >
+                  CLOSE MODAL
+                </button>
+
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    height: '100%',
+                  }}
+                >
+                  MODAL CONTENT
+                </div>
               </animate.div>
             </animate.div>
           )
@@ -54,7 +74,7 @@ const Modal = ({
   );
 };
 
-export const ModalComp = () => {
+const Example = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -64,3 +84,5 @@ export const ModalComp = () => {
     </>
   );
 };
+
+export default Example;

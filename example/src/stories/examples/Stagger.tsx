@@ -49,7 +49,7 @@ const Stagger = ({ y, children }: any) => {
   );
 };
 
-export default function App() {
+function Example() {
   const [y, setY] = useState(0);
 
   useScroll(window, ({ offset }) => {
@@ -80,3 +80,5 @@ export default function App() {
     </div>
   );
 }
+
+export default Example;

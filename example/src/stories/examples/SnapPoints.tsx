@@ -20,7 +20,7 @@ const SNAP_COORDINATES = [
   { x: 600, y: 200 },
 ];
 
-export function SnapTo() {
+function Example() {
   const [{ x, y }, setXY] = useValue({ x: 0, y: 0 });
   const offset = useRef({ x: 0, y: 0 });
   const ref = useRef(null);
@@ -81,3 +81,5 @@ export function SnapTo() {
     </>
   );
 }
+
+export default Example;

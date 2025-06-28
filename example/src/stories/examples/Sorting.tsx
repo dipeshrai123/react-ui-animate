@@ -10,7 +10,7 @@ import {
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
-export const Sorting = () => {
+const Example = () => {
   const originalIndex = useRef(ITEMS.map((_, i) => i));
   const [animationY, setAnimationY] = useValue(ITEMS.map((_, i) => i * 70));
   const [zIndex, setZIndex] = useValue(ITEMS.map(() => 0));
@@ -77,3 +77,5 @@ export const Sorting = () => {
     </div>
   );
 };
+
+export default Example;

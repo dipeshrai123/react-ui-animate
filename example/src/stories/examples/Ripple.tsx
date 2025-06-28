@@ -34,7 +34,7 @@ function Ripple({
       style={{
         width: RIPPLE_SIZE,
         height: RIPPLE_SIZE,
-        borderRadius: 8,
+        borderRadius: RIPPLE_SIZE / 2,
         position: 'absolute',
         left: x,
         top: y,
@@ -49,7 +49,7 @@ function Ripple({
 
 let _uniqueId = 0;
 
-export function RippleButton() {
+function Example() {
   const [ripples, setRipples] = useState<
     Array<{ id: number; x: number; y: number }>
   >([]);
@@ -107,3 +107,5 @@ export function RippleButton() {
     </button>
   );
 }
+
+export default Example;

@@ -1,10 +1,10 @@
 import { createRef, useMemo, useState } from 'react';
 import { animate, useValue, useMove } from 'react-ui-animate';
 
-export const MouseMove = () => {
+const Example = () => {
   const [open, setOpen] = useState(true);
-  const [x, setX] = useValue(0);
-  const [y, setY] = useValue(0);
+  const [pos, setPos] = useValue({ x: 0, y: 0 });
+
   const refs = useMemo(
     () => Array.from({ length: 5 }, () => createRef<HTMLDivElement>()),
     []
@@ -12,8 +12,7 @@ export const MouseMove = () => {
 
   useMove(refs, function ({ event }) {
     if (open) {
-      setX(event.clientX);
-      setY(event.clientY);
+      setPos({ x: event.clientX, y: event.clientY });
     }
   });
 
@@ -30,25 +29,27 @@ export const MouseMove = () => {
         style={{
           width: 100,
           height: 100,
-          backgroundColor: '#ff0000',
-          translateX: x,
-          translateY: y,
+          backgroundColor: 'teal',
+          borderRadius: 4,
+          translateX: pos.x,
+          translateY: pos.y,
           position: 'fixed',
           top: 0,
           left: 0,
           pointerEvents: 'none',
         }}
       />
-      <div style={{ height: 2000 }} />
 
       {refs.map((r, i) => (
         <div
           key={i}
           ref={r}
           style={{
-            width: 100,
+            width: 400,
             height: 100,
-            backgroundColor: '#3399ff',
+            backgroundColor: '#f1f1f1',
+            borderRadius: 4,
+            border: '1px solid #e1e1e1',
             marginBottom: 10,
           }}
         />
@@ -56,3 +57,5 @@ export const MouseMove = () => {
     </>
   );
 };
+
+export default Example;

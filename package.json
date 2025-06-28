@@ -29,6 +29,7 @@
     "clean": "rimraf -rf dist",
     "build": "npm run clean && rollup -c",
     "start": "npm run clean && rollup -c -w",
+    "start:dev": "cd example && npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:minor": "npm version --no-git-tag-version minor",
     "version:major": "npm version --no-git-tag-version major",

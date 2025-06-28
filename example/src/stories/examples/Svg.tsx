@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useValue, useDrag, animate, withSpring } from 'react-ui-animate';
 
-export function SVGLine() {
+function Example() {
   const [dragX, setDragX] = useValue(0);
   const [followX, setFollowX] = useValue(0);
   const ref = useRef(null);
@@ -37,3 +37,5 @@ export function SVGLine() {
     </div>
   );
 }
+
+export default Example;

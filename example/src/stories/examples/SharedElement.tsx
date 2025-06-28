@@ -19,7 +19,7 @@ const IMAGES = [
   'https://images.unsplash.com/photo-1444464666168-49d633b86797?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1469&q=80',
 ];
 
-export function SharedElement() {
+function Example() {
   const ref = useRef(null);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
@@ -31,9 +31,7 @@ export function SharedElement() {
     translateY: 0,
   });
 
-  useDrag(ref, ({ down, movement, offset }) => {
-    console.log(offset);
-
+  useDrag(ref, ({ down, movement }) => {
     setValue(
       withSpring({
         translateY: down ? clamp(movement.y, 0, 300) : 0,
@@ -169,3 +167,5 @@ export function SharedElement() {
     </>
   );
 }
+
+export default Example;

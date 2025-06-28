@@ -1,13 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { SnapTo as Example } from './SnapTo';
+import Example from './Sorting';
 
 const meta = {
-  title: 'Examples/SnapTo',
+  title: 'Examples/Sorting',
   component: Example,
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const SnapTo: Story = {};
+export const Sorting: Story = {};

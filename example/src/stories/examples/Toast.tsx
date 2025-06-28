@@ -64,7 +64,7 @@ const Toast = ({ id, onEnd }: any) => {
 
 var uniqueId = 0;
 
-export const ToastComp = () => {
+const Example = () => {
   const [elements, setElements] = useState<{ id: number }[]>([]);
 
   const generateToast = () => {
@@ -107,3 +107,5 @@ export const ToastComp = () => {
     </>
   );
 };
+
+export default Example;

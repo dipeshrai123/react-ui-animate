@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { RippleButton as Example } from './Ripple';
+import Example from './Ripple';
 
 const meta = {
   title: 'Examples/RippleButton',

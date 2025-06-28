@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { ToastComp as Example } from './Toast';
+import Example from './Toast';
 
 const meta = {
-  title: 'Demo/Toast',
+  title: 'Examples/Toast',
   component: Example,
 } satisfies Meta<typeof Example>;
 
