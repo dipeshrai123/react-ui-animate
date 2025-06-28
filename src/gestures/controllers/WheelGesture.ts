@@ -10,6 +10,8 @@ export interface WheelEvent {
 }
 
 export class WheelGesture extends Gesture<WheelEvent> {
+  private attachedEls = new Set<HTMLElement | Window>();
+
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
   private velocity = { x: 0, y: 0 };
@@ -17,13 +19,25 @@ export class WheelGesture extends Gesture<WheelEvent> {
   private lastTime = 0;
   private endTimeout?: number;
 
-  attach(element: HTMLElement | Window): () => void {
+  attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
+    const els = Array.isArray(elements) ? elements : [elements];
     const wheel = this.onWheel.bind(this);
-    element.addEventListener('wheel', wheel, { passive: false });
+
+    els.forEach((el) => {
+      this.attachedEls.add(el);
+      el.addEventListener('wheel', wheel, { passive: false });
+    });
 
     return () => {
-      element.removeEventListener('wheel', wheel);
-      if (this.endTimeout != null) clearTimeout(this.endTimeout);
+      els.forEach((el) => {
+        el.removeEventListener('wheel', wheel);
+        this.attachedEls.delete(el);
+      });
+
+      if (this.endTimeout != null) {
+        clearTimeout(this.endTimeout);
+        this.endTimeout = undefined;
+      }
     };
   }
 

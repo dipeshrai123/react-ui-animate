@@ -10,26 +10,33 @@ export interface MoveEvent {
 }
 
 export class MoveGesture extends Gesture<MoveEvent> {
+  private attachedEls = new Set<HTMLElement | Window>();
+
   private prev = { x: 0, y: 0 };
   private lastTime = 0;
-  private attachedEl: HTMLElement | null = null;
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
   private velocity = { x: 0, y: 0 };
   private startPos: { x: number; y: number } | null = null;
 
-  attach(element: HTMLElement | Window): () => void {
-    this.attachedEl = element instanceof HTMLElement ? element : null;
+  attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
+    const els = Array.isArray(elements) ? elements : [elements];
     const move = this.onMove.bind(this);
     const leave = this.onLeave.bind(this);
 
-    element.addEventListener('pointermove', move, { passive: false });
-    element.addEventListener('pointerleave', leave);
+    els.forEach((el) => {
+      this.attachedEls.add(el);
+      el.addEventListener('pointermove', move, { passive: false });
+      el.addEventListener('pointerleave', leave);
+    });
 
     return () => {
-      element.removeEventListener('pointermove', move);
-      element.removeEventListener('pointerleave', leave);
+      els.forEach((el) => {
+        el.removeEventListener('pointermove', move);
+        el.removeEventListener('pointerleave', leave);
+        this.attachedEls.delete(el);
+      });
     };
   }
 
@@ -54,10 +61,12 @@ export class MoveGesture extends Gesture<MoveEvent> {
       y: e.clientY - this.startPos.y,
     };
 
-    const rect = this.attachedEl?.getBoundingClientRect() ?? {
-      left: 0,
-      top: 0,
-    };
+    const tgt = e.currentTarget as HTMLElement | Window;
+    const rect =
+      tgt instanceof HTMLElement
+        ? tgt.getBoundingClientRect()
+        : { left: 0, top: 0 };
+
     this.offset = {
       x: e.clientX - rect.left,
       y: e.clientY - rect.top,

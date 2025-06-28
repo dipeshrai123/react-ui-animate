@@ -10,7 +10,7 @@ export interface ScrollEvent {
 }
 
 export class ScrollGesture extends Gesture<ScrollEvent> {
-  private attachedEl: HTMLElement | null = null;
+  private attachedEls = new Set<HTMLElement | Window>();
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
@@ -20,15 +20,25 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
   private lastTime = 0;
   private endTimeout?: number;
 
-  attach(element: HTMLElement | Window): () => void {
-    this.attachedEl = element instanceof HTMLElement ? element : null;
+  attach(elements: HTMLElement | Window): () => void {
+    const els = Array.isArray(elements) ? elements : [elements];
     const scroll = this.onScroll.bind(this);
 
-    element.addEventListener('scroll', scroll, { passive: true });
+    els.forEach((el) => {
+      this.attachedEls.add(el);
+      el.addEventListener('scroll', scroll, { passive: true });
+    });
 
     return () => {
-      element.removeEventListener('scroll', scroll);
-      if (this.endTimeout != null) clearTimeout(this.endTimeout);
+      els.forEach((el) => {
+        el.removeEventListener('scroll', scroll);
+        this.attachedEls.delete(el);
+      });
+
+      if (this.endTimeout != null) {
+        clearTimeout(this.endTimeout);
+        this.endTimeout = undefined;
+      }
     };
   }
 
@@ -37,8 +47,9 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
     const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
     this.lastTime = now;
 
-    const x = this.attachedEl ? this.attachedEl.scrollLeft : window.scrollX;
-    const y = this.attachedEl ? this.attachedEl.scrollTop : window.scrollY;
+    const tgt = e.currentTarget as HTMLElement | Window;
+    const x = tgt instanceof HTMLElement ? tgt.scrollLeft : window.scrollX;
+    const y = tgt instanceof HTMLElement ? tgt.scrollTop : window.scrollY;
 
     const dx = x - this.prevScroll.x;
     const dy = y - this.prevScroll.y;
