@@ -38,8 +38,10 @@ export class DragGesture extends Gesture<DragEvent> {
     this.config = config;
   }
 
-  attach(elements: HTMLElement | HTMLElement[]): () => void {
-    const els = Array.isArray(elements) ? elements : [elements];
+  attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
+    if (elements === window) return () => {};
+
+    const els = Array.isArray(elements) ? elements : [elements as HTMLElement];
     const down = this.onDown.bind(this);
     const move = this.onMove.bind(this);
     const up = this.onUp.bind(this);

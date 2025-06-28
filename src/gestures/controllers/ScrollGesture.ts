@@ -20,7 +20,7 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
   private lastTime = 0;
   private endTimeout?: number;
 
-  attach(elements: HTMLElement | Window): () => void {
+  attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
     const els = Array.isArray(elements) ? elements : [elements];
     const scroll = this.onScroll.bind(this);
 
@@ -41,6 +41,8 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
       }
     };
   }
+
+  cancel(): void {}
 
   private onScroll(e: Event) {
     const now = Date.now();

@@ -41,6 +41,8 @@ export class WheelGesture extends Gesture<WheelEvent> {
     };
   }
 
+  cancel(): void {}
+
   private onWheel(e: globalThis.WheelEvent) {
     e.preventDefault();
 

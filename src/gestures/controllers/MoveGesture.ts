@@ -40,6 +40,8 @@ export class MoveGesture extends Gesture<MoveEvent> {
     };
   }
 
+  cancel(): void {}
+
   private onMove(e: PointerEvent) {
     const now = e.timeStamp;
 

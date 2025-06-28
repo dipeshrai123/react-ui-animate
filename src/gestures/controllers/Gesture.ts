@@ -24,5 +24,7 @@ export abstract class Gesture<E> {
     this.endListeners.forEach((fn) => fn(event));
   }
 
-  abstract attach(element: HTMLElement): () => void;
+  abstract attach(elements: HTMLElement | HTMLElement | Window): () => void;
+
+  abstract cancel(): void;
 }
