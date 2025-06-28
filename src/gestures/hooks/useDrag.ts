@@ -38,4 +38,11 @@ export function useDrag<T extends HTMLElement>(
       cleanups.forEach((fn) => fn());
     };
   }, [list]);
+
+  useEffect(
+    () => () => {
+      gesturesRef.current.forEach((g) => g.cancel());
+    },
+    []
+  );
 }

@@ -169,7 +169,7 @@ export class DragGesture extends Gesture<DragEvent> {
     this.pointerCaptured = false;
   }
 
-  private cancel() {
+  cancel() {
     if (this.activeEl && this.activePointerId !== null) {
       this.activeEl.releasePointerCapture(this.activePointerId);
       this.activePointerId = null;
