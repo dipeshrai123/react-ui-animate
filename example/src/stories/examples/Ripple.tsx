@@ -81,16 +81,13 @@ function Example() {
     <button
       onClick={addRipple}
       style={{
-        backgroundColor: '#3399ff',
-        border: 'none',
-        fontSize: 18,
-        width: 200,
+        backgroundColor: 'teal',
+        border: '2px solid #497d52',
         position: 'relative',
         overflow: 'hidden',
-        padding: 20,
-        borderRadius: 8,
+        padding: '12px 16px',
+        borderRadius: 4,
         color: 'white',
-        boxShadow: '0px 4px 8px rgba(0,0,0,0.2)',
         cursor: 'pointer',
       }}
     >

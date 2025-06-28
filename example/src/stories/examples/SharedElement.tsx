@@ -120,6 +120,7 @@ function Example() {
                 height: BOX_SIZE,
                 backgroundColor: '#e1e1e1',
                 cursor: 'pointer',
+                borderRadius: 4,
                 ...imageStyle,
               }}
               onClick={() => setActiveIndex(index)}
@@ -150,6 +151,7 @@ function Example() {
                   width,
                   height,
                   translateY,
+                  borderRadius: 4,
                   color: 'white',
                   display: 'flex',
                   justifyContent: 'center',

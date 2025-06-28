@@ -1,4 +1,4 @@
-import { createRef, useRef } from 'react';
+import { createRef, useRef, useState } from 'react';
 import {
   animate,
   useDrag,
@@ -17,8 +17,10 @@ const Example = () => {
   const boxes = useRef(
     ITEMS.map((_, i) => createRef<HTMLDivElement>())
   ).current;
+  const [activeIndex, setActiveIndex] = useState<number>(-1);
 
   useDrag(boxes, ({ index: i, down, movement }) => {
+    setActiveIndex(down ? i : -1);
     const index = originalIndex.current.indexOf(i!);
 
     const newIndex = clamp(
@@ -55,20 +57,22 @@ const Example = () => {
             marginBottom: 20,
             position: 'absolute',
             backgroundColor: '#fff',
-            fontWeight: 'bold',
             fontSize: 20,
             height: 60,
             userSelect: 'none',
-            color: '#353535',
             left: 0,
             top: 0,
             right: 0,
-            boxShadow: '0px 2px 4px rgba(0,0,0,0.2)',
             border: '1px solid #e1e1e1',
             borderRadius: 4,
             translateY: y,
             cursor: 'grabbing',
             zIndex: zIndex[i],
+            boxShadow:
+              activeIndex === i ? '0 8px 16px rgba(0,0,0,0.12)' : 'none',
+            transition: 'box-shadow 0.4s ease',
+            display: 'flex',
+            alignItems: 'center',
           }}
         >
           {ITEMS[i]}
