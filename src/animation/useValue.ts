@@ -1,9 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
 import { filterCallbackOptions, isDescriptor } from './helpers';
-import type { Primitive, Descriptor } from './types';
+import type { Primitive, Descriptor, AnimationController } from './types';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 
@@ -17,7 +17,9 @@ type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
 export function useValue<T extends Base>(
   initial: T
-): [ValueReturn<T>, (to: Base | Descriptor) => void] {
+): [ValueReturn<T>, (to: Base | Descriptor) => void, AnimationController] {
+  const controllerRef = useRef<AnimationController | null>(null);
+
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
       return initial.map((v) => new MotionValue(v));
@@ -33,7 +35,7 @@ export function useValue<T extends Base>(
   }, []) as ValueReturn<T>;
 
   function set(to: Base | Descriptor) {
-    let ctrl: any = null;
+    let ctrl: AnimationController | null = null;
 
     if (Array.isArray(initial)) {
       ctrl = handleArray(
@@ -52,10 +54,19 @@ export function useValue<T extends Base>(
       );
     }
 
+    controllerRef.current = ctrl;
     if (ctrl) ctrl.start();
   }
 
-  return [value, set] as const;
+  const controls = {
+    start: () => controllerRef.current?.start(),
+    pause: () => controllerRef.current?.pause(),
+    resume: () => controllerRef.current?.resume(),
+    cancel: () => controllerRef.current?.cancel(),
+    reset: () => controllerRef.current?.reset(),
+  };
+
+  return [value, set, controls] as const;
 }
 
 function handlePrimitive(
@@ -64,7 +75,7 @@ function handlePrimitive(
 ) {
   if (typeof to === 'number' || typeof to === 'string') {
     mv.set(to);
-    return;
+    return null;
   }
 
   if (to.type === 'sequence') {
@@ -75,7 +86,7 @@ function handlePrimitive(
 
   if (to.type === 'loop') {
     const animation = to.options?.animation;
-    if (!animation) return;
+    if (!animation) return null;
 
     if (animation.type === 'sequence') {
       const animations = animation.options?.animations ?? [];
