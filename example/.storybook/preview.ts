@@ -8,11 +8,10 @@ const preview: Preview = {
       storySort: {
         method: 'alphabetical',
         order: [
-          'Core',
-          ['useValue', 'useMount'],
+          'Animations',
+          ['Hooks', ['useValue', 'useMount']],
           'Gestures',
-          'Demo',
-          'Examples',
+          '*',
         ],
       },
     },
