@@ -54,7 +54,7 @@ export interface Descriptor {
     Callbacks;
 }
 
-export interface AnimationController {
+export interface Controls {
   start(): void;
   pause(): void;
   resume(): void;

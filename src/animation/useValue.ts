@@ -3,7 +3,7 @@ import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
 import { buildAnimation, buildParallel } from './drivers';
 import { filterCallbackOptions, isDescriptor } from './helpers';
-import type { Primitive, Descriptor, AnimationController } from './types';
+import type { Primitive, Descriptor, Controls } from './types';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 
@@ -17,8 +17,8 @@ type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
 export function useValue<T extends Base>(
   initial: T
-): [ValueReturn<T>, (to: Base | Descriptor) => void, AnimationController] {
-  const controllerRef = useRef<AnimationController | null>(null);
+): [ValueReturn<T>, (to: Base | Descriptor) => void, Controls] {
+  const controllerRef = useRef<Controls | null>(null);
 
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
@@ -35,7 +35,7 @@ export function useValue<T extends Base>(
   }, []) as ValueReturn<T>;
 
   function set(to: Base | Descriptor) {
-    let ctrl: AnimationController | null = null;
+    let ctrl: Controls | null = null;
 
     if (Array.isArray(initial)) {
       ctrl = handleArray(
