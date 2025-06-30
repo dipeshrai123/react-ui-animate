@@ -1,18 +1,18 @@
 import { useLayoutEffect, useState } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
 
+import { withSpring } from '../descriptors';
+import { isDescriptor } from '../helpers';
+import type { Primitive, Descriptor } from '../types';
 import { useValue } from './useValue';
-import { isDescriptor } from './helpers';
-import { withSpring } from './descriptors';
-import type { Primitive, Descriptor } from './types';
 
-type ConfigSingle<T extends Primitive> = {
+export type ConfigSingle<T extends Primitive> = {
   from?: T;
   enter?: T | Descriptor;
   exit?: T | Descriptor;
 };
 
-type ConfigMulti<I extends Record<string, Primitive>> = {
+export type ConfigMulti<I extends Record<string, Primitive>> = {
   from: I;
   enter?: I | Descriptor;
   exit?: I | Descriptor;
