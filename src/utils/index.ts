@@ -1,11 +1,3 @@
-export function bin(bool: boolean) {
-  return bool ? 1 : 0;
-}
-
-export function mix(perc: number, val1: number, val2: number) {
-  return val1 * (1 - perc) + val2 * perc;
-}
-
 export function clamp(value: number, lowerbound: number, upperbound: number) {
   return Math.min(Math.max(value, lowerbound), upperbound);
 }
