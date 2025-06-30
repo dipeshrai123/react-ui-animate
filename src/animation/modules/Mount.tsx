@@ -22,11 +22,11 @@ interface MountPropsMulti<I extends Record<string, Primitive>>
 
 export function Mount<T extends Primitive = number>(
   props: MountPropsSingle<T>
-): ReactNode;
+): JSX.Element;
 
 export function Mount<I extends Record<string, Primitive>>(
   props: MountPropsMulti<I>
-): ReactNode;
+): JSX.Element;
 
 export function Mount({
   state,
