@@ -1,9 +1,9 @@
 import { useMemo, useRef } from 'react';
 import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
 
-import { buildAnimation, buildParallel } from './drivers';
-import { filterCallbackOptions, isDescriptor } from './helpers';
-import type { Primitive, Descriptor, Controls } from './types';
+import { buildAnimation, buildParallel } from '../drivers';
+import { filterCallbackOptions, isDescriptor } from '../helpers';
+import type { Primitive, Descriptor, Controls } from '../types';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 

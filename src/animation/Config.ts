@@ -1,6 +1,6 @@
 import { Easing } from '@raidipesh78/re-motion';
 
-export const AnimationConfig = {
+export const Config = {
   Timing: {
     BOUNCE: { duration: 500, easing: Easing.bounce },
     EASE_IN: { duration: 500, easing: Easing.in(Easing.ease) },

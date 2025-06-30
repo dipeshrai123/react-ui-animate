@@ -1,15 +1,10 @@
 import React from 'react';
-import {
-  animate,
-  AnimationConfig,
-  useMount,
-  withSpring,
-} from 'react-ui-animate';
+import { animate, Config, useMount, withSpring } from 'react-ui-animate';
 
 const Example: React.FC = () => {
   const [open, setOpen] = React.useState(true);
   const mounted = useMount(open, {
-    enter: withSpring(1, AnimationConfig.Spring.WOBBLE),
+    enter: withSpring(1, Config.Spring.WOBBLE),
   });
 
   return (
