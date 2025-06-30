@@ -1,4 +1,4 @@
-import { AnimationConfig } from './Config';
+import { Config } from './Config';
 import {
   Callbacks,
   DecayOptions,
@@ -14,9 +14,9 @@ export const withSpring = (
   type: 'spring',
   to,
   options: {
-    stiffness: opts?.stiffness ?? AnimationConfig.Spring.EASE.stiffness,
-    damping: opts?.damping ?? AnimationConfig.Spring.EASE.damping,
-    mass: opts?.mass ?? AnimationConfig.Spring.EASE.mass,
+    stiffness: opts?.stiffness ?? Config.Spring.EASE.stiffness,
+    damping: opts?.damping ?? Config.Spring.EASE.damping,
+    mass: opts?.mass ?? Config.Spring.EASE.mass,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,
