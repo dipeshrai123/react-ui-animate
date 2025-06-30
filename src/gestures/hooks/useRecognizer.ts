@@ -61,7 +61,7 @@ export function useRecognizer<T extends HTMLElement, C, E>(
       .filter((fn): fn is () => void => !!fn);
 
     return () => cleanups.forEach((fn) => fn());
-  }, [list]);
+  }, [list.map((r) => r.current)]);
 }
 
 function useLatest<T>(value: T) {

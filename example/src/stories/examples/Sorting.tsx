@@ -1,4 +1,4 @@
-import { createRef, useRef, useState } from 'react';
+import { createRef, useMemo, useRef, useState } from 'react';
 import {
   animate,
   useDrag,
@@ -17,10 +17,8 @@ const Example = () => {
   const boxes = useRef(
     ITEMS.map((_, i) => createRef<HTMLDivElement>())
   ).current;
-  const [activeIndex, setActiveIndex] = useState<number>(-1);
 
   useDrag(boxes, ({ index: i, down, movement }) => {
-    setActiveIndex(down ? i : -1);
     const index = originalIndex.current.indexOf(i!);
 
     const newIndex = clamp(
@@ -46,39 +44,48 @@ const Example = () => {
     setZIndex(v);
   });
 
+  const boxShadows = useMemo(
+    () =>
+      zIndex.map((z) =>
+        z.to((v) => (v === 1 ? '0 8px 16px rgba(0,0,0,0.12)' : 'none'))
+      ),
+    [zIndex]
+  );
+
   return (
-    <div style={{ position: 'relative', width: 300, margin: '40px auto' }}>
-      {animationY.map((y, i) => (
-        <animate.div
-          key={i}
-          ref={boxes[i]}
-          style={{
-            padding: 20,
-            marginBottom: 20,
-            position: 'absolute',
-            backgroundColor: '#fff',
-            fontSize: 20,
-            height: 60,
-            userSelect: 'none',
-            left: 0,
-            top: 0,
-            right: 0,
-            border: '1px solid #e1e1e1',
-            borderRadius: 4,
-            translateY: y,
-            cursor: 'grabbing',
-            zIndex: zIndex[i],
-            boxShadow:
-              activeIndex === i ? '0 8px 16px rgba(0,0,0,0.12)' : 'none',
-            transition: 'box-shadow 0.4s ease',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          {ITEMS[i]}
-        </animate.div>
-      ))}
-    </div>
+    <>
+      <div style={{ position: 'relative', width: 300, margin: '40px auto' }}>
+        {animationY.map((y, i) => (
+          <animate.div
+            key={i}
+            ref={boxes[i]}
+            style={{
+              padding: 20,
+              marginBottom: 20,
+              position: 'absolute',
+              backgroundColor: '#fff',
+              fontSize: 20,
+              height: 60,
+              userSelect: 'none',
+              left: 0,
+              top: 0,
+              right: 0,
+              border: '1px solid #e1e1e1',
+              borderRadius: 4,
+              translateY: y,
+              cursor: 'grabbing',
+              zIndex: zIndex[i],
+              boxShadow: boxShadows[i],
+              transition: 'box-shadow 0.4s ease',
+              display: 'flex',
+              alignItems: 'center',
+            }}
+          >
+            {ITEMS[i]}
+          </animate.div>
+        ))}
+      </div>
+    </>
   );
 };
 
