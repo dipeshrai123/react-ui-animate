@@ -1,4 +1,4 @@
-import { AnimationConfig } from './AnimationConfig';
+import { AnimationConfig } from './Config';
 import {
   Callbacks,
   DecayOptions,
