@@ -1,28 +1,30 @@
 import { RefObject, useEffect, useRef } from 'react';
 
-function useLatest<T>(value: T) {
-  const ref = useRef(value);
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
-  return ref as React.MutableRefObject<T>;
+interface GestureInstance<E> {
+  onChange(handler: (event: E) => void): this;
+  onEnd(handler: (event: E) => void): this;
+  attach(target: Window | HTMLElement): () => void;
 }
 
-export function useRecognizer<T extends HTMLElement>(
-  GestureConstructor: any,
+interface GestureConstructor<C, E> {
+  new (config?: C): GestureInstance<E>;
+}
+
+export function useRecognizer<T extends HTMLElement, C, E>(
+  GestureClass: GestureConstructor<C, E>,
   refs: Window | RefObject<T> | Array<RefObject<T>>,
-  onEvent: (e: any & { index: number }) => void,
-  config?: Record<string, any>
+  onEvent: (e: E & { index: number }) => void,
+  config?: C
 ) {
   const handlerRef = useLatest(onEvent);
   const configRef = useLatest(config);
 
   if (refs === window) {
-    const gestureRef = useRef<any>();
+    const gestureRef = useRef<GestureInstance<E>>();
 
     if (!gestureRef.current) {
-      const g = new GestureConstructor(configRef.current);
-      const handler = (e: any) => handlerRef.current({ ...e, index: 0 });
+      const g = new GestureClass(configRef.current);
+      const handler = (e: E) => handlerRef.current({ ...e, index: 0 });
       g.onChange(handler).onEnd(handler);
       gestureRef.current = g;
     }
@@ -38,14 +40,12 @@ export function useRecognizer<T extends HTMLElement>(
   }
 
   const list = Array.isArray(refs) ? refs : ([refs] as RefObject<T>[]);
-  const gesturesRef = useRef<any[]>([]);
+  const gesturesRef = useRef<GestureInstance<E>[]>([]);
 
   if (gesturesRef.current.length !== list.length) {
     gesturesRef.current = list.map((_, i) => {
-      const g = configRef.current
-        ? new GestureConstructor(configRef.current)
-        : new GestureConstructor();
-      const handler = (e: any) => handlerRef.current({ ...e, index: i });
+      const g = new GestureClass(configRef.current);
+      const handler = (e: E) => handlerRef.current({ ...e, index: i });
       g.onChange(handler).onEnd(handler);
       return g;
     });
@@ -62,4 +62,12 @@ export function useRecognizer<T extends HTMLElement>(
 
     return () => cleanups.forEach((fn) => fn());
   }, [list]);
+}
+
+function useLatest<T>(value: T) {
+  const ref = useRef(value);
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref as React.MutableRefObject<T>;
 }
