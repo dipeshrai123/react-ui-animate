@@ -1,9 +1,9 @@
 import {
   animate,
+  Easing,
   useValue,
   withSpring,
   withTiming,
-  Easing,
   withDecay,
   withSequence,
 } from 'react-ui-animate';
@@ -36,7 +36,7 @@ export const SequenceTransition = () => {
             withSequence([
               withTiming(200, { duration: 5000, easing: Easing.elastic() }),
               withSpring(400),
-              withDecay({ velocity: 1 }),
+              withDecay(1),
             ])
           );
         }}

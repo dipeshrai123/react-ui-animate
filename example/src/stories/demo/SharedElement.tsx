@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
-  useValue,
   clamp,
   animate,
-  withTiming,
-  withSequence,
-  withSpring,
   useDrag,
+  useValue,
+  withTiming,
+  withSpring,
+  withSequence,
   useMount,
 } from 'react-ui-animate';
 
@@ -20,6 +20,7 @@ const IMAGES = [
 ];
 
 export function SharedElement() {
+  const ref = useRef(null);
   const [activeIndex, setActiveIndex] = React.useState<number | null>(null);
 
   const [{ left, top, width, height, translateY }, setValue] = useValue({
@@ -30,39 +31,41 @@ export function SharedElement() {
     translateY: 0,
   });
 
-  const bind = useDrag(({ down, movementY }) => {
-    setValue({
-      translateY: down ? withSpring(clamp(movementY, 0, 300)) : withSpring(0),
-    });
+  useDrag(ref, ({ down, movement, offset }) => {
+    console.log(offset);
 
-    if (!down && movementY > 200) {
+    setValue(
+      withSpring({
+        translateY: down ? clamp(movement.y, 0, 300) : 0,
+      })
+    );
+
+    if (movement.y > 200 && !down) {
       closeSharedElement();
     }
   });
 
   React.useLayoutEffect(() => {
     if (activeIndex !== null) {
-      const activeBox = document.getElementById(`box-${activeIndex}`);
-      const clientRect = activeBox!.getBoundingClientRect();
+      const box = document.getElementById(`box-${activeIndex}`)!;
+      const { left, top, width, height } = box.getBoundingClientRect();
 
-      setValue({
-        left: withSequence([
-          withTiming(clientRect.left, { duration: 0 }),
-          withSpring(0),
-        ]),
-        top: withSequence([
-          withTiming(clientRect.top, { duration: 0 }),
-          withSpring(0),
-        ]),
-        width: withSequence([
-          withTiming(clientRect.width, { duration: 0 }),
-          withSpring(window.innerWidth),
-        ]),
-        height: withSequence([
-          withTiming(clientRect.height, { duration: 0 }),
-          withSpring(window.innerHeight),
-        ]),
-      });
+      setValue(
+        withSequence([
+          withTiming({ left, top, width, height }, { duration: 0 }),
+          withSpring(
+            {
+              left: 0,
+              top: 0,
+              width: window.innerWidth,
+              height: window.innerHeight,
+            },
+            {
+              damping: 14,
+            }
+          ),
+        ])
+      );
     }
   }, [activeIndex, setValue]);
 
@@ -71,14 +74,21 @@ export function SharedElement() {
       const activeBox = document.getElementById(`box-${activeIndex}`);
       const clientRect = activeBox!.getBoundingClientRect();
 
-      setValue({
-        left: withSpring(clientRect.left),
-        top: withSpring(clientRect.top),
-        width: withSpring(clientRect.width),
-        height: withSpring(clientRect.height, {
-          onRest: () => setActiveIndex(null),
-        }),
-      });
+      setValue(
+        withSpring(
+          {
+            left: clientRect.left,
+            top: clientRect.top,
+            width: clientRect.width,
+            height: clientRect.height,
+            translateY: 0,
+          },
+          {
+            onComplete: () => setActiveIndex(null),
+            damping: 14,
+          }
+        )
+      );
     }
   };
 
@@ -134,7 +144,7 @@ export function SharedElement() {
               }}
             >
               <animate.div
-                {...bind()}
+                ref={ref}
                 style={{
                   position: 'absolute',
                   left,

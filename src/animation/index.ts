@@ -1,12 +1,12 @@
-export { useValue, useMount, useAnimatedList } from './hooks';
+export { useValue } from './useValue';
+export { useMount } from './useMount';
 export {
+  withDecay,
+  withDelay,
+  withLoop,
+  withSequence,
   withSpring,
   withTiming,
-  withSequence,
-  withDelay,
-  withDecay,
-  withLoop,
-  withEase,
-} from './controllers';
+} from './descriptors';
 export { AnimationConfig } from './AnimationConfig';
-export { interpolateNumbers } from './interpolation';
+export { to } from './to';

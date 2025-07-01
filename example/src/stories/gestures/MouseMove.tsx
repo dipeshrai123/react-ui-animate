@@ -1,15 +1,19 @@
-import React from 'react';
-import { animate, useValue, useMouseMove } from 'react-ui-animate';
+import { createRef, useMemo, useState } from 'react';
+import { animate, useValue, useMove } from 'react-ui-animate';
 
 export const MouseMove = () => {
-  const [open, setOpen] = React.useState(true);
+  const [open, setOpen] = useState(true);
   const [x, setX] = useValue(0);
   const [y, setY] = useValue(0);
+  const refs = useMemo(
+    () => Array.from({ length: 5 }, () => createRef<HTMLDivElement>()),
+    []
+  );
 
-  const bind = useMouseMove(function ({ mouseX, mouseY }) {
+  useMove(refs, function ({ event, index }) {
     if (open) {
-      setX(mouseX);
-      setY(mouseY);
+      setX(event.clientX);
+      setY(event.clientY);
     }
   });
 
@@ -37,20 +41,18 @@ export const MouseMove = () => {
       />
       <div style={{ height: 2000 }} />
 
-      {Array(5)
-        .fill(null)
-        .map((_, i) => (
-          <div
-            key={i}
-            {...bind(i)}
-            style={{
-              width: 100,
-              height: 100,
-              backgroundColor: '#3399ff',
-              marginBottom: 10,
-            }}
-          />
-        ))}
+      {refs.map((r, i) => (
+        <div
+          key={i}
+          ref={r}
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: '#3399ff',
+            marginBottom: 10,
+          }}
+        />
+      ))}
     </>
   );
 };

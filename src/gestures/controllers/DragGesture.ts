@@ -1,178 +1,156 @@
-import { attachEvents } from '../helpers/eventAttacher';
-import { clamp } from '../helpers/math';
-import { withDefault } from '../helpers/withDefault';
+import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
 
-import type { Vector2 } from '../types';
+export interface DragEvent {
+  down: boolean;
+  movement: { x: number; y: number };
+  offset: { x: number; y: number };
+  velocity: { x: number; y: number };
+  event: PointerEvent;
+  cancel: () => void;
+}
 
-export class DragGesture extends Gesture {
-  movementStart: Vector2 = withDefault(0, 0);
-  initialMovement: Vector2 = withDefault(0, 0);
-  movement: Vector2 = withDefault(0, 0);
-  previousMovement: Vector2 = withDefault(0, 0);
-  translation: Vector2 = withDefault(0, 0);
-  offset: Vector2 = withDefault(0, 0);
-  velocity: Vector2 = withDefault(0, 0);
+export interface DragConfig {
+  threshold?: number;
+  axis?: 'x' | 'y';
+  initial?: () => { x: number; y: number };
+}
 
-  // @override
-  // initialize the events
-  _initEvents() {
-    if (this.targetElement || this.targetElements.length > 0) {
-      this._subscribe = attachEvents(
-        [window],
-        [
-          ['mousedown', this.pointerDown.bind(this)],
-          ['mousemove', this.pointerMove.bind(this)],
-          ['mouseup', this.pointerUp.bind(this)],
-          ['touchstart', this.pointerDown.bind(this), { passive: false }],
-          ['touchmove', this.pointerMove.bind(this), { passive: false }],
-          ['touchend', this.pointerUp.bind(this)],
-        ]
-      );
-    }
+export class DragGesture extends Gesture<DragEvent> {
+  private config: DragConfig;
+  private prev = { x: 0, y: 0 };
+  private lastTime = 0;
+
+  private movement = { x: 0, y: 0 };
+  private velocity = { x: 0, y: 0 };
+  private start = { x: 0, y: 0 };
+  private offset = { x: 0, y: 0 };
+
+  private activePointerId: number | null = null;
+  private attachedEl: HTMLElement | null = null;
+  private pointerDownPos = { x: 0, y: 0 };
+  private thresholdPassed = false;
+
+  constructor(config: DragConfig = {}) {
+    super();
+    this.config = config;
   }
 
-  // @override - cancel events
-  // we only canceled down and move events because mouse up
-  // will not be triggered
-  _cancelEvents() {
-    if (this._subscribe) {
-      this._subscribe(['mousedown', 'mousemove', 'touchstart', 'touchmove']);
-    }
+  attach(element: HTMLElement): () => void {
+    this.attachedEl = element;
+    const down = this.onDown.bind(this);
+    const move = this.onMove.bind(this);
+    const up = this.onUp.bind(this);
+
+    element.addEventListener('pointerdown', down, { passive: false });
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', up);
+
+    return () => {
+      element.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', up);
+    };
   }
 
-  _handleCallback() {
-    if (this.callback) {
-      this.callback({
-        args: [this.currentIndex],
-        down: this.isActive,
-        movementX: this.movement.x,
-        movementY: this.movement.y,
-        offsetX: this.translation.x,
-        offsetY: this.translation.y,
-        velocityX: this.velocity.x,
-        velocityY: this.velocity.y,
-        distanceX: Math.abs(this.movement.x),
-        distanceY: Math.abs(this.movement.y),
-        directionX: Math.sign(this.movement.x),
-        directionY: Math.sign(this.movement.y),
-        cancel: () => {
-          this._cancelEvents();
-        },
-      });
-    }
+  private onDown(e: PointerEvent) {
+    if (e.button !== 0 || !this.attachedEl) return;
+    this.attachedEl.setPointerCapture(e.pointerId);
+    this.activePointerId = e.pointerId;
+
+    this.start =
+      this.thresholdPassed === false && this.start.x === 0 && this.start.y === 0
+        ? this.config.initial?.() ?? { x: 0, y: 0 }
+        : { ...this.offset };
+    this.offset = { ...this.start };
+
+    this.pointerDownPos = { x: e.clientX, y: e.clientY };
+    this.thresholdPassed = false;
+    this.prev = { x: e.clientX, y: e.clientY };
+    this.lastTime = e.timeStamp;
+
+    this.emitChange({
+      down: true,
+      movement: { x: 0, y: 0 },
+      offset: { ...this.offset },
+      velocity: { x: 0, y: 0 },
+      event: e,
+      cancel: this.cancel.bind(this),
+    });
   }
 
-  pointerDown(e: any) {
-    if (e.type === 'touchstart') {
-      this.movementStart = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-      };
-    } else {
-      this.movementStart = { x: e.clientX, y: e.clientY };
+  private onMove(e: PointerEvent) {
+    if (this.activePointerId !== e.pointerId) return;
+    e.preventDefault();
+
+    const threshold = this.config.threshold ?? 0;
+    if (!this.thresholdPassed) {
+      const dxTotal = e.clientX - this.pointerDownPos.x;
+      const dyTotal = e.clientY - this.pointerDownPos.y;
+      const dist = Math.hypot(dxTotal, dyTotal);
+      if (dist < threshold) return;
+      this.thresholdPassed = true;
     }
 
-    this.movement = { x: 0, y: 0 };
-    this.offset = { x: this.translation.x, y: this.translation.y };
-    this.previousMovement = { x: 0, y: 0 };
-    this.velocity = { x: 0, y: 0 };
+    const dt = Math.max((e.timeStamp - this.lastTime) / 1000, 1e-6);
+    this.lastTime = e.timeStamp;
+    const dx = e.clientX - this.prev.x;
+    const dy = e.clientY - this.prev.y;
+    const rawX = dx / dt / 1000;
+    const rawY = dy / dt / 1000;
+    this.velocity = {
+      x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
+      y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
+    };
 
-    // find current selected element
-    const currElem = this.targetElements.find((elem: any) => elem === e.target);
+    const moveRaw = {
+      x: e.clientX - this.pointerDownPos.x,
+      y: e.clientY - this.pointerDownPos.y,
+    };
+    this.movement = {
+      x: this.config.axis === 'y' ? 0 : moveRaw.x,
+      y: this.config.axis === 'x' ? 0 : moveRaw.y,
+    };
 
-    if (e.target === this.targetElement || currElem) {
-      this.isActive = true;
-      e.preventDefault();
+    this.offset = {
+      x: this.start.x + this.movement.x,
+      y: this.start.y + this.movement.y,
+    };
 
-      // set args
-      if (currElem) {
-        this.currentIndex = this.targetElements.indexOf(currElem);
-      }
+    this.prev = { x: e.clientX, y: e.clientY };
 
-      // if initial function is defined then call it to get initial movementX and movementY
-      // if only select to bounded draggable element
-      const initial = this.config?.initial && this.config.initial();
-      const initialMovementX = initial?.movementX;
-      const initialMovementY = initial?.movementY;
-
-      this.initialMovement = {
-        x: initialMovementX ?? 0,
-        y: initialMovementY ?? 0,
-      };
-
-      this.movement = {
-        x: this.initialMovement.x,
-        y: this.initialMovement.y,
-      };
-
-      this.previousMovement = {
-        x: this.initialMovement.x,
-        y: this.initialMovement.y,
-      };
-
-      this._handleCallback();
-    }
+    this.emitChange({
+      down: true,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
+      event: e,
+      cancel: this.cancel.bind(this),
+    });
   }
 
-  pointerMove(e: any) {
-    if (this.isActive) {
-      e.preventDefault();
-      const now = Date.now();
-      const deltaTime = clamp(now - this.lastTimeStamp, 0.1, 64);
-      this.lastTimeStamp = now;
+  private onUp(e: PointerEvent) {
+    if (this.activePointerId !== e.pointerId || !this.attachedEl) return;
+    this.attachedEl.releasePointerCapture(e.pointerId);
 
-      const t = deltaTime / 1000;
+    this.emitEnd({
+      down: false,
+      movement: { ...this.movement },
+      offset: { ...this.offset },
+      velocity: { ...this.velocity },
+      event: e,
+      cancel: this.cancel.bind(this),
+    });
 
-      if (e.type === 'touchmove') {
-        this.movement = {
-          x:
-            this.initialMovement.x +
-            (e.touches[0].clientX - this.movementStart.x),
-          y:
-            this.initialMovement.y +
-            (e.touches[0].clientY - this.movementStart.y),
-        };
-      } else {
-        this.movement = {
-          x: this.initialMovement.x + (e.clientX - this.movementStart.x),
-          y: this.initialMovement.y + (e.clientY - this.movementStart.y),
-        };
-      }
-
-      this.translation = {
-        x: this.offset.x + this.movement.x,
-        y: this.offset.y + this.movement.y,
-      };
-
-      this.velocity = {
-        x: clamp(
-          (this.movement.x - this.previousMovement.x) / t / 1000,
-          -1 * Gesture._VELOCITY_LIMIT,
-          Gesture._VELOCITY_LIMIT
-        ),
-        y: clamp(
-          (this.movement.y - this.previousMovement.y) / t / 1000,
-          -1 * Gesture._VELOCITY_LIMIT,
-          Gesture._VELOCITY_LIMIT
-        ),
-      };
-
-      this.previousMovement = {
-        x: this.movement.x,
-        y: this.movement.y,
-      };
-
-      this._handleCallback();
-    }
+    this.activePointerId = null;
   }
 
-  pointerUp() {
-    if (this.isActive) {
-      this.isActive = false;
-      this._handleCallback();
-      this._cancelEvents();
-      this._initEvents();
+  private cancel() {
+    if (this.attachedEl && this.activePointerId !== null) {
+      this.attachedEl.releasePointerCapture(this.activePointerId);
+      this.activePointerId = null;
     }
   }
 }

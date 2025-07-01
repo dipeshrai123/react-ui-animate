@@ -1,22 +1,21 @@
-import {
-  useScroll,
-  useValue,
-  interpolateNumbers,
-  animate,
-} from 'react-ui-animate';
+import { useRef } from 'react';
+import { useScroll, useValue, to, animate, withSpring } from 'react-ui-animate';
 
 export const Scroll = () => {
   const [x, setX] = useValue(100);
   const [color, setColor] = useValue('yellow');
   const [position, setPosition] = useValue('fixed');
-  const bind = useScroll(function (event) {
+  const ref = useRef(null);
+  useScroll(ref, function ({ offset }) {
     setX(
-      interpolateNumbers(event.scrollY, [0, 200], [100, 300], {
-        extrapolate: 'clamp',
-      })
+      withSpring(
+        to(offset.y, [0, 200], [100, 300], {
+          extrapolate: 'clamp',
+        })
+      )
     );
 
-    if (event.scrollY > 100) {
+    if (offset.y > 100) {
       setPosition('absolute');
       setColor('red');
     } else {
@@ -28,7 +27,7 @@ export const Scroll = () => {
   return (
     <>
       <div
-        {...bind()}
+        ref={ref}
         style={{
           width: 500,
           height: 500,

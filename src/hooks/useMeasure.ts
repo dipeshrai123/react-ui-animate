@@ -1,132 +1,76 @@
-import { useRef, useEffect, DependencyList, createRef } from 'react';
+import { useRef, useEffect, RefObject, DependencyList } from 'react';
 
-type MeasurementValue = number | Array<number>;
-
-type MeasurementType = {
+type MeasurementValue = number | number[];
+interface MeasurementType {
   left: MeasurementValue;
   top: MeasurementValue;
   width: MeasurementValue;
   height: MeasurementValue;
   vLeft: MeasurementValue;
   vTop: MeasurementValue;
-};
+}
 
 export function useMeasure(
-  callback: (event: MeasurementType) => void,
-  deps?: DependencyList
+  refs: RefObject<HTMLElement>[],
+  callback: (m: MeasurementType) => void,
+  deps: DependencyList = []
 ) {
-  const ref = useRef(null);
-  const elementRefs = useRef([]);
-  const callbackRef = useRef<(event: MeasurementType) => void>(callback);
-
-  // Re-initiate callback when dependency change
-  useEffect(() => {
-    callbackRef.current = callback;
-
-    return () => {
-      callbackRef.current = () => false;
-    };
-  }, deps);
+  const cbRef = useRef(callback);
 
   useEffect(() => {
-    const _refElement = ref.current || document.documentElement;
-    const _refElementsMultiple = elementRefs.current;
+    cbRef.current = callback;
+  }, [callback, ...deps]);
 
-    const resizeObserver = new ResizeObserver(([entry]) => {
-      const { left, top, width, height } = entry.target.getBoundingClientRect();
-      const { pageXOffset, pageYOffset } = window;
+  useEffect(() => {
+    const els = refs
+      .map((r) => r.current)
+      .filter((el): el is HTMLElement => el !== null);
 
-      if (callbackRef) {
-        if (_refElement === document.documentElement) {
-          return; // no-op for document
+    if (els.length === 0) return;
+
+    const observer = new ResizeObserver((entries) => {
+      const left: number[] = [];
+      const top: number[] = [];
+      const width: number[] = [];
+      const height: number[] = [];
+      const vLeft: number[] = [];
+      const vTop: number[] = [];
+
+      els.forEach((el) => {
+        const entry = entries.find((en) => en.target === el);
+        if (!entry) {
+          left.push(0);
+          top.push(0);
+          width.push(0);
+          height.push(0);
+          vLeft.push(0);
+          vTop.push(0);
         } else {
-          callbackRef.current({
-            left: left + pageXOffset,
-            top: top + pageYOffset,
-            width,
-            height,
-            vLeft: left,
-            vTop: top,
-          });
+          const {
+            left: lx,
+            top: ty,
+            width: w,
+            height: h,
+          } = entry.target.getBoundingClientRect();
+          const pageX = lx + window.scrollX;
+          const pageY = ty + window.scrollY;
+
+          left.push(pageX);
+          top.push(pageY);
+          width.push(w);
+          height.push(h);
+          vLeft.push(lx);
+          vTop.push(ty);
         }
-      }
-    });
-
-    const resizeObserverMultiple = new ResizeObserver((entries) => {
-      const left: Array<number> = [];
-      const top: Array<number> = [];
-      const width: Array<number> = [];
-      const height: Array<number> = [];
-      const vLeft: Array<number> = [];
-      const vTop: Array<number> = [];
-
-      entries.forEach((entry) => {
-        const {
-          left: _left,
-          top: _top,
-          width: _width,
-          height: _height,
-        } = entry.target.getBoundingClientRect();
-        const { pageXOffset, pageYOffset } = window;
-        const _pageLeft = _left + pageXOffset;
-        const _pageTop = _top + pageYOffset;
-
-        left.push(_pageLeft);
-        top.push(_pageTop);
-        width.push(_width);
-        height.push(_height);
-        vLeft.push(_left);
-        vTop.push(_top);
       });
 
-      if (callbackRef) {
-        callbackRef.current({
-          left,
-          top,
-          width,
-          height,
-          vLeft,
-          vTop,
-        });
-      }
+      cbRef.current({ left, top, width, height, vLeft, vTop });
     });
 
-    if (_refElement) {
-      if (
-        _refElement === document.documentElement &&
-        _refElementsMultiple.length > 0
-      ) {
-        _refElementsMultiple.forEach((element: any) => {
-          resizeObserverMultiple.observe(element.current);
-        });
-      } else {
-        resizeObserver.observe(_refElement);
-      }
-    }
+    els.forEach((el) => observer.observe(el));
 
     return () => {
-      if (_refElement) {
-        if (
-          _refElement === document.documentElement &&
-          _refElementsMultiple.length > 0
-        ) {
-          _refElementsMultiple.forEach((element: any) => {
-            resizeObserverMultiple.unobserve(element.current);
-          });
-        } else {
-          resizeObserver.unobserve(_refElement);
-        }
-      }
+      observer.disconnect();
     };
-  }, []);
-
-  return (index?: number) => {
-    if (index === null || index === undefined) {
-      return { ref };
-    } else {
-      elementRefs.current[index] = elementRefs.current[index] || createRef();
-
-      return { ref: elementRefs.current[index] };
-    }
-  }; // ...bind() or ...bind(index) for multiple
+  }, [refs]);
 }

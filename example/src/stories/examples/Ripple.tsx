@@ -22,7 +22,7 @@ function Ripple({
     setAnimation(
       withTiming(1, {
         duration: 800,
-        onRest: () => {
+        onComplete: () => {
           onRemove(id);
         },
       })
@@ -34,7 +34,7 @@ function Ripple({
       style={{
         width: RIPPLE_SIZE,
         height: RIPPLE_SIZE,
-        borderRadius: RIPPLE_SIZE / 2,
+        borderRadius: 8,
         position: 'absolute',
         left: x,
         top: y,
@@ -88,7 +88,7 @@ export function RippleButton() {
         position: 'relative',
         overflow: 'hidden',
         padding: 20,
-        borderRadius: 40,
+        borderRadius: 8,
         color: 'white',
         boxShadow: '0px 4px 8px rgba(0,0,0,0.2)',
         cursor: 'pointer',

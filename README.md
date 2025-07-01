@@ -157,7 +157,7 @@ export const Interpolation: React.FC = () => {
 
 - **`useValue(initial)`**: Initializes an animated value.
 - **`animate`**: JSX wrapper for animatable elements (`animate.div`, `animate.span`, etc.).
-- **Modifiers**: `withSpring`, `withTiming`, `withDecay`, `withSequence`, `withEase` — functions to define animation behavior.
+- **Modifiers**: `withSpring`, `withTiming`, `withDecay`, `withSequence` — functions to define animation behavior.
 - **`useMount(state, config)`**: Manages mount/unmount transitions. `config` includes `from`, `enter`, and `exit` values.
 
 ## Gestures
@@ -165,10 +165,9 @@ export const Interpolation: React.FC = () => {
 `react-ui-animate` also provides hooks for handling gestures:
 
 - `useDrag`
-- `useMouseMove`
+- `useMove`
 - `useScroll`
 - `useWheel`
-- `useGesture`
 
 **Example: `useDrag`**
 
@@ -177,15 +176,16 @@ import React from 'react';
 import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable: React.FC = () => {
+  const ref = useRef(null);
   const [translateX, setTranslateX] = useValue(0);
 
-  const bind = useDrag(({ down, movementX }) => {
-    setTranslateX(down ? movementX : withSpring(0));
+  useDrag(ref, ({ down, movement }) => {
+    setTranslateX(down ? movement.x : withSpring(0));
   });
 
   return (
     <animate.div
-      {...bind()}
+      ref={ref}
       style={{
         width: 100,
         height: 100,

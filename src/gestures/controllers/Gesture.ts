@@ -1,54 +1,28 @@
-export class Gesture {
-  currentIndex?: number;
-  lastTimeStamp: number = Date.now();
-  isActive: boolean = false;
-  targetElement?: HTMLElement; // represents the bounded element
-  targetElements: Array<HTMLElement> = []; // represents the bounded elements
-  config?: any;
-  callback?: <T>(event: T) => void;
-  _subscribe?: (eventKeys?: Array<string>) => void;
-  static _VELOCITY_LIMIT: number = 20;
+type Listener<E> = (event: E) => void;
 
-  // it must be overridden by other child classes
-  _initEvents() {}
+export abstract class Gesture<E> {
+  public static readonly VELOCITY_LIMIT = 20;
 
-  // cancel events
-  // we only canceled down and move events because mouse up
-  // will not be triggered
-  _cancelEvents() {
-    if (this._subscribe) {
-      this._subscribe();
-    }
+  private changeListeners = new Set<Listener<E>>();
+  private endListeners = new Set<Listener<E>>();
+
+  onChange(listener: Listener<E>): this {
+    this.changeListeners.add(listener);
+    return this;
   }
 
-  // re-apply new callback
-  applyCallback(callback: <T>(event: T) => void) {
-    this.callback = callback;
+  onEnd(listener: Listener<E>): this {
+    this.endListeners.add(listener);
+    return this;
   }
 
-  // apply gesture
-  applyGesture({
-    targetElement,
-    targetElements,
-    callback,
-    config,
-  }: {
-    targetElement?: any;
-    targetElements?: any;
-    callback: <T>(event: T) => void;
-    config?: any;
-  }) {
-    this.targetElement = targetElement;
-    this.targetElements = targetElements.map(
-      (element: { current: any }) => element.current
-    );
-    this.callback = callback;
-    this.config = config;
-
-    // initialize events
-    this._initEvents();
-
-    // unbind
-    return () => this._subscribe && this._subscribe();
+  protected emitChange(event: E): void {
+    this.changeListeners.forEach((fn) => fn(event));
   }
+
+  protected emitEnd(event: E): void {
+    this.endListeners.forEach((fn) => fn(event));
+  }
+
+  abstract attach(element: HTMLElement): () => void;
 }

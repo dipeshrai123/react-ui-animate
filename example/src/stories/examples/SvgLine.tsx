@@ -1,12 +1,14 @@
+import { useRef } from 'react';
 import { useValue, useDrag, animate, withSpring } from 'react-ui-animate';
 
 export function SVGLine() {
   const [dragX, setDragX] = useValue(0);
   const [followX, setFollowX] = useValue(0);
+  const ref = useRef(null);
 
-  const circleBind = useDrag(({ movementX }) => {
-    setDragX(movementX);
-    setFollowX(withSpring(movementX));
+  useDrag(ref, ({ offset }) => {
+    setDragX(offset.x);
+    setFollowX(withSpring(offset.x));
   });
 
   return (
@@ -22,7 +24,7 @@ export function SVGLine() {
         <animate.line x1={followX} y1="10" x2={dragX} y2="50" stroke="black" />
         <animate.circle cx={followX} cy="10" r="2" fill="red" />
         <animate.circle
-          {...circleBind()}
+          ref={ref}
           style={{
             cursor: 'pointer',
           }}

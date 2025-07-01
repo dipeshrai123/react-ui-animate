@@ -1,31 +1,38 @@
-import React from 'react';
-import { useValue, animate, useDrag } from 'react-ui-animate';
+import React, { useRef, useState } from 'react';
+import { useValue, animate, useDrag, withSpring } from 'react-ui-animate';
 
 export const Draggable = () => {
-  const [open, setOpen] = React.useState(true);
+  const ref = useRef<HTMLDivElement>(null);
   const [translateX, setTranslateX] = useValue(0);
+  const [enabled, setEnabled] = useState(true);
 
-  const bind = useDrag(function ({ down, movementX }) {
-    if (open) {
-      setTranslateX(down ? movementX : 0);
-    }
-  });
+  useDrag(
+    ref,
+    ({ down, movement }) => {
+      if (enabled) {
+        setTranslateX(down ? withSpring(movement.x) : withSpring(0));
+      }
+    },
+    { threshold: 100 }
+  );
 
   return (
     <>
-      <button onClick={() => setOpen((prev) => !prev)}>
-        {open ? 'disable' : 'enable'}
+      <button onClick={() => setEnabled((p) => !p)}>
+        {enabled ? 'Enabled' : 'Disabled'}
       </button>
-
       <animate.div
-        {...bind()}
+        ref={ref}
         style={{
           width: 100,
           height: 100,
           backgroundColor: '#3399ff',
           translateX,
+          overflowY: 'scroll',
         }}
-      />
+      >
+        <div style={{ height: 1000 }} />
+      </animate.div>
     </>
   );
 };

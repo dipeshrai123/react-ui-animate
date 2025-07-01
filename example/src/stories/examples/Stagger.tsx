@@ -1,12 +1,11 @@
 import { Children, useLayoutEffect, useState } from 'react';
 import {
-  useValue,
   useScroll,
   animate,
+  useValue,
   withSequence,
-  withSpring,
   withDelay,
-  withTiming,
+  withSpring,
 } from 'react-ui-animate';
 
 const StaggerItem = ({
@@ -21,9 +20,7 @@ const StaggerItem = ({
   const [top, setTop] = useValue(0);
 
   useLayoutEffect(() => {
-    setTop(
-      withSequence([withDelay(index * 50), withTiming(y, { duration: 0 })])
-    );
+    setTop(withSequence([withDelay(index * 50), withSpring(y)]));
   }, [y, index, setTop]);
 
   return (
@@ -55,14 +52,14 @@ const Stagger = ({ y, children }: any) => {
 export default function App() {
   const [y, setY] = useState(0);
 
-  useScroll(({ scrollY }) => {
-    setY(scrollY);
+  useScroll(window, ({ offset }) => {
+    setY(offset.y);
   });
 
   return (
     <div
       style={{
-        height: 5000,
+        height: '190vh',
       }}
     >
       <div
