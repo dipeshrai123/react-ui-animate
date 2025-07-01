@@ -1,6 +1,7 @@
-import { RefObject, useEffect } from 'react';
+import { RefObject } from 'react';
 
 import { type MoveEvent, MoveGesture } from '../controllers/MoveGesture';
+import { useRecognizer } from './useRecognizer';
 
 export function useMove(
   refs: Window,
@@ -12,34 +13,6 @@ export function useMove<T extends HTMLElement>(
   onMove: (e: MoveEvent & { index: number }) => void
 ): void;
 
-export function useMove<T extends HTMLElement>(refs: any, onMove: any): void {
-  if (refs === window) {
-    useEffect(() => {
-      const g = new MoveGesture();
-      const handler = (e: MoveEvent) => onMove({ ...e, index: 0 });
-      g.onChange(handler).onEnd(handler);
-      const cleanup = g.attach(window);
-      return cleanup;
-    }, [onMove]);
-    return;
-  }
-
-  const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
-
-  useEffect(() => {
-    const list: Array<RefObject<T>> = Array.isArray(refs) ? refs : [refs];
-    const cleanups = list
-      .map((r, i) => {
-        if (!r.current) return null;
-        const g = new MoveGesture();
-        const handler = (e: MoveEvent) => onMove({ ...e, index: i });
-        g.onChange(handler).onEnd(handler);
-        return g.attach(r.current);
-      })
-      .filter((fn): fn is () => void => !!fn);
-
-    return () => {
-      cleanups.forEach((fn) => fn());
-    };
-  }, [...list.map((r) => r.current), onMove]);
+export function useMove(refs: any, onMove: any): void {
+  return useRecognizer(MoveGesture, refs, onMove);
 }

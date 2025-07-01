@@ -1,13 +1,13 @@
 {
   "name": "react-ui-animate",
-  "version": "5.0.0-rc.3",
+  "version": "5.0.0-rc.9",
   "description": "React library for gestures and animation",
   "main": "dist/index.js",
   "peerDependencies": {
     "react": ">=16.8.0  || >=17.0.0 || >=18.0.0"
   },
   "dependencies": {
-    "@raidipesh78/re-motion": "^5.2.2"
+    "@raidipesh78/re-motion": "^5.2.3"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
@@ -29,6 +29,7 @@
     "clean": "rimraf -rf dist",
     "build": "npm run clean && rollup -c",
     "start": "npm run clean && rollup -c -w",
+    "start:dev": "cd example && npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "version:minor": "npm version --no-git-tag-version minor",
     "version:major": "npm version --no-git-tag-version major",

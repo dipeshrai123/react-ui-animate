@@ -53,3 +53,11 @@ export interface Descriptor {
     LoopOptions &
     Callbacks;
 }
+
+export interface Controls {
+  start(): void;
+  pause(): void;
+  resume(): void;
+  cancel(): void;
+  reset(): void;
+}

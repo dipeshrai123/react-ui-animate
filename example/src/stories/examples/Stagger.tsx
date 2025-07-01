@@ -27,7 +27,10 @@ const StaggerItem = ({
     <animate.span
       style={{
         display: 'inline-block',
-        border: '1px solid black',
+        border: '1px solid #e1e1e1',
+        backgroundColor: '#f1f1f1',
+        padding: '12px 16px',
+        borderRadius: 4,
         translateY: top,
         fontSize: 40,
       }}
@@ -49,7 +52,7 @@ const Stagger = ({ y, children }: any) => {
   );
 };
 
-export default function App() {
+function Example() {
   const [y, setY] = useState(0);
 
   useScroll(window, ({ offset }) => {
@@ -59,14 +62,14 @@ export default function App() {
   return (
     <div
       style={{
-        height: '190vh',
+        height: '180vh',
       }}
     >
       <div
         style={{
           position: 'fixed',
-          left: 0,
-          top: 0,
+          left: 10,
+          top: 10,
         }}
       >
         <Stagger y={y}>
@@ -80,3 +83,5 @@ export default function App() {
     </div>
   );
 }
+
+export default Example;

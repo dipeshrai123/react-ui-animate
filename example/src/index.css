@@ -6,3 +6,48 @@
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
 }
+
+button {
+  padding: 10px 16px;
+  border: 2px solid #e1e1e1;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #f1f1f1;
+}
+
+button:active {
+  background-color: #e1e1e1;
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.m {
+  margin: 10px;
+}
+
+.mt {
+  margin-top: 10px;
+}
+
+.mb {
+  margin-bottom: 10px;
+}
+
+.my {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.mx {
+  margin-left: 10px;
+  margin-right: 10px;
+}
