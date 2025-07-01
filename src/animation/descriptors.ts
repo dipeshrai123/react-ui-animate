@@ -45,6 +45,7 @@ export const withDecay = (
   type: 'decay',
   options: {
     velocity,
+    clamp: opts?.clamp,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,

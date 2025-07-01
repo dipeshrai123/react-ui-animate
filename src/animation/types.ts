@@ -19,6 +19,7 @@ export interface TimingOptions {
 
 export interface DecayOptions {
   velocity?: number;
+  clamp?: [number, number];
 }
 
 export interface SequenceOptions {
