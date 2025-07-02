@@ -36,6 +36,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build
+        run: npm run build
+
       - name: Publish @next
         if: github.ref == 'refs/heads/next'
         run: npm publish --tag next
