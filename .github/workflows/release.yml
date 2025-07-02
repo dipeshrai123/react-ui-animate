@@ -43,7 +43,7 @@ jobs:
         run: npm run build
 
       - name: Publish @next
-        if: github.ref == github.ref == 'refs/heads/next'
+        if: github.ref == 'refs/heads/next'
         run: npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
