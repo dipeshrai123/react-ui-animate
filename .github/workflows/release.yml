@@ -1,17 +1,17 @@
 name: Release & Publish
 
-# on:
-#   push:
-#     branches:
-#       - main
-#       - next
 on:
-  workflow_dispatch:
-    inputs:
-      dry_run:
-        description: 'Set to true to run a dry-run (no tags, no publishes)'
-        required: false
-        default: 'true'
+  push:
+    branches:
+      - main
+      - next
+# on:
+#   workflow_dispatch:
+#     inputs:
+#       dry_run:
+#         description: 'Set to true to run a dry-run (no tags, no publishes)'
+#         required: false
+#         default: 'true'
 
 jobs:
   release:
@@ -25,6 +25,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Setup Node.js & Authenticate to npm
         uses: actions/setup-node@v4
@@ -41,37 +42,14 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Dry-Run Release (semantic-release)
-        if: ${{ github.event.inputs.dry_run == 'true' }}
-        run: npx semantic-release --dry-run
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Get version
-        id: get_version
-        run: |
-          # grab the version string from package.json
-          version=$(node -p "require('./package.json').version")
-          # write it to the special GITHUB_OUTPUT file
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-      - name: Create Git tag
-        if: ${{ github.event.inputs.dry_run != 'true' }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag v${{ steps.get_version.outputs.version }}
-          git push origin v${{ steps.get_version.outputs.version }}
-
       - name: Publish @next
-        if: ${{ github.event.inputs.dry_run != 'true' && github.ref == 'refs/heads/next' }}
+        if: github.ref == 'refs/heads/next'
         run: npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @latest
-        if: ${{ github.event.inputs.dry_run != 'true' && github.ref == 'refs/heads/main' }}
+        if: github.ref == 'refs/heads/main'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
