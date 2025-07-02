@@ -1,10 +1,11 @@
 name: Release & Publish
 
+# on:
+#   push:
+#     branches:
+#       - main
+#       - next
 on:
-  push:
-    branches:
-      - main
-      - next
   workflow_dispatch:
     inputs:
       dry_run:
