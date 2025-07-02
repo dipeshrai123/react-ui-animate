@@ -1,13 +1,7 @@
 {
   "branches": [
     { "name": "main", "channel": "latest" },
-    {
-      "name": "next",
-      "prerelease": "rc",
-      "tagFormat": "v${version}",
-      "range": "5.x",
-      "firstReleaseVersion": "5.0.0"
-    }
+    { "name": "next", "prerelease": "rc" }
   ],
   "tagFormat": "v${version}",
   "plugins": [
