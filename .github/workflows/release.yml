@@ -42,14 +42,6 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Debug Git context
-        run: |
-          echo "On branch: $(git rev-parse --abbrev-ref HEAD)"
-          echo "Local tags:"
-          git tag -l
-          echo "Remote tags (last 20):"
-          git ls-remote --tags origin | tail -n20
-
       - name: Dry-Run Release (semantic-release)
         if: ${{ github.event.inputs.dry_run == 'true' }}
         run: npx semantic-release --dry-run
