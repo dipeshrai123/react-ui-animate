@@ -1,18 +1,23 @@
-name: Release
+name: Release & Publish
 
 on:
   push:
     branches:
       - main
       - next
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Set to true to run a dry-run (no tags, no publishes)'
+        required: false
+        default: 'true'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      packages: write
-      id-token: write
+      contents: write # for tags
+      packages: write # for npm publish
 
     steps:
       - name: Checkout
@@ -29,30 +34,39 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Verify npm authentication
-        run: |
-          npm whoami
-
       - name: Install dependencies
         run: npm ci
 
       - name: Build
         run: npm run build
 
+      - name: Dry-Run Release (semantic-release)
+        if: ${{ github.event.inputs.dry_run == 'true' }}
+        run: npx semantic-release --dry-run
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Get version
+        id: get_version
+        run: echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+
+      - name: Create Git tag
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag v${{ steps.get_version.outputs.version }}
+          git push origin v${{ steps.get_version.outputs.version }}
+
       - name: Publish @next
-        if: github.ref == 'refs/heads/next'
+        if: ${{ github.event.inputs.dry_run != 'true' && github.ref == 'refs/heads/next' }}
         run: npm publish --tag next
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @latest
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.event.inputs.dry_run != 'true' && github.ref == 'refs/heads/main' }}
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      # - name: Release 🎉
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #   run: npx semantic-release
