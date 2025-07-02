@@ -36,7 +36,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Publish to npm 🎉
+      - name: Publish @next
+        if: github.ref == 'refs/heads/next'
+        run: npm publish --tag next
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish @latest
+        if: github.ref == 'refs/heads/main'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
