@@ -50,7 +50,11 @@ jobs:
 
       - name: Get version
         id: get_version
-        run: echo "version=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: |
+          # grab the version string from package.json
+          version=$(node -p "require('./package.json').version")
+          # write it to the special GITHUB_OUTPUT file
+          echo "version=$version" >> $GITHUB_OUTPUT
 
       - name: Create Git tag
         if: ${{ github.event.inputs.dry_run != 'true' }}
