@@ -1,17 +1,12 @@
 name: Release & Publish
 
 on:
-  push:
-    branches:
-      - main
-      - next
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       dry_run:
-#         description: 'Set to true to run a dry-run (no tags, no publishes)'
-#         required: false
-#         default: 'true'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Set to true to run a dry-run (no tags, no publishes)'
+        required: false
+        default: 'true'
 
 jobs:
   release:
