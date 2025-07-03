@@ -1,50 +1,43 @@
-name: Release & Publish
+name: Release Next (Semantic Version + Dry Run)
 
 on:
   workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Set to true to run a dry-run (no tags, no publishes)'
+        description: 'Set to false to actually tag & publish; true (default) skips both'
         required: false
         default: 'true'
 
 jobs:
   release:
+    if: github.ref == 'refs/heads/next'
     runs-on: ubuntu-latest
     permissions:
-      contents: write # for tags
-      packages: write # for npm publish
+      contents: write
+      packages: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: true
 
-      - name: Setup Node.js & Authenticate to npm
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           registry-url: 'https://registry.npmjs.org'
-          always-auth: true
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
-      - name: Publish @next
-        if: github.ref == 'refs/heads/next'
-        run: npm publish --tag next
+      - name: Release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish @latest
-        if: github.ref == 'refs/heads/main'
-        run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            npx semantic-release --dry-run
+          else
+            npx semantic-release
+          fi
