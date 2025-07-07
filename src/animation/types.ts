@@ -1,23 +1,27 @@
 export type Primitive = number | string;
 
+interface BaseDriverOptions {
+  from?: Primitive
+}
+
 export interface Callbacks {
   onStart?: () => void;
   onChange?: (v: number) => void;
   onComplete?: () => void;
 }
 
-export interface SpringOptions {
+export interface SpringOptions extends BaseDriverOptions {
   stiffness?: number;
   damping?: number;
   mass?: number;
 }
 
-export interface TimingOptions {
+export interface TimingOptions extends BaseDriverOptions {
   duration?: number;
   easing?: (t: number) => number;
 }
 
-export interface DecayOptions {
+export interface DecayOptions extends BaseDriverOptions {
   velocity?: number;
   clamp?: [number, number];
 }
@@ -47,12 +51,12 @@ export interface Descriptor {
   type: DriverType;
   to?: Primitive | Primitive[] | Record<string, Primitive>;
   options?: SpringOptions &
-    TimingOptions &
-    DecayOptions &
-    SequenceOptions &
-    DelayOptions &
-    LoopOptions &
-    Callbacks;
+  TimingOptions &
+  DecayOptions &
+  SequenceOptions &
+  DelayOptions &
+  LoopOptions &
+  Callbacks;
 }
 
 export interface Controls {
