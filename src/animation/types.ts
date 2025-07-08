@@ -1,7 +1,7 @@
 export type Primitive = number | string;
 
 interface BaseDriverOptions {
-  from?: Primitive
+  from?: Primitive;
 }
 
 export interface Callbacks {
@@ -51,12 +51,12 @@ export interface Descriptor {
   type: DriverType;
   to?: Primitive | Primitive[] | Record<string, Primitive>;
   options?: SpringOptions &
-  TimingOptions &
-  DecayOptions &
-  SequenceOptions &
-  DelayOptions &
-  LoopOptions &
-  Callbacks;
+    TimingOptions &
+    DecayOptions &
+    SequenceOptions &
+    DelayOptions &
+    LoopOptions &
+    Callbacks;
 }
 
 export interface Controls {
