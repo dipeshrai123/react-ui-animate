@@ -25,7 +25,7 @@ export function buildAnimation(
       return delay(options.delay ?? 0);
     default:
       console.warn(`Unsupported animation type: ${type}`);
-      return { start() { }, pause() { }, resume() { }, cancel() { }, reset() { } };
+      return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
   }
 }
 

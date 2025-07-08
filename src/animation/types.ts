@@ -1,7 +1,7 @@
 export type Primitive = number | string;
 
 interface BaseDriverOptions {
-  from?: Primitive;
+  from?: number;
 }
 
 export interface Callbacks {
