@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MotionValue } from '@raidipesh78/re-motion';
 
 import { withSpring } from '../descriptors';
@@ -39,44 +39,50 @@ export function useMount(
   isOpen: boolean,
   config: any = {}
 ): (fn: (values: any, mounted: boolean) => React.ReactNode) => React.ReactNode {
+  const { from = 0, enter = 1, exit = 0 } = config as any;
+
   const [mounted, setMounted] = useState(isOpen);
-
-  const from = config.from ?? 0;
-  const enter = config.enter ?? 1;
-  const exit = config.exit ?? 0;
-
+  const initial = useRef(true);
   const [values, setValues] = useValue(from);
 
-  useLayoutEffect(() => {
+  const enterDesc = useMemo(
+    () => (isDescriptor(enter) ? enter : withSpring(enter)),
+    [enter]
+  );
+
+  const exitDesc = useMemo(() => {
+    if (isDescriptor(exit)) {
+      return {
+        ...exit,
+        options: {
+          ...exit.options,
+          onComplete: () => {
+            exit.options?.onComplete?.();
+            setMounted(false);
+          },
+        },
+      };
+    }
+    return withSpring(exit, { onComplete: () => setMounted(false) });
+  }, [exit]);
+
+  useEffect(() => {
+    if (initial.current) {
+      initial.current = false;
+      if (isOpen) {
+        setMounted(true);
+        queueMicrotask(() => setValues(enterDesc));
+      }
+      return;
+    }
+
     if (isOpen) {
       setMounted(true);
-      queueMicrotask(() => {
-        setValues(isDescriptor(enter) ? enter : withSpring(enter));
-      });
+      queueMicrotask(() => setValues(enterDesc));
     } else {
-      queueMicrotask(() => {
-        setValues(
-          isDescriptor(exit)
-            ? {
-                ...exit,
-                options: {
-                  ...exit.options,
-                  onComplete: () => {
-                    exit.options?.onComplete?.();
-                    setMounted(false);
-                  },
-                },
-              }
-            : withSpring(exit, {
-                onComplete() {
-                  setMounted(false);
-                },
-              })
-        );
-      });
+      queueMicrotask(() => setValues(exitDesc));
     }
-  }, [isOpen, JSON.stringify(enter), JSON.stringify(exit)]);
+  }, [isOpen, enterDesc, exitDesc]);
 
-  return (fn: (vals: any, m: boolean) => React.ReactNode) =>
-    fn(values as any, mounted);
+  return (fn) => fn(values as any, mounted);
 }
