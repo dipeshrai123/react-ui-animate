@@ -4,6 +4,7 @@ import { MotionValue } from '@raidipesh78/re-motion';
 import { useValue, withSpring } from '../../animation';
 import { ScrollGesture } from '../controllers/ScrollGesture';
 import { useRecognizer } from './useRecognizer';
+import { type Descriptor } from '../../animation/types';
 
 type SupportedEdgeUnit = 'px' | 'vw' | 'vh' | '%';
 type EdgeUnit = `${number}${SupportedEdgeUnit}`;
@@ -19,6 +20,7 @@ export interface UseScrollProgressOptions {
   axis?: 'x' | 'y';
   offset?: ScrollOffset;
   animate?: boolean;
+  toDescriptor?: (t: number) => Descriptor;
 }
 
 export function useScrollProgress(
@@ -28,6 +30,7 @@ export function useScrollProgress(
     axis = 'y',
     offset = ['start end', 'end end'],
     animate = true,
+    toDescriptor = (v: number) => withSpring(v),
   }: UseScrollProgressOptions = {}
 ): {
   scrollYProgress: MotionValue<number>;
@@ -54,7 +57,7 @@ export function useScrollProgress(
       t = Math.min(Math.max(raw, 0), 1);
     }
 
-    const update = animate ? (v: number) => withSpring(v) : (v: number) => v;
+    const update = animate ? toDescriptor : (v: number) => v;
 
     if (axis === 'y') {
       setScrollY(update(t));
@@ -83,9 +86,9 @@ function parseEdgeValue(
   const m = edge.match(/^(-?\d+(?:\.\d+)?)(px|%|vw|vh)?$/);
   if (!m) throw new Error(`Invalid edge marker "${edge}"`);
 
-  const raw = m[1]; // e.g. "0.5", "100", "-50"
-  const unit = m[2] as string; // one of "px","%","vw","vh" or undefined
-  const n = parseFloat(raw); // numeric value
+  const raw = m[1];
+  const unit = m[2] as string;
+  const n = parseFloat(raw);
   const scroll = axis === 'y' ? window.scrollY : window.scrollX;
   const rect = el.getBoundingClientRect();
   const size = axis === 'y' ? rect.height : rect.width;
@@ -118,7 +121,6 @@ function parseEdgeValue(
       case 'vh':
         return base + (n / 100) * vh;
       default:
-        // unit-less: treat `n` as ratio of element size
         return base + n * size;
     }
   }
