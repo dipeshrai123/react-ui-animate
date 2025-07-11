@@ -80,32 +80,47 @@ function parseEdgeValue(
       : getElementEdgePos(el, axis, edge);
   }
 
-  const m = edge.match(/^(-?\d+)(px|vw|vh|%)?$/);
-  if (!m) throw new Error(`Invalid edge marker “${edge}”`);
-  const [, raw, rawUnit] = m;
-  const n = +raw;
-  const unit = (rawUnit || 'px') as 'px' | '%' | 'vw' | 'vh';
+  const m = edge.match(/^(-?\d+(?:\.\d+)?)(px|%|vw|vh)?$/);
+  if (!m) throw new Error(`Invalid edge marker "${edge}"`);
+
+  const raw = m[1]; // e.g. "0.5", "100", "-50"
+  const unit = m[2] as string; // one of "px","%","vw","vh" or undefined
+  const n = parseFloat(raw); // numeric value
+  const scroll = axis === 'y' ? window.scrollY : window.scrollX;
+  const rect = el.getBoundingClientRect();
+  const size = axis === 'y' ? rect.height : rect.width;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
 
   if (isContainer) {
-    const scroll = axis === 'y' ? window.scrollY : window.scrollX;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
+    const viewportSize = axis === 'y' ? vh : vw;
     switch (unit) {
       case 'px':
         return scroll + n;
       case '%':
-        return scroll + (n / 100) * (axis === 'y' ? vh : vw);
+        return scroll + (n / 100) * viewportSize;
       case 'vw':
         return scroll + (n / 100) * vw;
       case 'vh':
         return scroll + (n / 100) * vh;
       default:
-        return scroll + n;
+        return scroll + n * viewportSize;
     }
   } else {
     const base = getElementEdgePos(el, axis, 'start');
-    return base + n;
+    switch (unit) {
+      case 'px':
+        return base + n;
+      case '%':
+        return base + (n / 100) * size;
+      case 'vw':
+        return base + (n / 100) * vw;
+      case 'vh':
+        return base + (n / 100) * vh;
+      default:
+        // unit-less: treat `n` as ratio of element size
+        return base + n * size;
+    }
   }
 }
 
