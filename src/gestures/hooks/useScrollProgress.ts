@@ -36,157 +36,163 @@ export function useScrollProgress(
   scrollYProgress: MotionValue<number>;
   scrollXProgress: MotionValue<number>;
 } {
-  const [scrollYProgress, setScrollY] = useValue(0);
-  const [scrollXProgress, setScrollX] = useValue(0);
+  const [yProgress, setYProgress] = useValue(0);
+  const [xProgress, setXProgress] = useValue(0);
   const rangeRef = useRef<[number, number]>([0, 0]);
 
   useEffect(() => {
-    const el = target?.current ?? document.documentElement;
-    rangeRef.current = getScrollRange(offset as [any, any], el, axis);
-  }, [target, axis, offset]);
+    const containerEl =
+      refs instanceof Window ? window : (refs.current as HTMLElement);
+    const targetEl = target?.current ?? document.documentElement;
+
+    rangeRef.current = getScrollRange(
+      offset as [Intersection, Intersection],
+      targetEl,
+      containerEl,
+      axis
+    );
+  }, [refs, target, axis, offset]);
 
   useRecognizer(ScrollGesture, refs, (e) => {
     const pos = axis === 'y' ? e.offset.y : e.offset.x;
-    const [startPx, endPx] = rangeRef.current;
+    const [start, end] = rangeRef.current;
 
-    let t: number;
-    if (endPx === startPx) {
-      t = pos < startPx ? 0 : 1;
-    } else {
-      const raw = (pos - startPx) / (endPx - startPx);
-      t = Math.min(Math.max(raw, 0), 1);
-    }
+    const raw =
+      end === start ? (pos < start ? 0 : 1) : (pos - start) / (end - start);
 
-    const update = animate ? toDescriptor : (v: number) => v;
+    const t = Math.min(Math.max(raw, 0), 1);
+    const apply = animate ? toDescriptor : (v: number) => v;
 
     if (axis === 'y') {
-      setScrollY(update(t));
-      setScrollX(0);
+      setYProgress(apply(t));
+      setXProgress(0);
     } else {
-      setScrollX(update(t));
-      setScrollY(0);
+      setXProgress(apply(t));
+      setYProgress(0);
     }
   });
 
-  return { scrollYProgress, scrollXProgress };
+  return { scrollYProgress: yProgress, scrollXProgress: xProgress };
+}
+
+function getScroll(el: HTMLElement | Window, axis: 'x' | 'y') {
+  if (el instanceof HTMLElement) {
+    return axis === 'y' ? el.scrollTop : el.scrollLeft;
+  }
+  return axis === 'y' ? window.scrollY : window.scrollX;
+}
+
+function getSize(el: HTMLElement | Window, axis: 'x' | 'y') {
+  if (el instanceof HTMLElement) {
+    return axis === 'y' ? el.clientHeight : el.clientWidth;
+  }
+  return axis === 'y' ? window.innerHeight : window.innerWidth;
+}
+
+function getScrollRange(
+  [startMarker, endMarker]: [Intersection, Intersection],
+  targetEl: HTMLElement,
+  containerEl: HTMLElement | Window,
+  axis: 'x' | 'y'
+): [number, number] {
+  return [
+    resolveMarker(startMarker, targetEl, containerEl, axis),
+    resolveMarker(endMarker, targetEl, containerEl, axis),
+  ];
+}
+
+function resolveMarker(
+  marker: Intersection,
+  targetEl: HTMLElement,
+  containerEl: HTMLElement | Window,
+  axis: 'x' | 'y'
+): number {
+  const [tMark, cMark = tMark] = marker.trim().split(/\s+/) as [
+    EdgeString,
+    EdgeString
+  ];
+
+  if (containerEl instanceof HTMLElement) {
+    const tRect = targetEl.getBoundingClientRect();
+    const cRect = containerEl.getBoundingClientRect();
+    const scroll = getScroll(containerEl, axis);
+    const elementStart =
+      (axis === 'y' ? tRect.top - cRect.top : tRect.left - cRect.left) + scroll;
+    const elementSize = axis === 'y' ? tRect.height : tRect.width;
+    const containerSize = getSize(containerEl, axis);
+
+    const elemPos = resolveEdge(
+      tMark,
+      elementStart,
+      elementSize,
+      containerSize
+    );
+    const contPos = resolveEdge(cMark, 0, containerSize, containerSize);
+    return elemPos - contPos;
+  } else {
+    const elemPos = parseEdgeValue(tMark, axis, targetEl, false);
+    const contPos = parseEdgeValue(cMark, axis, window, true);
+    return elemPos - contPos;
+  }
+}
+
+function resolveEdge(
+  edge: EdgeString,
+  base: number,
+  size: number,
+  containerSize: number
+): number {
+  if (edge === 'start') return base;
+  if (edge === 'center') return base + size / 2;
+  if (edge === 'end') return base + size;
+
+  const m = edge.match(/^(-?\d+(?:\.\d+)?)(px|%|vw|vh)?$/);
+  if (!m) throw new Error(`Invalid edge marker “${edge}”`);
+
+  const n = parseFloat(m[1]);
+  const unit = m[2] as SupportedEdgeUnit | undefined;
+
+  switch (unit) {
+    case 'px':
+      return base + n;
+    case '%':
+      return base + (n / 100) * size;
+    case 'vw':
+      return base + (n / 100) * containerSize;
+    case 'vh':
+      return base + (n / 100) * containerSize;
+    default:
+      return base + n * size;
+  }
 }
 
 function parseEdgeValue(
   edge: EdgeString,
   axis: 'x' | 'y',
-  el: HTMLElement,
+  el: HTMLElement | Window,
   isContainer: boolean
 ): number {
-  if (edge === 'start' || edge === 'center' || edge === 'end') {
-    return isContainer
-      ? getContainerEdgePos(axis, edge)
-      : getElementEdgePos(el, axis, edge);
-  }
+  const scrollTarget = isContainer ? el : (el as HTMLElement);
+  const base = isContainer
+    ? 0
+    : (() => {
+        if (!(el instanceof HTMLElement))
+          throw new Error('Expected HTMLElement for element-relative edge');
+        const rect = el.getBoundingClientRect();
+        const pageScroll =
+          axis === 'y'
+            ? window.pageYOffset || window.scrollY
+            : window.pageXOffset || window.scrollX;
+        return (axis === 'y' ? rect.top : rect.left) + pageScroll;
+      })();
 
-  const m = edge.match(/^(-?\d+(?:\.\d+)?)(px|%|vw|vh)?$/);
-  if (!m) throw new Error(`Invalid edge marker "${edge}"`);
+  const size = isContainer
+    ? getSize(el, axis)
+    : (() => {
+        if (!(el instanceof HTMLElement)) throw new Error();
+        const rect = el.getBoundingClientRect();
+        return axis === 'y' ? rect.height : rect.width;
+      })();
 
-  const raw = m[1];
-  const unit = m[2] as string;
-  const n = parseFloat(raw);
-  const scroll = axis === 'y' ? window.scrollY : window.scrollX;
-  const rect = el.getBoundingClientRect();
-  const size = axis === 'y' ? rect.height : rect.width;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  if (isContainer) {
-    const viewportSize = axis === 'y' ? vh : vw;
-    switch (unit) {
-      case 'px':
-        return scroll + n;
-      case '%':
-        return scroll + (n / 100) * viewportSize;
-      case 'vw':
-        return scroll + (n / 100) * vw;
-      case 'vh':
-        return scroll + (n / 100) * vh;
-      default:
-        return scroll + n * viewportSize;
-    }
-  } else {
-    const base = getElementEdgePos(el, axis, 'start');
-    switch (unit) {
-      case 'px':
-        return base + n;
-      case '%':
-        return base + (n / 100) * size;
-      case 'vw':
-        return base + (n / 100) * vw;
-      case 'vh':
-        return base + (n / 100) * vh;
-      default:
-        return base + n * size;
-    }
-  }
-}
-
-function getElementEdgePos(
-  el: HTMLElement,
-  axis: 'x' | 'y',
-  edge: NamedEdges
-): number {
-  const rect = el.getBoundingClientRect();
-  const scroll =
-    axis === 'y'
-      ? window.pageYOffset || window.scrollY
-      : window.pageXOffset || window.scrollX;
-  const base = axis === 'y' ? rect.top : rect.left;
-  const size = axis === 'y' ? rect.height : rect.width;
-  switch (edge) {
-    case 'start':
-      return base + scroll;
-    case 'center':
-      return base + scroll + size / 2;
-    case 'end':
-      return base + scroll + size;
-  }
-}
-
-function getContainerEdgePos(axis: 'x' | 'y', edge: NamedEdges): number {
-  const scroll =
-    axis === 'y'
-      ? window.pageYOffset || window.scrollY
-      : window.pageXOffset || window.scrollX;
-  const viewport = axis === 'y' ? window.innerHeight : window.innerWidth;
-  switch (edge) {
-    case 'start':
-      return scroll;
-    case 'center':
-      return scroll + viewport / 2;
-    case 'end':
-      return scroll + viewport;
-  }
-}
-
-function markerToThreshold(
-  marker: Intersection,
-  targetEl: HTMLElement,
-  axis: 'x' | 'y'
-): number {
-  const [targetMarker, containerMarker = targetMarker] = marker
-    .trim()
-    .split(/\s+/) as [EdgeString, EdgeString];
-
-  const elemPos = parseEdgeValue(targetMarker, axis, targetEl, false);
-  const contPos = parseEdgeValue(containerMarker, axis, targetEl, true);
-  const scroll = axis === 'y' ? window.scrollY : window.scrollX;
-
-  return elemPos - (contPos - scroll);
-}
-
-function getScrollRange(
-  markers: [Intersection, Intersection],
-  targetEl: HTMLElement,
-  axis: 'x' | 'y'
-): [number, number] {
-  const [startMarker, endMarker] = markers;
-  const startPx = markerToThreshold(startMarker, targetEl, axis);
-  const endPx = markerToThreshold(endMarker, targetEl, axis);
-  return [startPx, endPx];
+  return resolveEdge(edge, base, size, getSize(scrollTarget, axis));
 }
