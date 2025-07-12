@@ -28,7 +28,7 @@ export function useScrollProgress(
   {
     target,
     axis = 'y',
-    offset = ['start end', 'end end'],
+    offset = ['start start', 'end end'],
     animate = true,
     toDescriptor = (v: number) => withSpring(v),
   }: UseScrollProgressOptions = {}
@@ -169,10 +169,9 @@ function markerToThreshold(
   targetEl: HTMLElement,
   axis: 'x' | 'y'
 ): number {
-  const [targetMarker, containerMarker] = marker.split(' ') as [
-    EdgeString,
-    EdgeString
-  ];
+  const [targetMarker, containerMarker = targetMarker] = marker
+    .trim()
+    .split(/\s+/) as [EdgeString, EdgeString];
 
   const elemPos = parseEdgeValue(targetMarker, axis, targetEl, false);
   const contPos = parseEdgeValue(containerMarker, axis, targetEl, true);
