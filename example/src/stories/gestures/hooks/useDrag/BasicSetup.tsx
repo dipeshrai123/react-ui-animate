@@ -14,7 +14,7 @@ const Example = () => {
       ref={ref}
       style={{
         translateX,
-        width: 100,
+        width: translateX.to([0, 100], [100, 200]),
         height: 100,
         backgroundColor: 'teal',
         borderRadius: 4,
