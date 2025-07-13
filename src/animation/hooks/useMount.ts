@@ -82,7 +82,7 @@ export function useMount(
     } else {
       queueMicrotask(() => setValues(exitDesc));
     }
-  }, [isOpen, enterDesc, exitDesc]);
+  }, [isOpen]);
 
   return (fn) => fn(values as any, mounted);
 }
