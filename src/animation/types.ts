@@ -1,27 +1,23 @@
 export type Primitive = number | string;
 
-interface BaseDriverOptions {
-  from?: number;
-}
-
 export interface Callbacks {
   onStart?: () => void;
   onChange?: (v: number) => void;
   onComplete?: () => void;
 }
 
-export interface SpringOptions extends BaseDriverOptions {
+export interface SpringOptions {
   stiffness?: number;
   damping?: number;
   mass?: number;
 }
 
-export interface TimingOptions extends BaseDriverOptions {
+export interface TimingOptions {
   duration?: number;
   easing?: (t: number) => number;
 }
 
-export interface DecayOptions extends BaseDriverOptions {
+export interface DecayOptions {
   velocity?: number;
   clamp?: [number, number];
 }
