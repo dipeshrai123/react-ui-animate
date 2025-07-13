@@ -1,48 +1,33 @@
-import { useEffect, useRef } from 'react';
 import { useScroll, animate } from 'react-ui-animate';
 
 export default function IntersectionExample() {
-  const containerRef = useRef(null);
-  const targetRef = useRef(null);
-  const { scrollXProgress } = useScroll(containerRef, {
-    axis: 'x',
-    target: targetRef,
-    offset: ['start end', 'start start'],
-  });
-
-  useEffect(() => {
-    scrollXProgress.subscribe((v) => console.log(v));
-  }, [scrollXProgress]);
+  const { scrollYProgress } = useScroll(window);
 
   return (
     <div
       style={{
-        // display: 'flex',
-        // width: '100vw',
-        // height: 400,
-        // outline: '10px solid red',
-        padding: '0 200px',
+        height: '200vh',
       }}
     >
-      <div
-        ref={containerRef}
+      <animate.div
         style={{
-          display: 'flex',
-          flexWrap: 'nowrap',
-          backgroundColor: '#3399ff',
-          maxWidth: '100vw',
-          overflowX: 'scroll',
-          height: 400,
-          padding: '20px 0',
+          position: 'sticky',
+          top: 0,
+          height: '100vh',
+          backgroundColor: 'red',
+          scale: scrollYProgress.to([0, 1], [1, 0.8]),
+          rotate: scrollYProgress.to([0, 1], [0, -5]),
         }}
-      >
-        <div style={{ width: '100vw', flexShrink: 0 }} />
-        <animate.div
-          ref={targetRef}
-          style={{ width: '400px', backgroundColor: 'red', flexShrink: 0 }}
-        />
-        <div style={{ width: '100vw', flexShrink: 0 }} />
-      </div>
+      />
+      <animate.div
+        style={{
+          height: '100vh',
+          backgroundColor: '#3399ff',
+          position: 'relative',
+          scale: scrollYProgress.to([0, 1], [0.8, 1]),
+          rotate: scrollYProgress.to([0, 1], [-5, 0]),
+        }}
+      />
     </div>
   );
 }

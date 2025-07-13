@@ -6,7 +6,7 @@ import { useRecognizer } from './useRecognizer';
 import {
   useScrollProgress,
   type UseScrollProgressOptions,
-} from './useScrollProgress';
+} from '../../hooks/observers/useScrollProgress';
 
 export function useScroll<T extends HTMLElement>(
   refs: Window | RefObject<T> | RefObject<T>[],

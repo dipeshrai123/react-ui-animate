@@ -9,6 +9,6 @@ export * from './animation';
 
 export * from './hooks';
 
-export * from './gestures';
+export * from './gestures/hooks';
 
 export * from './utils';

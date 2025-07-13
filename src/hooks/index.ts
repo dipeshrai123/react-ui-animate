@@ -1,1 +1,1 @@
-export { useOutsideClick } from './useOutsideClick';
+export { useOutsideClick } from './events/useOutsideClick';
