@@ -82,6 +82,8 @@ export class DragGesture extends Gesture<DragEvent> {
         ? this.config.initial?.() ?? { x: 0, y: 0 }
         : { ...this.offset };
     this.offset = { ...this.start };
+    this.movement = { x: 0, y: 0 };
+    this.velocity = { x: 0, y: 0 };
 
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
     this.thresholdPassed = false;
