@@ -1,6 +1,12 @@
 import { useRef, useState } from 'react';
 
-import { useMount, animate, useOutsideClick } from 'react-ui-animate';
+import {
+  useMount,
+  animate,
+  useOutsideClick,
+  withTiming,
+  Config,
+} from 'react-ui-animate';
 
 const Modal = ({
   visible,
@@ -12,7 +18,10 @@ const Modal = ({
   const ref = useRef(null);
   useOutsideClick(ref, onClose);
 
-  const mount = useMount(visible);
+  const mount = useMount(visible, {
+    enter: withTiming(1, { easing: Config.Timing.POWER4.easing }),
+    exit: withTiming(0, { easing: Config.Timing.POWER4.easing }),
+  });
 
   return (
     <>
@@ -41,8 +50,8 @@ const Modal = ({
                   backgroundColor: 'white',
                   borderRadius: 4,
                   padding: 20,
-                  scale: a.to([0, 1], [0.5, 1]),
-                  translateY: a.to([0, 1], [-100, 0]),
+                  scale: a.to([0, 1], [0.8, 1]),
+                  translateY: a.to([0, 1], [20, 0]),
                 }}
               >
                 <button

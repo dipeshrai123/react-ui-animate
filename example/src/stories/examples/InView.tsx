@@ -1,11 +1,5 @@
-import { useEffect, useRef } from 'react';
-import {
-  useInView,
-  useValue,
-  animate,
-  withSpring,
-  useScroll,
-} from 'react-ui-animate';
+import { useRef } from 'react';
+import { useInView, animate, useScroll } from 'react-ui-animate';
 
 const COLORS = [
   '#e4a3f1',
@@ -22,16 +16,11 @@ const COLORS = [
 
 const Card = ({ i, color }: { i: number; color: string }) => {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref);
+  const { inViewProgress } = useInView(ref);
   const { scrollYProgress } = useScroll(window, {
     target: ref,
     offset: ['start center', 'start start'],
   });
-  const [progress, setProgress] = useValue(0);
-
-  useEffect(() => {
-    setProgress(withSpring(isInView ? 1 : 0));
-  }, [isInView, setProgress]);
 
   return (
     <animate.div style={{ scale: scrollYProgress.to([0, 1], [1, 2]) }}>
@@ -41,9 +30,9 @@ const Card = ({ i, color }: { i: number; color: string }) => {
           height: 300,
           width: 300,
           backgroundColor: color,
-          opacity: progress,
-          scale: progress,
-          rotate: progress.to([0, 1], [-180, 0]),
+          opacity: inViewProgress,
+          scale: inViewProgress,
+          rotate: inViewProgress.to([0, 1], [-180, 0]),
         }}
       />
     </animate.div>
