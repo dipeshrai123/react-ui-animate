@@ -13,3 +13,4 @@ tsconfig.json
 .prettierrc
 CHANGELOG.md
 .idea/
+.releaserc.json
