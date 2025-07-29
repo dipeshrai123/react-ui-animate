@@ -7,7 +7,6 @@ import {
   withTiming,
   withSpring,
   withSequence,
-  useMount,
 } from 'react-ui-animate';
 
 const BOX_SIZE = 200;
@@ -90,8 +89,6 @@ function Example() {
     }
   };
 
-  const mount = useMount(activeIndex !== null);
-
   return (
     <>
       <div
@@ -129,42 +126,39 @@ function Example() {
         })}
       </div>
 
-      {mount(
-        (_, m) =>
-          m && (
-            <animate.div
-              style={{
-                position: 'fixed',
-                left: 0,
-                top: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: 'none',
-              }}
-            >
-              <animate.div
-                ref={ref}
-                style={{
-                  position: 'absolute',
-                  left,
-                  top,
-                  width,
-                  height,
-                  translateY,
-                  borderRadius: 4,
-                  color: 'white',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  cursor: 'grabbing',
-                  backgroundImage: `url(${IMAGES[activeIndex!]})`,
-                  backgroundSize: 'cover',
-                }}
-              >
-                <span style={{ userSelect: 'none' }}>Pull Down</span>
-              </animate.div>
-            </animate.div>
-          )
+      {activeIndex !== null && (
+        <animate.div
+          style={{
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'none',
+          }}
+        >
+          <animate.div
+            ref={ref}
+            style={{
+              position: 'absolute',
+              left,
+              top,
+              width,
+              height,
+              translateY,
+              borderRadius: 4,
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'grabbing',
+              backgroundImage: `url(${IMAGES[activeIndex!]})`,
+              backgroundSize: 'cover',
+            }}
+          >
+            <span style={{ userSelect: 'none' }}>Pull Down</span>
+          </animate.div>
+        </animate.div>
       )}
     </>
   );
