@@ -1,7 +1,7 @@
-import { MotionValue } from '../../MotionValue';
-import { timing } from '../../drivers/timing';
+import { AnimateValue } from '../../AnimateValue';
+import { timing } from '../timing';
 
-describe('timing driver', () => {
+describe('timing', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -11,11 +11,11 @@ describe('timing driver', () => {
   });
 
   it('animates from 0 → 100 and calls onComplete once', () => {
-    const mv = new MotionValue(0);
+    const value = new AnimateValue<number | string>(0);
     const onChange = jest.fn();
     const onComplete = jest.fn();
 
-    timing(mv, 100, {
+    timing(value, 100, {
       duration: 100,
       easing: (t) => t,
       onChange,
@@ -24,20 +24,20 @@ describe('timing driver', () => {
 
     for (let t = 0; t < 1000; t += 16) {
       jest.advanceTimersByTime(16);
-      if (mv.current === 100) break;
+      if (value.current === 100) break;
     }
 
-    expect(mv.current).toBeCloseTo(100, 1);
+    expect(value.current).toBeCloseTo(100, 1);
     expect(onChange).toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
   it('zero duration should complete immediately', () => {
-    const mv = new MotionValue(0);
+    const value = new AnimateValue<number | string>(0);
     const onChange = jest.fn();
     const onComplete = jest.fn();
 
-    timing(mv, 200, {
+    timing(value, 200, {
       duration: 0,
       onChange,
       onComplete,
@@ -45,20 +45,20 @@ describe('timing driver', () => {
 
     jest.advanceTimersByTime(16);
 
-    expect(mv.current).toBe(200);
+    expect(value.current).toBe(200);
     expect(onChange).toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);
   });
 
   it('reset() should snap back to original value', () => {
-    const mv = new MotionValue(0);
-    const ctrl = timing(mv, 50, { duration: 100 });
-    ctrl.start();
+    const value = new AnimateValue<number | string>(0);
+    const controller = timing(value, 50, { duration: 100 });
+    controller.start();
 
     jest.advanceTimersByTime(40);
-    expect(mv.current).not.toBe(0);
+    expect(value.current).not.toBe(0);
 
-    ctrl.reset();
-    expect(mv.current).toBe(0);
+    controller.reset();
+    expect(value.current).toBe(0);
   });
 });

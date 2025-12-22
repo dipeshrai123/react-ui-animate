@@ -1,7 +1,7 @@
-import { MotionValue } from '../../MotionValue';
-import { decay } from '../../drivers/decay';
+import { AnimateValue } from '../../AnimateValue';
+import { decay } from '../decay';
 
-describe('decay driver (using fake timers)', () => {
+describe('decay', () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -11,21 +11,21 @@ describe('decay driver (using fake timers)', () => {
   });
 
   it('calls onStart, onChange repeatedly, then onComplete once', () => {
-    const mv = new MotionValue(0);
+    const value = new AnimateValue(0);
     const onStart = jest.fn();
     const onChange = jest.fn();
     const onComplete = jest.fn();
 
-    const ctrl = decay(mv, 10, {
+    const controller = decay(value, 10, {
       decay: 0.9,
       onStart,
       onChange,
       onComplete,
     });
 
-    ctrl.start();
+    controller.start();
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(mv.getAnimationController()).toBe(ctrl);
+    expect(value.getAnimationController()).toBe(controller);
 
     for (let i = 0; i < 500; i++) {
       jest.advanceTimersByTime(16);
@@ -34,25 +34,25 @@ describe('decay driver (using fake timers)', () => {
 
     expect(onChange).toHaveBeenCalled();
     expect(onComplete).toHaveBeenCalledTimes(1);
-    expect(mv.current).toBeGreaterThan(0);
+    expect(value.current).toBeGreaterThan(0);
   });
 
   it('respects clamp bounds', () => {
-    const mv = new MotionValue(0);
+    const value = new AnimateValue(0);
     const onChange = jest.fn();
     const onComplete = jest.fn();
 
-    const ctrl = decay(mv, 20, {
+    const controller = decay(value, 20, {
       decay: 0.5,
       clamp: [0, 5],
       onChange,
       onComplete,
     });
-    ctrl.start();
+    controller.start();
 
     jest.advanceTimersByTime(1000);
 
-    expect(mv.current).toBeLessThanOrEqual(5);
+    expect(value.current).toBeLessThanOrEqual(5);
 
     expect(onChange).toHaveBeenCalled();
 
@@ -63,17 +63,17 @@ describe('decay driver (using fake timers)', () => {
   });
 
   it('reset() snaps back to the initial value and stops any further updates', () => {
-    const mv = new MotionValue(0);
-    const ctrl = decay(mv, 10, { decay: 0.9 });
-    ctrl.start();
+    const value = new AnimateValue(0);
+    const controller = decay(value, 10, { decay: 0.9 });
+    controller.start();
 
     jest.advanceTimersByTime(100);
-    expect(mv.current).not.toBe(0);
+    expect(value.current).not.toBe(0);
 
-    ctrl.reset();
-    expect(mv.current).toBe(0);
+    controller.reset();
+    expect(value.current).toBe(0);
 
     jest.advanceTimersByTime(1000);
-    expect(mv.current).toBe(0);
+    expect(value.current).toBe(0);
   });
 });

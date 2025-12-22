@@ -1,13 +1,13 @@
 import { createRef, act } from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
-import { motion } from '../motion';
-import { MotionValue } from '../MotionValue';
+import { animate } from '../animate';
+import { AnimateValue } from '../AnimateValue';
 
-describe('〈motion> components', () => {
+describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {
     const ref = createRef<HTMLElement>();
-    render(<motion.div data-testid="ref-div" ref={ref} />);
+    render(<animate.div data-testid="ref-div" ref={ref} />);
     const el = screen.getByTestId('ref-div');
     expect(el).toBeInstanceOf(HTMLElement);
     expect(ref.current).toBe(el);
@@ -15,7 +15,7 @@ describe('〈motion> components', () => {
 
   it('applies static style, transform, and attributes', () => {
     render(
-      <motion.div
+      <animate.div
         data-testid="static-div"
         id="my-id"
         style={{
@@ -35,13 +35,13 @@ describe('〈motion> components', () => {
     expect(el.getAttribute('title')).toBe('hello');
   });
 
-  it('updates style when MotionValue-driven props change', () => {
-    const mvX = new MotionValue(5);
-    const mvOpacity = new MotionValue(0.5);
+  it('updates style when AnimateValue-driven props change', () => {
+    const valueX = new AnimateValue(5);
+    const valueOpacity = new AnimateValue(0.5);
     render(
-      <motion.div
+      <animate.div
         data-testid="dynamic-div"
-        style={{ translateX: mvX, opacity: mvOpacity }}
+        style={{ translateX: valueX, opacity: valueOpacity }}
       />
     );
     const el = screen.getByTestId('dynamic-div') as HTMLElement;
@@ -49,8 +49,8 @@ describe('〈motion> components', () => {
     expect(el.style.opacity).toBe('0.5');
 
     act(() => {
-      mvX.set(25);
-      mvOpacity.set(0.8);
+      valueX.set(25);
+      valueOpacity.set(0.8);
     });
 
     expect(el.style.transform).toBe('translateX(25px)');
@@ -59,7 +59,7 @@ describe('〈motion> components', () => {
 
   it('applies raw transform string when no transformKeys are present', () => {
     render(
-      <motion.div
+      <animate.div
         data-testid="raw-div"
         style={{ transform: 'perspective(400px)' }}
       />
@@ -68,19 +68,20 @@ describe('〈motion> components', () => {
     expect(el.style.transform).toBe('perspective(400px)');
   });
 
-  it('updates attributes driven by MotionValue', () => {
-    const mvTitle = new MotionValue('initial');
+  it('updates attributes driven by AnimateValue', () => {
+    const valueTitle = new AnimateValue('initial');
     render(
-      <motion.button data-testid="btn" title={mvTitle} disabled={false} />
+      <animate.button data-testid="btn" title={valueTitle} disabled={false} />
     );
     const btn = screen.getByTestId('btn') as HTMLButtonElement;
     expect(btn.getAttribute('title')).toBe('initial');
     expect(btn.disabled).toBe(false);
 
     act(() => {
-      mvTitle.set('updated');
+      valueTitle.set('updated');
     });
 
     expect(btn.getAttribute('title')).toBe('updated');
   });
 });
+

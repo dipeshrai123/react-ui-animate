@@ -2,28 +2,29 @@ import {
   applyTransformsStyle,
   isTransformKey,
   transformKeys,
-} from '../../apply';
+} from '../apply';
+import { AnimateValue } from '../AnimateValue';
 
-class DummyMV<T> {
+class DummyAnimateValue<T> {
   current: T;
-  private subs: ((v: T) => void)[] = [];
+  private subscribers: ((value: T) => void)[] = [];
 
   constructor(initial: T) {
     this.current = initial;
   }
 
-  subscribe(fn: (v: T) => void) {
-    this.subs.push(fn);
+  subscribe(fn: (value: T) => void) {
+    this.subscribers.push(fn);
     fn(this.current);
     return () => {
-      const idx = this.subs.indexOf(fn);
-      if (idx !== -1) this.subs.splice(idx, 1);
+      const index = this.subscribers.indexOf(fn);
+      if (index !== -1) this.subscribers.splice(index, 1);
     };
   }
 
-  set(v: T) {
-    this.current = v;
-    this.subs.forEach((fn) => fn(v));
+  set(value: T) {
+    this.current = value;
+    this.subscribers.forEach((fn) => fn(value));
   }
 }
 
@@ -35,8 +36,8 @@ describe('isTransformKey()', () => {
   });
 
   it('returns false for non-transform keys', () => {
-    ['width', 'opacity', '', 'translate', 'fooBar'].forEach((k) => {
-      expect(isTransformKey(k)).toBe(false);
+    ['width', 'opacity', '', 'translate', 'fooBar'].forEach((key) => {
+      expect(isTransformKey(key)).toBe(false);
     });
   });
 });
@@ -53,46 +54,46 @@ describe('applyTransformsStyle()', () => {
     const props = {
       translateX: 5, // → 5px
       rotate: '45deg', // → 45deg
-      scale: [1, 2], // → “1,2”
+      scale: [1, 2], // → "1,2"
       notATransform: 123, // ignored
     };
 
-    const unsubs = applyTransformsStyle(node, props);
+    const subscriptions = applyTransformsStyle(node, props);
     expect(node.style.transform).toBe(
       'translateX(5px) rotate(45deg) scale(1,2)'
     );
   });
 
-  it('subscribes to MotionValues and updates transform on change', () => {
-    const tx = new DummyMV(10);
-    const rz = new DummyMV('90deg');
-    const props: Record<string, any> = { translateX: tx, rotate: rz };
+  it('subscribes to AnimateValues and updates transform on change', () => {
+    const translateX = new DummyAnimateValue(10);
+    const rotate = new DummyAnimateValue('90deg');
+    const props: Record<string, any> = { translateX, rotate };
 
-    const unsubs = applyTransformsStyle(node, props);
+    const subscriptions = applyTransformsStyle(node, props);
     // initial render from subscribe()
     expect(node.style.transform).toBe('translateX(10px) rotate(90deg)');
 
-    // update one MotionValue
-    tx.set(20);
+    // update one AnimateValue
+    translateX.set(20);
     expect(node.style.transform).toBe('translateX(20px) rotate(90deg)');
 
     // update the other
-    rz.set('180deg');
+    rotate.set('180deg');
     expect(node.style.transform).toBe('translateX(20px) rotate(180deg)');
 
     // unsub all and then change again
-    unsubs.forEach((u) => u());
-    tx.set(30);
-    rz.set('270deg');
+    subscriptions.forEach((unsubscribe) => unsubscribe());
+    translateX.set(30);
+    rotate.set('270deg');
     // stays at last values
     expect(node.style.transform).toBe('translateX(20px) rotate(180deg)');
   });
 
   it('skips keys that are not in transformKeys', () => {
-    const props = { foo: 1, bar: new DummyMV(2) };
-    const unsubs = applyTransformsStyle(node, props);
+    const props = { foo: 1, bar: new DummyAnimateValue(2) };
+    const subscriptions = applyTransformsStyle(node, props);
     expect(node.style.transform).toBe('');
-    expect(unsubs).toEqual([]);
+    expect(subscriptions).toEqual([]);
   });
 
   it('ignores a raw transform prop and only applies specific transformKeys', () => {
@@ -102,9 +103,9 @@ describe('applyTransformsStyle()', () => {
       scale: 2,
     };
 
-    const unsubs = applyTransformsStyle(node, props);
+    const subscriptions = applyTransformsStyle(node, props);
     expect(node.style.transform).toBe('translateX(10px) scale(2)');
-    expect(unsubs).toEqual([]);
+    expect(subscriptions).toEqual([]);
   });
 
   it('when raw transform is passed without other it should apply it', () => {
@@ -112,8 +113,9 @@ describe('applyTransformsStyle()', () => {
       transform: 'perspective(400px)',
     };
 
-    const unsubs = applyTransformsStyle(node, props);
+    const subscriptions = applyTransformsStyle(node, props);
     expect(node.style.transform).toBe('perspective(400px)');
-    expect(unsubs).toEqual([]);
+    expect(subscriptions).toEqual([]);
   });
 });
+

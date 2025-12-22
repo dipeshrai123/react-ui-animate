@@ -1,4 +1,4 @@
-import { to } from '../../to';
+import { to } from '../to';
 
 describe('numeric → numeric', () => {
   it('linearly interpolates numbers', () => {
@@ -138,3 +138,4 @@ describe('interpolates hex to named color', () => {
     expect(fn(0.5)).toBe('rgb(128,0,128)');
   });
 });
+

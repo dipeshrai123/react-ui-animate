@@ -1,5 +1,5 @@
-import { applyStyles, applyAttrs } from '../../apply';
-import { MotionValue } from '../../MotionValue';
+import { applyStyles, applyAttrs } from '../apply';
+import { AnimateValue } from '../AnimateValue';
 
 describe('applyStyles()', () => {
   let node: HTMLElement;
@@ -8,8 +8,8 @@ describe('applyStyles()', () => {
     node = document.createElement('div');
   });
 
-  it('applies static styles immediately and returns no unsubs', () => {
-    const unsubs = applyStyles(node, {
+  it('applies static styles immediately and returns no subscriptions', () => {
+    const subscriptions = applyStyles(node, {
       width: 100,
       opacity: '0.5',
       backgroundColor: 'red',
@@ -18,22 +18,22 @@ describe('applyStyles()', () => {
     expect(node.style.width).toBe('100px');
     expect(node.style.opacity).toBe('0.5');
     expect(node.style.backgroundColor).toBe('red');
-    expect(unsubs).toEqual([]);
+    expect(subscriptions).toEqual([]);
   });
 
-  it('subscribes to MotionValue and updates style on change', () => {
-    const mv = new MotionValue(0);
-    const unsubs = applyStyles(node, { height: mv });
+  it('subscribes to AnimateValue and updates style on change', () => {
+    const value = new AnimateValue(0);
+    const subscriptions = applyStyles(node, { height: value });
 
     expect(node.style.height).toBe('0px');
-    expect(typeof unsubs[0]).toBe('function');
+    expect(typeof subscriptions[0]).toBe('function');
 
-    mv.set(50);
+    value.set(50);
     expect(node.style.height).toBe('50px');
 
-    const unsubscribe = unsubs[0];
+    const unsubscribe = subscriptions[0];
     unsubscribe();
-    mv.set(75);
+    value.set(75);
     expect(node.style.height).toBe('50px');
   });
 });
@@ -45,8 +45,8 @@ describe('applyAttrs()', () => {
     node = document.createElement('div');
   });
 
-  it('applies static attributes immediately and returns no unsubs', () => {
-    const unsubs = applyAttrs(node, {
+  it('applies static attributes immediately and returns no subscriptions', () => {
+    const subscriptions = applyAttrs(node, {
       id: 'my-id',
       'data-num': 42,
       hidden: true,
@@ -59,21 +59,22 @@ describe('applyAttrs()', () => {
     expect(node.hidden).toBe(true);
     expect(node.hasAttribute('foo')).toBe(false);
     expect(node.hasAttribute('bar')).toBe(false);
-    expect(unsubs).toEqual([]);
+    expect(subscriptions).toEqual([]);
   });
 
-  it('subscribes to MotionValue and updates attribute on change', () => {
-    const mv = new MotionValue('initial');
-    const unsubs = applyAttrs(node, { title: mv });
+  it('subscribes to AnimateValue and updates attribute on change', () => {
+    const value = new AnimateValue('initial');
+    const subscriptions = applyAttrs(node, { title: value });
 
     expect(node.getAttribute('title')).toBe('initial');
 
-    mv.set('updated');
+    value.set('updated');
     expect(node.getAttribute('title')).toBe('updated');
 
-    const unsubscribe = unsubs[0];
+    const unsubscribe = subscriptions[0];
     unsubscribe();
-    mv.set('final');
+    value.set('final');
     expect(node.getAttribute('title')).toBe('updated');
   });
 });
+
