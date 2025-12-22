@@ -1,5 +1,5 @@
 import type { AnimationController } from './drivers/AnimationController';
-import { ExtrapolateConfig, to } from './to/to';
+import { ExtrapolateConfig, to } from './to';
 
 type Subscriber<T> = (v: T) => void;
 
@@ -84,4 +84,8 @@ export class MotionValue<T = number> {
   getAnimationController() {
     return this.currentController;
   }
+}
+
+export function isMotionValue(v: any): v is MotionValue<any> {
+  return v instanceof MotionValue;
 }

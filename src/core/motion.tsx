@@ -1,7 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef, createElement, type RefObject, type CSSProperties, type AllHTMLAttributes, type SVGAttributes } from 'react';
 
-import { isTransformKey, transformKeys } from './apply/styleTransformUtils';
-import { applyAttrs, applyStyles, applyTransforms } from './apply/apply';
+import { isTransformKey, transformKeys, applyAttrs, applyStyles, applyTransforms } from './apply';
 import { MotionValue } from './MotionValue';
 
 type MotionStyle = {

@@ -1,5 +1,5 @@
 import { MotionValue } from '../../MotionValue';
-import { combine } from '../../to/combine';
+import { combine } from '../../to';
 
 describe('combine()', () => {
   it('computes an initial combined value from two inputs', () => {

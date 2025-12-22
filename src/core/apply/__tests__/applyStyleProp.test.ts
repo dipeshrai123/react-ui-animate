@@ -1,4 +1,4 @@
-import { applyStyleProps } from '../../apply/applyStyleProp';
+import { applyStyleProp } from '../../apply';
 
 describe('applyStyleProps()', () => {
   let el: HTMLElement;
@@ -8,7 +8,7 @@ describe('applyStyleProps()', () => {
   });
 
   it('appends "px" for numeric values on non-unitless properties', () => {
-    applyStyleProps(el, 'width', 100);
+    applyStyleProp(el, 'width', 100);
     expect(el.style.width).toBe('100px');
 
     applyStyleProps(el, 'height', 0);

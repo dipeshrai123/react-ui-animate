@@ -1,4 +1,4 @@
-import { applyStyles, applyAttrs } from '../../apply/apply';
+import { applyStyles, applyAttrs } from '../../apply';
 import { MotionValue } from '../../MotionValue';
 
 describe('applyStyles()', () => {

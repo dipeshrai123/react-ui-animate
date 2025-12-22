@@ -1,4 +1,4 @@
-import { Easing } from '../easing/Easing';
+import { Easing } from '../easing';
 import { MotionValue } from '../MotionValue';
 import { AnimationController } from './AnimationController';
 import { createInterpolatedDriver } from './createInterpolatedDriver';

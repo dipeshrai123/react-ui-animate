@@ -2,7 +2,7 @@ import {
   isCssColorLiteral,
   parseCssColor,
   replaceCssColorsWithRgba,
-} from '../colorsUtils';
+} from '../../to';
 
 describe('isCssColorLiteral', () => {
   // Test valid named colors

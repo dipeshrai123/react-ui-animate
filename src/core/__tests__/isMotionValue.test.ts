@@ -1,4 +1,4 @@
-import { isMotionValue } from '../isMotionValue';
+import { isMotionValue } from '../MotionValue';
 import { MotionValue } from '../MotionValue';
 
 describe('isMotionValue()', () => {
