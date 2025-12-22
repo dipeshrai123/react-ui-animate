@@ -1,4 +1,4 @@
-import type { AnimationController } from './drivers/AnimationController';
+import type { AnimateController } from './drivers/AnimateController';
 import { ExtrapolateConfig, to } from './to';
 
 type Subscriber<T> = (value: T) => void;
@@ -7,7 +7,7 @@ export class AnimateValue<T = number> {
   private subscribers = new Set<Subscriber<T>>();
   private _current: T;
   private initial: T;
-  private controller?: AnimationController;
+  private controller?: AnimateController;
 
   constructor(initial: T) {
     this._current = initial;
@@ -76,7 +76,7 @@ export class AnimateValue<T = number> {
     return output;
   }
 
-  setAnimationController(controller: AnimationController) {
+  setAnimationController(controller: AnimateController) {
     this.controller?.cancel();
     this.controller = controller;
   }

@@ -1,23 +1,18 @@
 import { AnimateValue } from '../AnimateValue';
-import { AnimationController } from './AnimationController';
+import type { AnimateController, AnimateHooks } from './AnimateController';
 
-interface DecayOpts {
+interface DecayOptions extends AnimateHooks {
   decay?: number;
   clamp?: [number, number];
-  onStart?(): void;
-  onPause?(): void;
-  onResume?(): void;
-  onComplete?(): void;
   onChange?(value: number): void;
 }
 
-class DecayController implements AnimationController {
+class DecayController implements AnimateController {
   private startTime: number;
   private from: number;
   private frameId: number;
   private position: number;
-  private restSpeed: number = 0.01;
-
+  private readonly restSpeed = 0.01;
   private isPaused = false;
   private isCancelled = false;
   private pausedAt = 0;
@@ -27,17 +22,17 @@ class DecayController implements AnimationController {
     private value: AnimateValue<number>,
     private velocity: number,
     private deceleration: number,
-    private hooks: DecayOpts
+    private hooks: DecayOptions
   ) {
     this.clampBounds = hooks.clamp;
   }
 
   start() {
-    const prev = this.value.getAnimationController();
+    const previous = this.value.getAnimationController();
 
-    if (prev instanceof DecayController) {
-      this.velocity = prev.velocity;
-      this.deceleration = prev.deceleration;
+    if (previous instanceof DecayController) {
+      this.velocity = previous.velocity;
+      this.deceleration = previous.deceleration;
     }
 
     this.hooks.onStart?.();
@@ -55,16 +50,14 @@ class DecayController implements AnimationController {
   private animate = (now: number) => {
     if (this.isCancelled || this.isPaused) return;
 
-    const t = now - this.startTime;
+    const elapsed = now - this.startTime;
     const k = 1 - this.deceleration;
+    const currentVelocity = this.velocity * Math.exp(-k * elapsed);
 
-    const vNow = this.velocity * Math.exp(-k * t);
-
-    this.position = this.from + (this.velocity / k) * (1 - Math.exp(-k * t));
+    this.position = this.from + (this.velocity / k) * (1 - Math.exp(-k * elapsed));
 
     if (this.clampBounds) {
       const [min, max] = this.clampBounds;
-
       if (this.position < min) {
         this.position = min;
       } else if (this.position > max) {
@@ -75,7 +68,7 @@ class DecayController implements AnimationController {
     this.value._internalSet(this.position);
     this.hooks.onChange?.(this.position);
 
-    if (Math.abs(vNow) > this.restSpeed) {
+    if (Math.abs(currentVelocity) > this.restSpeed) {
       this.frameId = requestAnimationFrame(this.animate);
     } else {
       cancelAnimationFrame(this.frameId);
@@ -124,8 +117,8 @@ class DecayController implements AnimationController {
 export function decay(
   value: AnimateValue<number>,
   velocity: number,
-  opts: DecayOpts = {}
+  options: DecayOptions = {}
 ): DecayController {
-  const { decay = 0.998, ...hooks } = opts;
+  const { decay = 0.998, ...hooks } = options;
   return new DecayController(value, velocity, decay, hooks);
 }

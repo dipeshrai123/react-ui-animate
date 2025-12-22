@@ -1,24 +1,61 @@
 import { Easing } from '../easing';
 import { AnimateValue } from '../AnimateValue';
-import { AnimationController } from './AnimationController';
-import { createInterpolatedDriver } from './createInterpolatedDriver';
+import type { AnimateController, AnimateHooks } from './AnimateController';
 
-interface TimingOpts {
+interface TimingOptions extends AnimateHooks {
   duration?: number;
   easing?: (t: number) => number;
-  onStart?(): void;
-  onPause?(): void;
-  onResume?(): void;
-  onComplete?(): void;
   onChange?: (value: number) => void;
 }
 
-class TimingController implements AnimationController {
+type DriverFactory = (
+  value: AnimateValue<number>,
+  target: number,
+  options: TimingOptions
+) => AnimateController;
+
+function withInterpolation(
+  value: AnimateValue<number | string>,
+  target: number | string,
+  options: TimingOptions,
+  factory: DriverFactory
+): AnimateController {
+  if (typeof value.current === 'number' && typeof target === 'number') {
+    return factory(value as AnimateValue<number>, target, options);
+  }
+
+  if (typeof value.current === 'string' && typeof target === 'string') {
+    try {
+      const progress = new AnimateValue(0);
+      const interpolated = progress.to([0, 1], [value.current, target]);
+
+      const controller = factory(progress, 1, options);
+      value.setAnimationController(controller);
+
+      progress.subscribe(() => {
+        if (value.getAnimationController() === controller) {
+          value._internalSet(interpolated.current);
+        }
+      });
+
+      return controller;
+    } catch (err: any) {
+      throw new Error(
+        `[timing] Cannot animate from "${value.current}" to "${target}": ${err.message}`
+      );
+    }
+  }
+
+  throw new Error(
+    `[timing] Unsupported type: ${typeof value.current} → ${typeof target}`
+  );
+}
+
+class TimingController implements AnimateController {
   private startTime: number;
   private frameId: number;
   private from: number;
   private position: number;
-
   private isPaused = false;
   private isCancelled = false;
   private pausedAt: number | null = null;
@@ -26,23 +63,23 @@ class TimingController implements AnimationController {
 
   constructor(
     private value: AnimateValue<number>,
-    private to: number,
+    private target: number,
     private duration: number = 300,
     private easing: (t: number) => number = Easing.linear,
-    private hooks: Omit<TimingOpts, 'duration' | 'easing' | 'delay'>
+    private hooks: Omit<TimingOptions, 'duration' | 'easing'>
   ) {}
 
   start() {
-    const prev = this.value.getAnimationController();
+    const previous = this.value.getAnimationController();
 
     if (
-      prev instanceof TimingController &&
-      !prev.isCancelled &&
-      prev.to === this.to &&
-      prev.startTime
+      previous instanceof TimingController &&
+      !previous.isCancelled &&
+      previous.target === this.target &&
+      previous.startTime
     ) {
-      this.from = prev.from;
-      this.startTime = prev.startTime;
+      this.from = previous.from;
+      this.startTime = previous.startTime;
     } else {
       this.from = this.position = this.value.current;
       this.startTime = performance.now();
@@ -59,22 +96,21 @@ class TimingController implements AnimationController {
     this.frameId = requestAnimationFrame(this.animate);
   }
 
-  private animate = (ts: number) => {
+  private animate = (timestamp: number) => {
     if (this.isCancelled || this.isPaused) return;
 
-    const elapsed = this.elapsedBeforePause + (ts - this.startTime);
-
-    let rawT = elapsed / this.duration;
-    if (!Number.isFinite(rawT)) rawT = rawT === Infinity ? 1 : 0;
-    const t = Math.min(1, Math.max(0, rawT));
+    const elapsed = this.elapsedBeforePause + (timestamp - this.startTime);
+    let progress = elapsed / this.duration;
+    if (!Number.isFinite(progress)) progress = progress === Infinity ? 1 : 0;
+    const t = Math.min(1, Math.max(0, progress));
 
     if (t < 1) {
-      this.position = this.from + (this.to - this.from) * this.easing(t);
+      this.position = this.from + (this.target - this.from) * this.easing(t);
       this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.frameId = requestAnimationFrame(this.animate);
     } else {
-      this.position = this.to;
+      this.position = this.target;
       this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.hooks.onComplete?.();
@@ -122,11 +158,11 @@ class TimingController implements AnimationController {
 
 export function timing(
   value: AnimateValue<number | string>,
-  to: number | string,
-  opts: TimingOpts = {}
-): AnimationController {
-  return createInterpolatedDriver(value, to, opts, (v, target, options) => {
-    const { duration = 300, easing = Easing.linear, ...hooks } = options;
-    return new TimingController(v, target, duration, easing, hooks);
+  target: number | string,
+  options: TimingOptions = {}
+): AnimateController {
+  return withInterpolation(value, target, options, (v, t, opts) => {
+    const { duration = 300, easing = Easing.linear, ...hooks } = opts;
+    return new TimingController(v, t, duration, easing, hooks);
   });
 }
