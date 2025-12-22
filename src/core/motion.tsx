@@ -1,12 +1,12 @@
-import * as React from 'react';
+import { forwardRef, useLayoutEffect, useRef, createElement, type RefObject, type CSSProperties, type AllHTMLAttributes, type SVGAttributes } from 'react';
 
 import { isTransformKey, transformKeys } from './apply/styleTransformUtils';
 import { applyAttrs, applyStyles, applyTransforms } from './apply/apply';
 import { MotionValue } from './MotionValue';
 
 type MotionStyle = {
-  [K in keyof React.CSSProperties]?:
-    | React.CSSProperties[K]
+  [K in keyof CSSProperties]?:
+    | CSSProperties[K]
     | MotionValue<number | string>;
 } & {
   [key in (typeof transformKeys)[number]]?:
@@ -16,14 +16,14 @@ type MotionStyle = {
 };
 
 type MotionHTMLAttributes<T> = {
-  [K in keyof React.AllHTMLAttributes<T>]?:
-    | React.AllHTMLAttributes<T>[K]
+  [K in keyof AllHTMLAttributes<T>]?:
+    | AllHTMLAttributes<T>[K]
     | MotionValue<number | string>;
 };
 
 type MotionSVGAttributes<T> = {
-  [K in keyof React.SVGAttributes<T>]?:
-    | React.SVGAttributes<T>[K]
+  [K in keyof SVGAttributes<T>]?:
+    | SVGAttributes<T>[K]
     | MotionValue<number | string>;
 };
 
@@ -36,7 +36,7 @@ type MotionAttributes<T extends EventTarget> = Omit<
 
 function combineRefs<T>(
   ...refs: Array<
-    React.RefObject<T> | ((el: T | null) => void) | null | undefined
+    RefObject<T> | ((el: T | null) => void) | null | undefined
   >
 ) {
   return (element: T | null) => {
@@ -51,17 +51,26 @@ function combineRefs<T>(
 export function makeMotion<Tag extends keyof JSX.IntrinsicElements>(
   Wrapped: Tag
 ) {
-  const MotionComp = React.forwardRef<
+  const MotionComp = forwardRef<
     HTMLElement,
     MotionAttributes<HTMLElement>
   >((givenProps, givenRef) => {
-    const nodeRef = React.useRef<HTMLElement | null>(null);
+    const nodeRef = useRef<HTMLElement | null>(null);
+    const propsRef = useRef(givenProps);
+    const cleanupRef = useRef<(() => void)[]>([]);
 
-    React.useLayoutEffect(() => {
+    // Update props ref on every render
+    propsRef.current = givenProps;
+
+    useLayoutEffect(() => {
       const node = nodeRef.current;
       if (!node) return;
 
-      const { style = {}, ...rest } = givenProps;
+      // Cleanup previous subscriptions
+      cleanupRef.current.forEach((c) => c());
+      cleanupRef.current = [];
+
+      const { style = {}, ...rest } = propsRef.current;
 
       const normal: Record<string, any> = {};
       const tx: Record<string, any> = {};
@@ -77,10 +86,15 @@ export function makeMotion<Tag extends keyof JSX.IntrinsicElements>(
         ...applyAttrs(node, rest),
       ];
 
-      return () => cleanSubs.forEach((c) => c());
-    }, []);
+      cleanupRef.current = cleanSubs;
 
-    return React.createElement(Wrapped, {
+      return () => {
+        cleanupRef.current.forEach((c) => c());
+        cleanupRef.current = [];
+      };
+    });
+
+    return createElement(Wrapped, {
       ...givenProps,
       ref: combineRefs(nodeRef, givenRef),
     });

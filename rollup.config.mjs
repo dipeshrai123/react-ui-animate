@@ -10,10 +10,25 @@ export default {
       file: pkg.main,
       format: "cjs",
       exports: "named",
-      sourcemap: true,
+      sourcemap: false,
       strict: false,
     },
   ],
-  plugins: [typescript(), terser()],
-  external: ["react", "react-dom"],
+  plugins: [
+    typescript({
+      tsconfig: "tsconfig.json",
+      clean: true,
+    }),
+    terser({
+      compress: {
+        passes: 2,
+        drop_console: false,
+        pure_funcs: [],
+      },
+      format: {
+        comments: false,
+      },
+    }),
+  ],
+  external: ["react", "react-dom", "react/jsx-runtime"],
 };

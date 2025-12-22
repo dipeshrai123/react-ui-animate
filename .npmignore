@@ -14,3 +14,11 @@ tsconfig.json
 CHANGELOG.md
 .idea/
 .releaserc.json
+# Exclude source maps
+*.map
+dist/**/*.map
+# Exclude test files
+**/__tests__/
+**/*.test.*
+dist/**/__tests__/
+dist/**/*.test.*

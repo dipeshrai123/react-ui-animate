@@ -13,13 +13,12 @@
     "@semantic-release/github": "^11.0.3",
     "@semantic-release/npm": "^12.0.2",
     "@semantic-release/release-notes-generator": "^14.0.3",
+    "@testing-library/react": "^16.3.1",
     "@types/jest": "^29.5.12",
     "@types/node": "^20.14.9",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@types/resize-observer-browser": "^0.1.11",
-    "babel-core": "^5.8.38",
-    "babel-runtime": "^6.26.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^6.0.1",
@@ -56,8 +55,5 @@
   "bugs": {
     "url": "https://github.com/dipeshrai123/react-ui-animate/issues"
   },
-  "homepage": "https://github.com/dipeshrai123/react-ui-animate#readme",
-  "dependencies": {
-    "@testing-library/react": "^16.3.1"
-  }
+  "homepage": "https://github.com/dipeshrai123/react-ui-animate#readme"
 }

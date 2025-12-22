@@ -20,5 +20,5 @@
     "types": ["resize-observer-browser", "node", "@types/jest"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "example", "rollup.config.js"]
+  "exclude": ["node_modules", "dist", "example", "rollup.config.js", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]
 }
