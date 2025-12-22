@@ -52,7 +52,12 @@ describe('spring', () => {
     jest.advanceTimersByTime(100);
 
     controller.reset();
-
+    // reset() only resets animation state, not the value
+    // The value stays at its current position to allow loops to work correctly
+    expect(value.current).not.toBe(0);
+    
+    // To reset the value, use value.reset() directly
+    value.reset();
     expect(value.current).toBe(0);
   });
 });

@@ -105,7 +105,7 @@ class DecayController implements AnimateController {
   reset() {
     this.cancel();
     this.isPaused = false;
-    this.value.reset();
+    this.pausedAt = 0;
     this.startTime = 0;
   }
 

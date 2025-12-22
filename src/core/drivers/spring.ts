@@ -191,7 +191,6 @@ class SpringController implements AnimateController {
     this.velocity = 0;
     this.position = this.startPosition;
     this.startTime = Date.now();
-    this.value.reset();
   }
 
   setOnComplete(fn: () => void) {
@@ -200,12 +199,17 @@ class SpringController implements AnimateController {
 }
 
 export function spring(
-  value: AnimateValue<number | string>,
+  value: AnimateValue<number> | AnimateValue<string> | AnimateValue<number | string>,
   target: number | string,
   options: SpringOptions = {}
 ): AnimateController {
-  return withInterpolation(value, target, options, (v, t, opts) => {
-    const { stiffness = 170, damping = 14, mass = 1, ...hooks } = opts;
-    return new SpringController(v, t, stiffness, damping, mass, hooks);
-  });
+  return withInterpolation(
+    value as AnimateValue<number | string>,
+    target,
+    options,
+    (v, t, opts) => {
+      const { stiffness = 170, damping = 14, mass = 1, ...hooks } = opts;
+      return new SpringController(v, t, stiffness, damping, mass, hooks);
+    }
+  );
 }

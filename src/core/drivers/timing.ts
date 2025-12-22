@@ -147,8 +147,9 @@ class TimingController implements AnimateController {
   reset() {
     this.cancel();
     this.isPaused = false;
+    this.pausedAt = null;
+    this.elapsedBeforePause = 0;
     cancelAnimationFrame(this.frameId);
-    this.value.reset();
   }
 
   setOnComplete(fn: () => void) {
@@ -157,12 +158,17 @@ class TimingController implements AnimateController {
 }
 
 export function timing(
-  value: AnimateValue<number | string>,
+  value: AnimateValue<number> | AnimateValue<string> | AnimateValue<number | string>,
   target: number | string,
   options: TimingOptions = {}
 ): AnimateController {
-  return withInterpolation(value, target, options, (v, t, opts) => {
-    const { duration = 300, easing = Easing.linear, ...hooks } = opts;
-    return new TimingController(v, t, duration, easing, hooks);
-  });
+  return withInterpolation(
+    value as AnimateValue<number | string>,
+    target,
+    options,
+    (v, t, opts) => {
+      const { duration = 300, easing = Easing.linear, ...hooks } = opts;
+      return new TimingController(v, t, duration, easing, hooks);
+    }
+  );
 }

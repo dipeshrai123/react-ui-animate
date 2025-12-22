@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import {
   animate,
   useValue,
@@ -8,11 +7,7 @@ import {
 } from 'react-ui-animate';
 
 const Example = () => {
-  const [translateX, setTranslateX] = useValue(-20);
-
-  useEffect(() => {
-    setTranslateX(0);
-  }, [setTranslateX]);
+  const [translateX, setTranslateX] = useValue(0);
 
   const handleClick = () => {
     setTranslateX(
