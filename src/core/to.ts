@@ -464,6 +464,24 @@ function interpolateString(fromStr: string, toStr: string, p: number): string {
 
     if (fp === tp) return () => fp;
 
+    // Handle non-matching non-numeric tokens (e.g., "solid" vs "dashed")
+    // Only allow switching for simple word tokens (CSS keywords), not function names
+    const isSimpleWord = /^[a-zA-Z-]+$/.test(fp) && /^[a-zA-Z-]+$/.test(tp);
+    if (isSimpleWord) {
+      // Check if this token is a function name (followed by "(")
+      // Function names should still throw errors
+      const isFunctionName =
+        (i + 1 < fromParts.length && fromParts[i + 1] === '(') ||
+        (i + 1 < toParts.length && toParts[i + 1] === '(');
+      
+      if (!isFunctionName) {
+        // Use a small threshold to switch from source to target token
+        // This allows smooth transitions for CSS properties like border-style
+        const THRESHOLD = 0.01;
+        return () => (p < THRESHOLD ? fp : tp);
+      }
+    }
+
     throw new Error(
       `interpolate: cannot interpolate tokens "${fp}" vs "${tp}"`
     );

@@ -139,3 +139,25 @@ describe('interpolates hex to named color', () => {
   });
 });
 
+describe('CSS keyword switching (border-style, etc.)', () => {
+  it('switches from solid to dashed border style', () => {
+    const fn = to([0, 1], ['2px solid rgba(100, 150, 200, 0.5)', '1px dashed rgba(50, 200, 255, 0.8)']);
+    // At start, should use "solid"
+    expect(fn(0)).toContain('solid');
+    // At end, should use "dashed"
+    expect(fn(1)).toContain('dashed');
+    // Numeric values should interpolate
+    expect(fn(0.5)).toContain('dashed'); // Should switch to dashed quickly
+  });
+
+  it('switches from solid to double border style', () => {
+    const fn = to([0, 1], ['2px solid rgba(100, 150, 200, 0.5)', '10px double rgba(200, 50, 200, 0.6)']);
+    // At start, should use "solid"
+    expect(fn(0)).toContain('solid');
+    // At end, should use "double"
+    expect(fn(1)).toContain('double');
+    // Should switch to double quickly
+    expect(fn(0.5)).toContain('double');
+  });
+});
+
