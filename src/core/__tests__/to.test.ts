@@ -159,5 +159,207 @@ describe('CSS keyword switching (border-style, etc.)', () => {
     // Should switch to double quickly
     expect(fn(0.5)).toContain('double');
   });
+
+  it('switches between multiple border styles (dotted, groove, ridge)', () => {
+    const fn = to([0, 1], ['3px dotted rgba(255, 0, 0, 0.5)', '5px groove rgba(0, 255, 0, 0.8)']);
+    expect(fn(0)).toContain('dotted');
+    expect(fn(1)).toContain('groove');
+  });
+});
+
+describe('complex box-shadow cases', () => {
+  it('handles box-shadow with inset keyword', () => {
+    const fn = to([0, 1], ['0px 0px 0px rgba(0, 0, 0, 0)', 'inset 10px 10px 20px rgba(0, 0, 0, 0.5)']);
+    expect(fn(0)).not.toContain('inset');
+    expect(fn(1)).toContain('inset');
+  });
+
+  it('handles multiple box-shadows', () => {
+    const fn = to(
+      [0, 1],
+      [
+        '0px 0px 0px rgba(0, 0, 0, 0)',
+        '5px 5px 10px rgba(255, 0, 0, 0.5), 10px 10px 20px rgba(0, 0, 0, 0.3)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('rgba');
+  });
+
+  it('handles box-shadow with spread radius', () => {
+    const fn = to(
+      [0, 1],
+      ['0px 0px 0px 0px rgba(0, 0, 0, 0)', '10px 10px 20px 5px rgba(0, 0, 0, 0.5)']
+    );
+    const result = fn(0.5);
+    expect(result).toContain('rgba');
+    expect(result).toMatch(/\d+px/);
+  });
+});
+
+describe('complex transform cases', () => {
+  it('handles matrix transform', () => {
+    const fn = to([0, 1], ['matrix(1, 0, 0, 1, 0, 0)', 'matrix(2, 0, 0, 2, 100, 100)']);
+    const result = fn(0.5);
+    expect(result).toContain('matrix');
+    expect(result).toMatch(/matrix\([\d.]+/);
+  });
+
+  it('handles matrix3d transform', () => {
+    const fn = to(
+      [0, 1],
+      [
+        'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)',
+        'matrix3d(2, 0, 0, 0, 0, 2, 0, 0, 0, 0, 2, 0, 100, 100, 0, 1)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('matrix3d');
+  });
+
+  it('handles perspective in transform', () => {
+    const fn = to([0, 1], ['perspective(0px) rotateX(0deg)', 'perspective(1000px) rotateX(45deg)']);
+    const result = fn(0.5);
+    expect(result).toContain('perspective');
+    expect(result).toContain('rotateX');
+  });
+});
+
+describe('gradient interpolation', () => {
+  it('handles radial-gradient', () => {
+    const fn = to(
+      [0, 1],
+      [
+        'radial-gradient(circle, rgba(255, 0, 0, 1), rgba(0, 0, 255, 1))',
+        'radial-gradient(ellipse, rgba(0, 255, 0, 1), rgba(255, 0, 255, 1))',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('radial-gradient');
+    expect(result).toContain('rgba');
+  });
+
+  it('handles gradient with percentage stops', () => {
+    const fn = to(
+      [0, 1],
+      [
+        'linear-gradient(0deg, rgba(255, 0, 0, 1) 0%, rgba(0, 0, 255, 1) 100%)',
+        'linear-gradient(90deg, rgba(0, 255, 0, 1) 25%, rgba(255, 0, 255, 1) 75%)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('linear-gradient');
+  });
+
+  it('handles gradient with pixel stops', () => {
+    const fn = to(
+      [0, 1],
+      [
+        'linear-gradient(0deg, rgba(255, 0, 0, 1) 0px, rgba(0, 0, 255, 1) 100px)',
+        'linear-gradient(90deg, rgba(0, 255, 0, 1) 50px, rgba(255, 0, 255, 1) 200px)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('linear-gradient');
+  });
+});
+
+describe('text-shadow and filter cases', () => {
+  it('handles text-shadow with multiple values', () => {
+    const fn = to(
+      [0, 1],
+      ['0px 0px 0px rgba(0, 0, 0, 0)', '2px 2px 4px rgba(0, 0, 0, 0.5)']
+    );
+    const result = fn(0.5);
+    expect(result).toContain('rgba');
+  });
+
+  it('handles multiple text-shadows', () => {
+    const fn = to(
+      [0, 1],
+      [
+        '0px 0px 0px rgba(0, 0, 0, 0)',
+        '1px 1px 2px rgba(255, 0, 0, 0.5), 2px 2px 4px rgba(0, 0, 0, 0.3)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('rgba');
+  });
+
+  it('handles blur filter', () => {
+    const fn = to([0, 1], ['blur(0px)', 'blur(10px)']);
+    expect(fn(0.5)).toBe('blur(5px)');
+  });
+
+  it('handles multiple filters', () => {
+    const fn = to(
+      [0, 1],
+      ['blur(0px) brightness(1)', 'blur(5px) brightness(1.5)']
+    );
+    const result = fn(0.5);
+    expect(result).toContain('blur');
+    expect(result).toContain('brightness');
+  });
+});
+
+describe('font and typography cases', () => {
+  it('handles font-weight keyword switching', () => {
+    const fn = to([0, 1], ['16px normal', '24px bold']);
+    expect(fn(0)).toContain('normal');
+    expect(fn(1)).toContain('bold');
+  });
+
+  it('handles font-style keyword switching', () => {
+    const fn = to([0, 1], ['16px normal', '20px italic']);
+    expect(fn(0)).toContain('normal');
+    expect(fn(1)).toContain('italic');
+  });
+});
+
+describe('background and positioning cases', () => {
+  it('handles background-position with keywords', () => {
+    const fn = to([0, 1], ['0% 0%', '100% 100%']);
+    const result = fn(0.5);
+    expect(result).toBe('50% 50%');
+  });
+
+  it('handles background-size with keywords', () => {
+    const fn = to([0, 1], ['100% 100%', '50% 50%']);
+    const result = fn(0.5);
+    expect(result).toBe('75% 75%');
+  });
+});
+
+describe('edge cases with complex strings', () => {
+  it('handles padding with 4 values', () => {
+    const fn = to([0, 1], ['10px 20px 30px 40px', '5px 10px 15px 20px']);
+    const result = fn(0.5);
+    expect(result).toMatch(/\d+px/);
+  });
+
+  it('handles margin with 3 values', () => {
+    const fn = to([0, 1], ['10px 20px 30px', '5px 10px 15px']);
+    const result = fn(0.5);
+    expect(result).toMatch(/\d+px/);
+  });
+
+  it('handles border-radius with multiple values', () => {
+    const fn = to([0, 1], ['0px 0px 0px 0px', '10px 20px 30px 40px']);
+    const result = fn(0.5);
+    expect(result).toMatch(/\d+px/);
+  });
+
+  it('handles clip-path with polygon', () => {
+    const fn = to(
+      [0, 1],
+      [
+        'polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)',
+        'polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)',
+      ]
+    );
+    const result = fn(0.5);
+    expect(result).toContain('polygon');
+    expect(result).toMatch(/\d+%/);
+  });
 });
 
