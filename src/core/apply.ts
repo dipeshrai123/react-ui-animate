@@ -1,5 +1,5 @@
-import type { MotionValue } from './MotionValue';
-import { isMotionValue } from './MotionValue';
+import type { AnimateValue } from './AnimateValue';
+import { isAnimateValue } from './AnimateValue';
 
 // Unitless CSS properties that don't need 'px' suffix
 const UNIT_LESS = new Set([
@@ -77,8 +77,8 @@ function defaultUnit(key: string) {
 
 function formatTransformFunction(key: string, raw: any) {
   const cur =
-    raw && typeof (raw as MotionValue<any>).subscribe === 'function'
-      ? (raw as MotionValue<any>).current
+    raw && typeof (raw as AnimateValue<any>).subscribe === 'function'
+      ? (raw as AnimateValue<any>).current
       : raw;
 
   if (Array.isArray(cur)) {
@@ -121,9 +121,9 @@ export function applyTransformsStyle(
 
   if (hasTransformKeys) {
     for (const key of transformKeyList) {
-      const val = txProps[key];
-      if (val && typeof (val as MotionValue<any>).subscribe === 'function') {
-        unsubs.push((val as MotionValue<any>).subscribe(render));
+      const value = txProps[key];
+      if (value && typeof (value as AnimateValue<any>).subscribe === 'function') {
+        unsubs.push((value as AnimateValue<any>).subscribe(render));
       }
     }
   }
@@ -135,26 +135,26 @@ export function applyStyles(
   node: HTMLElement,
   style: Record<string, any>
 ): (() => void)[] {
-  const unsubs: (() => void)[] = [];
+  const subscriptions: (() => void)[] = [];
 
-  for (const [key, val] of Object.entries(style)) {
-    if (isMotionValue(val)) {
-      unsubs.push(val.subscribe((v) => applyStyleProp(node, key, v)));
+  for (const [key, value] of Object.entries(style)) {
+    if (isAnimateValue(value)) {
+      subscriptions.push(value.subscribe((v) => applyStyleProp(node, key, v)));
     } else {
-      applyStyleProp(node, key, val);
+      applyStyleProp(node, key, value);
     }
   }
 
-  return unsubs;
+  return subscriptions;
 }
 
 export function applyAttrs(
   node: HTMLElement,
   props: Record<string, any>
 ): (() => void)[] {
-  const unsubs: (() => void)[] = [];
+  const subscriptions: (() => void)[] = [];
 
-  for (const [key, val] of Object.entries(props)) {
+  for (const [key, value] of Object.entries(props)) {
     const setBool = (v: boolean) => {
       if (v) node.setAttribute(key, '');
       else node.removeAttribute(key);
@@ -163,9 +163,9 @@ export function applyAttrs(
       node.setAttribute(key, String(v));
     };
 
-    if (isMotionValue(val)) {
-      unsubs.push(
-        val.subscribe((v) => {
+    if (isAnimateValue(value)) {
+      subscriptions.push(
+        value.subscribe((v) => {
           if (typeof v === 'boolean') setBool(v);
           else if (typeof v === 'string') setOther(v);
           else if (typeof v === 'number') setOther(v);
@@ -173,13 +173,13 @@ export function applyAttrs(
         })
       );
     } else {
-      if (typeof val === 'boolean') setBool(val);
-      else if (typeof val === 'string') setOther(val);
-      else if (typeof val === 'number') setOther(val);
+      if (typeof value === 'boolean') setBool(value);
+      else if (typeof value === 'string') setOther(value);
+      else if (typeof value === 'number') setOther(value);
     }
   }
 
-  return unsubs;
+  return subscriptions;
 }
 
 export function applyTransforms(

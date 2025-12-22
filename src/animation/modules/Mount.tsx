@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import type { MotionValue } from '../../core';
+import type { AnimateValue } from '../../core';
 
 import type { Primitive } from '../types';
 import {
@@ -11,13 +11,13 @@ import {
 interface MountPropsSingle<T extends Primitive>
   extends Partial<ConfigSingle<T>> {
   state: boolean;
-  children: (animation: MotionValue<T>) => ReactNode;
+  children: (animation: AnimateValue<T>) => ReactNode;
 }
 
 interface MountPropsMulti<I extends Record<string, Primitive>>
   extends ConfigMulti<I> {
   state: boolean;
-  children: (animation: { [K in keyof I]: MotionValue<I[K]> }) => ReactNode;
+  children: (animation: { [K in keyof I]: AnimateValue<I[K]> }) => ReactNode;
 }
 
 export function Mount<T extends Primitive = number>(

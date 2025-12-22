@@ -1,6 +1,6 @@
 import {
   decay,
-  MotionValue,
+  AnimateValue,
   spring,
   timing,
   parallel,
@@ -13,22 +13,22 @@ import { filterCallbackOptions } from './helpers';
 import type { Primitive, Descriptor } from './types';
 
 export function buildAnimation(
-  mv: MotionValue<Primitive>,
+  value: AnimateValue<Primitive>,
   { type, to, options = {} }: Descriptor
 ): ReturnType<typeof timing> {
   switch (type) {
     case 'spring':
-      return spring(mv, to as Primitive, options);
+      return spring(value, to as Primitive, options);
     case 'timing':
-      return timing(mv, to as Primitive, options);
+      return timing(value, to as Primitive, options);
     case 'decay':
-      return decay(mv as MotionValue<number>, options.velocity ?? 0, options);
+      return decay(value as AnimateValue<number>, options.velocity ?? 0, options);
     case 'delay':
       return delay(options.delay ?? 0);
     case 'sequence': {
       const animations = options.animations ?? [];
-      const ctrls = animations.map((step) => buildAnimation(mv, step));
-      return sequence(ctrls, options);
+      const controllers = animations.map((step) => buildAnimation(value, step));
+      return sequence(controllers, options);
     }
     case 'loop': {
       const innerDesc = options.animation;
@@ -38,17 +38,17 @@ export function buildAnimation(
         return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
       }
 
-      const innerCtrl =
+      const innerController =
         innerDesc.type === 'sequence'
           ? sequence(
-              (innerDesc.options?.animations ?? []).map((s) =>
-                buildAnimation(mv, s)
+              (innerDesc.options?.animations ?? []).map((step) =>
+                buildAnimation(value, step)
               ),
               innerDesc.options
             )
-          : buildAnimation(mv, innerDesc);
+          : buildAnimation(value, innerDesc);
 
-      return loop(innerCtrl, options.iterations ?? 0, options);
+      return loop(innerController, options.iterations ?? 0, options);
     }
 
     default:
@@ -58,10 +58,10 @@ export function buildAnimation(
 }
 
 export function buildParallel(
-  mvMap: Record<string, MotionValue<Primitive>>,
+  valueMap: Record<string, AnimateValue<Primitive>>,
   step: Descriptor
 ) {
-  const entries = Object.entries(mvMap).filter(([key]) => {
+  const entries = Object.entries(valueMap).filter(([key]) => {
     return (
       step.type === 'decay' ||
       step.type === 'delay' ||
@@ -69,8 +69,8 @@ export function buildParallel(
     );
   });
 
-  const ctrls = entries.map(([key, mv], idx) =>
-    buildAnimation(mv, {
+  const controllers = entries.map(([key, value], idx) =>
+    buildAnimation(value, {
       type: step.type,
       to:
         step.type === 'decay' || step.type === 'delay'
@@ -80,5 +80,5 @@ export function buildParallel(
     })
   );
 
-  return parallel(ctrls);
+  return parallel(controllers);
 }

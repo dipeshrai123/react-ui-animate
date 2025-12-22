@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MotionValue } from '../../core';
+import { AnimateValue } from '../../core';
 
 import { withSpring } from '../descriptors';
 import { isDescriptor } from '../helpers';
@@ -22,7 +22,7 @@ export function useMount<T extends Primitive = number>(
   isOpen: boolean,
   config?: ConfigSingle<T>
 ): (
-  fn: (value: MotionValue<T>, mounted: boolean) => React.ReactNode
+  fn: (value: AnimateValue<T>, mounted: boolean) => React.ReactNode
 ) => React.ReactNode;
 
 export function useMount<I extends Record<string, Primitive>>(
@@ -30,7 +30,7 @@ export function useMount<I extends Record<string, Primitive>>(
   config: ConfigMulti<I>
 ): (
   fn: (
-    values: { [K in keyof I]: MotionValue<I[K]> },
+    values: { [K in keyof I]: AnimateValue<I[K]> },
     mounted: boolean
   ) => React.ReactNode
 ) => React.ReactNode;

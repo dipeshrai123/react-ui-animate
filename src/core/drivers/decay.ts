@@ -1,4 +1,4 @@
-import { MotionValue } from '../MotionValue';
+import { AnimateValue } from '../AnimateValue';
 import { AnimationController } from './AnimationController';
 
 interface DecayOpts {
@@ -24,7 +24,7 @@ class DecayController implements AnimationController {
   private clampBounds?: [number, number];
 
   constructor(
-    private mv: MotionValue<number>,
+    private value: AnimateValue<number>,
     private velocity: number,
     private deceleration: number,
     private hooks: DecayOpts
@@ -33,7 +33,7 @@ class DecayController implements AnimationController {
   }
 
   start() {
-    const prev = this.mv.getAnimationController();
+    const prev = this.value.getAnimationController();
 
     if (prev instanceof DecayController) {
       this.velocity = prev.velocity;
@@ -41,12 +41,12 @@ class DecayController implements AnimationController {
     }
 
     this.hooks.onStart?.();
-    this.mv.setAnimationController(this);
+    this.value.setAnimationController(this);
 
     this.isPaused = false;
     this.isCancelled = false;
 
-    this.from = this.position = this.mv.current;
+    this.from = this.position = this.value.current;
     this.startTime = performance.now();
 
     this.frameId = requestAnimationFrame(this.animate);
@@ -72,7 +72,7 @@ class DecayController implements AnimationController {
       }
     }
 
-    this.mv._internalSet(this.position);
+    this.value._internalSet(this.position);
     this.hooks.onChange?.(this.position);
 
     if (Math.abs(vNow) > this.restSpeed) {
@@ -112,7 +112,7 @@ class DecayController implements AnimationController {
   reset() {
     this.cancel();
     this.isPaused = false;
-    this.mv.reset();
+    this.value.reset();
     this.startTime = 0;
   }
 
@@ -122,11 +122,10 @@ class DecayController implements AnimationController {
 }
 
 export function decay(
-  mv: MotionValue<number>,
+  value: AnimateValue<number>,
   velocity: number,
   opts: DecayOpts = {}
 ): DecayController {
   const { decay = 0.998, ...hooks } = opts;
-  const ctl = new DecayController(mv, velocity, decay, hooks);
-  return ctl;
+  return new DecayController(value, velocity, decay, hooks);
 }

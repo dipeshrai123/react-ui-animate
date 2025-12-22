@@ -1,5 +1,5 @@
 import { Easing } from '../easing';
-import { MotionValue } from '../MotionValue';
+import { AnimateValue } from '../AnimateValue';
 import { AnimationController } from './AnimationController';
 import { createInterpolatedDriver } from './createInterpolatedDriver';
 
@@ -25,7 +25,7 @@ class TimingController implements AnimationController {
   private elapsedBeforePause = 0;
 
   constructor(
-    private mv: MotionValue<number>,
+    private value: AnimateValue<number>,
     private to: number,
     private duration: number = 300,
     private easing: (t: number) => number = Easing.linear,
@@ -33,7 +33,7 @@ class TimingController implements AnimationController {
   ) {}
 
   start() {
-    const prev = this.mv.getAnimationController();
+    const prev = this.value.getAnimationController();
 
     if (
       prev instanceof TimingController &&
@@ -44,12 +44,12 @@ class TimingController implements AnimationController {
       this.from = prev.from;
       this.startTime = prev.startTime;
     } else {
-      this.from = this.position = this.mv.current;
+      this.from = this.position = this.value.current;
       this.startTime = performance.now();
     }
 
     this.hooks.onStart?.();
-    this.mv.setAnimationController(this);
+    this.value.setAnimationController(this);
 
     this.isPaused = false;
     this.isCancelled = false;
@@ -70,12 +70,12 @@ class TimingController implements AnimationController {
 
     if (t < 1) {
       this.position = this.from + (this.to - this.from) * this.easing(t);
-      this.mv._internalSet(this.position);
+      this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.frameId = requestAnimationFrame(this.animate);
     } else {
       this.position = this.to;
-      this.mv._internalSet(this.position);
+      this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.hooks.onComplete?.();
     }
@@ -112,7 +112,7 @@ class TimingController implements AnimationController {
     this.cancel();
     this.isPaused = false;
     cancelAnimationFrame(this.frameId);
-    this.mv.reset();
+    this.value.reset();
   }
 
   setOnComplete(fn: () => void) {
@@ -121,12 +121,12 @@ class TimingController implements AnimationController {
 }
 
 export function timing(
-  mv: MotionValue<number | string>,
+  value: AnimateValue<number | string>,
   to: number | string,
   opts: TimingOpts = {}
 ): AnimationController {
-  return createInterpolatedDriver(mv, to, opts, (m, t, o) => {
-    const { duration = 300, easing = Easing.linear, ...hooks } = o;
-    return new TimingController(m, t, duration, easing, hooks);
+  return createInterpolatedDriver(value, to, opts, (v, target, options) => {
+    const { duration = 300, easing = Easing.linear, ...hooks } = options;
+    return new TimingController(v, target, duration, easing, hooks);
   });
 }

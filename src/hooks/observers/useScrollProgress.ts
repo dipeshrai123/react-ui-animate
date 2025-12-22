@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useRef } from 'react';
-import { MotionValue } from '../../core';
+import { AnimateValue } from '../../core';
 
 import { useValue, withSpring } from '../../animation';
 import { ScrollGesture } from '../../gestures/controllers/ScrollGesture';
@@ -33,8 +33,8 @@ export function useScrollProgress(
     toDescriptor = (v: number) => withSpring(v),
   }: UseScrollProgressOptions = {}
 ): {
-  scrollYProgress: MotionValue<number>;
-  scrollXProgress: MotionValue<number>;
+  scrollYProgress: AnimateValue<number>;
+  scrollXProgress: AnimateValue<number>;
 } {
   const [yProgress, setYProgress] = useValue(0);
   const [xProgress, setXProgress] = useValue(0);

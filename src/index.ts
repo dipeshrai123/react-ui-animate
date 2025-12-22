@@ -1,8 +1,8 @@
 export {
   combine,
   Easing,
-  makeMotion as makeAnimated,
-  motion as animate,
+  makeAnimated,
+  animate,
 } from './core';
 
 export * from './animation';

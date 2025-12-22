@@ -1,4 +1,4 @@
-import { MotionValue } from './MotionValue';
+import { AnimateValue } from './AnimateValue';
 
 // Named CSS colors mapping
 const namedColors: Record<string, string> = {
@@ -478,19 +478,19 @@ function formatNumber(val: number): string {
 }
 
 export function combine<T extends any[], U>(
-  inputs: { [K in keyof T]: MotionValue<T[K]> },
+  inputs: { [K in keyof T]: AnimateValue<T[K]> },
   combiner: (...values: T) => U
-): MotionValue<U> {
-  const initial = inputs.map((fv) => fv.current) as T;
-  const out = new MotionValue<U>(combiner(...initial));
+): AnimateValue<U> {
+  const initial = inputs.map((value) => value.current) as T;
+  const output = new AnimateValue<U>(combiner(...initial));
 
   const update = () => {
-    const vals = inputs.map((fv) => fv.current) as T;
-    out.set(combiner(...vals));
+    const values = inputs.map((value) => value.current) as T;
+    output.set(combiner(...values));
   };
 
-  inputs.map((fv) => fv.subscribe(() => update()));
+  inputs.forEach((value) => value.subscribe(() => update()));
 
-  return out;
+  return output;
 }
 

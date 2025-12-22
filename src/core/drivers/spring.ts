@@ -1,4 +1,4 @@
-import { MotionValue } from '../MotionValue';
+import { AnimateValue } from '../AnimateValue';
 import { AnimationController } from './AnimationController';
 import { createInterpolatedDriver } from './createInterpolatedDriver';
 
@@ -26,7 +26,7 @@ class SpringController implements AnimationController {
   private isCancelled = false;
 
   constructor(
-    private mv: MotionValue<number>,
+    private value: AnimateValue<number>,
     private to: number,
     private stiffness: number,
     private damping: number,
@@ -35,20 +35,20 @@ class SpringController implements AnimationController {
   ) {}
 
   start() {
-    const prev = this.mv.getAnimationController();
+    const prev = this.value.getAnimationController();
 
     if (prev instanceof SpringController) {
       this.position = prev.position;
       this.velocity = prev.velocity;
       this.startTime = prev.startTime;
     } else {
-      this.position = this.startPosition = this.mv.current;
+      this.position = this.startPosition = this.value.current;
       this.velocity = 0;
       this.startTime = Date.now();
     }
 
     this.hooks.onStart?.();
-    this.mv.setAnimationController(this);
+    this.value.setAnimationController(this);
 
     this.isPaused = false;
     this.isCancelled = false;
@@ -98,7 +98,7 @@ class SpringController implements AnimationController {
       criticallyDampedEnvelope *
       (v0 * (t * omega0 - 1) + t * x0 * omega0 * omega0);
 
-    this.mv._internalSet(this.position);
+    this.value._internalSet(this.position);
     this.hooks.onChange?.(this.position);
 
     const isVelocity = Math.abs(this.velocity) < this.restSpeed;
@@ -119,7 +119,7 @@ class SpringController implements AnimationController {
       this.velocity = 0;
       this.position = this.to;
 
-      this.mv._internalSet(this.position);
+      this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.hooks.onComplete?.();
       return;
@@ -155,7 +155,7 @@ class SpringController implements AnimationController {
     this.velocity = 0;
     this.position = this.startPosition;
     this.startTime = Date.now();
-    this.mv.reset();
+    this.value.reset();
   }
 
   setOnComplete(fn: () => void) {
@@ -164,12 +164,12 @@ class SpringController implements AnimationController {
 }
 
 export function spring(
-  mv: MotionValue<number | string>,
+  value: AnimateValue<number | string>,
   to: number | string,
   opts: SpringOpts = {}
 ): AnimationController {
-  return createInterpolatedDriver(mv, to, opts, (m, t, o) => {
-    const { stiffness = 170, damping = 14, mass = 1, ...hooks } = o;
-    return new SpringController(m, t, stiffness, damping, mass, hooks);
+  return createInterpolatedDriver(value, to, opts, (v, target, options) => {
+    const { stiffness = 170, damping = 14, mass = 1, ...hooks } = options;
+    return new SpringController(v, target, stiffness, damping, mass, hooks);
   });
 }

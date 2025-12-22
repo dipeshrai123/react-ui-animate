@@ -1,45 +1,45 @@
-import { MotionValue } from '../MotionValue';
+import { AnimateValue } from '../AnimateValue';
 import { AnimationController } from './AnimationController';
 
 type DriverFactory = (
-  mv: MotionValue<number>,
-  to: number,
-  opts: any
+  value: AnimateValue<number>,
+  target: number,
+  options: any
 ) => AnimationController;
 
 export function createInterpolatedDriver(
-  mv: MotionValue<number | string>,
-  to: number | string,
-  opts: any,
+  value: AnimateValue<number | string>,
+  target: number | string,
+  options: any,
   driver: DriverFactory
 ): AnimationController {
-  if (typeof mv.current === 'number' && typeof to === 'number') {
-    return driver(mv as MotionValue<number>, to, opts);
+  if (typeof value.current === 'number' && typeof target === 'number') {
+    return driver(value as AnimateValue<number>, target, options);
   }
 
-  if (typeof mv.current === 'string' && typeof to === 'string') {
+  if (typeof value.current === 'string' && typeof target === 'string') {
     try {
-      const progress = new MotionValue(0);
-      const interpolated = progress.to([0, 1], [mv.current, to]);
+      const progress = new AnimateValue(0);
+      const interpolated = progress.to([0, 1], [value.current, target]);
 
-      const ctrl = driver(progress, 1, opts);
-      mv.setAnimationController(ctrl);
+      const controller = driver(progress, 1, options);
+      value.setAnimationController(controller);
 
       progress.subscribe(() => {
-        if (mv.getAnimationController() === ctrl) {
-          mv._internalSet(interpolated.current);
+        if (value.getAnimationController() === controller) {
+          value._internalSet(interpolated.current);
         }
       });
 
-      return ctrl;
-    } catch (err) {
+      return controller;
+    } catch (err: any) {
       throw new Error(
-        `[${driver.name}] Cannot animate from "${mv.current}" to "${to}": ${err.message}`
+        `[${driver.name}] Cannot animate from "${value.current}" to "${target}": ${err.message}`
       );
     }
   }
 
   throw new Error(
-    `[${driver.name}] Unsupported type: ${typeof mv.current} → ${typeof to}`
+    `[${driver.name}] Unsupported type: ${typeof value.current} → ${typeof target}`
   );
 }
