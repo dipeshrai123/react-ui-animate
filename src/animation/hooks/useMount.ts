@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { MotionValue } from '@raidipesh78/re-motion';
+import { MotionValue } from '../../core';
 
 import { withSpring } from '../descriptors';
 import { isDescriptor } from '../helpers';

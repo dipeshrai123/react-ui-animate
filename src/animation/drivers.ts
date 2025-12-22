@@ -7,7 +7,7 @@ import {
   delay,
   sequence,
   loop,
-} from '@raidipesh78/re-motion';
+} from '../core';
 
 import { filterCallbackOptions } from './helpers';
 import type { Primitive, Descriptor } from './types';

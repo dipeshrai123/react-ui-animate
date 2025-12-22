@@ -1,7 +1,7 @@
 import {
   type ExtrapolateConfig,
   to as interpolate,
-} from '@raidipesh78/re-motion';
+} from '../core';
 
 export function to(
   input: number,

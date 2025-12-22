@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import type { MotionValue } from '@raidipesh78/re-motion';
+import type { MotionValue } from '../../core';
 
 import type { Primitive } from '../types';
 import {

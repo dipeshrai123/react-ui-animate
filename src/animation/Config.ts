@@ -1,4 +1,4 @@
-import { Easing } from '@raidipesh78/re-motion';
+import { Easing } from '../core';
 
 export const Config = {
   Timing: {

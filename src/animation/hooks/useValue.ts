@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
+import { delay, sequence, loop, MotionValue } from '../../core';
 
 import { buildAnimation, buildParallel } from '../drivers';
 import { filterCallbackOptions, isDescriptor } from '../helpers';

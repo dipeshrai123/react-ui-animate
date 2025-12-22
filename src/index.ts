@@ -3,7 +3,7 @@ export {
   Easing,
   makeMotion as makeAnimated,
   motion as animate,
-} from '@raidipesh78/re-motion';
+} from './core';
 
 export * from './animation';
 
