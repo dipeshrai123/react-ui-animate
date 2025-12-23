@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Example from './MultipleItems';
+import Example from './BasicSetup';
 
 const meta = {
-  title: 'Animations/Modules/AnimatePresence/MultipleItems',
+  title: 'Animations/Modules/Presence/BasicSetup',
   component: Example,
   parameters: {
     layout: 'centered',

@@ -4,7 +4,7 @@ import { isTransformKey, transformKeys, applyAttrs, applyStyles, applyTransforms
 import { AnimateValue } from './AnimateValue';
 import type { Descriptor, Primitive } from '../animation/types';
 import { buildAnimation } from '../animation/drivers';
-import { PresenceContext } from '../animation/modules/AnimatePresence';
+import { PresenceContext } from '../animation/modules/Presence';
 
 // Helper type to accept any AnimateValue with a compatible type
 type AnimateValueCompatible = 

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './Modal';
 
 const meta = {
-  title: 'Animations/Modules/AnimatePresence/Modal',
+  title: 'Animations/Modules/Presence/Modal',
   component: Example,
   parameters: {
     layout: 'centered',

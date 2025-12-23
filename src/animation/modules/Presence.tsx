@@ -16,7 +16,7 @@ import {
 // Types
 // ============================================================================
 
-export interface AnimatePresenceProps {
+export interface PresenceProps {
   /**
    * Children to animate. Each direct child should have a unique `key` prop.
    */
@@ -44,7 +44,7 @@ export interface AnimatePresenceProps {
 
 export interface PresenceContextValue {
   /**
-   * Whether this is the initial mount (skip enter animation if AnimatePresence.initial=false)
+   * Whether this is the initial mount (skip enter animation if Presence.initial=false)
    */
   isInitialMount: boolean;
 
@@ -72,7 +72,7 @@ export function usePresence(): [boolean, () => void] {
   const context = useContext(PresenceContext);
 
   if (!context) {
-    // Not inside AnimatePresence, always present
+    // Not inside Presence, always present
     return [true, () => {}];
   }
 
@@ -102,11 +102,11 @@ interface ChildState {
 // ============================================================================
 
 /**
- * AnimatePresence enables exit animations when children are removed from the tree.
+ * Presence enables exit animations when children are removed from the tree.
  *
  * @example
  * ```tsx
- * <AnimatePresence>
+ * <Presence>
  *   {isVisible && (
  *     <animate.div
  *       key="modal"
@@ -115,15 +115,15 @@ interface ChildState {
  *       exit={{ opacity: withTiming(0) }}
  *     />
  *   )}
- * </AnimatePresence>
+ * </Presence>
  * ```
  */
-export function AnimatePresence({
+export function Presence({
   children,
   initial = true,
   onExitComplete,
   mode = 'sync',
-}: AnimatePresenceProps): ReactElement {
+}: PresenceProps): ReactElement {
   // Track whether this is the first render
   const isInitialMount = useRef(true);
 
@@ -260,5 +260,5 @@ export function AnimatePresence({
   return <>{renderedChildren}</>;
 }
 
-export default AnimatePresence;
+export default Presence;
 

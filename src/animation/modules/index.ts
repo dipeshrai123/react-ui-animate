@@ -1,9 +1,9 @@
 export { Mount } from './Mount';
 export {
-  AnimatePresence,
+  Presence,
   PresenceContext,
   usePresence,
   useIsPresent,
-  type AnimatePresenceProps,
+  type PresenceProps,
   type PresenceContextValue,
-} from './AnimatePresence';
+} from './Presence';

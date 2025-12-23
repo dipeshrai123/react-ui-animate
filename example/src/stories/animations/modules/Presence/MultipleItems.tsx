@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { animate, AnimatePresence, withTiming, withSpring } from 'react-ui-animate';
+import { animate, Presence, withTiming, withSpring } from 'react-ui-animate';
 
 interface Item {
   id: number;
@@ -28,7 +28,7 @@ const Example: React.FC = () => {
         Add Item
       </button>
 
-      <AnimatePresence>
+      <Presence>
         {items.map((item) => (
           <animate.div
             key={item.id}
@@ -69,7 +69,7 @@ const Example: React.FC = () => {
             </button>
           </animate.div>
         ))}
-      </AnimatePresence>
+      </Presence>
     </div>
   );
 };

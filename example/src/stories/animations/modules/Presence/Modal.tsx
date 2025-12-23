@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   animate,
-  AnimatePresence,
+  Presence,
   withTiming,
   withSpring,
   useOutsideClick,
@@ -53,8 +53,7 @@ const Modal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       >
         <h2 style={{ margin: '0 0 16px', color: '#333' }}>Modal Title</h2>
         <p style={{ margin: '0 0 24px', color: '#666' }}>
-          This is a modal with enter and exit animations powered by
-          AnimatePresence.
+          This is a modal with enter and exit animations powered by Presence.
         </p>
         <button
           onClick={onClose}
@@ -94,9 +93,9 @@ const Example: React.FC = () => {
         Open Modal
       </button>
 
-      <AnimatePresence>
+      <Presence>
         {isOpen && <Modal key="modal" onClose={() => setIsOpen(false)} />}
-      </AnimatePresence>
+      </Presence>
     </>
   );
 };

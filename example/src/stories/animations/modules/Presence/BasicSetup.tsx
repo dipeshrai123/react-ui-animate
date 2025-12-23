@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { animate, AnimatePresence, withTiming, withSpring } from 'react-ui-animate';
+import { animate, Presence, withTiming, withSpring } from 'react-ui-animate';
 
 const Example: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   return (
     <>
-      <AnimatePresence>
+      <Presence>
         {isVisible && (
           <animate.div
             key="box"
@@ -28,7 +28,7 @@ const Example: React.FC = () => {
             }}
           />
         )}
-      </AnimatePresence>
+      </Presence>
 
       <button
         className="mt"
