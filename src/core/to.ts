@@ -462,6 +462,11 @@ function interpolateCommaSeparatedList(fromStr: string, toStr: string, p: number
   return result.join(', ');
 }
 
+function convertRgbToRgba(str: string): string {
+  // Convert rgb() to rgba() format for gradient color stops
+  return str.replace(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/g, 'rgba($1,$2,$3,1.000)');
+}
+
 function interpolateGradients(
   fromGradient: { type: string; content: string },
   toGradient: { type: string; content: string },
@@ -487,7 +492,9 @@ function interpolateGradients(
   }
 
   const colorStops = interpolateString(fromParams.colorStops, toParams.colorStops, p);
-  const content = firstParam ? `${firstParam}, ${colorStops}` : colorStops;
+  // Convert any rgb() colors to rgba() format in gradients to ensure consistency
+  const normalizedColorStops = convertRgbToRgba(colorStops);
+  const content = firstParam ? `${firstParam}, ${normalizedColorStops}` : normalizedColorStops;
   return `${gradientType}-gradient(${content})`;
 }
 
