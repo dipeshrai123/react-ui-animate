@@ -86,6 +86,9 @@ function getStaticStyleValue(style: any, key: string): Primitive | null {
   
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
+    // Check if the string has a CSS unit - if so, keep it as a string
+    if (/\d+(px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)$/i.test(value)) return value;
+    
     const num = parseFloat(value);
     return isNaN(num) ? value : num;
   }
@@ -102,6 +105,11 @@ function getDefaultInitialValue(key: string): Primitive {
   return 0;
 }
 
+// Helper to check if a string has a CSS unit
+function hasUnit(value: string): boolean {
+  return /\d+(px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)$/i.test(value);
+}
+
 // Helper to get initial value for a property
 function getInitialValue(
   key: string,
@@ -116,6 +124,8 @@ function getInitialValue(
   // Fall back to inline style
   const inlineValue = (node.style as any)[key];
   if (inlineValue) {
+    // Preserve strings with units
+    if (hasUnit(inlineValue)) return inlineValue;
     const num = parseFloat(inlineValue);
     return isNaN(num) ? inlineValue : num;
   }
@@ -125,6 +135,8 @@ function getInitialValue(
     key.replace(/([A-Z])/g, '-$1').toLowerCase()
   );
   if (computedValue) {
+    // Preserve strings with units
+    if (hasUnit(computedValue)) return computedValue.trim();
     const num = parseFloat(computedValue);
     return isNaN(num) ? computedValue.trim() : num;
   }
