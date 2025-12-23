@@ -42,7 +42,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     propsRef.current = props;
 
-    // Handle enter animations - only run on first mount
+    // Handle enter animations - run on mount and when animate prop changes
     useLayoutEffect(() => {
       const node = nodeRef.current;
       if (!node) return;
@@ -53,24 +53,44 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       const { style = {}, animate: animateProp, ...rest } = propsRef.current;
       const isFirstMount = !hasMountedRef.current;
 
-      // On first mount: setup AnimateValues and start animations
-      // On subsequent renders: just update style subscriptions without restarting animations
-      if (isFirstMount && animateProp) {
+      // Cancel any existing animations
+      controllersRef.current.forEach((ctrl) => ctrl.cancel());
+      controllersRef.current = [];
+
+      if (animateProp) {
         const computedStyle = window.getComputedStyle(node);
-        const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
+        
+        // On first mount: create new AnimateValues
+        // On subsequent updates: reuse existing or create new ones
+        if (isFirstMount) {
+          const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
 
-        // Create AnimateValues for each animated property
-        for (const key of Object.keys(animateProp)) {
-          const initial = getInitialValue(key, style, node, computedStyle);
-          const value = new AnimateValue(initial);
-          newAnimateValues[key] = value;
+          // Create AnimateValues for each animated property
+          for (const key of Object.keys(animateProp)) {
+            const initial = getInitialValue(key, style, node, computedStyle);
+            const value = new AnimateValue(initial);
+            newAnimateValues[key] = value;
+          }
+
+          animateValuesRef.current = newAnimateValues;
+        } else {
+          // On updates: reset existing values to initial and create new ones for new properties
+          for (const key of Object.keys(animateProp)) {
+            if (!animateValuesRef.current[key]) {
+              // Create new AnimateValue for new property
+              const initial = getInitialValue(key, style, node, computedStyle);
+              animateValuesRef.current[key] = new AnimateValue(initial);
+            } else {
+              // Reset existing AnimateValue to initial value
+              const initial = getInitialValue(key, style, node, computedStyle);
+              animateValuesRef.current[key].set(initial);
+            }
+          }
         }
-
-        animateValuesRef.current = newAnimateValues;
 
         // Build and start animations
         for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
-          const value = newAnimateValues[key];
+          const value = animateValuesRef.current[key];
           if (!value) continue;
 
           // Convert primitive values to timing descriptors for convenience
@@ -122,7 +142,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         cleanupRef.current.forEach((cleanup) => cleanup());
         cleanupRef.current = [];
       };
-    }, [props.style]);
+    }, [props.style, props.animate]);
 
     // Cleanup animations on unmount
     useEffect(() => {
