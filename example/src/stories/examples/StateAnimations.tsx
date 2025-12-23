@@ -20,7 +20,7 @@ const Example: React.FC = () => {
             borderRadius: 8,
             scale: 1,
           }}
-          whileHover={{
+          hover={{
             scale: withSpring(1.2, { stiffness: 300, damping: 20 }),
             // backgroundColor: withTiming('#ff6b6b', { duration: 0 }),
             backgroundColor: '#ff6b6b',
@@ -38,7 +38,7 @@ const Example: React.FC = () => {
             borderRadius: 8,
             scale: 1,
           }}
-          whileTap={{
+          press={{
             scale: withSpring(0.9, { stiffness: 400, damping: 25 }),
           }}
         />
@@ -58,7 +58,7 @@ const Example: React.FC = () => {
             width: 200,
             scale: 1,
           }}
-          whileFocus={{
+          focus={{
             scale: withSpring(1.05, { stiffness: 300, damping: 20 }),
             borderColor: withTiming('#3399ff', { duration: 200 }),
           }}
@@ -79,11 +79,11 @@ const Example: React.FC = () => {
             scale: 1,
             translateY: 0,
           }}
-          whileHover={{
+          hover={{
             scale: withSpring(1.1, { stiffness: 300, damping: 20 }),
             translateY: withSpring(-2, { stiffness: 300, damping: 20 }),
           }}
-          whileTap={{
+          press={{
             scale: withSpring(0.95, { stiffness: 400, damping: 25 }),
             translateY: withSpring(0, { stiffness: 400, damping: 25 }),
           }}
@@ -103,7 +103,7 @@ const Example: React.FC = () => {
             rotate: 0,
             opacity: 0.8,
           }}
-          whileHover={{
+          hover={{
             rotate: withSpring(45, { stiffness: 200, damping: 15 }),
             opacity: withTiming(1, { duration: 200 }),
             scale: withSpring(1.15, { stiffness: 300, damping: 20 }),

@@ -47,7 +47,7 @@ type AnimateProp = {
 
 type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
-  'style' | 'animate' | 'exit' | 'whileHover' | 'whileTap' | 'whileFocus'
+  'style' | 'animate' | 'exit' | 'hover' | 'press' | 'focus'
 > & {
   style?: AnimateStyle;
   /**
@@ -59,17 +59,17 @@ type AnimateAttributes<T extends EventTarget> = Omit<
    */
   exit?: AnimateProp;
   /**
-   * Animations to apply when the element is hovered.
+   * Animations or styles to apply when the element is hovered.
    */
-  whileHover?: AnimateProp;
+  hover?: AnimateProp;
   /**
-   * Animations to apply when the element is tapped/pressed.
+   * Animations or styles to apply when the element is pressed (mouse down or touch start).
    */
-  whileTap?: AnimateProp;
+  press?: AnimateProp;
   /**
-   * Animations to apply when the element is focused.
+   * Animations or styles to apply when the element is focused.
    */
-  whileFocus?: AnimateProp;
+  focus?: AnimateProp;
 };
 
 function combineRefs<T>(
@@ -502,38 +502,38 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       const node = nodeRef.current;
       if (!node) return;
 
-      const { whileHover, whileTap, whileFocus } = propsRef.current;
+      const { hover, press, focus } = propsRef.current;
 
       // Handle hover state
       const handleMouseEnter = () => {
         if (stateRef.current.isHovered) return;
         stateRef.current.isHovered = true;
-        applyStateAnimation(whileHover, true);
+        applyStateAnimation(hover, true);
       };
 
       const handleMouseLeave = () => {
         if (!stateRef.current.isHovered) return;
         stateRef.current.isHovered = false;
-        applyStateAnimation(whileHover, false);
+        applyStateAnimation(hover, false);
       };
 
-      // Handle tap state
+      // Handle press state
       const handleMouseDown = () => {
         if (stateRef.current.isTapped) return;
         stateRef.current.isTapped = true;
-        applyStateAnimation(whileTap, true);
+        applyStateAnimation(press, true);
       };
 
       const handleMouseUp = () => {
         if (!stateRef.current.isTapped) return;
         stateRef.current.isTapped = false;
-        applyStateAnimation(whileTap, false);
+        applyStateAnimation(press, false);
       };
 
-      const handleMouseLeaveForTap = () => {
+      const handleMouseLeaveForPress = () => {
         if (stateRef.current.isTapped) {
           stateRef.current.isTapped = false;
-          applyStateAnimation(whileTap, false);
+          applyStateAnimation(press, false);
         }
       };
 
@@ -541,32 +541,32 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       const handleFocus = () => {
         if (stateRef.current.isFocused) return;
         stateRef.current.isFocused = true;
-        applyStateAnimation(whileFocus, true);
+        applyStateAnimation(focus, true);
       };
 
       const handleBlur = () => {
         if (!stateRef.current.isFocused) return;
         stateRef.current.isFocused = false;
-        applyStateAnimation(whileFocus, false);
+        applyStateAnimation(focus, false);
       };
 
       // Add event listeners
-      if (whileHover) {
+      if (hover) {
         node.addEventListener('mouseenter', handleMouseEnter);
         node.addEventListener('mouseleave', handleMouseLeave);
       }
 
-      if (whileTap) {
+      if (press) {
         node.addEventListener('mousedown', handleMouseDown);
         node.addEventListener('mouseup', handleMouseUp);
-        node.addEventListener('mouseleave', handleMouseLeaveForTap);
+        node.addEventListener('mouseleave', handleMouseLeaveForPress);
         // Also handle touch events for mobile
         node.addEventListener('touchstart', handleMouseDown);
         node.addEventListener('touchend', handleMouseUp);
-        node.addEventListener('touchcancel', handleMouseLeaveForTap);
+        node.addEventListener('touchcancel', handleMouseLeaveForPress);
       }
 
-      if (whileFocus) {
+      if (focus) {
         // Only add focus listeners if element is focusable
         if (
           node instanceof HTMLInputElement ||
@@ -583,21 +583,21 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
       return () => {
         // Cleanup event listeners
-        if (whileHover) {
+        if (hover) {
           node.removeEventListener('mouseenter', handleMouseEnter);
           node.removeEventListener('mouseleave', handleMouseLeave);
         }
 
-        if (whileTap) {
+        if (press) {
           node.removeEventListener('mousedown', handleMouseDown);
           node.removeEventListener('mouseup', handleMouseUp);
-          node.removeEventListener('mouseleave', handleMouseLeaveForTap);
+          node.removeEventListener('mouseleave', handleMouseLeaveForPress);
           node.removeEventListener('touchstart', handleMouseDown);
           node.removeEventListener('touchend', handleMouseUp);
-          node.removeEventListener('touchcancel', handleMouseLeaveForTap);
+          node.removeEventListener('touchcancel', handleMouseLeaveForPress);
         }
 
-        if (whileFocus) {
+        if (focus) {
           node.removeEventListener('focus', handleFocus);
           node.removeEventListener('blur', handleBlur);
         }
@@ -606,7 +606,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
         stateControllersRef.current = [];
       };
-    }, [props.whileHover, props.whileTap, props.whileFocus]);
+    }, [props.hover, props.press, props.focus]);
 
     // Cleanup state animations on unmount
     useEffect(() => {
@@ -616,7 +616,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       };
     }, []);
 
-    const { animate: _, exit: __, whileHover: ___, whileTap: ____, whileFocus: _____, ...domProps } = props;
+    const { animate: _, exit: __, hover: ___, press: ____, focus: _____, ...domProps } = props;
 
     return createElement(tag, {
       ...domProps,
