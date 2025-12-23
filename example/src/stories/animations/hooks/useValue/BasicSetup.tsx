@@ -34,6 +34,43 @@ const Example: React.FC = () => {
         >
           Loop 0 to 100
         </button>
+        <button
+          onClick={() =>
+            setX(
+              withSpring(100, {
+                from: 0, // Explicitly start from 0, regardless of current value
+              })
+            )
+          }
+        >
+          Spring 0→100 (explicit from)
+        </button>
+        <button
+          onClick={() =>
+            setX(
+              withTiming(200, {
+                from: 50, // Start from 50, animate to 200
+                duration: 500,
+              })
+            )
+          }
+        >
+          Timing 50→200 (explicit from)
+        </button>
+        <button
+          onClick={() =>
+            setX(
+              withLoop(
+                withSpring(100, {
+                  from: 0, // Loop from 0 to 100 (explicit)
+                }),
+                5
+              )
+            )
+          }
+        >
+          Loop 0→100 (explicit from)
+        </button>
         <button onClick={() => setX(withDecay(1))}>Decay</button>
         <button
           onClick={() =>

@@ -23,7 +23,7 @@ const Example: React.FC = () => {
         <button
           onClick={() =>
             setX(
-              withLoop(withSpring(100), 5, {
+              withLoop(withSpring(100, { from: 0 }), 5, {
                 onStart() {
                   console.log('Loop started');
                 },

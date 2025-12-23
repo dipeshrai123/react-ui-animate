@@ -10,11 +10,13 @@ export interface SpringOptions {
   stiffness?: number;
   damping?: number;
   mass?: number;
+  from?: number;
 }
 
 export interface TimingOptions {
   duration?: number;
   easing?: (t: number) => number;
+  from?: number;
 }
 
 export interface DecayOptions {

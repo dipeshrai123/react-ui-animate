@@ -5,6 +5,7 @@ import type { AnimateController, AnimateHooks } from './AnimateController';
 interface TimingOptions extends AnimateHooks {
   duration?: number;
   easing?: (t: number) => number;
+  from?: number;
   onChange?: (value: number) => void;
 }
 
@@ -54,12 +55,13 @@ function withInterpolation(
 class TimingController implements AnimateController {
   private startTime: number;
   private frameId: number;
-  private from: number;
+  private fromValue: number;
   private position: number;
   private isPaused = false;
   private isCancelled = false;
   private pausedAt: number | null = null;
   private elapsedBeforePause = 0;
+  private explicitFrom?: number;
 
   constructor(
     private value: AnimateValue<number>,
@@ -67,22 +69,32 @@ class TimingController implements AnimateController {
     private duration: number = 300,
     private easing: (t: number) => number = Easing.linear,
     private hooks: Omit<TimingOptions, 'duration' | 'easing'>
-  ) {}
+  ) {
+    this.explicitFrom = hooks.from;
+  }
 
   start() {
-    const previous = this.value.getAnimationController();
-
-    if (
-      previous instanceof TimingController &&
-      !previous.isCancelled &&
-      previous.target === this.target &&
-      previous.startTime
-    ) {
-      this.from = previous.from;
-      this.startTime = previous.startTime;
-    } else {
-      this.from = this.position = this.value.current;
+    // If explicit 'from' is provided, always use it (for loops, sequences, etc.)
+    if (this.explicitFrom !== undefined) {
+      this.fromValue = this.position = this.explicitFrom;
+      this.value._internalSet(this.explicitFrom);
       this.startTime = performance.now();
+    } else {
+      // Otherwise, try to inherit from previous controller for smooth chaining
+      const previous = this.value.getAnimationController();
+
+      if (
+        previous instanceof TimingController &&
+        !previous.isCancelled &&
+        previous.target === this.target &&
+        previous.startTime
+      ) {
+        this.fromValue = previous.fromValue;
+        this.startTime = previous.startTime;
+      } else {
+        this.fromValue = this.position = this.value.current;
+        this.startTime = performance.now();
+      }
     }
 
     this.hooks.onStart?.();
@@ -105,7 +117,7 @@ class TimingController implements AnimateController {
     const t = Math.min(1, Math.max(0, progress));
 
     if (t < 1) {
-      this.position = this.from + (this.target - this.from) * this.easing(t);
+      this.position = this.fromValue + (this.target - this.fromValue) * this.easing(t);
       this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.frameId = requestAnimationFrame(this.animate);
@@ -167,8 +179,8 @@ export function timing(
     target,
     options,
     (v, t, opts) => {
-      const { duration = 300, easing = Easing.linear, ...hooks } = opts;
-      return new TimingController(v, t, duration, easing, hooks);
+      const { duration = 300, easing = Easing.linear, from, ...hooks } = opts;
+      return new TimingController(v, t, duration, easing, { ...hooks, from });
     }
   );
 }

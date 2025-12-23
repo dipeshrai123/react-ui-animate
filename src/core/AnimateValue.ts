@@ -6,16 +6,20 @@ type Subscriber<T> = (value: T) => void;
 export class AnimateValue<T = number> {
   private subscribers = new Set<Subscriber<T>>();
   private _current: T;
-  private initial: T;
+  private _initial: T;
   private controller?: AnimateController;
 
   constructor(initial: T) {
     this._current = initial;
-    this.initial = initial;
+    this._initial = initial;
   }
 
   get current(): T {
     return this._current;
+  }
+
+  get initial(): T {
+    return this._initial;
   }
 
   set(value: T): void {
@@ -42,7 +46,7 @@ export class AnimateValue<T = number> {
   }
 
   reset() {
-    this.set(this.initial);
+    this.set(this._initial);
   }
 
   destroy() {

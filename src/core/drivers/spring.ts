@@ -5,6 +5,7 @@ interface SpringOptions extends AnimateHooks {
   stiffness?: number;
   damping?: number;
   mass?: number;
+  from?: number;
   onChange?(value: number): void;
 }
 
@@ -61,6 +62,7 @@ class SpringController implements AnimateController {
   private readonly restSpeed = 0.001;
   private isPaused = false;
   private isCancelled = false;
+  private explicitFrom?: number;
 
   constructor(
     private value: AnimateValue<number>,
@@ -69,19 +71,30 @@ class SpringController implements AnimateController {
     private damping: number,
     private mass: number,
     private hooks: SpringOptions
-  ) {}
+  ) {
+    this.explicitFrom = hooks.from;
+  }
 
   start() {
-    const previous = this.value.getAnimationController();
-
-    if (previous instanceof SpringController) {
-      this.position = previous.position;
-      this.velocity = previous.velocity;
-      this.startTime = previous.startTime;
-    } else {
-      this.position = this.startPosition = this.value.current;
+    // If explicit 'from' is provided, always use it (for loops, sequences, etc.)
+    if (this.explicitFrom !== undefined) {
+      this.position = this.startPosition = this.explicitFrom;
+      this.value._internalSet(this.explicitFrom);
       this.velocity = 0;
       this.startTime = Date.now();
+    } else {
+      // Otherwise, try to inherit from previous controller for smooth chaining
+      const previous = this.value.getAnimationController();
+
+      if (previous instanceof SpringController) {
+        this.position = previous.position;
+        this.velocity = previous.velocity;
+        this.startTime = previous.startTime;
+      } else {
+        this.position = this.startPosition = this.value.current;
+        this.velocity = 0;
+        this.startTime = Date.now();
+      }
     }
 
     this.hooks.onStart?.();
@@ -208,8 +221,8 @@ export function spring(
     target,
     options,
     (v, t, opts) => {
-      const { stiffness = 170, damping = 14, mass = 1, ...hooks } = opts;
-      return new SpringController(v, t, stiffness, damping, mass, hooks);
+      const { stiffness = 170, damping = 14, mass = 1, from, ...hooks } = opts;
+      return new SpringController(v, t, stiffness, damping, mass, { ...hooks, from });
     }
   );
 }

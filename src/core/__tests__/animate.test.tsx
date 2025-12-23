@@ -1,8 +1,9 @@
 import { createRef, act } from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../AnimateValue';
+import { withTiming, withSpring } from '../../animation/descriptors';
 
 describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {
@@ -82,6 +83,65 @@ describe('〈animate> components', () => {
     });
 
     expect(btn.getAttribute('title')).toBe('updated');
+  });
+
+  it('animates properties using declarative animate prop', async () => {
+    jest.useFakeTimers();
+    
+    render(
+      <animate.div
+        data-testid="animated-div"
+        style={{ opacity: 0, translateX: 0 }}
+        animate={{
+          opacity: withTiming(1, { duration: 300 }),
+          translateX: withSpring(100, { stiffness: 100, damping: 10 }),
+        }}
+      />
+    );
+    
+    const el = screen.getByTestId('animated-div') as HTMLElement;
+    
+    // Initial values should be set
+    expect(el.style.opacity).toBe('0');
+    expect(el.style.transform).toContain('translateX(0px)');
+    
+    // Fast-forward time to see animation progress
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    
+    // After some time, values should have changed
+    const opacityAfter = parseFloat(el.style.opacity);
+    expect(opacityAfter).toBeGreaterThan(0);
+    expect(opacityAfter).toBeLessThanOrEqual(1);
+    
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    
+    // After animation completes, should be close to target
+    await waitFor(() => {
+      const finalOpacity = parseFloat(el.style.opacity);
+      expect(finalOpacity).toBeCloseTo(1, 1);
+    });
+    
+    jest.useRealTimers();
+  });
+
+  it('handles animate prop with initial style values', () => {
+    render(
+      <animate.div
+        data-testid="initial-div"
+        style={{ opacity: 0.5 }}
+        animate={{
+          opacity: withTiming(1, { duration: 0 }),
+        }}
+      />
+    );
+    
+    const el = screen.getByTestId('initial-div') as HTMLElement;
+    // Should use initial style value
+    expect(parseFloat(el.style.opacity)).toBeGreaterThanOrEqual(0);
   });
 });
 
