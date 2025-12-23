@@ -110,6 +110,246 @@ function isFocusable(node: HTMLElement): boolean {
   );
 }
 
+function useEnterAnimations(
+  nodeRef: React.RefObject<HTMLElement>,
+  propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
+  animateProp: AnimateProp | undefined,
+  style: any,
+  isExitingRef: React.MutableRefObject<boolean>
+) {
+  const cleanupRef = useRef<(() => void)[]>([]);
+  const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>({});
+  const controllersRef = useRef<Array<{ cancel(): void }>>([]);
+  const hasMountedRef = useRef(false);
+  const prevAnimatePropKeyRef = useRef<string>('');
+
+  useLayoutEffect(() => {
+    const node = nodeRef.current;
+    if (!node || isExitingRef.current) return;
+
+    const { style: currentStyle = {}, ...rest } = propsRef.current;
+    const isFirstMount = !hasMountedRef.current;
+    const currentKey = serializeAnimateProp(animateProp);
+    const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
+    const shouldRestart = isFirstMount || valuesChanged;
+    
+    if (shouldRestart) {
+      controllersRef.current.forEach((ctrl) => ctrl.cancel());
+      controllersRef.current = [];
+
+      if (animateProp) {
+        const computedStyle = window.getComputedStyle(node);
+        
+        if (isFirstMount) {
+          const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
+          for (const key of Object.keys(animateProp)) {
+            const initial = getInitialValue(key, currentStyle, node, computedStyle);
+            newAnimateValues[key] = new AnimateValue(initial);
+          }
+          animateValuesRef.current = newAnimateValues;
+        } else {
+          animateValuesRef.current = createAnimateValues(
+            animateProp,
+            currentStyle,
+            node,
+            computedStyle,
+            animateValuesRef.current
+          );
+        }
+
+        startAnimations(animateProp, animateValuesRef.current, controllersRef.current);
+      }
+    }
+
+    prevAnimatePropKeyRef.current = currentKey;
+    cleanupRef.current.forEach((cleanup) => cleanup());
+    cleanupRef.current = applyStylesToNode(node, currentStyle, animateValuesRef.current, rest);
+    hasMountedRef.current = true;
+
+    return () => {
+      cleanupRef.current.forEach((cleanup) => cleanup());
+      cleanupRef.current = [];
+    };
+  }, [style, animateProp]);
+
+  useEffect(() => {
+    return () => {
+      controllersRef.current.forEach((ctrl) => ctrl.cancel());
+      controllersRef.current = [];
+    };
+  }, []);
+
+  return { animateValuesRef, controllersRef };
+}
+
+function useExitAnimations(
+  propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
+  isExitingRef: React.MutableRefObject<boolean>,
+  animateValuesRef: React.MutableRefObject<Record<string, AnimateValue<Primitive>>>,
+  controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
+) {
+  const presenceContext = useContext(PresenceContext);
+
+  useEffect(() => {
+    const { exit: exitProp } = propsRef.current;
+    
+    if (!exitProp || !presenceContext?.isExiting || isExitingRef.current) return;
+
+    isExitingRef.current = true;
+    controllersRef.current.forEach((ctrl) => ctrl.cancel());
+    controllersRef.current = [];
+
+    setupExitAnimations({
+      exitProp,
+      animateValues: animateValuesRef.current,
+      controllers: controllersRef.current,
+      onExitComplete: () => {
+        presenceContext.onExitComplete();
+      },
+    });
+  }, [presenceContext?.isExiting]);
+}
+
+function useStateAnimations(
+  nodeRef: React.RefObject<HTMLElement>,
+  propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
+  hover: AnimateProp | undefined,
+  press: AnimateProp | undefined,
+  focus: AnimateProp | undefined,
+  animateValuesRef: React.MutableRefObject<Record<string, AnimateValue<Primitive>>>
+) {
+  const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
+  const initialValuesRef = useRef<Record<string, Primitive>>({});
+  const stateRef = useRef({
+    isHovered: false,
+    isTapped: false,
+    isFocused: false,
+  });
+
+  const applyStateAnimationWrapper = (
+    stateProp: AnimateProp | undefined,
+    isActive: boolean
+  ) => {
+    if (!stateProp) return;
+
+    const node = nodeRef.current;
+    if (!node) return;
+
+    const computedStyle = window.getComputedStyle(node);
+    const { style = {} } = propsRef.current;
+
+    const context: StateAnimationContext = {
+      node,
+      style,
+      computedStyle,
+      animateValues: animateValuesRef.current,
+      initialValues: initialValuesRef.current,
+      stateControllers: stateControllersRef.current,
+      cleanup: [],
+    };
+
+    applyStateAnimation(stateProp, isActive, context);
+  };
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+
+    const handleMouseEnter = () => {
+      if (stateRef.current.isHovered) return;
+      stateRef.current.isHovered = true;
+      applyStateAnimationWrapper(hover, true);
+    };
+
+    const handleMouseLeave = () => {
+      if (!stateRef.current.isHovered) return;
+      stateRef.current.isHovered = false;
+      applyStateAnimationWrapper(hover, false);
+    };
+
+    const handleMouseDown = () => {
+      if (stateRef.current.isTapped) return;
+      stateRef.current.isTapped = true;
+      applyStateAnimationWrapper(press, true);
+    };
+
+    const handleMouseUp = () => {
+      if (!stateRef.current.isTapped) return;
+      stateRef.current.isTapped = false;
+      applyStateAnimationWrapper(press, false);
+    };
+
+    const handleMouseLeaveForPress = () => {
+      if (stateRef.current.isTapped) {
+        stateRef.current.isTapped = false;
+        applyStateAnimationWrapper(press, false);
+      }
+    };
+
+    const handleFocus = () => {
+      if (stateRef.current.isFocused) return;
+      stateRef.current.isFocused = true;
+      applyStateAnimationWrapper(focus, true);
+    };
+
+    const handleBlur = () => {
+      if (!stateRef.current.isFocused) return;
+      stateRef.current.isFocused = false;
+      applyStateAnimationWrapper(focus, false);
+    };
+
+    if (hover) {
+      node.addEventListener('mouseenter', handleMouseEnter);
+      node.addEventListener('mouseleave', handleMouseLeave);
+    }
+
+    if (press) {
+      node.addEventListener('mousedown', handleMouseDown);
+      node.addEventListener('mouseup', handleMouseUp);
+      node.addEventListener('mouseleave', handleMouseLeaveForPress);
+      node.addEventListener('touchstart', handleMouseDown);
+      node.addEventListener('touchend', handleMouseUp);
+      node.addEventListener('touchcancel', handleMouseLeaveForPress);
+    }
+
+    if (focus && isFocusable(node)) {
+      node.addEventListener('focus', handleFocus);
+      node.addEventListener('blur', handleBlur);
+    }
+
+    return () => {
+      if (hover) {
+        node.removeEventListener('mouseenter', handleMouseEnter);
+        node.removeEventListener('mouseleave', handleMouseLeave);
+      }
+
+      if (press) {
+        node.removeEventListener('mousedown', handleMouseDown);
+        node.removeEventListener('mouseup', handleMouseUp);
+        node.removeEventListener('mouseleave', handleMouseLeaveForPress);
+        node.removeEventListener('touchstart', handleMouseDown);
+        node.removeEventListener('touchend', handleMouseUp);
+        node.removeEventListener('touchcancel', handleMouseLeaveForPress);
+      }
+
+      if (focus) {
+        node.removeEventListener('focus', handleFocus);
+        node.removeEventListener('blur', handleBlur);
+      }
+
+      stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      stateControllersRef.current = [];
+    };
+  }, [hover, press, focus]);
+
+  useEffect(() => {
+    return () => {
+      stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      stateControllersRef.current = [];
+    };
+  }, []);
+}
+
 export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   tag: Tag
 ) {
@@ -119,225 +359,33 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   >((props, ref) => {
     const nodeRef = useRef<HTMLElement | null>(null);
     const propsRef = useRef(props);
-    const cleanupRef = useRef<(() => void)[]>([]);
-    const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>({});
-    const controllersRef = useRef<Array<{ cancel(): void }>>([]);
-    const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
     const isExitingRef = useRef(false);
-    const hasMountedRef = useRef(false);
-    const stateRef = useRef({
-      isHovered: false,
-      isTapped: false,
-      isFocused: false,
-    });
-    const initialValuesRef = useRef<Record<string, Primitive>>({});
-    const prevAnimatePropRef = useRef<AnimateProp | undefined>(undefined);
-    const prevAnimatePropKeyRef = useRef<string>('');
 
-    const presenceContext = useContext(PresenceContext);
     propsRef.current = props;
 
-    useLayoutEffect(() => {
-      const node = nodeRef.current;
-      if (!node || isExitingRef.current) return;
+    const { animateValuesRef, controllersRef } = useEnterAnimations(
+      nodeRef,
+      propsRef,
+      props.animate,
+      props.style,
+      isExitingRef
+    );
 
-      const animateProp = props.animate;
-      const { style = {}, ...rest } = propsRef.current;
-      const isFirstMount = !hasMountedRef.current;
-      const currentKey = serializeAnimateProp(animateProp);
-      const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
-      const shouldRestart = isFirstMount || valuesChanged;
-      
-      if (shouldRestart) {
-        controllersRef.current.forEach((ctrl) => ctrl.cancel());
-        controllersRef.current = [];
+    useExitAnimations(
+      propsRef,
+      isExitingRef,
+      animateValuesRef,
+      controllersRef
+    );
 
-        if (animateProp) {
-          const computedStyle = window.getComputedStyle(node);
-          
-          if (isFirstMount) {
-            const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
-            for (const key of Object.keys(animateProp)) {
-              const initial = getInitialValue(key, style, node, computedStyle);
-              newAnimateValues[key] = new AnimateValue(initial);
-            }
-            animateValuesRef.current = newAnimateValues;
-          } else {
-            animateValuesRef.current = createAnimateValues(
-              animateProp,
-              style,
-              node,
-              computedStyle,
-              animateValuesRef.current
-            );
-          }
-
-          startAnimations(animateProp, animateValuesRef.current, controllersRef.current);
-          prevAnimatePropRef.current = animateProp;
-        }
-      }
-
-      prevAnimatePropKeyRef.current = currentKey;
-      cleanupRef.current.forEach((cleanup) => cleanup());
-      cleanupRef.current = applyStylesToNode(node, style, animateValuesRef.current, rest);
-      hasMountedRef.current = true;
-
-      return () => {
-        cleanupRef.current.forEach((cleanup) => cleanup());
-        cleanupRef.current = [];
-      };
-    }, [props.style, props.animate]);
-
-    useEffect(() => {
-      return () => {
-        controllersRef.current.forEach((ctrl) => ctrl.cancel());
-        controllersRef.current = [];
-      };
-    }, []);
-
-    useEffect(() => {
-      const { exit: exitProp } = propsRef.current;
-      
-      if (!exitProp || !presenceContext?.isExiting || isExitingRef.current) return;
-
-      isExitingRef.current = true;
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      controllersRef.current = [];
-
-      setupExitAnimations({
-        exitProp,
-        animateValues: animateValuesRef.current,
-        controllers: controllersRef.current,
-        onExitComplete: () => {
-          presenceContext.onExitComplete();
-        },
-      });
-    }, [presenceContext?.isExiting]);
-
-    const applyStateAnimationWrapper = (
-      stateProp: AnimateProp | undefined,
-      isActive: boolean
-    ) => {
-      if (!stateProp) return;
-
-      const node = nodeRef.current;
-      if (!node) return;
-
-      const computedStyle = window.getComputedStyle(node);
-      const { style = {} } = propsRef.current;
-
-      const context: StateAnimationContext = {
-        node,
-        style,
-        computedStyle,
-        animateValues: animateValuesRef.current,
-        initialValues: initialValuesRef.current,
-        stateControllers: stateControllersRef.current,
-        cleanup: cleanupRef.current,
-      };
-
-      applyStateAnimation(stateProp, isActive, context);
-    };
-
-    useEffect(() => {
-      const node = nodeRef.current;
-      if (!node) return;
-
-      const { hover, press, focus } = propsRef.current;
-
-      const handleMouseEnter = () => {
-        if (stateRef.current.isHovered) return;
-        stateRef.current.isHovered = true;
-        applyStateAnimationWrapper(hover, true);
-      };
-
-      const handleMouseLeave = () => {
-        if (!stateRef.current.isHovered) return;
-        stateRef.current.isHovered = false;
-        applyStateAnimationWrapper(hover, false);
-      };
-
-      const handleMouseDown = () => {
-        if (stateRef.current.isTapped) return;
-        stateRef.current.isTapped = true;
-        applyStateAnimationWrapper(press, true);
-      };
-
-      const handleMouseUp = () => {
-        if (!stateRef.current.isTapped) return;
-        stateRef.current.isTapped = false;
-        applyStateAnimationWrapper(press, false);
-      };
-
-      const handleMouseLeaveForPress = () => {
-        if (stateRef.current.isTapped) {
-          stateRef.current.isTapped = false;
-          applyStateAnimationWrapper(press, false);
-        }
-      };
-
-      const handleFocus = () => {
-        if (stateRef.current.isFocused) return;
-        stateRef.current.isFocused = true;
-        applyStateAnimationWrapper(focus, true);
-      };
-
-      const handleBlur = () => {
-        if (!stateRef.current.isFocused) return;
-        stateRef.current.isFocused = false;
-        applyStateAnimationWrapper(focus, false);
-      };
-
-      if (hover) {
-        node.addEventListener('mouseenter', handleMouseEnter);
-        node.addEventListener('mouseleave', handleMouseLeave);
-      }
-
-      if (press) {
-        node.addEventListener('mousedown', handleMouseDown);
-        node.addEventListener('mouseup', handleMouseUp);
-        node.addEventListener('mouseleave', handleMouseLeaveForPress);
-        node.addEventListener('touchstart', handleMouseDown);
-        node.addEventListener('touchend', handleMouseUp);
-        node.addEventListener('touchcancel', handleMouseLeaveForPress);
-      }
-
-      if (focus && isFocusable(node)) {
-        node.addEventListener('focus', handleFocus);
-        node.addEventListener('blur', handleBlur);
-      }
-
-      return () => {
-        if (hover) {
-          node.removeEventListener('mouseenter', handleMouseEnter);
-          node.removeEventListener('mouseleave', handleMouseLeave);
-        }
-
-        if (press) {
-          node.removeEventListener('mousedown', handleMouseDown);
-          node.removeEventListener('mouseup', handleMouseUp);
-          node.removeEventListener('mouseleave', handleMouseLeaveForPress);
-          node.removeEventListener('touchstart', handleMouseDown);
-          node.removeEventListener('touchend', handleMouseUp);
-          node.removeEventListener('touchcancel', handleMouseLeaveForPress);
-        }
-
-        if (focus) {
-          node.removeEventListener('focus', handleFocus);
-          node.removeEventListener('blur', handleBlur);
-        }
-
-        stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
-        stateControllersRef.current = [];
-      };
-    }, [props.hover, props.press, props.focus]);
-
-    useEffect(() => {
-      return () => {
-        stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
-        stateControllersRef.current = [];
-      };
-    }, []);
+    useStateAnimations(
+      nodeRef,
+      propsRef,
+      props.hover,
+      props.press,
+      props.focus,
+      animateValuesRef
+    );
 
     const { animate: _, exit: __, hover: ___, press: ____, focus: _____, ...domProps } = props;
 
