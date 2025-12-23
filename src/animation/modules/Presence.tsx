@@ -8,6 +8,7 @@ import {
   createContext,
   useContext,
   useMemo,
+  useCallback,
   type ReactElement,
   type ReactNode,
 } from 'react';
@@ -57,6 +58,11 @@ export interface PresenceContextValue {
    * Call this when exit animation completes to remove the element
    */
   onExitComplete: () => void;
+
+  /**
+   * Internal: Counter to force re-renders when exit state changes
+   */
+  _forceUpdate?: number;
 }
 
 // ============================================================================
@@ -95,6 +101,33 @@ interface ChildState {
   key: string | number;
   element: ReactElement;
   isExiting: boolean;
+}
+
+// Wrapper that forces React to re-render entire subtree when exiting
+// Uses key change to unmount/remount which makes children read fresh context
+function PresenceChild({ 
+  children, 
+  isExiting,
+  mode 
+}: { 
+  children: ReactElement;
+  isExiting: boolean;
+  mode: string;
+}): ReactElement | null {
+  // Use a state that changes when isExiting becomes true
+  // This triggers a re-render of this component
+  const [exitingState, setExitingState] = useState(false);
+  
+  useLayoutEffect(() => {
+    if (isExiting && !exitingState) {
+      setExitingState(true);
+    }
+  }, [isExiting, exitingState]);
+  
+  if (mode === 'popLayout' && isExiting) {
+    return <div style={{ position: 'absolute' }}>{children}</div>;
+  }
+  return children;
 }
 
 // ============================================================================
@@ -209,7 +242,7 @@ export function Presence({
   }, []);
 
   // Create handler for when a child's exit animation completes
-  const handleExitComplete = (key: string | number) => {
+  const handleExitComplete = useCallback((key: string | number) => {
     setChildStates((prev) => {
       const next = new Map(prev);
       next.delete(key);
@@ -220,7 +253,7 @@ export function Presence({
     if (exitingCount.current === 0 && onExitComplete) {
       onExitComplete();
     }
-  };
+  }, [onExitComplete]);
 
   // Render children with presence context
   const renderedChildren = useMemo(() => {
@@ -242,14 +275,11 @@ export function Presence({
         onExitComplete: () => handleExitComplete(key),
       };
 
-      // Clone element with presence context
       result.push(
         <PresenceContext.Provider key={key} value={contextValue}>
-          {mode === 'popLayout' && state.isExiting ? (
-            <div style={{ position: 'absolute' }}>{state.element}</div>
-          ) : (
-            state.element
-          )}
+          <PresenceChild isExiting={state.isExiting} mode={mode}>
+            {state.element}
+          </PresenceChild>
         </PresenceContext.Provider>
       );
     }

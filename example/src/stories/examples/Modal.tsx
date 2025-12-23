@@ -1,76 +1,80 @@
 import { useRef, useState } from 'react';
-
-import { useMount, animate, useOutsideClick } from 'react-ui-animate';
+import { Presence, animate, useOutsideClick, withSpring, withTiming } from 'react-ui-animate';
 
 const Modal = ({
-  visible,
   onClose,
 }: {
-  visible: boolean;
   onClose: () => void;
 }) => {
   const ref = useRef(null);
   useOutsideClick(ref, onClose);
 
-  const mount = useMount(visible);
-
   return (
-    <>
-      {mount(
-        (a, m) =>
-          m && (
-            <animate.div
-              style={{
-                position: 'fixed',
-                left: 0,
-                top: 0,
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                opacity: a,
-              }}
-            >
-              <animate.div
-                ref={ref}
-                style={{
-                  width: '60%',
-                  height: 300,
-                  backgroundColor: 'white',
-                  borderRadius: 4,
-                  padding: 20,
-                  scale: a.to([0, 1], [0.5, 1]),
-                  translateY: a.to([0, 1], [-100, 0]),
-                }}
-              >
-                <button
-                  style={{
-                    position: 'absolute',
-                    right: 20,
-                    top: 20,
-                  }}
-                  onClick={onClose}
-                >
-                  CLOSE MODAL
-                </button>
+    <animate.div
+      style={{
+        position: 'fixed',
+        left: 0,
+        top: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0)',
+        opacity: 0,
+      }}
+      animate={{
+        backgroundColor: withTiming('rgba(0,0,0,0.2)', { duration: 200 }),
+        opacity: withTiming(1, { duration: 200 }),
+      }}
+      exit={{
+        backgroundColor: withTiming('rgba(0,0,0,0)', { duration: 200 }),
+        opacity: withTiming(0, { duration: 200 }),
+      }}
+    >
+      <animate.div
+        ref={ref}
+        style={{
+          width: '60%',
+          height: 300,
+          backgroundColor: 'white',
+          borderRadius: 4,
+          padding: 20,
+          scale: 0.5,
+          translateY: -100,
+        }}
+        animate={{
+          scale: withSpring(1, { stiffness: 200, damping: 20 }),
+          translateY: withSpring(0, { stiffness: 200, damping: 20 }),
+        }}
+        exit={{
+          scale: withSpring(0.5, { stiffness: 200, damping: 20 }),
+          translateY: withSpring(-100, { stiffness: 200, damping: 20 }),
+        }}
+      >
+        <button
+          style={{
+            position: 'absolute',
+            right: 20,
+            top: 20,
+          }}
+          onClick={onClose}
+        >
+          CLOSE MODAL
+        </button>
 
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    height: '100%',
-                  }}
-                >
-                  MODAL CONTENT
-                </div>
-              </animate.div>
-            </animate.div>
-          )
-      )}
-    </>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}
+        >
+          MODAL CONTENT
+        </div>
+      </animate.div>
+    </animate.div>
   );
 };
 
@@ -80,7 +84,9 @@ const Example = () => {
   return (
     <>
       <button onClick={() => setModalOpen(true)}>OPEN MODAL</button>
-      <Modal visible={modalOpen} onClose={() => setModalOpen(false)} />
+      <Presence>
+        {modalOpen && <Modal key="modal" onClose={() => setModalOpen(false)} />}
+      </Presence>
     </>
   );
 };

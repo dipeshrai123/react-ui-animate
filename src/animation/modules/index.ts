@@ -1,4 +1,3 @@
-export { Mount } from './Mount';
 export {
   Presence,
   PresenceContext,

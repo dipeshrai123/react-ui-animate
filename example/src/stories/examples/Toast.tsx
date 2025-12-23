@@ -1,84 +1,89 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   animate,
-  useMount,
+  Presence,
   withSpring,
-  withSequence,
   withTiming,
+  withSequence,
 } from 'react-ui-animate';
 
-const Toast = ({ id, onEnd }: any) => {
-  const [visible, setVisible] = useState(true);
-
-  const mount = useMount(visible, {
-    from: { opacity: 0, height: 0, progress: 0 },
-    enter: withSequence([
-      withSpring(
-        {
-          opacity: 1,
-          height: 100,
-        },
-        { damping: 14 }
-      ),
-      withTiming(
-        { progress: 1 },
-        { duration: 2000, onComplete: () => setVisible(false) }
-      ),
-    ]),
-    exit: withSpring({ opacity: 0 }, { onComplete: () => onEnd(id) }),
-  });
+const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
+  // Auto-dismiss after 3 seconds
+  useEffect(() => {
+    const timer = setTimeout(() => onEnd(id), 4000);
+    return () => clearTimeout(timer);
+  }, [id, onEnd]);
 
   return (
-    <>
-      {mount(
-        ({ height, opacity, progress }, m) =>
-          m && (
-            <animate.div
-              style={{
-                position: 'relative',
-                width: 240,
-                backgroundColor: '#3399ff',
-                borderRadius: 4,
-                height,
-                opacity,
-                scale: height.to([0, 100], [0.8, 1]),
-              }}
-            >
-              <animate.div
-                style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  backgroundColor: '#333',
-                  height: 5,
-                  borderRadius: 4,
-                  width: progress.to([0, 1], ['0%', '100%']),
-                }}
-              />
-            </animate.div>
-          )
-      )}
-    </>
+    <animate.div
+      style={{
+        position: 'relative',
+        width: 240,
+        backgroundColor: '#3399ff',
+        borderRadius: 4,
+        height: 0,
+        opacity: 0,
+        scale: 0.8,
+        overflow: 'hidden',
+      }}
+      animate={{
+        height: withSpring(100, { damping: 14 }),
+        opacity: withSpring(1, { damping: 14 }),
+        scale: withSpring(1, { damping: 14 }),
+      }}
+      exit={{
+        height: withSpring(0, { damping: 14 }),
+        opacity: withSpring(0, { damping: 14 }),
+        scale: withSpring(0.8, { damping: 14 }),
+      }}
+    >
+      <div
+        style={{
+          padding: 16,
+          color: 'white',
+          fontWeight: 500,
+        }}
+      >
+        Toast #{id}
+      </div>
+      <animate.div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          backgroundColor: '#333',
+          height: 5,
+          borderRadius: 4,
+          width: '0%',
+        }}
+        animate={{
+          width: withSequence([
+            withTiming('0%', { duration: 0 }),
+            withTiming('100%', { duration: 3000 }),
+          ]),
+        }}
+      />
+    </animate.div>
   );
 };
 
 var uniqueId = 0;
 
 const Example = () => {
-  const [elements, setElements] = useState<{ id: number }[]>([]);
+  const [toasts, setToasts] = useState<{ id: number }[]>([]);
 
-  const generateToast = () => {
-    setElements((prev) => [...prev, { id: uniqueId++ }]);
+  const addToast = () => {
+    setToasts((prev) => [...prev, { id: uniqueId++ }]);
   };
 
-  const handleEnd = useCallback((id: number) => {
-    setElements((els) => els.filter((e) => e.id !== id));
+  const removeToast = useCallback((id: number) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   return (
     <>
       <button
-        onClick={generateToast}
+        onClick={addToast}
         style={{
           padding: 10,
           border: '2px solid #ddd',
@@ -100,9 +105,11 @@ const Example = () => {
           gap: 10,
         }}
       >
-        {elements.map((e) => {
-          return <Toast key={e.id} id={e.id} onEnd={handleEnd} />;
-        })}
+        <Presence>
+          {toasts.map((t) => (
+            <Toast key={t.id} id={t.id} onEnd={removeToast} />
+          ))}
+        </Presence>
       </div>
     </>
   );
