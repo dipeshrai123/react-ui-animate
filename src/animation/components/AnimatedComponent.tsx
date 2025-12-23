@@ -11,6 +11,126 @@ import { setupExitAnimations } from '../utils/exitAnimations';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
 
+// Deep comparison function for animate props
+// Compares by value, not reference, to avoid restarting animations on re-renders
+function areAnimatePropsEqual(
+  prev: AnimateProp | undefined,
+  next: AnimateProp | undefined
+): boolean {
+  // Both undefined or null
+  if (!prev && !next) return true;
+  if (!prev || !next) return false;
+
+  const prevKeys = Object.keys(prev);
+  const nextKeys = Object.keys(next);
+
+  // Different number of keys
+  if (prevKeys.length !== nextKeys.length) return false;
+
+  // Compare each property
+  for (const key of prevKeys) {
+    if (!(key in next)) return false;
+
+    const prevValue = (prev as Record<string, Descriptor | Primitive>)[key];
+    const nextValue = (next as Record<string, Descriptor | Primitive>)[key];
+
+    // Both primitives - direct comparison
+    if (
+      (typeof prevValue === 'number' || typeof prevValue === 'string') &&
+      (typeof nextValue === 'number' || typeof nextValue === 'string')
+    ) {
+      if (prevValue !== nextValue) return false;
+      continue;
+    }
+
+    // Both descriptors - deep comparison
+    if (
+      typeof prevValue === 'object' &&
+      prevValue !== null &&
+      typeof nextValue === 'object' &&
+      nextValue !== null
+    ) {
+      const prevDesc = prevValue as Descriptor;
+      const nextDesc = nextValue as Descriptor;
+
+      // Compare type
+      if (prevDesc.type !== nextDesc.type) return false;
+
+      // Compare 'to' value
+      if (prevDesc.to !== nextDesc.to) {
+        // Handle arrays
+        if (Array.isArray(prevDesc.to) && Array.isArray(nextDesc.to)) {
+          if (prevDesc.to.length !== nextDesc.to.length) return false;
+          for (let i = 0; i < prevDesc.to.length; i++) {
+            if (prevDesc.to[i] !== nextDesc.to[i]) return false;
+          }
+        } else if (
+          typeof prevDesc.to === 'object' &&
+          prevDesc.to !== null &&
+          typeof nextDesc.to === 'object' &&
+          nextDesc.to !== null
+        ) {
+          // Handle objects
+          const prevToObj = prevDesc.to as Record<string, Primitive>;
+          const nextToObj = nextDesc.to as Record<string, Primitive>;
+          const prevToKeys = Object.keys(prevToObj);
+          const nextToKeys = Object.keys(nextToObj);
+          if (prevToKeys.length !== nextToKeys.length) return false;
+          for (const k of prevToKeys) {
+            if (prevToObj[k] !== nextToObj[k]) return false;
+          }
+        } else {
+          return false;
+        }
+      }
+
+      // Compare options (excluding callbacks which are functions)
+      const prevOptions = prevDesc.options || {};
+      const nextOptions = nextDesc.options || {};
+
+      // Get all option keys (excluding callbacks)
+      const optionKeys = new Set([
+        ...Object.keys(prevOptions),
+        ...Object.keys(nextOptions),
+      ]);
+      const callbackKeys = ['onStart', 'onChange', 'onComplete'];
+
+      for (const optKey of optionKeys) {
+        // Skip callback functions
+        if (callbackKeys.includes(optKey)) continue;
+
+        // Handle nested animations in sequences/loops
+        if (optKey === 'animations' && Array.isArray(prevOptions.animations) && Array.isArray(nextOptions.animations)) {
+          if (prevOptions.animations.length !== nextOptions.animations.length) return false;
+          // For simplicity, we'll do a shallow check on nested animations
+          // Full deep comparison would be recursive and more complex
+          continue;
+        }
+        if (optKey === 'animation' && prevOptions.animation && nextOptions.animation) {
+          // For loop animations, we'll do a shallow check
+          continue;
+        }
+
+        const prevOptValue = (prevOptions as Record<string, any>)[optKey];
+        const nextOptValue = (nextOptions as Record<string, any>)[optKey];
+        if (prevOptValue !== nextOptValue) {
+          // Special handling for easing functions - compare by string representation
+          if (optKey === 'easing' && typeof prevOptValue === 'function' && typeof nextOptValue === 'function') {
+            if (prevOptValue.toString() !== nextOptValue.toString()) return false;
+          } else {
+            return false;
+          }
+        }
+      }
+    } else {
+      // One is primitive, one is descriptor - not equal
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   tag: Tag
 ) {
@@ -36,6 +156,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       isFocused: false,
     });
     const initialValuesRef = useRef<Record<string, Primitive>>({});
+    const prevAnimatePropRef = useRef<AnimateProp | undefined>(undefined);
 
     // Get presence context for AnimatePresence integration
     const presenceContext = useContext(PresenceContext);
@@ -53,62 +174,74 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       const { style = {}, animate: animateProp, ...rest } = propsRef.current;
       const isFirstMount = !hasMountedRef.current;
 
-      // Cancel any existing animations
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      controllersRef.current = [];
+      // Check if animate prop actually changed (by value, not reference)
+      const animatePropChanged = !areAnimatePropsEqual(
+        prevAnimatePropRef.current,
+        animateProp
+      );
 
-      if (animateProp) {
-        const computedStyle = window.getComputedStyle(node);
-        
-        // On first mount: create new AnimateValues
-        // On subsequent updates: reuse existing or create new ones
-        if (isFirstMount) {
-          const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
+      // Only restart animations if this is the first mount or the animate prop actually changed
+      if (isFirstMount || animatePropChanged) {
+        // Cancel any existing animations
+        controllersRef.current.forEach((ctrl) => ctrl.cancel());
+        controllersRef.current = [];
 
-          // Create AnimateValues for each animated property
-          for (const key of Object.keys(animateProp)) {
-            const initial = getInitialValue(key, style, node, computedStyle);
-            const value = new AnimateValue(initial);
-            newAnimateValues[key] = value;
-          }
+        if (animateProp) {
+          const computedStyle = window.getComputedStyle(node);
+          
+          // On first mount: create new AnimateValues
+          // On subsequent updates: reuse existing or create new ones
+          if (isFirstMount) {
+            const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
 
-          animateValuesRef.current = newAnimateValues;
-        } else {
-          // On updates: reset existing values to initial and create new ones for new properties
-          for (const key of Object.keys(animateProp)) {
-            if (!animateValuesRef.current[key]) {
-              // Create new AnimateValue for new property
+            // Create AnimateValues for each animated property
+            for (const key of Object.keys(animateProp)) {
               const initial = getInitialValue(key, style, node, computedStyle);
-              animateValuesRef.current[key] = new AnimateValue(initial);
-            } else {
-              // Reset existing AnimateValue to initial value
-              const initial = getInitialValue(key, style, node, computedStyle);
-              animateValuesRef.current[key].set(initial);
+              const value = new AnimateValue(initial);
+              newAnimateValues[key] = value;
+            }
+
+            animateValuesRef.current = newAnimateValues;
+          } else {
+            // On updates: reset existing values to initial and create new ones for new properties
+            for (const key of Object.keys(animateProp)) {
+              if (!animateValuesRef.current[key]) {
+                // Create new AnimateValue for new property
+                const initial = getInitialValue(key, style, node, computedStyle);
+                animateValuesRef.current[key] = new AnimateValue(initial);
+              } else {
+                // Reset existing AnimateValue to initial value
+                const initial = getInitialValue(key, style, node, computedStyle);
+                animateValuesRef.current[key].set(initial);
+              }
             }
           }
+
+          // Build and start animations
+          for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
+            const value = animateValuesRef.current[key];
+            if (!value) continue;
+
+            // Convert primitive values to timing descriptors for convenience
+            const descriptor: Descriptor = 
+              typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
+                ? {
+                    type: 'timing',
+                    to: valueOrDescriptor,
+                    options: {
+                      duration: 300,
+                    },
+                  }
+                : valueOrDescriptor;
+
+            const controller = buildAnimation(value, descriptor);
+            controllersRef.current.push(controller);
+            controller.start();
+          }
         }
 
-        // Build and start animations
-        for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
-          const value = animateValuesRef.current[key];
-          if (!value) continue;
-
-          // Convert primitive values to timing descriptors for convenience
-          const descriptor: Descriptor = 
-            typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
-              ? {
-                  type: 'timing',
-                  to: valueOrDescriptor,
-                  options: {
-                    duration: 300,
-                  },
-                }
-              : valueOrDescriptor;
-
-          const controller = buildAnimation(value, descriptor);
-          controllersRef.current.push(controller);
-          controller.start();
-        }
+        // Update the previous animate prop reference
+        prevAnimatePropRef.current = animateProp;
       }
 
       // Cleanup previous subscriptions (but not animations on re-render)
