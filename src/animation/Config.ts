@@ -1,4 +1,4 @@
-import { Easing } from '../core';
+import { Easing } from './utils/easing';
 
 export const Config = {
   Timing: {

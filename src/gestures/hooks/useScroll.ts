@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import { AnimateValue } from '../../core';
+import { AnimateValue } from '../../animation';
 
 import { type ScrollEvent, ScrollGesture } from '../controllers/ScrollGesture';
 import { useRecognizer } from './useRecognizer';

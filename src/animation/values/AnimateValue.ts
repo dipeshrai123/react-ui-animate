@@ -1,5 +1,6 @@
-import type { AnimateController } from './drivers/AnimateController';
-import { ExtrapolateConfig, to } from './to';
+import type { AnimateController } from '../drivers/AnimateController';
+import type { ExtrapolateConfig } from '../utils/to';
+import { to } from '../utils/to';
 
 type Subscriber<T> = (value: T) => void;
 

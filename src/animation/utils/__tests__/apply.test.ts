@@ -1,5 +1,5 @@
 import { applyStyles, applyAttrs } from '../apply';
-import { AnimateValue } from '../AnimateValue';
+import { AnimateValue } from '../../values/AnimateValue';
 
 describe('applyStyles()', () => {
   let node: HTMLElement;

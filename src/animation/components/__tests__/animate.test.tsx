@@ -2,8 +2,8 @@ import { createRef, act } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
-import { AnimateValue } from '../AnimateValue';
-import { withTiming, withSpring } from '../../animation/descriptors';
+import { AnimateValue } from '../../values/AnimateValue';
+import { withTiming, withSpring } from '../../descriptors';
 
 describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {

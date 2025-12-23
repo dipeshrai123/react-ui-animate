@@ -1,4 +1,4 @@
-import { AnimateValue } from '../../AnimateValue';
+import { AnimateValue } from '../../values/AnimateValue';
 import { spring } from '../spring';
 
 describe('spring', () => {

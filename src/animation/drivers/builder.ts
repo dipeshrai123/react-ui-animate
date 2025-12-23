@@ -1,16 +1,10 @@
-import {
-  decay,
-  AnimateValue,
-  spring,
-  timing,
-  parallel,
-  delay,
-  sequence,
-  loop,
-} from '../core';
-
-import { filterCallbackOptions } from './helpers';
-import type { Primitive, Descriptor } from './types';
+import { decay } from './decay';
+import { spring } from './spring';
+import { timing } from './timing';
+import { parallel, sequence, loop, delay } from './compose';
+import { AnimateValue } from '../values/AnimateValue';
+import { filterCallbackOptions } from '../helpers';
+import type { Primitive, Descriptor } from '../types';
 
 export function buildAnimation(
   value: AnimateValue<Primitive>,

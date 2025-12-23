@@ -1,5 +1,5 @@
 import { RefObject, useEffect, useRef } from 'react';
-import { AnimateValue } from '../../core';
+import { AnimateValue } from '../../animation';
 
 import { useValue, withSpring } from '../../animation';
 import { ScrollGesture } from '../../gestures/controllers/ScrollGesture';

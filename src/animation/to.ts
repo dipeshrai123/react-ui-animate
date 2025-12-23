@@ -1,7 +1,5 @@
-import {
-  type ExtrapolateConfig,
-  to as interpolate,
-} from '../core';
+import type { ExtrapolateConfig } from './utils/to';
+import { to as interpolate } from './utils/to';
 
 export function to(
   input: number,

@@ -1,5 +1,5 @@
 import { AnimateValue, isAnimateValue } from '../AnimateValue';
-import type { AnimateController } from '../drivers/AnimateController';
+import type { AnimateController } from '../../drivers/AnimateController';
 
 class DummyController implements AnimateController {
   public canceled = false;

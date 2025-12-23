@@ -1,4 +1,14 @@
-import { AnimateValue } from './AnimateValue';
+import { AnimateValue } from '../values/AnimateValue';
+
+// ExtrapolateConfig is defined here to avoid circular dependency with AnimateValue
+export type ExtrapolateType = 'identity' | 'extend' | 'clamp';
+
+export interface ExtrapolateConfig {
+  extrapolate?: ExtrapolateType;
+  extrapolateRight?: ExtrapolateType;
+  extrapolateLeft?: ExtrapolateType;
+  easing?: (t: number) => number;
+}
 
 // ============================================================================
 // Constants
@@ -625,15 +635,6 @@ function interpolateString(fromStr: string, toStr: string, p: number): string {
 // ============================================================================
 // Public API
 // ============================================================================
-
-type ExtrapolateType = 'identity' | 'extend' | 'clamp';
-
-export interface ExtrapolateConfig {
-  extrapolate?: ExtrapolateType;
-  extrapolateRight?: ExtrapolateType;
-  extrapolateLeft?: ExtrapolateType;
-  easing?: (t: number) => number;
-}
 
 export function to(
   inRange: number[],

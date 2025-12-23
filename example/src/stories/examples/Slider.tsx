@@ -5,7 +5,7 @@ import {
   useDrag,
   clamp,
   withSpring,
-  to,
+  to
 } from 'react-ui-animate';
 
 export default function Example() {

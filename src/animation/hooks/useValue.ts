@@ -1,7 +1,8 @@
 import { useMemo, useRef } from 'react';
-import { delay, sequence, loop, AnimateValue } from '../../core';
+import { delay, sequence, loop } from '../drivers';
+import { AnimateValue } from '../values/AnimateValue';
 
-import { buildAnimation, buildParallel } from '../drivers';
+import { buildAnimation, buildParallel } from '../drivers/builder';
 import { filterCallbackOptions, isDescriptor } from '../helpers';
 import type { Primitive, Descriptor, Controls } from '../types';
 

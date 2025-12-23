@@ -1,4 +1,4 @@
-import { AnimateValue } from '../AnimateValue';
+import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
 interface DecayOptions extends AnimateHooks {

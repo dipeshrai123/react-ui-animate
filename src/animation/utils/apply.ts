@@ -1,5 +1,5 @@
-import type { AnimateValue } from './AnimateValue';
-import { isAnimateValue } from './AnimateValue';
+import type { AnimateValue } from '../values/AnimateValue';
+import { isAnimateValue } from '../values/AnimateValue';
 
 // Unitless CSS properties that don't need 'px' suffix
 const UNIT_LESS = new Set([

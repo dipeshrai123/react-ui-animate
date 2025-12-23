@@ -1,5 +1,5 @@
-import { Easing } from '../easing';
-import { AnimateValue } from '../AnimateValue';
+import { Easing } from '../utils/easing';
+import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
 interface TimingOptions extends AnimateHooks {
