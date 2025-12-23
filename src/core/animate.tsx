@@ -249,16 +249,16 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     // Handle exit animations when inside AnimatePresence
     useEffect(() => {
+      const { exit: exitProp } = propsRef.current;
+      
+      // Only participate in exit animation flow if this component has an exit prop
+      // Nested animate.divs without exit props should NOT call onExitComplete,
+      // otherwise they would prematurely remove the parent element
+      if (!exitProp) return;
+      
       if (!presenceContext?.isExiting || isExitingRef.current) return;
 
       isExitingRef.current = true;
-      const { exit: exitProp } = propsRef.current;
-
-      if (!exitProp) {
-        // No exit animation defined, complete immediately
-        presenceContext.onExitComplete();
-        return;
-      }
 
       // Cancel any running animations
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
