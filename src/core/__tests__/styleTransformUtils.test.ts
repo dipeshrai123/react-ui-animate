@@ -3,7 +3,6 @@ import {
   isTransformKey,
   transformKeys,
 } from '../apply';
-import { AnimateValue } from '../AnimateValue';
 
 class DummyAnimateValue<T> {
   current: T;
@@ -58,7 +57,7 @@ describe('applyTransformsStyle()', () => {
       notATransform: 123, // ignored
     };
 
-    const subscriptions = applyTransformsStyle(node, props);
+    applyTransformsStyle(node, props);
     expect(node.style.transform).toBe(
       'translateX(5px) rotate(45deg) scale(1,2)'
     );

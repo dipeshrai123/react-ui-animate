@@ -10,6 +10,8 @@
     "jsx": "react-jsx",
     "declaration": true,
     "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -17,8 +19,8 @@
     "strictNullChecks": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "types": ["resize-observer-browser", "node", "@types/jest"]
+    "types": ["resize-observer-browser", "node", "@types/jest", "@types/react", "@types/react-dom"]
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist", "example", "rollup.config.js", "**/__tests__/**", "**/*.test.ts", "**/*.test.tsx"]
+  "exclude": ["node_modules", "dist", "example", "rollup.config.js"]
 }

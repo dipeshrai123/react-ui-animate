@@ -5,13 +5,25 @@ import { AnimateValue } from './AnimateValue';
 import type { Descriptor, Primitive } from '../animation/types';
 import { buildAnimation } from '../animation/drivers';
 
+// Helper type to accept any AnimateValue with a compatible type
+type AnimateValueCompatible = 
+  | AnimateValue<number>
+  | AnimateValue<string>
+  | AnimateValue<number | string>;
+
+// Exclude transform keys from CSSProperties to avoid type conflicts
+type CSSPropertiesWithoutTransforms = Omit<
+  CSSProperties,
+  (typeof transformKeys)[number]
+>;
+
 type AnimateStyle = {
-  [K in keyof CSSProperties]?:
-    | CSSProperties[K]
-    | AnimateValue<number | string>;
+  [K in keyof CSSPropertiesWithoutTransforms]?:
+    | CSSPropertiesWithoutTransforms[K]
+    | AnimateValueCompatible;
 } & {
   [key in (typeof transformKeys)[number]]?:
-    | AnimateValue<number | string>
+    | AnimateValueCompatible
     | number
     | string;
 };
@@ -19,13 +31,13 @@ type AnimateStyle = {
 type AnimateHTMLAttributes<T> = {
   [K in keyof AllHTMLAttributes<T>]?:
     | AllHTMLAttributes<T>[K]
-    | AnimateValue<number | string>;
+    | AnimateValueCompatible;
 };
 
 type AnimateSVGAttributes<T> = {
   [K in keyof SVGAttributes<T>]?:
     | SVGAttributes<T>[K]
-    | AnimateValue<number | string>;
+    | AnimateValueCompatible;
 };
 
 type AnimateProp = {
