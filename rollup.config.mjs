@@ -12,21 +12,50 @@ export default {
       exports: "named",
       sourcemap: false,
       strict: false,
+      compact: true,
     },
   ],
   plugins: [
     typescript({
       tsconfig: "tsconfig.json",
       clean: true,
+      useTsconfigDeclarationDir: false,
+      // Only generate declarations for exported files
+      tsconfigOverride: {
+        compilerOptions: {
+          declaration: true,
+          declarationMap: false,
+        },
+      },
     }),
     terser({
       compress: {
-        passes: 2,
-        drop_console: false,
-        pure_funcs: [],
+        passes: 3,
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn'],
+        unused: true,
+        dead_code: true,
+        collapse_vars: true,
+        reduce_vars: true,
+        inline: true,
+        sequences: true,
+        properties: true,
+        evaluate: true,
+        booleans: true,
+        typeofs: true,
+        loops: true,
+        conditionals: true,
+        join_vars: true,
       },
       format: {
         comments: false,
+        ascii_only: false,
+      },
+      mangle: {
+        properties: {
+          regex: /^_/,
+        },
       },
     }),
   ],
