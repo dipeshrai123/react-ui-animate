@@ -1,9 +1,10 @@
-import { forwardRef, useLayoutEffect, useRef, createElement, type RefObject, type CSSProperties, type AllHTMLAttributes, type SVGAttributes } from 'react';
+import { forwardRef, useLayoutEffect, useRef, createElement, useContext, useEffect, type RefObject, type CSSProperties, type AllHTMLAttributes, type SVGAttributes } from 'react';
 
 import { isTransformKey, transformKeys, applyAttrs, applyStyles, applyTransforms } from './apply';
 import { AnimateValue } from './AnimateValue';
 import type { Descriptor, Primitive } from '../animation/types';
 import { buildAnimation } from '../animation/drivers';
+import { PresenceContext } from '../animation/modules/AnimatePresence';
 
 // Helper type to accept any AnimateValue with a compatible type
 type AnimateValueCompatible = 
@@ -46,10 +47,17 @@ type AnimateProp = {
 
 type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
-  'style' | 'animate'
+  'style' | 'animate' | 'exit'
 > & {
   style?: AnimateStyle;
+  /**
+   * Declarative animations to run when the component mounts or updates.
+   */
   animate?: AnimateProp;
+  /**
+   * Declarative animations to run when the component exits (inside AnimatePresence).
+   */
+  exit?: AnimateProp;
 };
 
 function combineRefs<T>(
@@ -125,15 +133,6 @@ function getInitialValue(
   return getDefaultInitialValue(key);
 }
 
-// Helper to create serialized key for animate prop change detection
-function createAnimateKey(animateProp: AnimateProp | undefined): string | null {
-  if (!animateProp) return null;
-  return JSON.stringify(
-    Object.keys(animateProp)
-      .sort()
-      .map((key) => [key, (animateProp as any)[key]?.type])
-  );
-}
 
 export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   tag: Tag
@@ -147,33 +146,35 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     const cleanupRef = useRef<(() => void)[]>([]);
     const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>({});
     const controllersRef = useRef<Array<{ cancel(): void }>>([]);
+    const isExitingRef = useRef(false);
+    const hasMountedRef = useRef(false);
+
+    // Get presence context for AnimatePresence integration
+    const presenceContext = useContext(PresenceContext);
 
     propsRef.current = props;
 
+    // Handle enter animations - only run on first mount
     useLayoutEffect(() => {
       const node = nodeRef.current;
       if (!node) return;
 
-      // Cleanup previous subscriptions and animations
-      cleanupRef.current.forEach((cleanup) => cleanup());
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      cleanupRef.current = [];
-      controllersRef.current = [];
+      // Don't run enter animations if we're exiting
+      if (isExitingRef.current) return;
 
       const { style = {}, animate: animateProp, ...rest } = propsRef.current;
+      const isFirstMount = !hasMountedRef.current;
 
-      // Handle animate prop - create AnimateValues and start animations
-      if (animateProp) {
+      // On first mount: setup AnimateValues and start animations
+      // On subsequent renders: just update style subscriptions without restarting animations
+      if (isFirstMount && animateProp) {
         const computedStyle = window.getComputedStyle(node);
         const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
 
-        // Create or reset AnimateValues for each animated property
+        // Create AnimateValues for each animated property
         for (const key of Object.keys(animateProp)) {
           const initial = getInitialValue(key, style, node, computedStyle);
-          
-          // Reuse existing AnimateValue or create new one
-          const value = animateValuesRef.current[key] || new AnimateValue(initial);
-          value.set(initial); // Reset to initial value
+          const value = new AnimateValue(initial);
           newAnimateValues[key] = value;
         }
 
@@ -189,6 +190,10 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
           controller.start();
         }
       }
+
+      // Cleanup previous subscriptions (but not animations on re-render)
+      cleanupRef.current.forEach((cleanup) => cleanup());
+      cleanupRef.current = [];
 
       // Merge animate values into style
       const mergedStyle: Record<string, any> = { ...style };
@@ -214,15 +219,77 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         ...applyAttrs(node, rest),
       ];
 
+      hasMountedRef.current = true;
+
       return () => {
         cleanupRef.current.forEach((cleanup) => cleanup());
-        controllersRef.current.forEach((ctrl) => ctrl.cancel());
         cleanupRef.current = [];
+      };
+    }, [props.style]);
+
+    // Cleanup animations on unmount
+    useEffect(() => {
+      return () => {
+        controllersRef.current.forEach((ctrl) => ctrl.cancel());
         controllersRef.current = [];
       };
-    }, [createAnimateKey(props.animate), props.style]);
+    }, []);
 
-    const { animate: _, ...domProps } = props;
+    // Handle exit animations when inside AnimatePresence
+    useEffect(() => {
+      if (!presenceContext?.isExiting || isExitingRef.current) return;
+
+      isExitingRef.current = true;
+      const { exit: exitProp } = propsRef.current;
+
+      if (!exitProp) {
+        // No exit animation defined, complete immediately
+        presenceContext.onExitComplete();
+        return;
+      }
+
+      // Cancel any running animations
+      controllersRef.current.forEach((ctrl) => ctrl.cancel());
+      controllersRef.current = [];
+
+      // Track completed animations
+      let completedCount = 0;
+      const totalAnimations = Object.keys(exitProp).length;
+
+      const checkComplete = () => {
+        completedCount++;
+        if (completedCount >= totalAnimations) {
+          presenceContext.onExitComplete();
+        }
+      };
+
+      // Start exit animations
+      for (const [key, descriptor] of Object.entries(exitProp)) {
+        const value = animateValuesRef.current[key];
+        if (!value) {
+          checkComplete();
+          continue;
+        }
+
+        // Add onComplete callback to track when animation finishes
+        const exitDescriptor: Descriptor = {
+          ...descriptor,
+          options: {
+            ...descriptor.options,
+            onComplete: () => {
+              descriptor.options?.onComplete?.();
+              checkComplete();
+            },
+          },
+        };
+
+        const controller = buildAnimation(value, exitDescriptor);
+        controllersRef.current.push(controller);
+        controller.start();
+      }
+    }, [presenceContext?.isExiting]);
+
+    const { animate: _, exit: __, ...domProps } = props;
 
     return createElement(tag, {
       ...domProps,
