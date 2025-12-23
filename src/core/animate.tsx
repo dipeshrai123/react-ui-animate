@@ -42,12 +42,12 @@ type AnimateSVGAttributes<T> = {
 };
 
 type AnimateProp = {
-  [K in keyof AnimateStyle]?: Descriptor;
+  [K in keyof AnimateStyle]?: Descriptor | Primitive;
 };
 
 type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
-  'style' | 'animate' | 'exit'
+  'style' | 'animate' | 'exit' | 'whileHover' | 'whileTap' | 'whileFocus'
 > & {
   style?: AnimateStyle;
   /**
@@ -58,6 +58,18 @@ type AnimateAttributes<T extends EventTarget> = Omit<
    * Declarative animations to run when the component exits (inside AnimatePresence).
    */
   exit?: AnimateProp;
+  /**
+   * Animations to apply when the element is hovered.
+   */
+  whileHover?: AnimateProp;
+  /**
+   * Animations to apply when the element is tapped/pressed.
+   */
+  whileTap?: AnimateProp;
+  /**
+   * Animations to apply when the element is focused.
+   */
+  whileFocus?: AnimateProp;
 };
 
 function combineRefs<T>(
@@ -110,6 +122,17 @@ function hasUnit(value: string): boolean {
   return /\d+(px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)$/i.test(value);
 }
 
+// Helper to check if a property should always be numeric
+function isNumericProperty(key: string): boolean {
+  // Transform properties should be numeric
+  if (isTransformKey(key)) return true;
+  // Opacity should be numeric
+  if (key === 'opacity') return true;
+  // Z-index should be numeric
+  if (key === 'zIndex') return true;
+  return false;
+}
+
 // Helper to get initial value for a property
 function getInitialValue(
   key: string,
@@ -117,14 +140,28 @@ function getInitialValue(
   node: HTMLElement,
   computedStyle: CSSStyleDeclaration
 ): Primitive {
+  const shouldBeNumeric = isNumericProperty(key);
+  
   // Prioritize static value from style prop
   const staticValue = getStaticStyleValue(style, key);
-  if (staticValue !== null) return staticValue;
+  if (staticValue !== null) {
+    // Ensure numeric properties are always numbers
+    if (shouldBeNumeric && typeof staticValue === 'string') {
+      const num = parseFloat(staticValue);
+      return isNaN(num) ? getDefaultInitialValue(key) : num;
+    }
+    return staticValue;
+  }
   
   // Fall back to inline style
   const inlineValue = (node.style as any)[key];
   if (inlineValue) {
-    // Preserve strings with units
+    // For numeric properties, always parse to number
+    if (shouldBeNumeric) {
+      const num = parseFloat(inlineValue);
+      return isNaN(num) ? getDefaultInitialValue(key) : num;
+    }
+    // Preserve strings with units for non-numeric properties
     if (hasUnit(inlineValue)) return inlineValue;
     const num = parseFloat(inlineValue);
     return isNaN(num) ? inlineValue : num;
@@ -135,7 +172,12 @@ function getInitialValue(
     key.replace(/([A-Z])/g, '-$1').toLowerCase()
   );
   if (computedValue) {
-    // Preserve strings with units
+    // For numeric properties, always parse to number
+    if (shouldBeNumeric) {
+      const num = parseFloat(computedValue);
+      return isNaN(num) ? getDefaultInitialValue(key) : num;
+    }
+    // Preserve strings with units for non-numeric properties
     if (hasUnit(computedValue)) return computedValue.trim();
     const num = parseFloat(computedValue);
     return isNaN(num) ? computedValue.trim() : num;
@@ -158,8 +200,19 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     const cleanupRef = useRef<(() => void)[]>([]);
     const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>({});
     const controllersRef = useRef<Array<{ cancel(): void }>>([]);
+    const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
     const isExitingRef = useRef(false);
     const hasMountedRef = useRef(false);
+    const stateRef = useRef<{
+      isHovered: boolean;
+      isTapped: boolean;
+      isFocused: boolean;
+    }>({
+      isHovered: false,
+      isTapped: false,
+      isFocused: false,
+    });
+    const initialValuesRef = useRef<Record<string, Primitive>>({});
 
     // Get presence context for AnimatePresence integration
     const presenceContext = useContext(PresenceContext);
@@ -193,9 +246,21 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         animateValuesRef.current = newAnimateValues;
 
         // Build and start animations
-        for (const [key, descriptor] of Object.entries(animateProp)) {
+        for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
           const value = newAnimateValues[key];
           if (!value) continue;
+
+          // Convert primitive values to timing descriptors for convenience
+          const descriptor: Descriptor = 
+            typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
+              ? {
+                  type: 'timing',
+                  to: valueOrDescriptor,
+                  options: {
+                    duration: 300,
+                  },
+                }
+              : valueOrDescriptor;
 
           const controller = buildAnimation(value, descriptor);
           controllersRef.current.push(controller);
@@ -209,12 +274,9 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
       // Merge animate values into style
       const mergedStyle: Record<string, any> = { ...style };
-      if (animateProp) {
-        for (const key of Object.keys(animateProp)) {
-          if (animateValuesRef.current[key]) {
-            mergedStyle[key] = animateValuesRef.current[key];
-          }
-        }
+      // Include all AnimateValues (from animate prop and state animations)
+      for (const key of Object.keys(animateValuesRef.current)) {
+        mergedStyle[key] = animateValuesRef.current[key];
       }
 
       // Separate normal styles from transforms
@@ -276,20 +338,32 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       };
 
       // Start exit animations
-      for (const [key, descriptor] of Object.entries(exitProp)) {
+      for (const [key, valueOrDescriptor] of Object.entries(exitProp)) {
         const value = animateValuesRef.current[key];
         if (!value) {
           checkComplete();
           continue;
         }
 
+        // Convert primitive values to timing descriptors for convenience
+        const baseDescriptor: Descriptor = 
+          typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
+            ? {
+                type: 'timing',
+                to: valueOrDescriptor,
+                options: {
+                  duration: 300,
+                },
+              }
+            : valueOrDescriptor;
+
         // Add onComplete callback to track when animation finishes
         const exitDescriptor: Descriptor = {
-          ...descriptor,
+          ...baseDescriptor,
           options: {
-            ...descriptor.options,
+            ...baseDescriptor.options,
             onComplete: () => {
-              descriptor.options?.onComplete?.();
+              baseDescriptor.options?.onComplete?.();
               checkComplete();
             },
           },
@@ -301,7 +375,248 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       }
     }, [presenceContext?.isExiting]);
 
-    const { animate: _, exit: __, ...domProps } = props;
+    // Helper function to apply state animations
+    const applyStateAnimation = (
+      stateProp: AnimateProp | undefined,
+      isActive: boolean
+    ) => {
+      if (!stateProp) return;
+
+      const node = nodeRef.current;
+      if (!node) return;
+
+      // Cancel any existing state animations
+      stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      stateControllersRef.current = [];
+
+      const computedStyle = window.getComputedStyle(node);
+      const { style = {} } = propsRef.current;
+      const newSubscriptions: (() => void)[] = [];
+
+      // For each property in the state animation
+      for (const [key, valueOrDescriptor] of Object.entries(stateProp)) {
+        // Get or create AnimateValue for this property
+        let value = animateValuesRef.current[key];
+        
+        if (!value) {
+          // Create a new AnimateValue if it doesn't exist
+          const initial = getInitialValue(key, style, node, computedStyle);
+          value = new AnimateValue(initial);
+          animateValuesRef.current[key] = value;
+          
+          // Store the initial value immediately for state animations
+          initialValuesRef.current[key] = initial;
+          
+          // Manually subscribe to the new AnimateValue
+          if (isTransformKey(key)) {
+            // For transforms, we need to re-render all transforms
+            // So we'll trigger a full transform update
+            const render = () => {
+              const transformKeyList = Object.keys(animateValuesRef.current).filter(isTransformKey);
+              if (transformKeyList.length > 0) {
+                const parts = transformKeyList.map((k) => {
+                  const v = animateValuesRef.current[k];
+                  if (!v) return '';
+                  const cur = v.current;
+                  const str = String(cur);
+                  const numMatch = str.match(/-?\d+(\.\d+)?/)?.[0] ?? '0';
+                  const unitMatch = str.match(/px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax|deg/)?.[0] ?? '';
+                  let unit = unitMatch;
+                  if (!unit) {
+                    if (k === 'perspective' || k.startsWith('translate')) unit = 'px';
+                    else if (k.startsWith('rotate') || k.startsWith('skew')) unit = 'deg';
+                  }
+                  return `${k}(${numMatch}${unit})`;
+                });
+                node.style.transform = parts.join(' ');
+              }
+            };
+            newSubscriptions.push(value.subscribe(render));
+            render(); // Initial render
+          } else {
+            // For normal styles, subscribe directly
+            newSubscriptions.push(
+              value.subscribe((v) => {
+                const css = typeof v === 'number' && 
+                  !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
+                  ? `${v}px` 
+                  : String(v);
+                (node.style as any)[key] = css;
+              })
+            );
+          }
+        } else {
+          // If value already exists, ensure we have the initial value stored
+          // This handles the case where the value was created by the animate prop
+          if (!(key in initialValuesRef.current)) {
+            // Store the current value as the initial for state animations
+            // This ensures we revert to the value before state animation starts
+            initialValuesRef.current[key] = value.current;
+          }
+        }
+
+        // Check if it's a raw primitive (set immediately) or a descriptor (animate)
+        const isPrimitive = typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string';
+        
+        if (isActive) {
+          if (isPrimitive) {
+            // Set immediately without animation
+            value.set(valueOrDescriptor);
+          } else {
+            // Animate to the state animation target
+            const controller = buildAnimation(value, valueOrDescriptor);
+            stateControllersRef.current.push(controller);
+            controller.start();
+          }
+        } else {
+          // Revert to initial value
+          const initialValue = initialValuesRef.current[key];
+          
+          if (isPrimitive) {
+            // If the original was a primitive (set immediately), revert immediately too
+            value.set(initialValue);
+          } else {
+            // Animate back to initial value
+            const revertDescriptor: Descriptor = {
+              type: 'timing',
+              to: initialValue,
+              options: {
+                duration: 200,
+                easing: (t) => t * (2 - t), // ease-out
+              },
+            };
+            
+            const controller = buildAnimation(value, revertDescriptor);
+            stateControllersRef.current.push(controller);
+            controller.start();
+          }
+        }
+      }
+
+      // Add new subscriptions to cleanup
+      cleanupRef.current.push(...newSubscriptions);
+    };
+
+    // Handle state changes
+    useEffect(() => {
+      const node = nodeRef.current;
+      if (!node) return;
+
+      const { whileHover, whileTap, whileFocus } = propsRef.current;
+
+      // Handle hover state
+      const handleMouseEnter = () => {
+        if (stateRef.current.isHovered) return;
+        stateRef.current.isHovered = true;
+        applyStateAnimation(whileHover, true);
+      };
+
+      const handleMouseLeave = () => {
+        if (!stateRef.current.isHovered) return;
+        stateRef.current.isHovered = false;
+        applyStateAnimation(whileHover, false);
+      };
+
+      // Handle tap state
+      const handleMouseDown = () => {
+        if (stateRef.current.isTapped) return;
+        stateRef.current.isTapped = true;
+        applyStateAnimation(whileTap, true);
+      };
+
+      const handleMouseUp = () => {
+        if (!stateRef.current.isTapped) return;
+        stateRef.current.isTapped = false;
+        applyStateAnimation(whileTap, false);
+      };
+
+      const handleMouseLeaveForTap = () => {
+        if (stateRef.current.isTapped) {
+          stateRef.current.isTapped = false;
+          applyStateAnimation(whileTap, false);
+        }
+      };
+
+      // Handle focus state
+      const handleFocus = () => {
+        if (stateRef.current.isFocused) return;
+        stateRef.current.isFocused = true;
+        applyStateAnimation(whileFocus, true);
+      };
+
+      const handleBlur = () => {
+        if (!stateRef.current.isFocused) return;
+        stateRef.current.isFocused = false;
+        applyStateAnimation(whileFocus, false);
+      };
+
+      // Add event listeners
+      if (whileHover) {
+        node.addEventListener('mouseenter', handleMouseEnter);
+        node.addEventListener('mouseleave', handleMouseLeave);
+      }
+
+      if (whileTap) {
+        node.addEventListener('mousedown', handleMouseDown);
+        node.addEventListener('mouseup', handleMouseUp);
+        node.addEventListener('mouseleave', handleMouseLeaveForTap);
+        // Also handle touch events for mobile
+        node.addEventListener('touchstart', handleMouseDown);
+        node.addEventListener('touchend', handleMouseUp);
+        node.addEventListener('touchcancel', handleMouseLeaveForTap);
+      }
+
+      if (whileFocus) {
+        // Only add focus listeners if element is focusable
+        if (
+          node instanceof HTMLInputElement ||
+          node instanceof HTMLTextAreaElement ||
+          node instanceof HTMLSelectElement ||
+          node instanceof HTMLButtonElement ||
+          node instanceof HTMLAnchorElement ||
+          node.getAttribute('tabindex') !== null
+        ) {
+          node.addEventListener('focus', handleFocus);
+          node.addEventListener('blur', handleBlur);
+        }
+      }
+
+      return () => {
+        // Cleanup event listeners
+        if (whileHover) {
+          node.removeEventListener('mouseenter', handleMouseEnter);
+          node.removeEventListener('mouseleave', handleMouseLeave);
+        }
+
+        if (whileTap) {
+          node.removeEventListener('mousedown', handleMouseDown);
+          node.removeEventListener('mouseup', handleMouseUp);
+          node.removeEventListener('mouseleave', handleMouseLeaveForTap);
+          node.removeEventListener('touchstart', handleMouseDown);
+          node.removeEventListener('touchend', handleMouseUp);
+          node.removeEventListener('touchcancel', handleMouseLeaveForTap);
+        }
+
+        if (whileFocus) {
+          node.removeEventListener('focus', handleFocus);
+          node.removeEventListener('blur', handleBlur);
+        }
+
+        // Cancel state animations on cleanup
+        stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+        stateControllersRef.current = [];
+      };
+    }, [props.whileHover, props.whileTap, props.whileFocus]);
+
+    // Cleanup state animations on unmount
+    useEffect(() => {
+      return () => {
+        stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+        stateControllersRef.current = [];
+      };
+    }, []);
+
+    const { animate: _, exit: __, whileHover: ___, whileTap: ____, whileFocus: _____, ...domProps } = props;
 
     return createElement(tag, {
       ...domProps,
