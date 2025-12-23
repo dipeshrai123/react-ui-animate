@@ -11,6 +11,105 @@ import { setupExitAnimations } from '../utils/exitAnimations';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
 
+function serializeAnimateProp(prop: AnimateProp | undefined): string {
+  if (!prop) return '';
+  const propRecord = prop as Record<string, Descriptor | Primitive>;
+  const keys = Object.keys(propRecord).sort();
+  return keys.map(key => {
+    const value = propRecord[key];
+    if (typeof value === 'number' || typeof value === 'string') {
+      return `${key}:${value}`;
+    }
+    if (typeof value === 'object' && value !== null && 'type' in value) {
+      const desc = value as Descriptor;
+      return `${key}:${desc.type}:${JSON.stringify(desc.to || '')}`;
+    }
+    return `${key}:unknown`;
+  }).join('|');
+}
+
+function createAnimateValues(
+  animateProp: AnimateProp,
+  style: any,
+  node: HTMLElement,
+  computedStyle: CSSStyleDeclaration,
+  existingValues: Record<string, AnimateValue<Primitive>>
+): Record<string, AnimateValue<Primitive>> {
+  const newValues: Record<string, AnimateValue<Primitive>> = {};
+  
+  for (const key of Object.keys(animateProp)) {
+    if (existingValues[key]) {
+      const initial = getInitialValue(key, style, node, computedStyle);
+      existingValues[key].set(initial);
+      newValues[key] = existingValues[key];
+    } else {
+      const initial = getInitialValue(key, style, node, computedStyle);
+      newValues[key] = new AnimateValue(initial);
+    }
+  }
+  
+  return newValues;
+}
+
+function startAnimations(
+  animateProp: AnimateProp,
+  animateValues: Record<string, AnimateValue<Primitive>>,
+  controllers: Array<{ cancel(): void }>
+) {
+  for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
+    const value = animateValues[key];
+    if (!value) continue;
+
+    const descriptor: Descriptor = 
+      typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
+        ? {
+            type: 'timing',
+            to: valueOrDescriptor,
+            options: { duration: 300 },
+          }
+        : valueOrDescriptor;
+
+    const controller = buildAnimation(value, descriptor);
+    controllers.push(controller);
+    controller.start();
+  }
+}
+
+function applyStylesToNode(
+  node: HTMLElement,
+  style: any,
+  animateValues: Record<string, AnimateValue<Primitive>>,
+  rest: any
+): (() => void)[] {
+  const mergedStyle: Record<string, any> = { ...style };
+  for (const key of Object.keys(animateValues)) {
+    mergedStyle[key] = animateValues[key];
+  }
+
+  const normal: Record<string, any> = {};
+  const transforms: Record<string, any> = {};
+  for (const [key, value] of Object.entries(mergedStyle)) {
+    (isTransformKey(key) ? transforms : normal)[key] = value;
+  }
+
+  return [
+    ...applyStyles(node, normal),
+    ...applyTransforms(node, mergedStyle),
+    ...applyAttrs(node, rest),
+  ];
+}
+
+function isFocusable(node: HTMLElement): boolean {
+  return (
+    node instanceof HTMLInputElement ||
+    node instanceof HTMLTextAreaElement ||
+    node instanceof HTMLSelectElement ||
+    node instanceof HTMLButtonElement ||
+    node instanceof HTMLAnchorElement ||
+    node.getAttribute('tabindex') !== null
+  );
+}
+
 export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   tag: Tag
 ) {
@@ -26,116 +125,61 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
     const isExitingRef = useRef(false);
     const hasMountedRef = useRef(false);
-    const stateRef = useRef<{
-      isHovered: boolean;
-      isTapped: boolean;
-      isFocused: boolean;
-    }>({
+    const stateRef = useRef({
       isHovered: false,
       isTapped: false,
       isFocused: false,
     });
     const initialValuesRef = useRef<Record<string, Primitive>>({});
+    const prevAnimatePropRef = useRef<AnimateProp | undefined>(undefined);
+    const prevAnimatePropKeyRef = useRef<string>('');
 
-    // Get presence context for AnimatePresence integration
     const presenceContext = useContext(PresenceContext);
-
     propsRef.current = props;
 
-    // Handle enter animations - run on mount and when animate prop changes
     useLayoutEffect(() => {
       const node = nodeRef.current;
-      if (!node) return;
+      if (!node || isExitingRef.current) return;
 
-      // Don't run enter animations if we're exiting
-      if (isExitingRef.current) return;
-
-      const { style = {}, animate: animateProp, ...rest } = propsRef.current;
+      const animateProp = props.animate;
+      const { style = {}, ...rest } = propsRef.current;
       const isFirstMount = !hasMountedRef.current;
+      const currentKey = serializeAnimateProp(animateProp);
+      const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
+      const shouldRestart = isFirstMount || valuesChanged;
+      
+      if (shouldRestart) {
+        controllersRef.current.forEach((ctrl) => ctrl.cancel());
+        controllersRef.current = [];
 
-      // Cancel any existing animations
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      controllersRef.current = [];
-
-      if (animateProp) {
+        if (animateProp) {
           const computedStyle = window.getComputedStyle(node);
           
-          // On first mount: create new AnimateValues
-          // On subsequent updates: reuse existing or create new ones
           if (isFirstMount) {
             const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
-
-            // Create AnimateValues for each animated property
             for (const key of Object.keys(animateProp)) {
               const initial = getInitialValue(key, style, node, computedStyle);
-              const value = new AnimateValue(initial);
-              newAnimateValues[key] = value;
+              newAnimateValues[key] = new AnimateValue(initial);
             }
-
             animateValuesRef.current = newAnimateValues;
           } else {
-            // On updates: reset existing values to initial and create new ones for new properties
-            for (const key of Object.keys(animateProp)) {
-              if (!animateValuesRef.current[key]) {
-                // Create new AnimateValue for new property
-                const initial = getInitialValue(key, style, node, computedStyle);
-                animateValuesRef.current[key] = new AnimateValue(initial);
-              } else {
-                // Reset existing AnimateValue to initial value
-                const initial = getInitialValue(key, style, node, computedStyle);
-                animateValuesRef.current[key].set(initial);
-              }
-            }
+            animateValuesRef.current = createAnimateValues(
+              animateProp,
+              style,
+              node,
+              computedStyle,
+              animateValuesRef.current
+            );
           }
 
-          // Build and start animations
-          for (const [key, valueOrDescriptor] of Object.entries(animateProp)) {
-            const value = animateValuesRef.current[key];
-            if (!value) continue;
-
-            // Convert primitive values to timing descriptors for convenience
-            const descriptor: Descriptor = 
-              typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
-                ? {
-                    type: 'timing',
-                    to: valueOrDescriptor,
-                    options: {
-                      duration: 300,
-                    },
-                  }
-                : valueOrDescriptor;
-
-            const controller = buildAnimation(value, descriptor);
-            controllersRef.current.push(controller);
-            controller.start();
-          }
+          startAnimations(animateProp, animateValuesRef.current, controllersRef.current);
+          prevAnimatePropRef.current = animateProp;
         }
+      }
 
-      // Cleanup previous subscriptions (but not animations on re-render)
+      prevAnimatePropKeyRef.current = currentKey;
       cleanupRef.current.forEach((cleanup) => cleanup());
-      cleanupRef.current = [];
-
-      // Merge animate values into style
-      const mergedStyle: Record<string, any> = { ...style };
-      // Include all AnimateValues (from animate prop and state animations)
-      for (const key of Object.keys(animateValuesRef.current)) {
-        mergedStyle[key] = animateValuesRef.current[key];
-      }
-
-      // Separate normal styles from transforms
-      const normal: Record<string, any> = {};
-      const transforms: Record<string, any> = {};
-      for (const [key, value] of Object.entries(mergedStyle)) {
-        (isTransformKey(key) ? transforms : normal)[key] = value;
-      }
-
-      // Apply styles and attributes
-      cleanupRef.current = [
-        ...applyStyles(node, normal),
-        ...applyTransforms(node, mergedStyle),
-        ...applyAttrs(node, rest),
-      ];
-
+      cleanupRef.current = applyStylesToNode(node, style, animateValuesRef.current, rest);
       hasMountedRef.current = true;
 
       return () => {
@@ -144,7 +188,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       };
     }, [props.style, props.animate]);
 
-    // Cleanup animations on unmount
     useEffect(() => {
       return () => {
         controllersRef.current.forEach((ctrl) => ctrl.cancel());
@@ -152,24 +195,15 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       };
     }, []);
 
-    // Handle exit animations when inside AnimatePresence
     useEffect(() => {
       const { exit: exitProp } = propsRef.current;
       
-      // Only participate in exit animation flow if this component has an exit prop
-      // Nested animate.divs without exit props should NOT call onExitComplete,
-      // otherwise they would prematurely remove the parent element
-      if (!exitProp) return;
-      
-      if (!presenceContext?.isExiting || isExitingRef.current) return;
+      if (!exitProp || !presenceContext?.isExiting || isExitingRef.current) return;
 
       isExitingRef.current = true;
-
-      // Cancel any running animations
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
       controllersRef.current = [];
 
-      // Setup exit animations
       setupExitAnimations({
         exitProp,
         animateValues: animateValuesRef.current,
@@ -180,7 +214,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       });
     }, [presenceContext?.isExiting]);
 
-    // Helper function to apply state animations
     const applyStateAnimationWrapper = (
       stateProp: AnimateProp | undefined,
       isActive: boolean
@@ -206,14 +239,12 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       applyStateAnimation(stateProp, isActive, context);
     };
 
-    // Handle state changes
     useEffect(() => {
       const node = nodeRef.current;
       if (!node) return;
 
       const { hover, press, focus } = propsRef.current;
 
-      // Handle hover state
       const handleMouseEnter = () => {
         if (stateRef.current.isHovered) return;
         stateRef.current.isHovered = true;
@@ -226,7 +257,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         applyStateAnimationWrapper(hover, false);
       };
 
-      // Handle press state
       const handleMouseDown = () => {
         if (stateRef.current.isTapped) return;
         stateRef.current.isTapped = true;
@@ -246,7 +276,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         }
       };
 
-      // Handle focus state
       const handleFocus = () => {
         if (stateRef.current.isFocused) return;
         stateRef.current.isFocused = true;
@@ -259,7 +288,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         applyStateAnimationWrapper(focus, false);
       };
 
-      // Add event listeners
       if (hover) {
         node.addEventListener('mouseenter', handleMouseEnter);
         node.addEventListener('mouseleave', handleMouseLeave);
@@ -269,29 +297,17 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
         node.addEventListener('mousedown', handleMouseDown);
         node.addEventListener('mouseup', handleMouseUp);
         node.addEventListener('mouseleave', handleMouseLeaveForPress);
-        // Also handle touch events for mobile
         node.addEventListener('touchstart', handleMouseDown);
         node.addEventListener('touchend', handleMouseUp);
         node.addEventListener('touchcancel', handleMouseLeaveForPress);
       }
 
-      if (focus) {
-        // Only add focus listeners if element is focusable
-        if (
-          node instanceof HTMLInputElement ||
-          node instanceof HTMLTextAreaElement ||
-          node instanceof HTMLSelectElement ||
-          node instanceof HTMLButtonElement ||
-          node instanceof HTMLAnchorElement ||
-          node.getAttribute('tabindex') !== null
-        ) {
-          node.addEventListener('focus', handleFocus);
-          node.addEventListener('blur', handleBlur);
-        }
+      if (focus && isFocusable(node)) {
+        node.addEventListener('focus', handleFocus);
+        node.addEventListener('blur', handleBlur);
       }
 
       return () => {
-        // Cleanup event listeners
         if (hover) {
           node.removeEventListener('mouseenter', handleMouseEnter);
           node.removeEventListener('mouseleave', handleMouseLeave);
@@ -311,13 +327,11 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
           node.removeEventListener('blur', handleBlur);
         }
 
-        // Cancel state animations on cleanup
         stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
         stateControllersRef.current = [];
       };
     }, [props.hover, props.press, props.focus]);
 
-    // Cleanup state animations on unmount
     useEffect(() => {
       return () => {
         stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
@@ -342,4 +356,3 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
   return AnimatedComponent;
 }
-
