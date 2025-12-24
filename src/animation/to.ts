@@ -1,4 +1,4 @@
-import type { ExtrapolateConfig } from './utils/to';
+import type { ExtrapolateConfig } from './types';
 import { to as interpolate } from './utils/to';
 
 export function to(

@@ -24,7 +24,7 @@ export { parallel, sequence, loop, delay } from './drivers/compose';
 // Utilities
 // ============================================================================
 export { Easing } from './utils/easing';
-export { combine } from './utils/to';
+export { combine } from './utils/combine';
 
 // ============================================================================
 // Interpolation

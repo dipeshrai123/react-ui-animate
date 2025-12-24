@@ -1,7 +1,14 @@
 export type Primitive = number | string;
 
-// ExtrapolateConfig is exported from utils/to to avoid circular dependency
-export type { ExtrapolateConfig, ExtrapolateType } from '../utils/to';
+// ExtrapolateConfig is defined here to avoid circular dependency
+export type ExtrapolateType = 'identity' | 'extend' | 'clamp';
+
+export interface ExtrapolateConfig {
+  extrapolate?: ExtrapolateType;
+  extrapolateRight?: ExtrapolateType;
+  extrapolateLeft?: ExtrapolateType;
+  easing?: (t: number) => number;
+}
 
 export interface Callbacks {
   onStart?: () => void;

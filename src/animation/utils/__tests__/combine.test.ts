@@ -1,5 +1,5 @@
 import { AnimateValue } from '../../values/AnimateValue';
-import { combine } from '../to';
+import { combine } from '../combine';
 
 describe('combine()', () => {
   it('computes an initial combined value from two inputs', () => {
