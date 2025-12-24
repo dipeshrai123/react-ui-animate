@@ -74,8 +74,18 @@ const Example: React.FC = () => {
       ],
     },
     {
+      title: 'Real-World Examples',
+      description: 'Polished, production-ready examples',
+      items: [
+        { name: 'Card Showcase', path: '/examples/CardShowcase' },
+        { name: 'Navigation Menu', path: '/examples/NavigationMenu' },
+        { name: 'Dashboard', path: '/examples/Dashboard' },
+        { name: 'Product Showcase', path: '/examples/ProductShowcase' },
+      ],
+    },
+    {
       title: 'Advanced Examples',
-      description: 'Complex real-world examples',
+      description: 'Complex examples demonstrating advanced features',
       items: [
         { name: 'Modal', path: '/examples/Modal' },
         { name: 'Toast', path: '/examples/Toast' },
