@@ -1,13 +1,12 @@
 // Core controller interface
-export * from './AnimateController';
+export type { AnimateController, AnimateHooks } from './AnimateController';
 
-// Animation drivers
+// Animation drivers (low-level, for advanced use)
 export { timing } from './timing';
 export { spring } from './spring';
 export { decay } from './decay';
 
-// Composition drivers
+// Composition drivers (low-level, for advanced use)
 export { parallel, sequence, loop, delay } from './compose';
 
-// Builder utilities
-export { buildAnimation, buildParallel } from './builder';
+// Note: buildAnimation and buildParallel are internal and not exported

@@ -39,6 +39,7 @@ const UNIT_LESS = new Set([
   'lineClamp',
 ]);
 
+// Internal transform keys - exported for internal use only
 export const transformKeys = [
   'translateX',
   'translateY',
@@ -55,7 +56,7 @@ export const transformKeys = [
   'perspective',
 ] as const;
 
-// Exported for testing
+// Internal function - exported for testing only (not re-exported from main index)
 export function applyStyleProp(el: HTMLElement, key: string, v: any) {
   const css =
     typeof v === 'number' && !UNIT_LESS.has(key) ? `${v}px` : String(v);
@@ -92,11 +93,12 @@ function formatTransformFunction(key: string, raw: any) {
   return `${key}(${value}${unit})`;
 }
 
+// Internal function - exported for internal use only
 export function isTransformKey(key: string) {
   return transformKeys.includes(key as (typeof transformKeys)[number]);
 }
 
-// Exported for testing
+// Internal function - exported for testing only (not re-exported from main index)
 export function applyTransformsStyle(
   node: HTMLElement,
   txProps: Record<string, any>
@@ -122,7 +124,10 @@ export function applyTransformsStyle(
   if (hasTransformKeys) {
     for (const key of transformKeyList) {
       const value = txProps[key];
-      if (value && typeof (value as AnimateValue<any>).subscribe === 'function') {
+      if (
+        value &&
+        typeof (value as AnimateValue<any>).subscribe === 'function'
+      ) {
         unsubs.push((value as AnimateValue<any>).subscribe(render));
       }
     }
@@ -131,7 +136,8 @@ export function applyTransformsStyle(
   return unsubs;
 }
 
-export function applyStyles(
+// Internal functions - not exported
+function applyStyles(
   node: HTMLElement,
   style: Record<string, any>
 ): (() => void)[] {
@@ -148,7 +154,7 @@ export function applyStyles(
   return subscriptions;
 }
 
-export function applyAttrs(
+function applyAttrs(
   node: HTMLElement,
   props: Record<string, any>
 ): (() => void)[] {
@@ -182,10 +188,12 @@ export function applyAttrs(
   return subscriptions;
 }
 
-export function applyTransforms(
+function applyTransforms(
   elRef: HTMLElement,
   txProps: Record<string, any>
 ): (() => void)[] {
   return applyTransformsStyle(elRef, txProps);
 }
 
+// Export internal functions for use within the library
+export { applyStyles, applyAttrs, applyTransforms };
