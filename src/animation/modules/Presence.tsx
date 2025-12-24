@@ -201,7 +201,11 @@ export function Presence({
       // First, preserve order from previous state and update elements
       for (const [key, state] of prev) {
         if (currentChildrenMap.has(key)) {
-          // Child still exists - update element, not exiting
+          // Child still exists - update element
+          // If it was exiting, it's now re-entering, so decrement counter
+          if (state.isExiting) {
+            exitingCount.current--;
+          }
           next.set(key, {
             key,
             element: currentChildrenMap.get(key)!,

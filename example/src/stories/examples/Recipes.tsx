@@ -3,7 +3,6 @@ import { animate, recipes, Presence } from 'react-ui-animate';
 
 const Example: React.FC = () => {
   const [mounted, setMounted] = useState(true);
-  const [hovered, setHovered] = useState(false);
 
   return (
     <div style={{ padding: 40 }}>
@@ -271,7 +270,7 @@ const Example: React.FC = () => {
                 height: 100,
                 backgroundColor: '#ff6b6b',
                 borderRadius: 8,
-                opacity: 1,
+                opacity: 0,
               }}
               animate={recipes.fadeIn}
               exit={recipes.exitFade}
@@ -287,8 +286,8 @@ const Example: React.FC = () => {
                   height: 100,
                   backgroundColor: '#51cf66',
                   borderRadius: 8,
-                  opacity: 1,
-                  translateY: 0,
+                  opacity: 0,
+                  translateY: 20,
                 }}
                 animate={recipes.slideFadeIn}
                 exit={recipes.exitSlideUp}

@@ -133,23 +133,35 @@ function useEnterAnimations(
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
   animateProp: AnimateProp | undefined,
   style: any,
-  isExitingRef: React.MutableRefObject<boolean>
+  isExitingRef: React.MutableRefObject<boolean>,
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >,
+  controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
+  const presenceContext = useContext(PresenceContext);
   const cleanupRef = useRef<(() => void)[]>([]);
-  const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>({});
-  const controllersRef = useRef<Array<{ cancel(): void }>>([]);
   const hasMountedRef = useRef(false);
   const prevAnimatePropKeyRef = useRef<string>('');
+  const wasExitingRef = useRef(false);
 
   useLayoutEffect(() => {
     const node = nodeRef.current;
-    if (!node || isExitingRef.current) return;
+    const isExiting = presenceContext?.isExiting ?? false;
+
+    // Track transition from exiting to entering
+    const justReEntered = wasExitingRef.current && !isExiting;
+    wasExitingRef.current = isExiting;
+
+    // Don't run enter animations if exiting (check both context and ref for safety)
+    if (!node || isExiting || isExitingRef.current) return;
 
     const { style: currentStyle = {}, ...rest } = propsRef.current;
     const isFirstMount = !hasMountedRef.current;
     const currentKey = serializeAnimateProp(animateProp);
     const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
-    const shouldRestart = isFirstMount || valuesChanged;
+    // Restart if first mount, values changed, or just re-entered from exit
+    const shouldRestart = isFirstMount || valuesChanged || justReEntered;
 
     if (shouldRestart) {
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
@@ -202,7 +214,7 @@ function useEnterAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-  }, [style, animateProp]);
+  }, [style, animateProp, presenceContext?.isExiting]);
 
   useEffect(() => {
     return () => {
@@ -210,8 +222,6 @@ function useEnterAnimations(
       controllersRef.current = [];
     };
   }, []);
-
-  return { animateValuesRef, controllersRef };
 }
 
 function useExitAnimations(
@@ -221,41 +231,59 @@ function useExitAnimations(
   animateValuesRef: React.MutableRefObject<
     Record<string, AnimateValue<Primitive>>
   >,
-  controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
+  enterControllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
   const presenceContext = useContext(PresenceContext);
+  const exitControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const exitCleanupRef = useRef<(() => void)[]>([]);
 
-  useEffect(() => {
+  // Use useLayoutEffect to ensure this runs in sync with useEnterAnimations
+  useLayoutEffect(() => {
     const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
     const node = nodeRef.current;
+    const isExiting = presenceContext?.isExiting ?? false;
 
-    if (
-      !exitProp ||
-      !presenceContext?.isExiting ||
-      isExitingRef.current ||
-      !node
-    )
+    // If not exiting, reset the flag and cancel any ongoing exit animations
+    if (!isExiting) {
+      if (isExitingRef.current) {
+        // Child was exiting but is now re-entering - cancel exit animations only
+        isExitingRef.current = false;
+        exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
+        exitControllersRef.current = [];
+        exitCleanupRef.current.forEach((cleanup) => cleanup());
+        exitCleanupRef.current = [];
+      }
       return;
+    }
+
+    // If already exiting, don't start another exit animation
+    if (isExitingRef.current || !exitProp || !node) {
+      return;
+    }
 
     isExitingRef.current = true;
-    controllersRef.current.forEach((ctrl) => ctrl.cancel());
-    controllersRef.current = [];
+    // Cancel enter animations when starting exit
+    enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
+    enterControllersRef.current = [];
 
     // Clean up any previous exit subscriptions
     exitCleanupRef.current.forEach((cleanup) => cleanup());
     exitCleanupRef.current = [];
 
-    // Setup exit animations and get cleanup subscriptions
+    // Setup exit animations with separate controllers
     exitCleanupRef.current = setupExitAnimations({
       exitProp,
       animateValues: animateValuesRef.current,
-      controllers: controllersRef.current,
+      controllers: exitControllersRef.current,
       onExitComplete: () => {
-        // Clean up subscriptions when exit completes
-        exitCleanupRef.current.forEach((cleanup) => cleanup());
-        exitCleanupRef.current = [];
-        presenceContext.onExitComplete();
+        // Only call onExitComplete if we're still exiting
+        // (child might have been re-added during exit animation)
+        if (isExitingRef.current) {
+          exitCleanupRef.current.forEach((cleanup) => cleanup());
+          exitCleanupRef.current = [];
+          isExitingRef.current = false;
+          presenceContext?.onExitComplete();
+        }
       },
       node,
       style: currentStyle,
@@ -263,10 +291,12 @@ function useExitAnimations(
 
     return () => {
       // Clean up on unmount or when exiting state changes
+      exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      exitControllersRef.current = [];
       exitCleanupRef.current.forEach((cleanup) => cleanup());
       exitCleanupRef.current = [];
     };
-  }, [presenceContext?.isExiting]);
+  }, [presenceContext?.isExiting, presenceContext]);
 }
 
 function useStateAnimations(
@@ -424,20 +454,30 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     propsRef.current = props;
 
-    const { animateValuesRef, controllersRef } = useEnterAnimations(
-      nodeRef,
-      propsRef,
-      props.animate,
-      props.style,
-      isExitingRef
+    // Create refs that will be shared between hooks
+    const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>(
+      {}
     );
+    const enterControllersRef = useRef<Array<{ cancel(): void }>>([]);
 
+    // Exit animations hook must run FIRST to reset isExitingRef before enter animations check it
     useExitAnimations(
       nodeRef,
       propsRef,
       isExitingRef,
       animateValuesRef,
-      controllersRef
+      enterControllersRef
+    );
+
+    // Enter animations hook runs SECOND, after exit has reset state
+    useEnterAnimations(
+      nodeRef,
+      propsRef,
+      props.animate,
+      props.style,
+      isExitingRef,
+      animateValuesRef,
+      enterControllersRef
     );
 
     useStateAnimations(
@@ -455,11 +495,34 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       hover: ___,
       press: ____,
       focus: _____,
-      ...domProps
+      style,
+      ...restProps
     } = props;
 
+    // Filter out transform keys from style since we handle them via transform property
+    // Also filter out keys that are being animated
+    const filteredStyle: Record<string, any> = {};
+    const animatedKeys = new Set([
+      ...Object.keys(animateValuesRef.current),
+      ...(props.animate ? Object.keys(props.animate) : []),
+    ]);
+
+    if (style) {
+      for (const [key, value] of Object.entries(style)) {
+        // Skip transform keys - we handle these via node.style.transform
+        if (isTransformKey(key)) continue;
+        // Skip animated keys - we handle these via AnimateValue subscriptions
+        if (animatedKeys.has(key)) continue;
+        // Skip AnimateValue objects
+        if (value && typeof value === 'object' && 'subscribe' in value)
+          continue;
+        filteredStyle[key] = value;
+      }
+    }
+
     return createElement(tag, {
-      ...domProps,
+      ...restProps,
+      style: filteredStyle,
       ref: combineRefs(nodeRef, ref),
     });
   });
