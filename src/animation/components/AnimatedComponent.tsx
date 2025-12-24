@@ -368,12 +368,20 @@ function useStateAnimations(
       if (!stateRef.current.isTapped) return;
       stateRef.current.isTapped = false;
       applyStateAnimationWrapper(press, false);
+      // Re-apply hover if still active
+      if (stateRef.current.isHovered && hover) {
+        applyStateAnimationWrapper(hover, true);
+      }
     };
 
     const handleMouseLeaveForPress = () => {
       if (stateRef.current.isTapped) {
         stateRef.current.isTapped = false;
         applyStateAnimationWrapper(press, false);
+        // Re-apply hover if still active
+        if (stateRef.current.isHovered && hover) {
+          applyStateAnimationWrapper(hover, true);
+        }
       }
     };
 
