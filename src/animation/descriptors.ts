@@ -48,6 +48,7 @@ export const withDecay = (
   options: {
     velocity,
     clamp: opts?.clamp,
+    elastic: opts?.elastic,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,

@@ -1,9 +1,11 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
+import { rubberClamp } from '../../utils';
 
 interface DecayOptions extends AnimateHooks {
   decay?: number;
   clamp?: [number, number];
+  elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
   onChange?(value: number): void;
 }
 
@@ -17,6 +19,7 @@ class DecayController implements AnimateController {
   private isCancelled = false;
   private pausedAt = 0;
   private clampBounds?: [number, number];
+  private elasticConstant?: number;
 
   constructor(
     private value: AnimateValue<number>,
@@ -25,6 +28,12 @@ class DecayController implements AnimateController {
     private hooks: DecayOptions
   ) {
     this.clampBounds = hooks.clamp;
+    // Determine elastic constant: if elastic is a number, use it; if true, use default 0.15; if false/undefined, no elastic
+    if (hooks.elastic === true) {
+      this.elasticConstant = 0.15;
+    } else if (typeof hooks.elastic === 'number') {
+      this.elasticConstant = hooks.elastic;
+    }
   }
 
   start() {
@@ -54,14 +63,26 @@ class DecayController implements AnimateController {
     const k = 1 - this.deceleration;
     const currentVelocity = this.velocity * Math.exp(-k * elapsed);
 
-    this.position = this.from + (this.velocity / k) * (1 - Math.exp(-k * elapsed));
+    this.position =
+      this.from + (this.velocity / k) * (1 - Math.exp(-k * elapsed));
 
     if (this.clampBounds) {
       const [min, max] = this.clampBounds;
-      if (this.position < min) {
-        this.position = min;
-      } else if (this.position > max) {
-        this.position = max;
+      if (this.elasticConstant !== undefined) {
+        // Use elastic/rubber clamping
+        this.position = rubberClamp(
+          this.position,
+          min,
+          max,
+          this.elasticConstant
+        );
+      } else {
+        // Use hard clamping
+        if (this.position < min) {
+          this.position = min;
+        } else if (this.position > max) {
+          this.position = max;
+        }
       }
     }
 

@@ -81,7 +81,7 @@ const Example: React.FC = () => {
       </div>
 
       <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>With Clamp</h2>
+        <h2 style={{ marginBottom: 20 }}>With Hard Clamp</h2>
         <animate.div
           key={trigger}
           style={{
@@ -93,12 +93,58 @@ const Example: React.FC = () => {
           }}
           animate={{
             translateX: withDecay(1.5, {
-              clamp: [0, 400], // Clamp between 0 and 400
+              clamp: [0, 400], // Hard clamp between 0 and 400
             }),
           }}
         />
         <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
-          Animation stops at boundaries (0-400px)
+          Animation stops abruptly at boundaries (0-400px)
+        </p>
+      </div>
+
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ marginBottom: 20 }}>With Elastic Clamp</h2>
+        <animate.div
+          key={trigger}
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: '#ff6b6b',
+            borderRadius: 8,
+            translateX: 0,
+          }}
+          animate={{
+            translateX: withDecay(1.5, {
+              clamp: [0, 400], // Clamp between 0 and 400
+              elastic: true, // Enable elastic/rubber effect at boundaries
+            }),
+          }}
+        />
+        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+          Animation bounces back elastically at boundaries (0-400px)
+        </p>
+      </div>
+
+      <div style={{ marginBottom: 40 }}>
+        <h2 style={{ marginBottom: 20 }}>With Custom Elastic Constant</h2>
+        <animate.div
+          key={trigger}
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: '#51cf66',
+            borderRadius: 8,
+            translateX: 0,
+          }}
+          animate={{
+            translateX: withDecay(1.5, {
+              clamp: [0, 400], // Clamp between 0 and 400
+              elastic: 0.3, // Custom elastic constant (higher = more elastic)
+            }),
+          }}
+        />
+        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+          More elastic bounce with custom constant (0.3)
         </p>
       </div>
 

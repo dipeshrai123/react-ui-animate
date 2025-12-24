@@ -32,6 +32,7 @@ export interface TimingOptions {
 export interface DecayOptions {
   velocity?: number;
   clamp?: [number, number];
+  elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
 }
 
 export interface SequenceOptions {
