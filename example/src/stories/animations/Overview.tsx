@@ -24,6 +24,19 @@ const Example: React.FC = () => {
       ],
     },
     {
+      title: 'Drivers (Advanced)',
+      description: 'Low-level animation drivers for manual control',
+      items: [
+        { name: 'timing', path: '/animations/drivers/timing' },
+        { name: 'spring', path: '/animations/drivers/spring' },
+        { name: 'decay', path: '/animations/drivers/decay' },
+        { name: 'parallel', path: '/animations/drivers/parallel' },
+        { name: 'sequence', path: '/animations/drivers/sequence' },
+        { name: 'loop', path: '/animations/drivers/loop' },
+        { name: 'delay', path: '/animations/drivers/delay' },
+      ],
+    },
+    {
       title: 'Utilities',
       description: 'Animation utilities and helpers',
       items: [
