@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   animate,
   useValue,
@@ -8,13 +8,39 @@ import {
   withSequence,
   withLoop,
   withDelay,
+  Presence,
 } from 'react-ui-animate';
 
 const Example: React.FC = () => {
   const [x, setX] = useValue(0);
 
+  const [mounted, setMounted] = useState(true);
+
   return (
     <>
+      <div>
+        <Presence>
+          {mounted && (
+            <animate.div
+              onClick={() => setMounted(false)}
+              style={{
+                width: 100,
+                height: 100,
+                backgroundColor: 'red',
+              }}
+              animate={{
+                width: 200,
+                height: 200,
+                backgroundColor: 'blue',
+              }}
+              exit={{
+                opacity: withTiming(0, { duration: 1000 }),
+              }}
+            />
+          )}
+        </Presence>
+      </div>
+
       <div className="button-group mb">
         <button onClick={() => setX(withTiming(0))}>Timing to 0</button>
         <button onClick={() => setX(withSpring(100))}>Spring to 100</button>

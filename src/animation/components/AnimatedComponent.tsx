@@ -1,12 +1,27 @@
-import { forwardRef, useLayoutEffect, useRef, createElement, useContext, useEffect } from 'react';
+import {
+  forwardRef,
+  useLayoutEffect,
+  useRef,
+  createElement,
+  useContext,
+  useEffect,
+} from 'react';
 
-import { isTransformKey, applyAttrs, applyStyles, applyTransforms } from '../utils/apply';
+import {
+  isTransformKey,
+  applyAttrs,
+  applyStyles,
+  applyTransforms,
+} from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
 import { PresenceContext } from '../modules/Presence';
 import { getInitialValue } from '../utils/initialValues';
-import { applyStateAnimation, type StateAnimationContext } from '../utils/stateAnimations';
+import {
+  applyStateAnimation,
+  type StateAnimationContext,
+} from '../utils/stateAnimations';
 import { setupExitAnimations } from '../utils/exitAnimations';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
@@ -15,17 +30,19 @@ function serializeAnimateProp(prop: AnimateProp | undefined): string {
   if (!prop) return '';
   const propRecord = prop as Record<string, Descriptor | Primitive>;
   const keys = Object.keys(propRecord).sort();
-  return keys.map(key => {
-    const value = propRecord[key];
-    if (typeof value === 'number' || typeof value === 'string') {
-      return `${key}:${value}`;
-    }
-    if (typeof value === 'object' && value !== null && 'type' in value) {
-      const desc = value as Descriptor;
-      return `${key}:${desc.type}:${JSON.stringify(desc.to || '')}`;
-    }
-    return `${key}:unknown`;
-  }).join('|');
+  return keys
+    .map((key) => {
+      const value = propRecord[key];
+      if (typeof value === 'number' || typeof value === 'string') {
+        return `${key}:${value}`;
+      }
+      if (typeof value === 'object' && value !== null && 'type' in value) {
+        const desc = value as Descriptor;
+        return `${key}:${desc.type}:${JSON.stringify(desc.to || '')}`;
+      }
+      return `${key}:unknown`;
+    })
+    .join('|');
 }
 
 function createAnimateValues(
@@ -36,7 +53,7 @@ function createAnimateValues(
   existingValues: Record<string, AnimateValue<Primitive>>
 ): Record<string, AnimateValue<Primitive>> {
   const newValues: Record<string, AnimateValue<Primitive>> = {};
-  
+
   for (const key of Object.keys(animateProp)) {
     if (existingValues[key]) {
       const initial = getInitialValue(key, style, node, computedStyle);
@@ -47,7 +64,7 @@ function createAnimateValues(
       newValues[key] = new AnimateValue(initial);
     }
   }
-  
+
   return newValues;
 }
 
@@ -60,8 +77,9 @@ function startAnimations(
     const value = animateValues[key];
     if (!value) continue;
 
-    const descriptor: Descriptor = 
-      typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string'
+    const descriptor: Descriptor =
+      typeof valueOrDescriptor === 'number' ||
+      typeof valueOrDescriptor === 'string'
         ? {
             type: 'timing',
             to: valueOrDescriptor,
@@ -132,18 +150,23 @@ function useEnterAnimations(
     const currentKey = serializeAnimateProp(animateProp);
     const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
     const shouldRestart = isFirstMount || valuesChanged;
-    
+
     if (shouldRestart) {
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
       controllersRef.current = [];
 
       if (animateProp) {
         const computedStyle = window.getComputedStyle(node);
-        
+
         if (isFirstMount) {
           const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
           for (const key of Object.keys(animateProp)) {
-            const initial = getInitialValue(key, currentStyle, node, computedStyle);
+            const initial = getInitialValue(
+              key,
+              currentStyle,
+              node,
+              computedStyle
+            );
             newAnimateValues[key] = new AnimateValue(initial);
           }
           animateValuesRef.current = newAnimateValues;
@@ -157,13 +180,22 @@ function useEnterAnimations(
           );
         }
 
-        startAnimations(animateProp, animateValuesRef.current, controllersRef.current);
+        startAnimations(
+          animateProp,
+          animateValuesRef.current,
+          controllersRef.current
+        );
       }
     }
 
     prevAnimatePropKeyRef.current = currentKey;
     cleanupRef.current.forEach((cleanup) => cleanup());
-    cleanupRef.current = applyStylesToNode(node, currentStyle, animateValuesRef.current, rest);
+    cleanupRef.current = applyStylesToNode(
+      node,
+      currentStyle,
+      animateValuesRef.current,
+      rest
+    );
     hasMountedRef.current = true;
 
     return () => {
@@ -183,30 +215,57 @@ function useEnterAnimations(
 }
 
 function useExitAnimations(
+  nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
   isExitingRef: React.MutableRefObject<boolean>,
-  animateValuesRef: React.MutableRefObject<Record<string, AnimateValue<Primitive>>>,
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >,
   controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
   const presenceContext = useContext(PresenceContext);
+  const exitCleanupRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
-    const { exit: exitProp } = propsRef.current;
-    
-    if (!exitProp || !presenceContext?.isExiting || isExitingRef.current) return;
+    const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
+    const node = nodeRef.current;
+
+    if (
+      !exitProp ||
+      !presenceContext?.isExiting ||
+      isExitingRef.current ||
+      !node
+    )
+      return;
 
     isExitingRef.current = true;
     controllersRef.current.forEach((ctrl) => ctrl.cancel());
     controllersRef.current = [];
 
-    setupExitAnimations({
+    // Clean up any previous exit subscriptions
+    exitCleanupRef.current.forEach((cleanup) => cleanup());
+    exitCleanupRef.current = [];
+
+    // Setup exit animations and get cleanup subscriptions
+    exitCleanupRef.current = setupExitAnimations({
       exitProp,
       animateValues: animateValuesRef.current,
       controllers: controllersRef.current,
       onExitComplete: () => {
+        // Clean up subscriptions when exit completes
+        exitCleanupRef.current.forEach((cleanup) => cleanup());
+        exitCleanupRef.current = [];
         presenceContext.onExitComplete();
       },
+      node,
+      style: currentStyle,
     });
+
+    return () => {
+      // Clean up on unmount or when exiting state changes
+      exitCleanupRef.current.forEach((cleanup) => cleanup());
+      exitCleanupRef.current = [];
+    };
   }, [presenceContext?.isExiting]);
 }
 
@@ -216,7 +275,9 @@ function useStateAnimations(
   hover: AnimateProp | undefined,
   press: AnimateProp | undefined,
   focus: AnimateProp | undefined,
-  animateValuesRef: React.MutableRefObject<Record<string, AnimateValue<Primitive>>>
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >
 ) {
   const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const initialValuesRef = useRef<Record<string, Primitive>>({});
@@ -372,6 +433,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     );
 
     useExitAnimations(
+      nodeRef,
       propsRef,
       isExitingRef,
       animateValuesRef,
@@ -387,7 +449,14 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
-    const { animate: _, exit: __, hover: ___, press: ____, focus: _____, ...domProps } = props;
+    const {
+      animate: _,
+      exit: __,
+      hover: ___,
+      press: ____,
+      focus: _____,
+      ...domProps
+    } = props;
 
     return createElement(tag, {
       ...domProps,

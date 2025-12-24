@@ -1,19 +1,14 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import {
   animate,
   Presence,
   withSpring,
   withTiming,
   withSequence,
+  withDelay,
 } from 'react-ui-animate';
 
 const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
-  // Auto-dismiss after 3 seconds
-  useEffect(() => {
-    const timer = setTimeout(() => onEnd(id), 4000);
-    return () => clearTimeout(timer);
-  }, [id, onEnd]);
-
   return (
     <animate.div
       style={{
@@ -58,8 +53,12 @@ const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
         }}
         animate={{
           width: withSequence([
+            withDelay(500),
             withTiming('0%', { duration: 0 }),
-            withTiming('100%', { duration: 3000 }),
+            withTiming('100%', {
+              duration: 3000,
+              onComplete: () => onEnd(id),
+            }),
           ]),
         }}
       />
