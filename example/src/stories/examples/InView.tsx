@@ -56,13 +56,13 @@ const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
         translateY: 100,
         rotate: -10,
       }}
-      inView={{
+      view={{
         scale: withSpring(1, { stiffness: 200, damping: 20 }),
         opacity: withTiming(1, { duration: 600 }),
         translateY: withSpring(0, { stiffness: 200, damping: 20 }),
         rotate: withSpring(0, { stiffness: 200, damping: 20 }),
       }}
-      inViewOptions={{ threshold: 0.3, once: true }}
+      viewOptions={{ threshold: 0.3, once: true }}
     >
       <animate.div
         style={{
@@ -78,11 +78,11 @@ const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
           scale: 0,
           rotate: 180,
         }}
-        inView={{
+        view={{
           scale: withSpring(1, { stiffness: 300, damping: 20 }),
           rotate: withSpring(0, { stiffness: 200, damping: 15 }),
         }}
-        inViewOptions={{ threshold: 0.3, once: true }}
+        viewOptions={{ threshold: 0.3, once: true }}
       >
         {feature.icon}
       </animate.div>
@@ -127,11 +127,11 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
         scale: 0,
         opacity: 0,
       }}
-      inView={{
+      view={{
         scale: withSpring(1, { stiffness: 200, damping: 20 }),
         opacity: withTiming(1, { duration: 400 }),
       }}
-      inViewOptions={{ threshold: 0.5, once: true }}
+      viewOptions={{ threshold: 0.5, once: true }}
     >
       <animate.div
         style={{
@@ -141,10 +141,10 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
           marginBottom: 8,
           scale: 0,
         }}
-        inView={{
+        view={{
           scale: withSpring(1, { stiffness: 300, damping: 15 }),
         }}
-        inViewOptions={{ threshold: 0.5, once: true }}
+        viewOptions={{ threshold: 0.5, once: true }}
       >
         {value}+
       </animate.div>
@@ -175,11 +175,11 @@ const TextReveal: React.FC<{ text: string; delay?: number }> = ({
         opacity: 0,
         translateY: 50,
       }}
-      inView={{
+      view={{
         opacity: withTiming(1, { duration: 800 }),
         translateY: withSpring(0, { stiffness: 200, damping: 20 }),
       }}
-      inViewOptions={{ threshold: 0.5, once: true }}
+      viewOptions={{ threshold: 0.5, once: true }}
     >
       {text}
     </animate.h2>
@@ -210,7 +210,7 @@ const Example: React.FC = () => {
             maxWidth: 600,
           }}
         >
-          Elements animate smoothly as they enter the viewport using the inView
+          Elements animate smoothly as they enter the viewport using the view
           prop
         </p>
       </div>

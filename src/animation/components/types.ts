@@ -54,8 +54,8 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   | 'hover'
   | 'press'
   | 'focus'
-  | 'inView'
-  | 'inViewOptions'
+  | 'view'
+  | 'viewOptions'
 > & {
   style?: AnimateStyle;
   /**
@@ -81,11 +81,11 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   /**
    * Animations or styles to apply when the element enters the viewport.
    */
-  inView?: AnimateProp;
+  view?: AnimateProp;
   /**
-   * Options for the IntersectionObserver used by inView animations.
+   * Options for the IntersectionObserver used by view animations.
    */
-  inViewOptions?: UseInViewOptions;
+  viewOptions?: UseInViewOptions;
 };
 
 export function combineRefs<T>(

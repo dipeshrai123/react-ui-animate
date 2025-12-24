@@ -301,21 +301,21 @@ function useExitAnimations(
   }, [presenceContext?.isExiting, presenceContext]);
 }
 
-function useInViewAnimations(
+function useViewAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
-  inView: AnimateProp | undefined,
-  inViewOptions: UseInViewOptions | undefined,
+  view: AnimateProp | undefined,
+  viewOptions: UseInViewOptions | undefined,
   animateValuesRef: React.MutableRefObject<
     Record<string, AnimateValue<Primitive>>
   >
 ) {
   const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const initialValuesRef = useRef<Record<string, Primitive>>({});
-  const isInView = useInView(nodeRef, inViewOptions || {});
+  const isInView = useInView(nodeRef, viewOptions || {});
 
-  const applyInViewAnimationWrapper = (isActive: boolean) => {
-    if (!inView) return;
+  const applyViewAnimationWrapper = (isActive: boolean) => {
+    if (!view) return;
 
     const node = nodeRef.current;
     if (!node) return;
@@ -333,20 +333,20 @@ function useInViewAnimations(
       cleanup: [],
     };
 
-    applyStateAnimation(inView, isActive, context);
+    applyStateAnimation(view, isActive, context);
   };
 
   useEffect(() => {
-    if (!inView) return;
+    if (!view) return;
 
-    // Apply animation based on inView state
-    applyInViewAnimationWrapper(isInView);
+    // Apply animation based on view state
+    applyViewAnimationWrapper(isInView);
 
     return () => {
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
     };
-  }, [isInView, inView]);
+  }, [isInView, view]);
 
   useEffect(() => {
     return () => {
@@ -554,11 +554,11 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
-    useInViewAnimations(
+    useViewAnimations(
       nodeRef,
       propsRef,
-      props.inView,
-      props.inViewOptions,
+      props.view,
+      props.viewOptions,
       animateValuesRef
     );
 
@@ -568,8 +568,8 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       hover: ___,
       press: ____,
       focus: _____,
-      inView: ______,
-      inViewOptions: _______,
+      view: ______,
+      viewOptions: _______,
       style,
       ...restProps
     } = props;
