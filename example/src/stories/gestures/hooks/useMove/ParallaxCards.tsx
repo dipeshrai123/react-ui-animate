@@ -3,7 +3,7 @@ import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
 
 /**
  * Real-world example: Parallax Cards
- * 
+ *
  * This demonstrates useMove for creating parallax effects:
  * - Multiple layers moving at different speeds
  * - Creates depth and visual interest
@@ -11,7 +11,7 @@ import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
  */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Different spring configs for different layers
   const [layer1X, setLayer1X] = useValue(0);
   const [layer1Y, setLayer1Y] = useValue(0);
@@ -39,26 +39,24 @@ const Example = () => {
     setLayer3Y(withSpring(deltaY * 0.5, { stiffness: 100, damping: 15 }));
   });
 
-  const Card = ({ 
-    x, 
-    y, 
-    color, 
-    emoji, 
-    title, 
-    zIndex 
-  }: { 
-    x: any; 
-    y: any; 
-    color: string; 
-    emoji: string; 
+  const Card = ({
+    x,
+    y,
+    color,
+    emoji,
+    title,
+    zIndex,
+  }: {
+    x: any;
+    y: any;
+    color: string;
+    emoji: string;
     title: string;
     zIndex: number;
   }) => (
     <animate.div
       style={{
         position: 'absolute',
-        top: '50%',
-        left: '50%',
         width: 280,
         height: 200,
         backgroundColor: color,
@@ -71,8 +69,8 @@ const Example = () => {
         justifyContent: 'center',
         translateX: x,
         translateY: y,
-        left: -140,
-        top: -100,
+        left: 'calc(50% - 140px)',
+        top: 'calc(50% - 100px)',
         zIndex,
       }}
     >
@@ -118,7 +116,7 @@ const Example = () => {
         title="Foreground"
         zIndex={3}
       />
-      
+
       <div
         style={{
           position: 'absolute',
@@ -139,4 +137,3 @@ const Example = () => {
 };
 
 export default Example;
-
