@@ -1,13 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './ScrollTrigger';
+import Example from './ZoomOnWheel';
 
 const meta = {
-  title: 'Gestures/hooks/useScroll',
+  title: 'Gestures/Hooks/useWheel/Zoom on Wheel',
   component: Example,
+  parameters: {
+    layout: 'fullscreen',
+  },
 } satisfies Meta<typeof Example>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ScrollTrigger: Story = {};
+export const ZoomOnWheel: Story = {};
+
