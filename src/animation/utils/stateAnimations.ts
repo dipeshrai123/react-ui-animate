@@ -26,7 +26,15 @@ export function applyStateAnimation(
 ) {
   if (!stateProp) return;
 
-  const { node, style, computedStyle, animateValues, initialValues, stateControllers, cleanup } = context;
+  const {
+    node,
+    style,
+    computedStyle,
+    animateValues,
+    initialValues,
+    stateControllers,
+    cleanup,
+  } = context;
 
   // Cancel any existing state animations
   stateControllers.forEach((ctrl) => ctrl.cancel());
@@ -38,22 +46,23 @@ export function applyStateAnimation(
   for (const [key, valueOrDescriptor] of Object.entries(stateProp)) {
     // Get or create AnimateValue for this property
     let value = animateValues[key];
-    
+
     if (!value) {
       // Create a new AnimateValue if it doesn't exist
       const initial = getInitialValue(key, style, node, computedStyle);
       value = new AnimateValue(initial);
       animateValues[key] = value;
-      
+
       // Store the initial value immediately for state animations
       initialValues[key] = initial;
-      
+
       // Manually subscribe to the new AnimateValue
       if (isTransformKey(key)) {
         // For transforms, we need to re-render all transforms
         // So we'll trigger a full transform update
         const render = () => {
-          const transformKeyList = Object.keys(animateValues).filter(isTransformKey);
+          const transformKeyList =
+            Object.keys(animateValues).filter(isTransformKey);
           if (transformKeyList.length > 0) {
             const parts = transformKeyList.map((k) => {
               const v = animateValues[k];
@@ -61,11 +70,16 @@ export function applyStateAnimation(
               const cur = v.current;
               const str = String(cur);
               const numMatch = str.match(/-?\d+(\.\d+)?/)?.[0] ?? '0';
-              const unitMatch = str.match(/px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax|deg/)?.[0] ?? '';
+              const unitMatch =
+                str.match(
+                  /px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax|deg/
+                )?.[0] ?? '';
               let unit = unitMatch;
               if (!unit) {
-                if (k === 'perspective' || k.startsWith('translate')) unit = 'px';
-                else if (k.startsWith('rotate') || k.startsWith('skew')) unit = 'deg';
+                if (k === 'perspective' || k.startsWith('translate'))
+                  unit = 'px';
+                else if (k.startsWith('rotate') || k.startsWith('skew'))
+                  unit = 'deg';
               }
               return `${k}(${numMatch}${unit})`;
             });
@@ -78,10 +92,11 @@ export function applyStateAnimation(
         // For normal styles, subscribe directly
         newSubscriptions.push(
           value.subscribe((v) => {
-            const css = typeof v === 'number' && 
+            const css =
+              typeof v === 'number' &&
               !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
-              ? `${v}px` 
-              : String(v);
+                ? `${v}px`
+                : String(v);
             (node.style as any)[key] = css;
           })
         );
@@ -96,13 +111,22 @@ export function applyStateAnimation(
       }
     }
 
-    // Check if it's a raw primitive (set immediately) or a descriptor (animate)
-    const isPrimitive = typeof valueOrDescriptor === 'number' || typeof valueOrDescriptor === 'string';
-    
+    // Check if it's a raw primitive (animate with spring) or a descriptor (animate)
+    const isPrimitive =
+      typeof valueOrDescriptor === 'number' ||
+      typeof valueOrDescriptor === 'string';
+
     if (isActive) {
       if (isPrimitive) {
-        // Set immediately without animation
-        value.set(valueOrDescriptor);
+        // Animate to the state animation target with spring
+        const springDescriptor: Descriptor = {
+          type: 'spring',
+          to: valueOrDescriptor,
+          options: {},
+        };
+        const controller = buildAnimation(value, springDescriptor);
+        stateControllers.push(controller);
+        controller.start();
       } else {
         // Animate to the state animation target
         const controller = buildAnimation(value, valueOrDescriptor);
@@ -112,21 +136,26 @@ export function applyStateAnimation(
     } else {
       // Revert to initial value
       const initialValue = initialValues[key];
-      
+
       if (isPrimitive) {
-        // If the original was a primitive (set immediately), revert immediately too
-        value.set(initialValue);
-      } else {
-        // Animate back to initial value
+        // Animate back to initial value with spring
         const revertDescriptor: Descriptor = {
-          type: 'timing',
+          type: 'spring',
           to: initialValue,
-          options: {
-            duration: 200,
-            easing: (t) => t * (2 - t), // ease-out
-          },
+          options: {},
         };
-        
+
+        const controller = buildAnimation(value, revertDescriptor);
+        stateControllers.push(controller);
+        controller.start();
+      } else {
+        // Animate back to initial value with spring (consistent behavior)
+        const revertDescriptor: Descriptor = {
+          type: 'spring',
+          to: initialValue,
+          options: {},
+        };
+
         const controller = buildAnimation(value, revertDescriptor);
         stateControllers.push(controller);
         controller.start();
@@ -137,4 +166,3 @@ export function applyStateAnimation(
   // Add new subscriptions to cleanup
   cleanup.push(...newSubscriptions);
 }
-

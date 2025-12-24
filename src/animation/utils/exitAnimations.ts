@@ -73,16 +73,14 @@ export function setupExitAnimations(
       continue;
     }
 
-    // Convert primitive values to timing descriptors for convenience
+    // Convert primitive values to spring descriptors for convenience
     const baseDescriptor: Descriptor =
       typeof valueOrDescriptor === 'number' ||
       typeof valueOrDescriptor === 'string'
         ? {
-            type: 'timing',
+            type: 'spring',
             to: valueOrDescriptor,
-            options: {
-              duration: 300,
-            },
+            options: {},
           }
         : valueOrDescriptor;
 

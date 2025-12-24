@@ -22,6 +22,9 @@ const Example: React.FC = () => {
         <Presence>
           {mounted && (
             <animate.div
+              hover={{
+                scale: withSpring(1.1),
+              }}
               onClick={() => setMounted(false)}
               style={{
                 width: 100,
@@ -29,7 +32,7 @@ const Example: React.FC = () => {
                 backgroundColor: 'red',
               }}
               animate={{
-                width: 200,
+                width: 500,
                 height: 200,
                 backgroundColor: 'blue',
               }}

@@ -81,9 +81,9 @@ function startAnimations(
       typeof valueOrDescriptor === 'number' ||
       typeof valueOrDescriptor === 'string'
         ? {
-            type: 'timing',
+            type: 'spring',
             to: valueOrDescriptor,
-            options: { duration: 300 },
+            options: {},
           }
         : valueOrDescriptor;
 
