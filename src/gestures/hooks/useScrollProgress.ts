@@ -2,8 +2,8 @@ import { RefObject, useEffect, useRef } from 'react';
 import { AnimateValue } from '../../animation';
 
 import { useValue, withSpring } from '../../animation';
-import { ScrollGesture } from '../../gestures/controllers/ScrollGesture';
-import { useRecognizer } from '../../gestures/hooks/useRecognizer';
+import { ScrollGesture } from '../controllers/ScrollGesture';
+import { useRecognizer } from './useRecognizer';
 import { type Descriptor } from '../../animation/types';
 
 type SupportedEdgeUnit = 'px' | 'vw' | 'vh' | '%';

@@ -87,7 +87,7 @@ const Example: React.FC = () => {
   return (
     <div style={{ padding: 40 }}>
       <h1 style={{ marginBottom: 30 }}>Declarative Animate Prop</h1>
-      
+
       <div style={{ marginBottom: 40 }}>
         <h2 style={{ marginBottom: 20 }}>Basic Timing Animation</h2>
         <animate.div
@@ -215,4 +215,3 @@ const Example: React.FC = () => {
 };
 
 export default Example;
-
