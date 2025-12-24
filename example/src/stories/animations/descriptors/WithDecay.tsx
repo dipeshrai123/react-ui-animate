@@ -36,7 +36,7 @@ const Example: React.FC = () => {
         <h2 style={{ marginBottom: 20 }}>Different Velocities</h2>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
-            key={trigger}
+            key={`velocity-0.5-${trigger}`}
             style={{
               width: 80,
               height: 80,
@@ -49,7 +49,7 @@ const Example: React.FC = () => {
             }}
           />
           <animate.div
-            key={trigger}
+            key={`velocity-1-${trigger}`}
             style={{
               width: 80,
               height: 80,
@@ -62,7 +62,7 @@ const Example: React.FC = () => {
             }}
           />
           <animate.div
-            key={trigger}
+            key={`velocity-2-${trigger}`}
             style={{
               width: 80,
               height: 80,
