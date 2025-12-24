@@ -1,10 +1,16 @@
-import type { RefObject, CSSProperties, AllHTMLAttributes, SVGAttributes } from 'react';
+import type {
+  RefObject,
+  CSSProperties,
+  AllHTMLAttributes,
+  SVGAttributes,
+} from 'react';
 import type { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
+import type { UseInViewOptions } from '../../hooks/observers/useInView';
 
 // Helper type to accept any AnimateValue with a compatible type
-export type AnimateValueCompatible = 
+export type AnimateValueCompatible =
   | AnimateValue<number>
   | AnimateValue<string>
   | AnimateValue<number | string>;
@@ -33,9 +39,7 @@ export type AnimateHTMLAttributes<T> = {
 };
 
 export type AnimateSVGAttributes<T> = {
-  [K in keyof SVGAttributes<T>]?:
-    | SVGAttributes<T>[K]
-    | AnimateValueCompatible;
+  [K in keyof SVGAttributes<T>]?: SVGAttributes<T>[K] | AnimateValueCompatible;
 };
 
 export type AnimateProp = {
@@ -44,7 +48,14 @@ export type AnimateProp = {
 
 export type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
-  'style' | 'animate' | 'exit' | 'hover' | 'press' | 'focus'
+  | 'style'
+  | 'animate'
+  | 'exit'
+  | 'hover'
+  | 'press'
+  | 'focus'
+  | 'inView'
+  | 'inViewOptions'
 > & {
   style?: AnimateStyle;
   /**
@@ -67,6 +78,14 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * Animations or styles to apply when the element is focused.
    */
   focus?: AnimateProp;
+  /**
+   * Animations or styles to apply when the element enters the viewport.
+   */
+  inView?: AnimateProp;
+  /**
+   * Options for the IntersectionObserver used by inView animations.
+   */
+  inViewOptions?: UseInViewOptions;
 };
 
 export function combineRefs<T>(
@@ -82,4 +101,3 @@ export function combineRefs<T>(
     }
   };
 }
-

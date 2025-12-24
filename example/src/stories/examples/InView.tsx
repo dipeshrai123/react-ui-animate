@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { animate, withSpring, withTiming, useInView } from 'react-ui-animate';
+import React from 'react';
+import { animate, withSpring, withTiming } from 'react-ui-animate';
 
 interface Feature {
   id: number;
@@ -40,49 +40,12 @@ const features: Feature[] = [
   },
 ];
 
-// Custom hook to track scroll direction
-const useScrollDirection = () => {
-  const [scrollDirection, setScrollDirection] = useState<'down' | 'up'>('down');
-  const lastScrollY = useRef(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      if (currentScrollY > lastScrollY.current) {
-        setScrollDirection('down');
-      } else if (currentScrollY < lastScrollY.current) {
-        setScrollDirection('up');
-      }
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  return scrollDirection;
-};
-
 const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
   feature,
   index,
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { threshold: 0.3 });
-  const scrollDirection = useScrollDirection();
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (inView && scrollDirection === 'down' && !hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [inView, scrollDirection, hasAnimated]);
-
-  const shouldAnimate = hasAnimated || (inView && scrollDirection === 'down');
-
   return (
     <animate.div
-      ref={ref}
       style={{
         backgroundColor: 'white',
         borderRadius: 20,
@@ -93,18 +56,13 @@ const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
         translateY: 100,
         rotate: -10,
       }}
-      animate={{
-        scale: shouldAnimate
-          ? withSpring(1, { stiffness: 200, damping: 20 })
-          : 0.8,
-        opacity: shouldAnimate ? withTiming(1, { duration: 600 }) : 0,
-        translateY: shouldAnimate
-          ? withSpring(0, { stiffness: 200, damping: 20 })
-          : 100,
-        rotate: shouldAnimate
-          ? withSpring(0, { stiffness: 200, damping: 20 })
-          : -10,
+      inView={{
+        scale: withSpring(1, { stiffness: 200, damping: 20 }),
+        opacity: withTiming(1, { duration: 600 }),
+        translateY: withSpring(0, { stiffness: 200, damping: 20 }),
+        rotate: withSpring(0, { stiffness: 200, damping: 20 }),
       }}
+      inViewOptions={{ threshold: 0.3, once: true }}
     >
       <animate.div
         style={{
@@ -117,17 +75,14 @@ const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
           justifyContent: 'center',
           fontSize: 40,
           marginBottom: 24,
-          scale: shouldAnimate ? 1 : 0,
-          rotate: shouldAnimate ? 0 : 180,
+          scale: 0,
+          rotate: 180,
         }}
-        animate={{
-          scale: shouldAnimate
-            ? withSpring(1, { stiffness: 300, damping: 20 })
-            : withSpring(0, { stiffness: 300, damping: 20 }),
-          rotate: shouldAnimate
-            ? withSpring(0, { stiffness: 200, damping: 15 })
-            : withSpring(180, { stiffness: 200, damping: 15 }),
+        inView={{
+          scale: withSpring(1, { stiffness: 300, damping: 20 }),
+          rotate: withSpring(0, { stiffness: 200, damping: 15 }),
         }}
+        inViewOptions={{ threshold: 0.3, once: true }}
       >
         {feature.icon}
       </animate.div>
@@ -161,22 +116,8 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
   label,
   delay = 0,
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { threshold: 0.5 });
-  const scrollDirection = useScrollDirection();
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (inView && scrollDirection === 'down' && !hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [inView, scrollDirection, hasAnimated]);
-
-  const shouldAnimate = hasAnimated || (inView && scrollDirection === 'down');
-
   return (
     <animate.div
-      ref={ref}
       style={{
         backgroundColor: 'white',
         borderRadius: 16,
@@ -186,12 +127,11 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
         scale: 0,
         opacity: 0,
       }}
-      animate={{
-        scale: shouldAnimate
-          ? withSpring(1, { stiffness: 200, damping: 20 })
-          : withSpring(0, { stiffness: 200, damping: 20 }),
-        opacity: shouldAnimate ? withTiming(1, { duration: 400 }) : 0,
+      inView={{
+        scale: withSpring(1, { stiffness: 200, damping: 20 }),
+        opacity: withTiming(1, { duration: 400 }),
       }}
+      inViewOptions={{ threshold: 0.5, once: true }}
     >
       <animate.div
         style={{
@@ -199,13 +139,12 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
           fontWeight: 700,
           color: '#3399ff',
           marginBottom: 8,
-          scale: shouldAnimate ? 1 : 0,
+          scale: 0,
         }}
-        animate={{
-          scale: shouldAnimate
-            ? withSpring(1, { stiffness: 300, damping: 15 })
-            : withSpring(0, { stiffness: 300, damping: 15 }),
+        inView={{
+          scale: withSpring(1, { stiffness: 300, damping: 15 }),
         }}
+        inViewOptions={{ threshold: 0.5, once: true }}
       >
         {value}+
       </animate.div>
@@ -226,22 +165,8 @@ const TextReveal: React.FC<{ text: string; delay?: number }> = ({
   text,
   delay = 0,
 }) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { threshold: 0.5 });
-  const scrollDirection = useScrollDirection();
-  const [hasAnimated, setHasAnimated] = useState(false);
-
-  useEffect(() => {
-    if (inView && scrollDirection === 'down' && !hasAnimated) {
-      setHasAnimated(true);
-    }
-  }, [inView, scrollDirection, hasAnimated]);
-
-  const shouldAnimate = hasAnimated || (inView && scrollDirection === 'down');
-
   return (
     <animate.h2
-      ref={ref}
       style={{
         fontSize: 48,
         fontWeight: 700,
@@ -250,12 +175,11 @@ const TextReveal: React.FC<{ text: string; delay?: number }> = ({
         opacity: 0,
         translateY: 50,
       }}
-      animate={{
-        opacity: shouldAnimate ? withTiming(1, { duration: 800 }) : 0,
-        translateY: shouldAnimate
-          ? withSpring(0, { stiffness: 200, damping: 20 })
-          : 50,
+      inView={{
+        opacity: withTiming(1, { duration: 800 }),
+        translateY: withSpring(0, { stiffness: 200, damping: 20 }),
       }}
+      inViewOptions={{ threshold: 0.5, once: true }}
     >
       {text}
     </animate.h2>
@@ -286,7 +210,8 @@ const Example: React.FC = () => {
             maxWidth: 600,
           }}
         >
-          Elements animate smoothly as they enter the viewport using useInView
+          Elements animate smoothly as they enter the viewport using the inView
+          prop
         </p>
       </div>
 

@@ -25,6 +25,8 @@ import {
 import { setupExitAnimations } from '../utils/exitAnimations';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
+import { useInView } from '../../hooks/observers/useInView';
+import type { UseInViewOptions } from '../../hooks/observers/useInView';
 
 function serializeAnimateProp(prop: AnimateProp | undefined): string {
   if (!prop) return '';
@@ -299,6 +301,61 @@ function useExitAnimations(
   }, [presenceContext?.isExiting, presenceContext]);
 }
 
+function useInViewAnimations(
+  nodeRef: React.RefObject<HTMLElement>,
+  propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
+  inView: AnimateProp | undefined,
+  inViewOptions: UseInViewOptions | undefined,
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >
+) {
+  const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
+  const initialValuesRef = useRef<Record<string, Primitive>>({});
+  const isInView = useInView(nodeRef, inViewOptions || {});
+
+  const applyInViewAnimationWrapper = (isActive: boolean) => {
+    if (!inView) return;
+
+    const node = nodeRef.current;
+    if (!node) return;
+
+    const computedStyle = window.getComputedStyle(node);
+    const { style = {} } = propsRef.current;
+
+    const context: StateAnimationContext = {
+      node,
+      style,
+      computedStyle,
+      animateValues: animateValuesRef.current,
+      initialValues: initialValuesRef.current,
+      stateControllers: stateControllersRef.current,
+      cleanup: [],
+    };
+
+    applyStateAnimation(inView, isActive, context);
+  };
+
+  useEffect(() => {
+    if (!inView) return;
+
+    // Apply animation based on inView state
+    applyInViewAnimationWrapper(isInView);
+
+    return () => {
+      stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      stateControllersRef.current = [];
+    };
+  }, [isInView, inView]);
+
+  useEffect(() => {
+    return () => {
+      stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      stateControllersRef.current = [];
+    };
+  }, []);
+}
+
 function useStateAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
@@ -497,12 +554,22 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
+    useInViewAnimations(
+      nodeRef,
+      propsRef,
+      props.inView,
+      props.inViewOptions,
+      animateValuesRef
+    );
+
     const {
       animate: _,
       exit: __,
       hover: ___,
       press: ____,
       focus: _____,
+      inView: ______,
+      inViewOptions: _______,
       style,
       ...restProps
     } = props;
