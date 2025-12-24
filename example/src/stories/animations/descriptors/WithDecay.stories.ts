@@ -1,9 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-
-import Example from './StateAnimations';
+import Example from './WithDecay';
 
 const meta = {
-  title: 'Examples/StateAnimations',
+  title: 'Animations/Descriptors/withDecay',
   component: Example,
 } satisfies Meta<typeof Example>;
 
