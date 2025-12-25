@@ -1,9 +1,15 @@
-import { useRef } from 'react';
-import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
+import { useRef, useState, useEffect, useMemo } from 'react';
+import {
+  animate,
+  useMove,
+  useValue,
+  withSpring,
+  combine,
+} from 'react-ui-animate';
 
 /**
  * Real-world example: Magnetic Button
- * 
+ *
  * This demonstrates useMove for creating a magnetic button effect:
  * - Button follows mouse when nearby
  * - Creates an engaging interactive element
@@ -13,38 +19,81 @@ const Example = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [offsetX, setOffsetX] = useValue(0);
   const [offsetY, setOffsetY] = useValue(0);
-  const [scale, setScale] = useValue(1);
+  const [magneticScale, setMagneticScale] = useValue(1);
+  const [hoverScale, setHoverScale] = useValue(1);
+  const [pressScale, setPressScale] = useValue(1);
+  const [isHovered, setIsHovered] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+
+  // Store the initial button center position to avoid feedback loop
+  const [centerPoint, setCenterPoint] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (buttonRef.current && !centerPoint) {
+      const buttonRect = buttonRef.current.getBoundingClientRect();
+      setCenterPoint({
+        x: buttonRect.left + buttonRect.width / 2,
+        y: buttonRect.top + buttonRect.height / 2,
+      });
+    }
+  }, [centerPoint]);
 
   useMove(window, ({ offset }) => {
-    if (!buttonRef.current) return;
+    if (!centerPoint) return;
 
-    const buttonRect = buttonRef.current.getBoundingClientRect();
-    const buttonCenterX = buttonRect.left + buttonRect.width / 2;
-    const buttonCenterY = buttonRect.top + buttonRect.height / 2;
-
-    const distanceX = offset.x - buttonCenterX;
-    const distanceY = offset.y - buttonCenterY;
+    const distanceX = offset.x - centerPoint.x;
+    const distanceY = offset.y - centerPoint.y;
     const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
 
     // Magnetic effect radius
     const radius = 150;
-    
+
     if (distance < radius) {
       // Calculate pull strength (stronger when closer)
       const strength = 1 - distance / radius;
       const pullX = distanceX * strength * 0.3;
       const pullY = distanceY * strength * 0.3;
-      
+
       setOffsetX(withSpring(pullX, { stiffness: 400, damping: 30 }));
       setOffsetY(withSpring(pullY, { stiffness: 400, damping: 30 }));
-      setScale(withSpring(1 + strength * 0.1, { stiffness: 400, damping: 30 }));
+      setMagneticScale(
+        withSpring(1 + strength * 0.1, { stiffness: 400, damping: 30 })
+      );
     } else {
       // Return to center when mouse is far
       setOffsetX(withSpring(0, { stiffness: 300, damping: 25 }));
       setOffsetY(withSpring(0, { stiffness: 300, damping: 25 }));
-      setScale(withSpring(1, { stiffness: 300, damping: 25 }));
+      setMagneticScale(withSpring(1, { stiffness: 300, damping: 25 }));
     }
   });
+
+  // Combine all scales multiplicatively using combine utility
+  const combinedScale = useMemo(
+    () =>
+      combine([magneticScale, hoverScale, pressScale], (m, h, p) => m * h * p),
+    [magneticScale, hoverScale, pressScale]
+  );
+
+  // Handle hover state
+  useEffect(() => {
+    if (isHovered) {
+      setHoverScale(withSpring(1.05, { stiffness: 400, damping: 25 }));
+    } else {
+      setHoverScale(withSpring(1, { stiffness: 400, damping: 25 }));
+    }
+  }, [isHovered, setHoverScale]);
+
+  // Handle press state
+  useEffect(() => {
+    if (isPressed) {
+      setPressScale(withSpring(0.95, { stiffness: 400, damping: 25 }));
+    } else {
+      setPressScale(withSpring(1, { stiffness: 400, damping: 25 }));
+    }
+  }, [isPressed, setPressScale]);
 
   return (
     <div
@@ -72,18 +121,19 @@ const Example = () => {
           boxShadow: '0 10px 30px rgba(99, 102, 241, 0.3)',
           translateX: offsetX,
           translateY: offsetY,
-          scale,
+          scale: combinedScale,
         }}
-        hover={{
-          scale: withSpring(1.05, { stiffness: 400, damping: 25 }),
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => {
+          setIsHovered(false);
+          setIsPressed(false);
         }}
-        press={{
-          scale: withSpring(0.95, { stiffness: 400, damping: 25 }),
-        }}
+        onMouseDown={() => setIsPressed(true)}
+        onMouseUp={() => setIsPressed(false)}
       >
         Hover Near Me
       </animate.button>
-      
+
       <div
         style={{
           position: 'absolute',
@@ -103,4 +153,3 @@ const Example = () => {
 };
 
 export default Example;
-
