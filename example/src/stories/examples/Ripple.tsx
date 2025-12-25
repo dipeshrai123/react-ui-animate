@@ -1,5 +1,6 @@
 import { MouseEvent, useLayoutEffect, useState } from 'react';
 import { animate, useValue, withTiming } from 'react-ui-animate';
+import { ExampleLayout } from '../animations/shared';
 
 import '../../index.css';
 
@@ -78,30 +79,49 @@ function Example() {
   };
 
   return (
-    <button
-      onClick={addRipple}
-      style={{
-        backgroundColor: 'teal',
-        border: '2px solid #497d52',
-        position: 'relative',
-        overflow: 'hidden',
-        padding: '12px 16px',
-        borderRadius: 4,
-        color: 'white',
-        cursor: 'pointer',
-      }}
+    <ExampleLayout
+      title="Ripple Effect Button"
+      description="A button with beautiful ripple effects that expand from the click position. Each click creates a new ripple animation."
+      onRestart={() => setRipples([])}
+      showRestartButton={false}
     >
-      Click me
-      {ripples.map(({ id, x, y }) => (
-        <Ripple
-          key={id}
-          x={x}
-          y={y}
-          id={id}
-          onRemove={(id) => removeRipple(id)}
-        />
-      ))}
-    </button>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
+        <button
+          onClick={addRipple}
+          style={{
+            backgroundColor: '#3399ff',
+            border: 'none',
+            position: 'relative',
+            overflow: 'hidden',
+            padding: '16px 32px',
+            borderRadius: 8,
+            color: 'white',
+            cursor: 'pointer',
+            fontSize: 16,
+            fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(51, 153, 255, 0.3)',
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          Click Me
+          {ripples.map(({ id, x, y }) => (
+            <Ripple
+              key={id}
+              x={x}
+              y={y}
+              id={id}
+              onRemove={(id) => removeRipple(id)}
+            />
+          ))}
+        </button>
+      </div>
+    </ExampleLayout>
   );
 }
 

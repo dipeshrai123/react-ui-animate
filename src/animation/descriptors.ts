@@ -17,6 +17,7 @@ export const withSpring = (
     stiffness: opts?.stiffness ?? Config.Spring.EASE.stiffness,
     damping: opts?.damping ?? Config.Spring.EASE.damping,
     mass: opts?.mass ?? Config.Spring.EASE.mass,
+    from: opts?.from,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,
@@ -32,6 +33,7 @@ export const withTiming = (
   options: {
     duration: opts?.duration,
     easing: opts?.easing,
+    from: opts?.from,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,
@@ -46,6 +48,7 @@ export const withDecay = (
   options: {
     velocity,
     clamp: opts?.clamp,
+    elastic: opts?.elastic,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,

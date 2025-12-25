@@ -10,4 +10,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Svg: Story = {};
+export const Default: Story = {};
