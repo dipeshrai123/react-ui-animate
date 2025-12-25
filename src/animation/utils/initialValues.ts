@@ -13,6 +13,22 @@ export function getStaticStyleValue(style: any, key: string): Primitive | null {
   
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
+    // Check if it's a complex CSS value (contains spaces, functions, colors, etc.)
+    // These should be kept as strings for proper interpolation
+    // Check this FIRST before trying to parse as number
+    const complexValuePatterns = [
+      /\s/, // Contains spaces (e.g., "0 0 0 rgba(0,0,0,0)")
+      /rgba?\(/, // Contains rgba/rgb functions
+      /hsla?\(/, // Contains hsl/hsla functions
+      /#[0-9a-fA-F]/, // Contains hex colors
+      /linear-gradient|radial-gradient|conic-gradient/, // Contains gradients
+      /calc\(|var\(/, // Contains CSS functions
+    ];
+    
+    if (complexValuePatterns.some(pattern => pattern.test(value))) {
+      return value;
+    }
+    
     // Check if the string has a CSS unit - if so, keep it as a string
     if (/\d+(px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)$/i.test(value)) return value;
     
@@ -29,6 +45,19 @@ export function getDefaultInitialValue(key: string): Primitive {
   if (key === 'scale' || key === 'scaleX' || key === 'scaleY') return 1;
   if (key.startsWith('translate')) return 0;
   if (key.startsWith('rotate')) return 0;
+  
+  // String properties that should default to empty string
+  const stringProperties = [
+    'boxShadow', 'textShadow', 'background', 'backgroundImage',
+    'backgroundPosition', 'backgroundSize', 'border', 'borderColor',
+    'borderImage', 'borderRadius', 'color', 'fill', 'stroke',
+    'filter', 'backdropFilter', 'clipPath', 'mask', 'maskImage'
+  ];
+  
+  if (stringProperties.includes(key)) {
+    return '';
+  }
+  
   return 0;
 }
 
@@ -87,15 +116,32 @@ export function getInitialValue(
     key.replace(/([A-Z])/g, '-$1').toLowerCase()
   );
   if (computedValue) {
+    const trimmed = computedValue.trim();
+    
     // For numeric properties, always parse to number
     if (shouldBeNumeric) {
-      const num = parseFloat(computedValue);
+      const num = parseFloat(trimmed);
       return isNaN(num) ? getDefaultInitialValue(key) : num;
     }
+    
+    // For string properties, convert 'none' to empty string for better interpolation
+    // This allows animating from no value to a value
+    if (trimmed === 'none') {
+      const stringProperties = [
+        'boxShadow', 'textShadow', 'background', 'backgroundImage',
+        'backgroundPosition', 'backgroundSize', 'border', 'borderColor',
+        'borderImage', 'borderRadius', 'color', 'fill', 'stroke',
+        'filter', 'backdropFilter', 'clipPath', 'mask', 'maskImage'
+      ];
+      if (stringProperties.includes(key)) {
+        return '';
+      }
+    }
+    
     // Preserve strings with units for non-numeric properties
-    if (hasUnit(computedValue)) return computedValue.trim();
-    const num = parseFloat(computedValue);
-    return isNaN(num) ? computedValue.trim() : num;
+    if (hasUnit(trimmed)) return trimmed;
+    const num = parseFloat(trimmed);
+    return isNaN(num) ? trimmed : num;
   }
   
   // Use default

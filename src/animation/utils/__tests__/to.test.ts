@@ -30,7 +30,7 @@ describe('CSS-color literal (parseCssColor branch)', () => {
 
   it('interpolates rgba→rgba preserving fractional alpha', () => {
     const fn = to([0, 1], ['rgba(0,0,0,0)', 'rgba(0,0,0,1)']);
-    expect(fn(0.25)).toBe('rgba(0,0,0,0.250)');
+    expect(fn(0.25)).toBe('rgba(0,0,0,0.25)');
     expect(fn(1)).toBe('rgb(0,0,0)'); // alpha=1 collapses to rgb
   });
 });
@@ -99,7 +99,7 @@ describe('edge cases for numeric interpolation', () => {
 describe('color interpolation with alpha between rgb and rgba', () => {
   it('handles rgb to rgba with alpha blending', () => {
     const fn = to([0, 1], ['rgb(100,100,100)', 'rgba(200,200,200,0.5)']);
-    expect(fn(0.5)).toBe('rgba(150,150,150,0.750)');
+    expect(fn(0.5)).toBe('rgba(150,150,150,0.75)');
   });
 
   it('handles alpha collapse when near 1', () => {

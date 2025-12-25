@@ -411,7 +411,120 @@ function interpolateWithFunctionNameSwitch(fromStr: string, toStr: string, p: nu
 // Main Interpolation Function
 // ============================================================================
 
+function parseBoxShadow(shadow: string): { keyword: string; values: Array<{ num: string; unit: string }>; color: string } | null {
+  // Match box-shadow/text-shadow pattern: [keyword]? offsetX offsetY blur [spread]? color
+  // Handles both 3-value (offsetX offsetY blur color) and 4-value (offsetX offsetY blur spread color) formats
+  const shadowMatch = shadow.match(/^(\S+\s+)?(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?\s+(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?\s+(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?(?:\s+(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?)?\s+(.+)$/);
+  if (shadowMatch) {
+    const keyword = shadowMatch[1] || '';
+    const values: Array<{ num: string; unit: string }> = [];
+    
+    // offsetX
+    if (shadowMatch[2]) {
+      values.push({ num: shadowMatch[2], unit: shadowMatch[3] || '' });
+    }
+    // offsetY
+    if (shadowMatch[4]) {
+      values.push({ num: shadowMatch[4], unit: shadowMatch[5] || '' });
+    }
+    // blur
+    if (shadowMatch[6]) {
+      values.push({ num: shadowMatch[6], unit: shadowMatch[7] || '' });
+    }
+    // spread (optional)
+    if (shadowMatch[8]) {
+      values.push({ num: shadowMatch[8], unit: shadowMatch[9] || '' });
+    }
+    
+    const color = shadowMatch[10];
+    return { keyword, values, color };
+  }
+  return null;
+}
+
+function createZeroValueFromTarget(target: string): string {
+  // Try to create a zero-value version of the target structure
+  // For box-shadow/text-shadow: "0 4px 12px rgba(0,0,0,0.3)" -> "0 0px 0px rgba(0,0,0,0)"
+  // Must preserve the exact unit structure (including no unit for first value)
+  
+  const parsed = parseBoxShadow(target);
+  if (parsed) {
+    const { keyword, values, color } = parsed;
+    
+    // Create zero-value version preserving exact unit structure
+    const zeroValues = values.map(v => {
+      // Use "0" (no unit) if original had no unit, otherwise use "0" + unit
+      return v.unit ? `0${v.unit}` : '0';
+    });
+    
+    // Create zero-value version with transparent color
+    const zeroColor = color.replace(/rgba?\([^)]+\)/gi, (match) => {
+      if (match.toLowerCase().includes('rgba')) {
+        return 'rgba(0,0,0,0)';
+      } else if (match.toLowerCase().includes('rgb')) {
+        return 'rgba(0,0,0,0)';
+      }
+      return match;
+    });
+    
+    return `${keyword}${zeroValues.join(' ')} ${zeroColor}`;
+  }
+  
+  // If we can't create a zero version, return empty string
+  return '';
+}
+
 function interpolateString(fromStr: string, toStr: string, p: number): string {
+  // Handle empty string interpolation - create a zero-value version
+  if (!fromStr || fromStr.trim() === '') {
+    const zeroFrom = createZeroValueFromTarget(toStr);
+    if (zeroFrom) {
+      return interpolateString(zeroFrom, toStr, p);
+    }
+    
+    // For other empty string cases, just return the target when p >= threshold
+    if (p >= SWITCH_THRESHOLD) {
+      return toStr;
+    }
+    return fromStr || '';
+  }
+  
+  // Handle reverse case: animating from a value back to empty string
+  if (!toStr || toStr.trim() === '') {
+    // When animating back to empty, interpolate to zero version first, then to empty
+    const zeroTo = createZeroValueFromTarget(fromStr);
+    if (zeroTo) {
+      // Interpolate from current value to zero version
+      const zeroResult = interpolateString(fromStr, zeroTo, Math.min(p * 2, 1));
+      // Once past halfway, start fading to empty
+      if (p >= 0.5) {
+        const emptyProgress = (p - 0.5) * 2; // 0 to 1 from 0.5 to 1.0
+        // Fade the zero version to empty by checking if values are close to zero
+        const zeroMatch = zeroResult.match(/^(\S+\s+)?(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?\s+(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?\s+(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax)?\s+(.+)$/);
+        if (zeroMatch) {
+          const x = Math.abs(parseFloat(zeroMatch[2]));
+          const y = Math.abs(parseFloat(zeroMatch[4]));
+          const z = Math.abs(parseFloat(zeroMatch[6]));
+          const colorMatch = zeroMatch[8].match(/rgba?\((\d+),\s*(\d+),\s*(\d+),\s*([-\d.]+)\)/);
+          const alpha = colorMatch ? Math.abs(parseFloat(colorMatch[4])) : 0;
+          
+          // If all values are close to zero and progress is high, return empty
+          if (x < 0.01 && y < 0.01 && z < 0.01 && alpha < 0.01 && emptyProgress > 0.9) {
+            return '';
+          }
+        }
+        return zeroResult;
+      }
+      return zeroResult;
+    }
+    
+    // For other empty string cases, just return the from value when p < threshold
+    if (p < SWITCH_THRESHOLD) {
+      return fromStr;
+    }
+    return toStr || '';
+  }
+  
   // Simple function interpolation (e.g., translateX(0px) -> translateX(100px))
   const m1 = fromStr.match(SIMPLE_FUNC_RE);
   const m2 = toStr.match(SIMPLE_FUNC_RE);
@@ -428,7 +541,9 @@ function interpolateString(fromStr: string, toStr: string, p: number): string {
     const G = Math.round(g1 + (g2 - g1) * p);
     const B = Math.round(b1 + (b2 - b1) * p);
     const A = a1 + (a2 - a1) * p;
-    return A < 1 ? `rgba(${R},${G},${B},${A.toFixed(3)})` : `rgb(${R},${G},${B})`;
+    // Format alpha to remove trailing zeros (e.g., 0.250 -> 0.25, 0.5 -> 0.5)
+    const formattedAlpha = formatNumber(A);
+    return A < 1 ? `rgba(${R},${G},${B},${formattedAlpha})` : `rgb(${R},${G},${B})`;
   }
 
   // Gradient interpolation
@@ -464,6 +579,73 @@ function interpolateString(fromStr: string, toStr: string, p: number): string {
     const toRest = toHasKeyword ? toWords.slice(1).join(' ') : toStr;
     const rest = interpolateString(fromRest, toRest, p);
     return keyword ? `${keyword} ${rest}` : rest;
+  }
+
+  // Special handling for box-shadow/text-shadow with different number of values
+  // box-shadow can be: offsetX offsetY blur color (3 values) or offsetX offsetY blur spread color (4 values)
+  const fromShadow = parseBoxShadow(fromStr);
+  const toShadow = parseBoxShadow(toStr);
+  if (fromShadow && toShadow) {
+    // Normalize both to the same number of values (use the maximum)
+    const maxValues = Math.max(fromShadow.values.length, toShadow.values.length);
+    
+    const normalizeShadow = (shadow: ReturnType<typeof parseBoxShadow>, targetLength: number) => {
+      if (!shadow) return null;
+      const { keyword, values, color } = shadow;
+      // If we need to add values, add spread: 0 if missing (only if target is 4 and we have 3)
+      if (values.length === 3 && targetLength === 4) {
+        // Determine unit for spread (use same as blur, or default to px)
+        const blurUnit = values[2].unit || 'px';
+        return { keyword, values: [...values, { num: '0', unit: blurUnit }], color };
+      }
+      return { keyword, values, color };
+    };
+
+    const normalizedFrom = normalizeShadow(fromShadow, maxValues);
+    const normalizedTo = normalizeShadow(toShadow, maxValues);
+    
+    if (normalizedFrom && normalizedTo) {
+      // Interpolate each value
+      const interpolatedValues = normalizedFrom.values.map((fromVal, i) => {
+        const toVal = normalizedTo.values[i];
+        if (!toVal) return fromVal;
+        
+        // If units match, interpolate the numbers
+        if (fromVal.unit === toVal.unit) {
+          const fromNum = parseFloat(fromVal.num);
+          const toNum = parseFloat(toVal.num);
+          const interpolated = fromNum + (toNum - fromNum) * p;
+          return { num: formatNumber(interpolated), unit: fromVal.unit };
+        }
+        // If units don't match, switch at threshold
+        return p < SWITCH_THRESHOLD ? fromVal : toVal;
+      });
+      
+      // Interpolate color
+      let interpolatedColor = normalizedFrom.color;
+      if (normalizedFrom.color !== normalizedTo.color) {
+        try {
+          interpolatedColor = interpolateString(normalizedFrom.color, normalizedTo.color, p);
+        } catch {
+          interpolatedColor = p < SWITCH_THRESHOLD ? normalizedFrom.color : normalizedTo.color;
+        }
+      }
+      
+      // Build the result - only include spread if both had it or we normalized to 4
+      const keyword = p < SWITCH_THRESHOLD 
+        ? (normalizedFrom.keyword || normalizedTo.keyword)
+        : (normalizedTo.keyword || normalizedFrom.keyword);
+      
+      // If both original shadows had 3 values, output 3 values (remove spread if it was added)
+      // If one had 3 and one had 4, output 4 values (with the interpolated spread)
+      const shouldIncludeSpread = maxValues === 4;
+      const valuesToOutput = shouldIncludeSpread 
+        ? interpolatedValues 
+        : interpolatedValues.slice(0, 3);
+      
+      const valuesStr = valuesToOutput.map(v => v.unit ? `${v.num}${v.unit}` : v.num).join(' ');
+      return `${keyword}${valuesStr} ${interpolatedColor}`;
+    }
   }
 
   // Token-based interpolation
