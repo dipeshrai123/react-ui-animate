@@ -1,9 +1,11 @@
 import typescript from "rollup-plugin-typescript2";
 import terser from '@rollup/plugin-terser';
+import dts from 'rollup-plugin-dts';
 
 import pkg from "./package.json" with { type: "json" };
 
-export default {
+// Main bundle configuration
+const mainConfig = {
   input: "src/index.ts",
   output: [
     {
@@ -19,11 +21,11 @@ export default {
     typescript({
       tsconfig: "tsconfig.json",
       clean: true,
-      useTsconfigDeclarationDir: false,
-      // Only generate declarations for exported files
+      useTsconfigDeclarationDir: true,
       tsconfigOverride: {
         compilerOptions: {
           declaration: true,
+          declarationDir: ".dts-temp",
           declarationMap: false,
         },
       },
@@ -75,3 +77,15 @@ export default {
   ],
   external: ["react", "react-dom", "react/jsx-runtime"],
 };
+
+// Bundle all TypeScript declarations into a single file
+const dtsConfig = {
+  input: ".dts-temp/index.d.ts",
+  output: {
+    file: "dist/index.d.ts",
+    format: "es",
+  },
+  plugins: [dts()],
+};
+
+export default [mainConfig, dtsConfig];
