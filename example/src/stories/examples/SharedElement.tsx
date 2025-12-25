@@ -8,6 +8,7 @@ import {
   withSpring,
   withSequence,
 } from 'react-ui-animate';
+import { ExampleLayout } from '../animations/shared';
 
 const BOX_SIZE = 200;
 
@@ -90,12 +91,19 @@ function Example() {
   };
 
   return (
-    <>
+    <ExampleLayout
+      title="Shared Element Transition"
+      description="Click an image to expand it fullscreen with a smooth shared element transition. Drag down to close."
+      onRestart={() => setActiveIndex(null)}
+      showRestartButton={false}
+    >
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr 1fr 1fr',
-          gridGap: '20px',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gridGap: '24px',
+          maxWidth: 1000,
+          margin: '0 auto',
         }}
       >
         {IMAGES.map((image, index) => {
@@ -117,8 +125,18 @@ function Example() {
                 height: BOX_SIZE,
                 backgroundColor: '#e1e1e1',
                 cursor: 'pointer',
-                borderRadius: 4,
+                borderRadius: 12,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                transition: 'transform 0.2s',
                 ...imageStyle,
+              }}
+              onMouseEnter={(e) => {
+                if (activeIndex !== index) {
+                  e.currentTarget.style.transform = 'scale(1.02)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'scale(1)';
               }}
               onClick={() => setActiveIndex(index)}
             />
@@ -146,7 +164,7 @@ function Example() {
               width,
               height,
               translateY,
-              borderRadius: 4,
+              borderRadius: 12,
               color: 'white',
               display: 'flex',
               justifyContent: 'center',
@@ -156,11 +174,13 @@ function Example() {
               backgroundSize: 'cover',
             }}
           >
-            <span style={{ userSelect: 'none' }}>Pull Down</span>
+            <span style={{ userSelect: 'none', fontSize: 18, fontWeight: 600, textShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
+              Pull Down to Close
+            </span>
           </animate.div>
         </animate.div>
       )}
-    </>
+    </ExampleLayout>
   );
 }
 

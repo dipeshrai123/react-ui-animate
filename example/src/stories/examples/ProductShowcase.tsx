@@ -139,9 +139,9 @@ const ProductCard: React.FC<{ product: Product; index: number }> = ({
 const Example: React.FC = () => {
   return (
     <div
-      style={{ padding: 40, backgroundColor: '#f5f5f5', minHeight: '100vh' }}
+      style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}
     >
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 40px 0' }}>
         <h1
           style={{
             marginBottom: 8,
@@ -153,7 +153,7 @@ const Example: React.FC = () => {
           Product Showcase
         </h1>
         <p style={{ marginBottom: 40, fontSize: 16, color: '#666' }}>
-          Scroll to see products animate into view
+          Scroll to see products animate into view with smooth spring animations
         </p>
 
         <div

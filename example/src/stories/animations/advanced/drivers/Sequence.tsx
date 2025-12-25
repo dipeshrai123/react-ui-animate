@@ -1,19 +1,26 @@
 import React, { useRef, useState } from 'react';
-import { animate, AnimateValue, decay } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { animate, AnimateValue, timing, spring, sequence } from 'react-ui-animate';
+import { ExampleLayout, Section, ExampleCard } from '../../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
   const valueRef = useRef(new AnimateValue(0));
-  const controllerRef = useRef<ReturnType<typeof decay> | null>(null);
+  const controllerRef = useRef<ReturnType<typeof sequence> | null>(null);
 
-  const startDecay = (velocity: number) => {
+  const startSequence = () => {
     controllerRef.current?.cancel();
-    controllerRef.current = decay(valueRef.current, velocity, {
-      decay: 0.998,
-      onStart: () => console.log('Decay animation started'),
-      onComplete: () => console.log('Decay animation completed'),
+    
+    // Create a sequence of animations
+    const step1 = timing(valueRef.current, 100, { duration: 500 });
+    const step2 = spring(valueRef.current, 200, { stiffness: 100, damping: 15 });
+    const step3 = timing(valueRef.current, 0, { duration: 500 });
+    
+    // Run them in sequence
+    controllerRef.current = sequence([step1, step2, step3], {
+      onStart: () => console.log('Sequence started'),
+      onComplete: () => console.log('Sequence completed'),
     });
+    
     controllerRef.current.start();
   };
 
@@ -32,28 +39,22 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
-      title="decay Driver (Low-level API)"
-      description="The decay driver creates physics-based deceleration animations. Use this when you need manual control. For most cases, use withDecay descriptor instead."
+      title="sequence Driver (Low-level API)"
+      description="The sequence driver runs multiple animations one after another. Use this when you need manual control. For most cases, use withSequence descriptor instead."
       onRestart={() => {
         cancelAnimation();
         setTrigger((prev) => prev + 1);
       }}
     >
       <Section
-        title="Basic Decay Animation"
-        description="Create a decay animation with different velocities"
+        title="Animation Sequence"
+        description="Chain multiple animations to run sequentially"
       >
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button onClick={() => startDecay(0.5)} style={buttonStyle}>
-                Slow (0.5)
-              </button>
-              <button onClick={() => startDecay(1)} style={buttonStyle}>
-                Medium (1)
-              </button>
-              <button onClick={() => startDecay(2)} style={buttonStyle}>
-                Fast (2)
+              <button onClick={startSequence} style={buttonStyle}>
+                Start Sequence
               </button>
               <button onClick={pauseAnimation} style={{ ...buttonStyle, backgroundColor: '#ffd43b' }}>
                 Pause

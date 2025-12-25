@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Example from './Sequence';
+import Example from './Parallel';
 
 const meta = {
-  title: 'Animations/Drivers/sequence',
+  title: 'Animations/Advanced/Drivers/parallel',
   component: Example,
 } satisfies Meta<typeof Example>;
 

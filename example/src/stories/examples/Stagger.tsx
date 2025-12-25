@@ -7,6 +7,7 @@ import {
   withDelay,
   withSpring,
 } from 'react-ui-animate';
+import { ExampleLayout } from '../animations/shared';
 
 const StaggerItem = ({
   y,
@@ -27,12 +28,16 @@ const StaggerItem = ({
     <animate.span
       style={{
         display: 'inline-block',
-        border: '1px solid #e1e1e1',
-        backgroundColor: '#f1f1f1',
-        padding: '12px 16px',
-        borderRadius: 4,
+        border: '2px solid #3399ff',
+        backgroundColor: '#f0f9ff',
+        padding: '16px 20px',
+        borderRadius: 8,
         translateY: top,
-        fontSize: 40,
+        fontSize: 32,
+        fontWeight: 600,
+        color: '#1a1a1a',
+        boxShadow: '0 2px 8px rgba(51, 153, 255, 0.2)',
+        marginRight: 8,
       }}
     >
       {content}
@@ -60,27 +65,35 @@ function Example() {
   });
 
   return (
-    <div
-      style={{
-        height: '180vh',
-      }}
+    <ExampleLayout
+      title="Staggered Scroll Animation"
+      description="Words animate with a staggered delay based on scroll position. Each word has a different delay creating a wave effect."
+      onRestart={() => setY(0)}
+      showRestartButton={false}
     >
       <div
         style={{
-          position: 'fixed',
-          left: 10,
-          top: 10,
+          height: '180vh',
         }}
       >
-        <Stagger y={y}>
-          <span>Hello 👋</span>
-          <span>I'm</span>
-          <span>Dipesh</span>
-          <span>Rai</span>
-          <span>Welcome</span>
-        </Stagger>
+        <div
+          style={{
+            position: 'fixed',
+            left: 40,
+            top: 40,
+            zIndex: 10,
+          }}
+        >
+          <Stagger y={y}>
+            <span>Hello 👋</span>
+            <span>I'm</span>
+            <span>Dipesh</span>
+            <span>Rai</span>
+            <span>Welcome</span>
+          </Stagger>
+        </div>
       </div>
-    </div>
+    </ExampleLayout>
   );
 }
 

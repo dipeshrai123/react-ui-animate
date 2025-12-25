@@ -10,4 +10,4 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const TodoList: Story = {};
+export const Default: Story = {};

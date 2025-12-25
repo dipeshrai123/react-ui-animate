@@ -7,19 +7,21 @@ import {
   withSequence,
   withDelay,
 } from 'react-ui-animate';
+import { ExampleLayout } from '../animations/shared';
 
 const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
   return (
     <animate.div
       style={{
         position: 'relative',
-        width: 240,
+        width: 300,
         backgroundColor: '#3399ff',
-        borderRadius: 4,
+        borderRadius: 12,
         height: 0,
         opacity: 0,
         scale: 0.8,
         overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
       }}
       animate={{
         height: withSpring(100, { damping: 14 }),
@@ -34,12 +36,13 @@ const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
     >
       <div
         style={{
-          padding: 16,
+          padding: 20,
           color: 'white',
-          fontWeight: 500,
+          fontWeight: 600,
+          fontSize: 15,
         }}
       >
-        Toast #{id}
+        🎉 Toast Notification #{id}
       </div>
       <animate.div
         style={{
@@ -80,28 +83,47 @@ const Example = () => {
   }, []);
 
   return (
-    <>
-      <button
-        onClick={addToast}
-        style={{
-          padding: 10,
-          border: '2px solid #ddd',
-          borderRadius: 4,
-          margin: 10,
-          cursor: 'pointer',
-        }}
-      >
-        TOAST ME!
-      </button>
+    <ExampleLayout
+      title="Toast Notifications"
+      description="Beautiful toast notifications with smooth animations and auto-dismiss. Each toast has a progress bar that indicates remaining time."
+      onRestart={() => setToasts([])}
+      showRestartButton={false}
+    >
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+        <button
+          onClick={addToast}
+          style={{
+            padding: '12px 24px',
+            fontSize: 16,
+            fontWeight: 600,
+            backgroundColor: '#3399ff',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(51, 153, 255, 0.3)',
+            transition: 'transform 0.2s',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
+        >
+          Show Toast
+        </button>
+      </div>
 
       <div
         style={{
           position: 'fixed',
-          right: 10,
-          bottom: 10,
+          right: 20,
+          bottom: 20,
           display: 'flex',
           flexDirection: 'column',
-          gap: 10,
+          gap: 12,
+          zIndex: 1000,
         }}
       >
         <Presence>
@@ -110,7 +132,7 @@ const Example = () => {
           ))}
         </Presence>
       </div>
-    </>
+    </ExampleLayout>
   );
 };
 

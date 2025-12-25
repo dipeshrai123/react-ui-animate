@@ -7,7 +7,7 @@ import {
   loop,
   sequence,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard } from '../../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
