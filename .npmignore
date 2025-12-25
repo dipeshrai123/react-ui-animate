@@ -9,8 +9,8 @@ example/
 /src
 package-lock.json
 tsconfig.json
-*.mjs
 .prettierrc
+jest.config.js
 CHANGELOG.md
 .idea/
 .releaserc.json
