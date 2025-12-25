@@ -238,12 +238,21 @@ function useExitAnimations(
   const presenceContext = useContext(PresenceContext);
   const exitControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const exitCleanupRef = useRef<(() => void)[]>([]);
+  const onExitCompleteRef = useRef<(() => void) | null>(null);
+  const prevIsExitingRef = useRef<boolean>(false);
+
+  // Store the latest onExitComplete callback in a ref so it's always current
+  useLayoutEffect(() => {
+    onExitCompleteRef.current = presenceContext?.onExitComplete ?? null;
+  });
 
   // Use useLayoutEffect to ensure this runs in sync with useEnterAnimations
   useLayoutEffect(() => {
     const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
     const node = nodeRef.current;
     const isExiting = presenceContext?.isExiting ?? false;
+    const prevIsExiting = prevIsExitingRef.current;
+    prevIsExitingRef.current = isExiting;
 
     // If not exiting, reset the flag and cancel any ongoing exit animations
     if (!isExiting) {
@@ -259,46 +268,55 @@ function useExitAnimations(
     }
 
     // If already exiting, don't start another exit animation
+    // Only start if we transitioned from not-exiting to exiting
     if (isExitingRef.current || !exitProp || !node) {
       return;
     }
 
-    isExitingRef.current = true;
-    // Cancel enter animations when starting exit
-    enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
-    enterControllersRef.current = [];
+    // Only start exit animation if we just transitioned to exiting state
+    // This prevents cancelling ongoing animations when context object reference changes
+    if (!prevIsExiting && isExiting) {
+      isExitingRef.current = true;
+      // Cancel enter animations when starting exit
+      enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
+      enterControllersRef.current = [];
 
-    // Clean up any previous exit subscriptions
-    exitCleanupRef.current.forEach((cleanup) => cleanup());
-    exitCleanupRef.current = [];
-
-    // Setup exit animations with separate controllers
-    exitCleanupRef.current = setupExitAnimations({
-      exitProp,
-      animateValues: animateValuesRef.current,
-      controllers: exitControllersRef.current,
-      onExitComplete: () => {
-        // Only call onExitComplete if we're still exiting
-        // (child might have been re-added during exit animation)
-        if (isExitingRef.current) {
-          exitCleanupRef.current.forEach((cleanup) => cleanup());
-          exitCleanupRef.current = [];
-          isExitingRef.current = false;
-          presenceContext?.onExitComplete();
-        }
-      },
-      node,
-      style: currentStyle,
-    });
-
-    return () => {
-      // Clean up on unmount or when exiting state changes
-      exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
-      exitControllersRef.current = [];
+      // Clean up any previous exit subscriptions
       exitCleanupRef.current.forEach((cleanup) => cleanup());
       exitCleanupRef.current = [];
+
+      // Setup exit animations with separate controllers
+      exitCleanupRef.current = setupExitAnimations({
+        exitProp,
+        animateValues: animateValuesRef.current,
+        controllers: exitControllersRef.current,
+        onExitComplete: () => {
+          // Only call onExitComplete if we're still exiting
+          // (child might have been re-added during exit animation)
+          if (isExitingRef.current && onExitCompleteRef.current) {
+            exitCleanupRef.current.forEach((cleanup) => cleanup());
+            exitCleanupRef.current = [];
+            isExitingRef.current = false;
+            onExitCompleteRef.current();
+          }
+        },
+        node,
+        style: currentStyle,
+      });
+    }
+
+    // Cleanup function - only runs when isExiting changes or on unmount
+    return () => {
+      // Only clean up if we're actually exiting (prevents cancelling on every render)
+      // This handles the unmount case where we need to clean up
+      if (isExitingRef.current) {
+        exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
+        exitControllersRef.current = [];
+        exitCleanupRef.current.forEach((cleanup) => cleanup());
+        exitCleanupRef.current = [];
+      }
     };
-  }, [presenceContext?.isExiting, presenceContext]);
+  }, [presenceContext?.isExiting]);
 }
 
 function useViewAnimations(
