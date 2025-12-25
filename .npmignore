@@ -22,3 +22,5 @@ dist/**/*.map
 **/*.test.*
 dist/**/__tests__/
 dist/**/*.test.*
+# Temporary TypeScript declaration files (generated during build)
+.dts-temp/
