@@ -195,5 +195,22 @@ function applyTransforms(
   return applyTransformsStyle(elRef, txProps);
 }
 
+// Helper function to create a transform render function from AnimateValues
+// This is used by state animations to render transforms from animateValues
+export function createTransformRenderer(
+  node: HTMLElement,
+  animateValues: Record<string, AnimateValue<any>>
+): () => void {
+  return () => {
+    const transformKeyList = Object.keys(animateValues).filter(isTransformKey);
+    if (transformKeyList.length > 0) {
+      const parts = transformKeyList.map((key) =>
+        formatTransformFunction(key, animateValues[key])
+      );
+      node.style.transform = parts.join(' ');
+    }
+  };
+}
+
 // Export internal functions for use within the library
 export { applyStyles, applyAttrs, applyTransforms };

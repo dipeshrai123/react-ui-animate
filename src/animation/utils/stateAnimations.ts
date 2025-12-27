@@ -1,7 +1,7 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { isTransformKey } from './apply';
+import { isTransformKey, createTransformRenderer } from './apply';
 import { getInitialValue } from './initialValues';
 
 type AnimateValuesMap = Record<string, AnimateValue<Primitive>>;
@@ -60,34 +60,38 @@ export function applyStateAnimation(
       if (isTransformKey(key)) {
         // For transforms, we need to re-render all transforms
         // So we'll trigger a full transform update
-        const render = () => {
-          const transformKeyList =
-            Object.keys(animateValues).filter(isTransformKey);
-          if (transformKeyList.length > 0) {
-            const parts = transformKeyList.map((k) => {
-              const v = animateValues[k];
-              if (!v) return '';
-              const cur = v.current;
-              const str = String(cur);
-              const numMatch = str.match(/-?\d+(\.\d+)?/)?.[0] ?? '0';
-              const unitMatch =
-                str.match(
-                  /px|rem|em|ex|%|cm|mm|in|pt|pc|ch|vh|vw|vmin|vmax|deg/
-                )?.[0] ?? '';
-              let unit = unitMatch;
-              if (!unit) {
-                if (k === 'perspective' || k.startsWith('translate'))
-                  unit = 'px';
-                else if (k.startsWith('rotate') || k.startsWith('skew'))
-                  unit = 'deg';
-              }
-              return `${k}(${numMatch}${unit})`;
-            });
-            node.style.transform = parts.join(' ');
-          }
-        };
+        const render = createTransformRenderer(node, animateValues);
         newSubscriptions.push(value.subscribe(render));
         render(); // Initial render
+      } else {
+        // For normal styles, subscribe directly
+        const updateStyle = (v: Primitive) => {
+          const css =
+            typeof v === 'number' &&
+            !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
+              ? `${v}px`
+              : String(v);
+          (node.style as any)[key] = css;
+        };
+        newSubscriptions.push(value.subscribe(updateStyle));
+        // Immediately apply the initial value to ensure it's set before animation starts
+        updateStyle(initial);
+      }
+    } else {
+      // If value already exists, ensure we have the initial value stored
+      // This handles the case where the value was created by the animate prop or pre-initialized
+      if (!(key in initialValues)) {
+        // Store the current value as the initial for state animations
+        // This ensures we revert to the value before state animation starts
+        initialValues[key] = value.current;
+      }
+
+      // Ensure subscriptions exist for pre-initialized AnimateValues (e.g., from view prop initialization)
+      // This is necessary because AnimateValues created in useLayoutEffect need subscriptions to update the DOM
+      if (isTransformKey(key)) {
+        // For transforms, we need to re-render all transforms
+        const render = createTransformRenderer(node, animateValues);
+        newSubscriptions.push(value.subscribe(render));
       } else {
         // For normal styles, subscribe directly
         newSubscriptions.push(
@@ -100,14 +104,6 @@ export function applyStateAnimation(
             (node.style as any)[key] = css;
           })
         );
-      }
-    } else {
-      // If value already exists, ensure we have the initial value stored
-      // This handles the case where the value was created by the animate prop
-      if (!(key in initialValues)) {
-        // Store the current value as the initial for state animations
-        // This ensures we revert to the value before state animation starts
-        initialValues[key] = value.current;
       }
     }
 
