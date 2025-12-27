@@ -11,6 +11,7 @@ describe('Presence', () => {
 
   afterEach(() => {
     jest.useRealTimers();
+    jest.clearAllTimers();
   });
 
   it('renders children when provided', () => {
@@ -65,10 +66,13 @@ describe('Presence', () => {
       jest.advanceTimersByTime(150);
     });
 
-    // After exit animation completes, element should be removed
-    await waitFor(() => {
-      expect(screen.queryByTestId('animated')).not.toBeInTheDocument();
+    // Flush any pending updates
+    act(() => {
+      jest.runOnlyPendingTimers();
     });
+
+    // After exit animation completes, element should be removed
+    expect(screen.queryByTestId('animated')).not.toBeInTheDocument();
   });
 
   it('handles multiple children with unique keys', () => {
@@ -135,9 +139,12 @@ describe('Presence', () => {
       jest.advanceTimersByTime(150);
     });
 
-    await waitFor(() => {
-      expect(onExitComplete).toHaveBeenCalledTimes(1);
+    // Flush any pending updates
+    act(() => {
+      jest.runOnlyPendingTimers();
     });
+
+    expect(onExitComplete).toHaveBeenCalledTimes(1);
   });
 
   it('handles initial prop to skip enter animation', () => {
@@ -156,7 +163,15 @@ describe('Presence', () => {
       );
     }
 
-    render(<TestComponent />);
+    act(() => {
+      render(<TestComponent />);
+    });
+    
+    // Advance timers to ensure any internal timers are processed
+    act(() => {
+      jest.advanceTimersByTime(0);
+    });
+    
     const child = screen.getByTestId('child');
     // With initial=false, enter animation should be skipped
     expect(child).toBeInTheDocument();
@@ -201,10 +216,13 @@ describe('Presence', () => {
       jest.advanceTimersByTime(100);
     });
 
-    // After exits complete, new item should appear
-    await waitFor(() => {
-      expect(screen.getByTestId('item-c')).toBeInTheDocument();
+    // Flush any pending updates
+    act(() => {
+      jest.runOnlyPendingTimers();
     });
+
+    // After exits complete, new item should appear
+    expect(screen.getByTestId('item-c')).toBeInTheDocument();
   });
 
   it('handles mode="popLayout" - removes from layout flow immediately', () => {
@@ -257,6 +275,15 @@ describe('Presence', () => {
 });
 
 describe('usePresence', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllTimers();
+  });
+
   it('returns [true, noop] when not inside Presence', () => {
     function TestComponent() {
       const [isPresent, onExitComplete] = usePresence();
@@ -311,13 +338,18 @@ describe('usePresence', () => {
     // Should be exiting now
     expect(screen.getByTestId('present')).toHaveTextContent('exiting');
 
+    // Advance timers to complete the exit animation
     act(() => {
       jest.advanceTimersByTime(150);
     });
 
-    await waitFor(() => {
-      expect(screen.queryByTestId('present')).not.toBeInTheDocument();
+    // Flush any pending updates
+    act(() => {
+      jest.runOnlyPendingTimers();
     });
+
+    // The element should be removed after exit animation completes
+    expect(screen.queryByTestId('present')).not.toBeInTheDocument();
   });
 });
 
