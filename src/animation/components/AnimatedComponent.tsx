@@ -12,6 +12,7 @@ import {
   applyAttrs,
   applyStyles,
   applyTransforms,
+  createTransformRenderer,
 } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
@@ -330,13 +331,63 @@ function useViewAnimations(
 ) {
   const stateControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const initialValuesRef = useRef<Record<string, Primitive>>({});
+  const cleanupRef = useRef<Array<() => void>>([]);
   const isInView = useInView(nodeRef, viewOptions || {});
+  const hasInitializedRef = useRef(false);
+
+  // Initialize view animation values with initial style values before any animation
+  // This ensures that initial values (like opacity: 0) are applied immediately
+  useLayoutEffect(() => {
+    if (!view) return;
+
+    const node = nodeRef.current;
+    if (!node) return;
+
+    // Only initialize once
+    if (hasInitializedRef.current) return;
+
+    const computedStyle = window.getComputedStyle(node);
+    const { style = {} } = propsRef.current;
+
+    // Initialize AnimateValues for all view properties with their initial values
+    // and immediately apply them to the DOM to prevent flash of incorrect styles
+    for (const key of Object.keys(view)) {
+      if (!animateValuesRef.current[key]) {
+        const initial = getInitialValue(key, style, node, computedStyle);
+        const value = new AnimateValue(initial);
+        animateValuesRef.current[key] = value;
+        initialValuesRef.current[key] = initial;
+
+        // Immediately apply the initial value to the DOM
+        // This prevents the element from showing with default values before animation
+        if (isTransformKey(key)) {
+          // For transforms, update the transform property
+          const render = createTransformRenderer(node, animateValuesRef.current);
+          render();
+        } else {
+          // For normal styles, apply immediately
+          const css =
+            typeof initial === 'number' &&
+            !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
+              ? `${initial}px`
+              : String(initial);
+          (node.style as any)[key] = css;
+        }
+      }
+    }
+
+    hasInitializedRef.current = true;
+  }, [view]);
 
   const applyViewAnimationWrapper = (isActive: boolean) => {
     if (!view) return;
 
     const node = nodeRef.current;
     if (!node) return;
+
+    // Clean up previous subscriptions
+    cleanupRef.current.forEach((cleanup) => cleanup());
+    cleanupRef.current = [];
 
     const computedStyle = window.getComputedStyle(node);
     const { style = {} } = propsRef.current;
@@ -348,7 +399,7 @@ function useViewAnimations(
       animateValues: animateValuesRef.current,
       initialValues: initialValuesRef.current,
       stateControllers: stateControllersRef.current,
-      cleanup: [],
+      cleanup: cleanupRef.current,
     };
 
     applyStateAnimation(view, isActive, context);
@@ -363,6 +414,8 @@ function useViewAnimations(
     return () => {
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
+      cleanupRef.current.forEach((cleanup) => cleanup());
+      cleanupRef.current = [];
     };
   }, [isInView, view]);
 
@@ -370,6 +423,8 @@ function useViewAnimations(
     return () => {
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
+      cleanupRef.current.forEach((cleanup) => cleanup());
+      cleanupRef.current = [];
     };
   }, []);
 }

@@ -189,6 +189,64 @@ const TextReveal: React.FC<{ text: string; delay?: number }> = ({
 const Example: React.FC = () => {
   return (
     <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+      {/* View with Delay Example Section */}
+      <div
+        style={{
+          padding: '80px 40px',
+          backgroundColor: '#f5f5f5',
+        }}
+      >
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <TextReveal text="View with Delay" />
+          <p
+            style={{
+              marginTop: 16,
+              marginBottom: 48,
+              fontSize: 18,
+              color: '#666',
+              textAlign: 'center',
+            }}
+          >
+            Element with opacity 0 that fades in after 2000ms delay when in view
+          </p>
+
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 300,
+            }}
+          >
+            <animate.div
+              style={{
+                width: 200,
+                height: 200,
+                backgroundColor: '#3399ff',
+                borderRadius: 16,
+                opacity: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: 18,
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              }}
+              view={{
+                opacity: withSequence([
+                  withDelay(2000),
+                  withTiming(1, { duration: 500 }),
+                ]),
+              }}
+              viewOptions={{ threshold: 0.5, once: true }}
+            >
+              Delayed Fade In
+            </animate.div>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
       <div
         style={{
@@ -276,64 +334,6 @@ const Example: React.FC = () => {
             <StatCard value={50} label="Countries" />
             <StatCard value={99} label="Uptime %" />
             <StatCard value={24} label="Support Hours" />
-          </div>
-        </div>
-      </div>
-
-      {/* View with Delay Example Section */}
-      <div
-        style={{
-          padding: '80px 40px',
-          backgroundColor: '#f5f5f5',
-        }}
-      >
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <TextReveal text="View with Delay" />
-          <p
-            style={{
-              marginTop: 16,
-              marginBottom: 48,
-              fontSize: 18,
-              color: '#666',
-              textAlign: 'center',
-            }}
-          >
-            Element with opacity 0 that fades in after 2000ms delay when in view
-          </p>
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: 300,
-            }}
-          >
-            <animate.div
-              style={{
-                width: 200,
-                height: 200,
-                backgroundColor: '#3399ff',
-                borderRadius: 16,
-                opacity: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: 18,
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              }}
-              view={{
-                opacity: withSequence([
-                  withDelay(2000),
-                  withTiming(1, { duration: 500 }),
-                ]),
-              }}
-              viewOptions={{ threshold: 0.5, once: true }}
-            >
-              Delayed Fade In
-            </animate.div>
           </div>
         </div>
       </div>
