@@ -48,29 +48,6 @@ function serializeAnimateProp(prop: AnimateProp | undefined): string {
     .join('|');
 }
 
-function createAnimateValues(
-  animateProp: AnimateProp,
-  style: any,
-  node: HTMLElement,
-  computedStyle: CSSStyleDeclaration,
-  existingValues: Record<string, AnimateValue<Primitive>>
-): Record<string, AnimateValue<Primitive>> {
-  const newValues: Record<string, AnimateValue<Primitive>> = {};
-
-  for (const key of Object.keys(animateProp)) {
-    if (existingValues[key]) {
-      const initial = getInitialValue(key, style, node, computedStyle);
-      existingValues[key].set(initial);
-      newValues[key] = existingValues[key];
-    } else {
-      const initial = getInitialValue(key, style, node, computedStyle);
-      newValues[key] = new AnimateValue(initial);
-    }
-  }
-
-  return newValues;
-}
-
 function startAnimations(
   animateProp: AnimateProp,
   animateValues: Record<string, AnimateValue<Primitive>>,
@@ -135,7 +112,6 @@ function useEnterAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
   animateProp: AnimateProp | undefined,
-  style: any,
   isExitingRef: React.MutableRefObject<boolean>,
   animateValuesRef: React.MutableRefObject<
     Record<string, AnimateValue<Primitive>>
@@ -156,14 +132,14 @@ function useEnterAnimations(
     const justReEntered = wasExitingRef.current && !isExiting;
     wasExitingRef.current = isExiting;
 
-    // Don't run enter animations if exiting (check both context and ref for safety)
     if (!node || isExiting || isExitingRef.current) return;
 
     const { style: currentStyle = {}, ...rest } = propsRef.current;
-    const isFirstMount = !hasMountedRef.current;
     const currentKey = serializeAnimateProp(animateProp);
     const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
-    // Restart if first mount, values changed, or just re-entered from exit
+
+    // isFirstMount only refers to the literal first mount of this component instance
+    const isFirstMount = !hasMountedRef.current;
     const shouldRestart = isFirstMount || valuesChanged || justReEntered;
 
     if (shouldRestart) {
@@ -173,7 +149,8 @@ function useEnterAnimations(
       if (animateProp) {
         const computedStyle = window.getComputedStyle(node);
 
-        if (isFirstMount) {
+        // Initialize values if they don't exist
+        if (Object.keys(animateValuesRef.current).length === 0) {
           const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
           for (const key of Object.keys(animateProp)) {
             const initial = getInitialValue(
@@ -185,14 +162,6 @@ function useEnterAnimations(
             newAnimateValues[key] = new AnimateValue(initial);
           }
           animateValuesRef.current = newAnimateValues;
-        } else {
-          animateValuesRef.current = createAnimateValues(
-            animateProp,
-            currentStyle,
-            node,
-            computedStyle,
-            animateValuesRef.current
-          );
         }
 
         startAnimations(
@@ -203,7 +172,8 @@ function useEnterAnimations(
       }
     }
 
-    prevAnimatePropKeyRef.current = currentKey;
+    // Always re-sync subscriptions to handle StrictMode or prop updates
+    // without restarting the animation timeline
     cleanupRef.current.forEach((cleanup) => cleanup());
     cleanupRef.current = applyStylesToNode(
       node,
@@ -211,20 +181,16 @@ function useEnterAnimations(
       animateValuesRef.current,
       rest
     );
+
+    prevAnimatePropKeyRef.current = currentKey;
     hasMountedRef.current = true;
 
     return () => {
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-  }, [style, animateProp, presenceContext?.isExiting]);
-
-  useEffect(() => {
-    return () => {
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      controllersRef.current = [];
-    };
-  }, []);
+    // Removed 'style' from dependencies to prevent re-triggering on parent state changes
+  }, [animateProp, presenceContext?.isExiting]);
 }
 
 function useExitAnimations(
@@ -362,7 +328,10 @@ function useViewAnimations(
         // This prevents the element from showing with default values before animation
         if (isTransformKey(key)) {
           // For transforms, update the transform property
-          const render = createTransformRenderer(node, animateValuesRef.current);
+          const render = createTransformRenderer(
+            node,
+            animateValuesRef.current
+          );
           render();
         } else {
           // For normal styles, apply immediately
@@ -589,16 +558,14 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     const nodeRef = useRef<HTMLElement | null>(null);
     const propsRef = useRef(props);
     const isExitingRef = useRef(false);
-
-    propsRef.current = props;
-
-    // Create refs that will be shared between hooks
     const animateValuesRef = useRef<Record<string, AnimateValue<Primitive>>>(
       {}
     );
     const enterControllersRef = useRef<Array<{ cancel(): void }>>([]);
 
-    // Exit animations hook must run FIRST to reset isExitingRef before enter animations check it
+    propsRef.current = props;
+
+    // Run hooks
     useExitAnimations(
       nodeRef,
       propsRef,
@@ -607,12 +574,10 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       enterControllersRef
     );
 
-    // Enter animations hook runs SECOND, after exit has reset state
     useEnterAnimations(
       nodeRef,
       propsRef,
       props.animate,
-      props.style,
       isExitingRef,
       animateValuesRef,
       enterControllersRef
@@ -626,7 +591,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       props.focus,
       animateValuesRef
     );
-
     useViewAnimations(
       nodeRef,
       propsRef,
@@ -635,33 +599,29 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
+    // Clean destructuring of props to pass only valid HTML attributes to the DOM
     const {
-      animate: _,
-      exit: __,
-      hover: ___,
-      press: ____,
-      focus: _____,
-      view: ______,
-      viewOptions: _______,
+      animate,
+      exit,
+      hover,
+      press,
+      focus,
+      view,
+      viewOptions,
       style,
       ...restProps
     } = props;
 
-    // Filter out transform keys from style since we handle them via transform property
-    // Also filter out keys that are being animated
+    // Filter style object to prevent conflicts between CSS and JS animations
     const filteredStyle: Record<string, any> = {};
     const animatedKeys = new Set([
       ...Object.keys(animateValuesRef.current),
-      ...(props.animate ? Object.keys(props.animate) : []),
+      ...(animate ? Object.keys(animate) : []),
     ]);
 
     if (style) {
       for (const [key, value] of Object.entries(style)) {
-        // Skip transform keys - we handle these via node.style.transform
-        if (isTransformKey(key)) continue;
-        // Skip animated keys - we handle these via AnimateValue subscriptions
-        if (animatedKeys.has(key)) continue;
-        // Skip AnimateValue objects
+        if (isTransformKey(key) || animatedKeys.has(key)) continue;
         if (value && typeof value === 'object' && 'subscribe' in value)
           continue;
         filteredStyle[key] = value;
@@ -675,12 +635,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     });
   });
 
-  AnimatedComponent.displayName =
-    typeof tag === 'string'
-      ? `Animated.${tag}`
-      : `Animated(${
-          (tag as any).displayName || (tag as any).name || 'Component'
-        })`;
-
+  AnimatedComponent.displayName = `Animated.${tag}`;
   return AnimatedComponent;
 }
