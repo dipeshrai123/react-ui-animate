@@ -1,4 +1,3 @@
-import { Config } from './Config';
 import {
   Callbacks,
   DecayOptions,
@@ -7,6 +6,11 @@ import {
   TimingOptions,
 } from './types';
 
+// Default spring configuration values
+const DEFAULT_STIFFNESS = 158;
+const DEFAULT_DAMPING = 20;
+const DEFAULT_MASS = 1;
+
 export const withSpring = (
   to: Descriptor['to'],
   opts?: SpringOptions & Callbacks
@@ -14,9 +18,9 @@ export const withSpring = (
   type: 'spring',
   to,
   options: {
-    stiffness: opts?.stiffness ?? Config.Spring.EASE.stiffness,
-    damping: opts?.damping ?? Config.Spring.EASE.damping,
-    mass: opts?.mass ?? Config.Spring.EASE.mass,
+    stiffness: opts?.stiffness ?? DEFAULT_STIFFNESS,
+    damping: opts?.damping ?? DEFAULT_DAMPING,
+    mass: opts?.mass ?? DEFAULT_MASS,
     from: opts?.from,
     onStart: opts?.onStart,
     onChange: opts?.onChange,

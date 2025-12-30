@@ -6,7 +6,6 @@ import {
   withSequence,
   withLoop,
 } from '../../descriptors';
-import { Config } from '../../Config';
 import { Easing } from '../../utils/easing';
 
 describe('descriptors', () => {
@@ -16,9 +15,9 @@ describe('descriptors', () => {
 
       expect(descriptor.type).toBe('spring');
       expect(descriptor.to).toBe(100);
-      expect(descriptor.options?.stiffness).toBe(Config.Spring.EASE.stiffness);
-      expect(descriptor.options?.damping).toBe(Config.Spring.EASE.damping);
-      expect(descriptor.options?.mass).toBe(Config.Spring.EASE.mass);
+      expect(descriptor.options?.stiffness).toBe(158);
+      expect(descriptor.options?.damping).toBe(20);
+      expect(descriptor.options?.mass).toBe(1);
     });
 
     it('creates spring descriptor with custom options', () => {

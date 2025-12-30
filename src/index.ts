@@ -24,7 +24,6 @@ export {
   withDelay,
   withSequence,
   withLoop,
-  Config,
   useValue,
   Presence,
   PresenceContext,
