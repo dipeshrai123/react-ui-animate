@@ -32,6 +32,8 @@ export class DragGesture extends Gesture<DragEvent> {
   private activeEl: HTMLElement | null = null;
   private pointerDownPos = { x: 0, y: 0 };
   private thresholdPassed = false;
+  private elementsWithDrag = new Set<HTMLElement>();
+  private clickHandler: ((e: MouseEvent) => void) | null = null;
 
   constructor(config: DragConfig = {}) {
     super();
@@ -46,6 +48,15 @@ export class DragGesture extends Gesture<DragEvent> {
     const move = this.onMove.bind(this);
     const up = this.onUp.bind(this);
 
+    // Set up click prevention handler if not already set
+    if (!this.clickHandler) {
+      this.clickHandler = this.onClick.bind(this);
+      // Use capture phase to intercept before React's synthetic events
+      document.addEventListener('click', this.clickHandler as EventListener, {
+        capture: true,
+      });
+    }
+
     els.forEach((el) => {
       this.attachedEls.add(el);
       el.addEventListener('pointerdown', down, { passive: false });
@@ -59,11 +70,20 @@ export class DragGesture extends Gesture<DragEvent> {
       els.forEach((el) => {
         el.removeEventListener('pointerdown', down);
         this.attachedEls.delete(el);
+        this.elementsWithDrag.delete(el);
       });
 
       window.removeEventListener('pointermove', move);
       window.removeEventListener('pointerup', up);
       window.removeEventListener('pointercancel', up);
+
+      // Clean up click handler if no more attached elements
+      if (this.attachedEls.size === 0 && this.clickHandler) {
+        document.removeEventListener('click', this.clickHandler, {
+          capture: true,
+        });
+        this.clickHandler = null;
+      }
     };
   }
 
@@ -87,6 +107,8 @@ export class DragGesture extends Gesture<DragEvent> {
 
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
     this.thresholdPassed = false;
+    // Clear any previous drag flag for this element
+    this.elementsWithDrag.delete(target);
     this.prev = { x: e.clientX, y: e.clientY };
     this.lastTime = e.timeStamp;
 
@@ -158,7 +180,23 @@ export class DragGesture extends Gesture<DragEvent> {
 
   private onUp(e: PointerEvent) {
     if (this.activePointerId !== e.pointerId || !this.activeEl) return;
+
+    const hadDrag = this.thresholdPassed;
     this.activeEl.releasePointerCapture(e.pointerId);
+
+    // If a drag occurred, prevent the click event
+    if (hadDrag) {
+      e.preventDefault();
+      // Mark this element as having had a drag to prevent the click event
+      this.elementsWithDrag.add(this.activeEl);
+      // Clear the flag after the click event would have fired
+      // Use requestAnimationFrame to ensure it happens after the current event loop
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          this.elementsWithDrag.delete(this.activeEl!);
+        });
+      });
+    }
 
     this.emitEnd({
       down: false,
@@ -171,6 +209,20 @@ export class DragGesture extends Gesture<DragEvent> {
 
     this.activePointerId = null;
     this.pointerCaptured = false;
+  }
+
+  private onClick(e: MouseEvent) {
+    // Check if the click target or any of its ancestors had a drag
+    let target = e.target as HTMLElement | null;
+    while (target) {
+      if (this.elementsWithDrag.has(target)) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.elementsWithDrag.delete(target);
+        return;
+      }
+      target = target.parentElement;
+    }
   }
 
   cancel() {
