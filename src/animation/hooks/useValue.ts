@@ -1,17 +1,18 @@
 import { useMemo, useRef } from 'react';
-import { delay, sequence, loop, MotionValue } from '@raidipesh78/re-motion';
+import { delay, sequence, loop } from '../drivers';
+import { AnimateValue } from '../values/AnimateValue';
 
-import { buildAnimation, buildParallel } from '../drivers';
+import { buildAnimation, buildParallel } from '../drivers/builder';
 import { filterCallbackOptions, isDescriptor } from '../helpers';
 import type { Primitive, Descriptor, Controls } from '../types';
 
 type Widen<T> = T extends number ? number : T extends string ? string : T;
 
 type ValueReturn<T> = T extends Primitive
-  ? MotionValue<Widen<T>>
+  ? AnimateValue<Widen<T>>
   : T extends Primitive[]
-  ? MotionValue<Widen<Primitive>>[]
-  : { [K in keyof T]: MotionValue<Widen<T[K]>> };
+  ? AnimateValue<Widen<Primitive>>[]
+  : { [K in keyof T]: AnimateValue<Widen<T[K]>> };
 
 type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
@@ -22,16 +23,16 @@ export function useValue<T extends Base>(
 
   const value = useMemo(() => {
     if (Array.isArray(initial)) {
-      return initial.map((v) => new MotionValue(v));
+      return initial.map((v) => new AnimateValue(v));
     }
 
     if (typeof initial === 'object') {
       return Object.fromEntries(
-        Object.entries(initial).map(([k, v]) => [k, new MotionValue(v)])
+        Object.entries(initial).map(([k, v]) => [k, new AnimateValue(v)])
       );
     }
 
-    return new MotionValue(initial);
+    return new AnimateValue(initial);
   }, []) as ValueReturn<T>;
 
   function set(to: Base | Descriptor) {
@@ -39,17 +40,17 @@ export function useValue<T extends Base>(
 
     if (Array.isArray(initial)) {
       ctrl = handleArray(
-        value as Array<MotionValue<Primitive>>,
+        value as Array<AnimateValue<Primitive>>,
         to as Primitive[] | Descriptor
       );
     } else if (typeof initial === 'object') {
       ctrl = handleObject(
-        value as Record<string, MotionValue<Primitive>>,
+        value as Record<string, AnimateValue<Primitive>>,
         to as Record<string, Primitive> | Descriptor
       );
     } else {
       ctrl = handlePrimitive(
-        value as MotionValue<Primitive>,
+        value as AnimateValue<Primitive>,
         to as Primitive | Descriptor
       );
     }
@@ -70,18 +71,18 @@ export function useValue<T extends Base>(
 }
 
 function handlePrimitive(
-  mv: MotionValue<Primitive>,
+  value: AnimateValue<Primitive>,
   to: Primitive | Descriptor
 ) {
   if (typeof to === 'number' || typeof to === 'string') {
-    mv.set(to);
+    value.set(to);
     return null;
   }
 
   if (to.type === 'sequence') {
     const animations = to.options?.animations ?? [];
-    const ctrls = animations.map((step) => buildAnimation(mv, step));
-    return sequence(ctrls, to.options);
+    const controllers = animations.map((step) => buildAnimation(value, step));
+    return sequence(controllers, to.options);
   }
 
   if (to.type === 'loop') {
@@ -90,43 +91,43 @@ function handlePrimitive(
 
     if (animation.type === 'sequence') {
       const animations = animation.options?.animations ?? [];
-      const ctrls = animations.map((step) => buildAnimation(mv, step));
-      return loop(sequence(ctrls), to.options?.iterations ?? 0, to.options);
+      const controllers = animations.map((step) => buildAnimation(value, step));
+      return loop(sequence(controllers), to.options?.iterations ?? 0, to.options);
     }
 
     return loop(
-      buildAnimation(mv, animation),
+      buildAnimation(value, animation),
       to.options?.iterations ?? 0,
       to.options
     );
   }
 
-  return buildAnimation(mv, to);
+  return buildAnimation(value, to);
 }
 
 function handleArray(
-  mvs: Array<MotionValue<Primitive>>,
+  values: Array<AnimateValue<Primitive>>,
   to: Primitive[] | Descriptor
 ) {
   if (!isDescriptor(to)) {
     (to as Primitive[]).forEach((val, i) => {
-      mvs[i]?.set(val);
+      values[i]?.set(val);
     });
     return null;
   }
 
   const desc = to as Descriptor;
 
-  const mvsRecord = Object.fromEntries(
-    mvs.map((mv, idx) => [idx.toString(), mv])
-  ) as Record<string, MotionValue<Primitive>>;
+  const valuesRecord = Object.fromEntries(
+    values.map((value, idx) => [idx.toString(), value])
+  ) as Record<string, AnimateValue<Primitive>>;
 
   switch (desc.type) {
     case 'sequence': {
-      const ctrls = desc.options!.animations!.map((step) =>
+      const controllers = desc.options!.animations!.map((step) =>
         step.type === 'delay'
           ? delay(step.options?.delay ?? 0)
-          : buildParallel(mvsRecord, {
+          : buildParallel(valuesRecord, {
               ...step,
               to: Array.isArray(step.to)
                 ? Object.fromEntries(
@@ -136,15 +137,15 @@ function handleArray(
             })
       );
 
-      return sequence(ctrls, desc.options);
+      return sequence(controllers, desc.options);
     }
 
     case 'loop': {
       const inner = desc.options!.animation!;
 
       if (inner.type === 'sequence') {
-        const seqCtrls = inner.options!.animations!.map((step) =>
-          buildParallel(mvsRecord, {
+        const seqControllers = inner.options!.animations!.map((step) =>
+          buildParallel(valuesRecord, {
             ...step,
             to: Array.isArray(step.to)
               ? Object.fromEntries(
@@ -155,7 +156,7 @@ function handleArray(
         );
 
         const seq = sequence(
-          seqCtrls,
+          seqControllers,
           filterCallbackOptions(inner.options, true)
         );
 
@@ -166,66 +167,66 @@ function handleArray(
         );
       }
 
-      const par = buildParallel(mvsRecord, inner);
+      const parallel = buildParallel(valuesRecord, inner);
       return loop(
-        par,
+        parallel,
         desc.options!.iterations ?? 0,
         filterCallbackOptions(desc.options, true)
       );
     }
 
     case 'decay':
-      return buildParallel(mvsRecord, desc);
+      return buildParallel(valuesRecord, desc);
 
     default:
-      return buildParallel(mvsRecord, desc);
+      return buildParallel(valuesRecord, desc);
   }
 }
 
 function handleObject(
-  mvs: Record<string, MotionValue<Primitive>>,
+  values: Record<string, AnimateValue<Primitive>>,
   to: Record<string, Primitive> | Descriptor
 ) {
   if (isDescriptor(to)) {
     switch (to.type) {
       case 'sequence': {
-        const ctrls = to.options!.animations!.map((step) =>
+        const controllers = to.options!.animations!.map((step) =>
           step.type === 'delay'
             ? delay(step.options!.delay ?? 0)
-            : buildParallel(mvs, step)
+            : buildParallel(values, step)
         );
-        return sequence(ctrls, to.options);
+        return sequence(controllers, to.options);
       }
 
       case 'loop': {
         const inner = to.options!.animation!;
         if (inner.type === 'sequence') {
-          const ctrls = inner.options!.animations!.map((s) =>
-            buildParallel(mvs, s)
+          const controllers = inner.options!.animations!.map((step) =>
+            buildParallel(values, step)
           );
           return loop(
-            sequence(ctrls, filterCallbackOptions(inner.options, true)),
+            sequence(controllers, filterCallbackOptions(inner.options, true)),
             to.options!.iterations ?? 0,
             filterCallbackOptions(to.options, true)
           );
         }
         return loop(
-          buildParallel(mvs, inner),
+          buildParallel(values, inner),
           to.options!.iterations ?? 0,
           filterCallbackOptions(to.options, true)
         );
       }
 
       case 'decay':
-        return buildParallel(mvs, to);
+        return buildParallel(values, to);
 
       default:
-        return buildParallel(mvs, to);
+        return buildParallel(values, to);
     }
   }
 
-  Object.entries(to).forEach(([k, v]) => {
-    mvs[k]?.set(v);
+  Object.entries(to).forEach(([key, val]) => {
+    values[key]?.set(val);
   });
 
   return null;
