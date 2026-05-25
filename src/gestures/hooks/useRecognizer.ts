@@ -41,7 +41,10 @@ export function useRecognizer<T extends HTMLElement, C, E>(
 
   const list = Array.isArray(refs) ? refs : ([refs] as RefObject<T>[]);
   const gesturesRef = useRef<GestureInstance<E>[]>([]);
+  const prevCleanupsRef = useRef<(() => void)[]>([]);
+  const listLengthRef = useRef(list.length);
 
+  // Recreate gestures if list length changes
   if (gesturesRef.current.length !== list.length) {
     gesturesRef.current = list.map((_, i) => {
       const g = new GestureClass(configRef.current);
@@ -49,19 +52,31 @@ export function useRecognizer<T extends HTMLElement, C, E>(
       g.onChange(handler).onEnd(handler);
       return g;
     });
+    listLengthRef.current = list.length;
   }
 
   useEffect(() => {
-    const cleanups = list
-      .map((r, i) => {
-        const el = r.current;
-        if (!el) return null;
-        return gesturesRef.current[i].attach(el);
-      })
-      .filter((fn): fn is () => void => !!fn);
+    // Cleanup previous attachments
+    prevCleanupsRef.current.forEach((fn) => fn());
+    prevCleanupsRef.current = [];
 
-    return () => cleanups.forEach((fn) => fn());
-  }, [list.map((r) => r.current)]);
+    const cleanups: (() => void)[] = [];
+
+    list.forEach((r, i) => {
+      const el = r.current;
+      if (el && gesturesRef.current[i]) {
+        const cleanup = gesturesRef.current[i].attach(el);
+        cleanups.push(cleanup);
+      }
+    });
+
+    prevCleanupsRef.current = cleanups;
+
+    return () => {
+      cleanups.forEach((fn) => fn());
+      prevCleanupsRef.current = [];
+    };
+  }, [list]);
 }
 
 function useLatest<T>(value: T) {

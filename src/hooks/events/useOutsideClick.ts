@@ -16,7 +16,7 @@ export function useOutsideClick(
       const el = ref.current;
       const target = event.target as Node | null;
 
-      if (!el || !target || !target.isConnected) return;
+      if (!el || !target || !target.isConnected || !el.isConnected) return;
       if (!el.contains(target)) {
         cbRef.current(event);
       }

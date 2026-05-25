@@ -1,42 +1,52 @@
 {
   "name": "react-ui-animate",
-  "version": "5.0.0",
+  "version": "5.3.0-next.3",
   "description": "React library for gestures and animation",
-  "main": "dist/index.js",
-  "peerDependencies": {
-    "react": ">=16.8.0  || >=17.0.0 || >=18.0.0"
+  "type": "module",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    }
   },
-  "dependencies": {
-    "@raidipesh78/re-motion": "^5.4.2"
+  "peerDependencies": {
+    "react": ">=16.8.0 || >=17.0.0 || >=18.0.0 || >=19.0.0"
   },
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
-    "@semantic-release/commit-analyzer": "^13.0.1",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^11.0.3",
-    "@semantic-release/npm": "^12.0.2",
-    "@semantic-release/release-notes-generator": "^14.0.3",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.14.9",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@testing-library/jest-dom": "^6.1.5",
+    "@testing-library/react": "^16.3.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^20.19.27",
+    "@types/react": "^18.3.27",
+    "@types/react-dom": "^18.3.7",
     "@types/resize-observer-browser": "^0.1.11",
-    "babel-core": "^5.8.38",
-    "babel-runtime": "^6.26.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "rimraf": "^6.0.1",
-    "rollup": "^4.18.0",
+    "rimraf": "^6.1.2",
+    "rollup": "^4.54.0",
+    "rollup-plugin-dts": "^6.3.0",
     "rollup-plugin-typescript2": "^0.36.0",
-    "semantic-release": "^24.2.6",
-    "typescript": "^5.5.2"
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.9.3"
   },
   "scripts": {
-    "clean": "rimraf -rf dist",
-    "build": "npm run clean && rollup -c",
+    "clean": "rimraf -rf dist .dts-temp",
+    "build": "npm run clean && rollup -c && rimraf -rf .dts-temp",
     "start": "npm run clean && rollup -c -w",
     "start:dev": "cd example && npm start",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "version:minor": "npm version minor",
     "version:major": "npm version major",
     "version:patch": "npm version patch",

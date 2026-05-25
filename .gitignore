@@ -105,3 +105,6 @@ dist
 
 # IntelliJ IDEA files
 .idea/
+
+# Temporary TypeScript declaration files (generated during build)
+.dts-temp/

@@ -7,6 +7,7 @@ import {
   useValue,
   withSpring,
 } from 'react-ui-animate';
+import { ExampleLayout } from '../animations/shared';
 
 const ITEMS = ['Please!', 'Can you', 'order', 'me ?'];
 
@@ -53,7 +54,15 @@ const Example = () => {
   );
 
   return (
-    <>
+    <ExampleLayout
+      title="Sortable List"
+      description="Drag and drop items to reorder them. Items smoothly animate to their new positions with spring physics."
+      onRestart={() => {
+        originalIndex.current = ITEMS.map((_, i) => i);
+        setAnimationY(ITEMS.map((_, i) => i * 70));
+        setZIndex(ITEMS.map(() => 0));
+      }}
+    >
       <div style={{ position: 'relative', width: 300, margin: '40px auto' }}>
         {animationY.map((y, i) => (
           <animate.div
@@ -64,14 +73,15 @@ const Example = () => {
               marginBottom: 20,
               position: 'absolute',
               backgroundColor: '#fff',
-              fontSize: 20,
+              fontSize: 18,
+              fontWeight: 500,
               height: 60,
               userSelect: 'none',
               left: 0,
               top: 0,
               right: 0,
-              border: '1px solid #e1e1e1',
-              borderRadius: 4,
+              border: '2px solid #3399ff',
+              borderRadius: 8,
               translateY: y,
               cursor: 'grabbing',
               zIndex: zIndex[i],
@@ -79,13 +89,14 @@ const Example = () => {
               transition: 'box-shadow 0.4s ease',
               display: 'flex',
               alignItems: 'center',
+              color: '#1a1a1a',
             }}
           >
             {ITEMS[i]}
           </animate.div>
         ))}
       </div>
-    </>
+    </ExampleLayout>
   );
 };
 
