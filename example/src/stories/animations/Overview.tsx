@@ -81,6 +81,10 @@ const Example: React.FC = () => {
         { name: 'Navigation Menu', path: '/examples/NavigationMenu' },
         { name: 'Dashboard', path: '/examples/Dashboard' },
         { name: 'Product Showcase', path: '/examples/ProductShowcase' },
+        { name: 'Kanban Board', path: '/examples/KanbanBoard' },
+        { name: 'Theme Switch', path: '/examples/ThemeSwitch' },
+        { name: 'Scroll Landing Page', path: '/examples/ScrollLandingPage' },
+        { name: 'Skeleton Reveal', path: '/examples/SkeletonReveal' },
       ],
     },
     {
