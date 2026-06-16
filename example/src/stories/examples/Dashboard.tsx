@@ -224,7 +224,7 @@ const Example: React.FC = () => {
           }}
         >
           {metrics.map((metric) => (
-            <MetricCard key={`${metric.id}-${refreshKey}`} metric={metric} />
+            <MetricCard key={metric.id} metric={metric} />
           ))}
         </div>
       </div>

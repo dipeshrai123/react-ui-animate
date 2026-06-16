@@ -267,6 +267,71 @@ describe('〈animate> components', () => {
       });
     });
 
+    it('continues hover-out animation when parent re-renders with new hover object reference', async () => {
+      function TestComponent({ label }: { label: string }) {
+        return (
+          <animate.div
+            data-testid="hover-rerender-test"
+            style={{ scale: 1 }}
+            hover={{
+              scale: withSpring(1.5, { stiffness: 300, damping: 20 }),
+            }}
+          >
+            {label}
+          </animate.div>
+        );
+      }
+
+      const { rerender } = render(<TestComponent label="A" />);
+      const el = screen.getByTestId('hover-rerender-test') as HTMLElement;
+
+      const parseScale = () => {
+        const match = el.style.transform.match(/scale\(([\d.]+)\)/);
+        return match ? parseFloat(match[1]) : 1;
+      };
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
+
+      expect(parseScale()).toBeGreaterThan(1.2);
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(80);
+      });
+
+      const scaleDuringRevert = parseScale();
+      expect(scaleDuringRevert).toBeGreaterThan(1);
+      expect(scaleDuringRevert).toBeLessThan(1.5);
+
+      // Re-render creates a new hover object with identical animation config
+      rerender(<TestComponent label="B" />);
+
+      act(() => {
+        jest.advanceTimersByTime(80);
+      });
+
+      const scaleAfterRerender = parseScale();
+      expect(scaleAfterRerender).toBeGreaterThan(1);
+      expect(scaleAfterRerender).toBeLessThan(scaleDuringRevert);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(parseScale()).toBeCloseTo(1, 1);
+      });
+    });
+
     it('applies press animation for opacity when not in initial style', async () => {
       render(
         <animate.div

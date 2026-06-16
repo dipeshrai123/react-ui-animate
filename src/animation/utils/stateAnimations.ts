@@ -81,9 +81,11 @@ export function applyStateAnimation(
       // If value already exists, ensure we have the initial value stored
       // This handles the case where the value was created by the animate prop or pre-initialized
       if (!(key in initialValues)) {
-        // Store the current value as the initial for state animations
-        // This ensures we revert to the value before state animation starts
-        initialValues[key] = value.current;
+        // On deactivate, always resolve from static style — never capture the
+        // current (hovered) value as the revert target.
+        initialValues[key] = isActive
+          ? value.current
+          : getInitialValue(key, style, node, computedStyle);
       }
 
       // Ensure subscriptions exist for pre-initialized AnimateValues (e.g., from view prop initialization)

@@ -415,6 +415,12 @@ function useStateAnimations(
     isTapped: false,
     isFocused: false,
   });
+  const hoverRef = useRef(hover);
+  const pressRef = useRef(press);
+  const focusRef = useRef(focus);
+  hoverRef.current = hover;
+  pressRef.current = press;
+  focusRef.current = focus;
 
   const applyStateAnimationWrapper = (
     stateProp: AnimateProp | undefined,
@@ -448,38 +454,38 @@ function useStateAnimations(
     const handleMouseEnter = () => {
       if (stateRef.current.isHovered) return;
       stateRef.current.isHovered = true;
-      applyStateAnimationWrapper(hover, true);
+      applyStateAnimationWrapper(hoverRef.current, true);
     };
 
     const handleMouseLeave = () => {
       if (!stateRef.current.isHovered) return;
       stateRef.current.isHovered = false;
-      applyStateAnimationWrapper(hover, false);
+      applyStateAnimationWrapper(hoverRef.current, false);
     };
 
     const handleMouseDown = () => {
       if (stateRef.current.isTapped) return;
       stateRef.current.isTapped = true;
-      applyStateAnimationWrapper(press, true);
+      applyStateAnimationWrapper(pressRef.current, true);
     };
 
     const handleMouseUp = () => {
       if (!stateRef.current.isTapped) return;
       stateRef.current.isTapped = false;
-      applyStateAnimationWrapper(press, false);
+      applyStateAnimationWrapper(pressRef.current, false);
       // Re-apply hover if still active
-      if (stateRef.current.isHovered && hover) {
-        applyStateAnimationWrapper(hover, true);
+      if (stateRef.current.isHovered && hoverRef.current) {
+        applyStateAnimationWrapper(hoverRef.current, true);
       }
     };
 
     const handleMouseLeaveForPress = () => {
       if (stateRef.current.isTapped) {
         stateRef.current.isTapped = false;
-        applyStateAnimationWrapper(press, false);
+        applyStateAnimationWrapper(pressRef.current, false);
         // Re-apply hover if still active
-        if (stateRef.current.isHovered && hover) {
-          applyStateAnimationWrapper(hover, true);
+        if (stateRef.current.isHovered && hoverRef.current) {
+          applyStateAnimationWrapper(hoverRef.current, true);
         }
       }
     };
@@ -487,21 +493,21 @@ function useStateAnimations(
     const handleFocus = () => {
       if (stateRef.current.isFocused) return;
       stateRef.current.isFocused = true;
-      applyStateAnimationWrapper(focus, true);
+      applyStateAnimationWrapper(focusRef.current, true);
     };
 
     const handleBlur = () => {
       if (!stateRef.current.isFocused) return;
       stateRef.current.isFocused = false;
-      applyStateAnimationWrapper(focus, false);
+      applyStateAnimationWrapper(focusRef.current, false);
     };
 
-    if (hover) {
+    if (hoverRef.current) {
       node.addEventListener('mouseenter', handleMouseEnter);
       node.addEventListener('mouseleave', handleMouseLeave);
     }
 
-    if (press) {
+    if (pressRef.current) {
       node.addEventListener('mousedown', handleMouseDown);
       node.addEventListener('mouseup', handleMouseUp);
       node.addEventListener('mouseleave', handleMouseLeaveForPress);
@@ -510,18 +516,29 @@ function useStateAnimations(
       node.addEventListener('touchcancel', handleMouseLeaveForPress);
     }
 
-    if (focus && isFocusable(node)) {
+    if (focusRef.current && isFocusable(node)) {
       node.addEventListener('focus', handleFocus);
       node.addEventListener('blur', handleBlur);
     }
 
+    // Re-apply active state animations after effect re-runs (e.g. config change)
+    if (stateRef.current.isHovered && hoverRef.current) {
+      applyStateAnimationWrapper(hoverRef.current, true);
+    }
+    if (stateRef.current.isTapped && pressRef.current) {
+      applyStateAnimationWrapper(pressRef.current, true);
+    }
+    if (stateRef.current.isFocused && focusRef.current) {
+      applyStateAnimationWrapper(focusRef.current, true);
+    }
+
     return () => {
-      if (hover) {
+      if (hoverRef.current) {
         node.removeEventListener('mouseenter', handleMouseEnter);
         node.removeEventListener('mouseleave', handleMouseLeave);
       }
 
-      if (press) {
+      if (pressRef.current) {
         node.removeEventListener('mousedown', handleMouseDown);
         node.removeEventListener('mouseup', handleMouseUp);
         node.removeEventListener('mouseleave', handleMouseLeaveForPress);
@@ -530,7 +547,7 @@ function useStateAnimations(
         node.removeEventListener('touchcancel', handleMouseLeaveForPress);
       }
 
-      if (focus) {
+      if (focusRef.current) {
         node.removeEventListener('focus', handleFocus);
         node.removeEventListener('blur', handleBlur);
       }
@@ -538,7 +555,11 @@ function useStateAnimations(
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
     };
-  }, [hover, press, focus]);
+  }, [
+    serializeAnimateProp(hover),
+    serializeAnimateProp(press),
+    serializeAnimateProp(focus),
+  ]);
 
   useEffect(() => {
     return () => {
