@@ -17,6 +17,45 @@ export interface StateAnimationContext {
   initialValues: InitialValuesMap;
   stateControllers: ControllersList;
   cleanup: CleanupList;
+  /**
+   * The real destination each key is meant to settle at, as declared by
+   * `animate`/`view` (unwrapping `withSequence`/`withDelay` to find the
+   * final step). Preferred over `initialValues` when reverting, since a
+   * hover/press/focus interaction can interrupt an in-flight `animate`/`view`
+   * transition before it ever reaches its target — reverting to a merely
+   * *captured* value would then snap back to wherever that interruption left
+   * it (e.g. a still-unrevealed `view` starting value), not where it was
+   * actually headed.
+   */
+  restingTargets?: Record<string, Primitive>;
+}
+
+// Unwraps a descriptor (including `withSequence`/`withDelay` chains) to find
+// the final numeric/string destination it's headed towards. Returns
+// `undefined` for open-ended animations (e.g. `withLoop`) that have no
+// settled target to speak of.
+export function extractRestingTarget(
+  descriptor: Descriptor | Primitive | undefined
+): Primitive | undefined {
+  if (descriptor === undefined) return undefined;
+  if (typeof descriptor === 'number' || typeof descriptor === 'string') {
+    return descriptor;
+  }
+  if (descriptor.type === 'sequence') {
+    const animations = descriptor.options?.animations ?? [];
+    for (let i = animations.length - 1; i >= 0; i--) {
+      const target = extractRestingTarget(animations[i]);
+      if (target !== undefined) return target;
+    }
+    return undefined;
+  }
+  if (descriptor.type === 'loop' || descriptor.type === 'decay') {
+    return undefined;
+  }
+  if (typeof descriptor.to === 'number' || typeof descriptor.to === 'string') {
+    return descriptor.to;
+  }
+  return undefined;
 }
 
 export function applyStateAnimation(
@@ -34,6 +73,7 @@ export function applyStateAnimation(
     initialValues,
     stateControllers,
     cleanup,
+    restingTargets,
   } = context;
 
   // Cancel any existing state animations
@@ -78,14 +118,20 @@ export function applyStateAnimation(
         updateStyle(initial);
       }
     } else {
-      // If value already exists, ensure we have the initial value stored
-      // This handles the case where the value was created by the animate prop or pre-initialized
-      if (!(key in initialValues)) {
-        // On deactivate, always resolve from static style — never capture the
-        // current (hovered) value as the revert target.
-        initialValues[key] = isActive
-          ? value.current
-          : getInitialValue(key, style, node, computedStyle);
+      // If value already exists (e.g. pre-initialized by `animate`/`view`),
+      // capture the revert target fresh on every activation rather than only
+      // once. The value right before a hover/press/focus starts is always
+      // the correct "resting" baseline to snap back to — a *view* (or
+      // `animate`) transition can move that baseline well after mount (e.g.
+      // translateY settling from 40 -> 0), and caching the target only once
+      // would permanently lock in whatever the value happened to be during
+      // the very first activation, even after the real baseline has moved on.
+      if (isActive) {
+        initialValues[key] = value.current;
+      } else if (!(key in initialValues)) {
+        // Deactivating without ever having activated (shouldn't normally
+        // happen) — fall back to resolving from static style.
+        initialValues[key] = getInitialValue(key, style, node, computedStyle);
       }
 
       // Ensure subscriptions exist for pre-initialized AnimateValues (e.g., from view prop initialization)
@@ -132,8 +178,10 @@ export function applyStateAnimation(
         controller.start();
       }
     } else {
-      // Revert to initial value
-      const initialValue = initialValues[key];
+      // Revert to the real settled target if `animate`/`view` declares one
+      // for this key (see `restingTargets` doc above); otherwise fall back
+      // to the captured value.
+      const initialValue = restingTargets?.[key] ?? initialValues[key];
 
       if (isPrimitive) {
         // Animate back to initial value with spring

@@ -23,6 +23,7 @@ import { PresenceContext } from '../modules/Presence';
 import { getInitialValue } from '../utils/initialValues';
 import {
   applyStateAnimation,
+  extractRestingTarget,
   type StateAnimationContext,
 } from '../utils/stateAnimations';
 import { setupExitAnimations } from '../utils/exitAnimations';
@@ -434,7 +435,24 @@ function useStateAnimations(
     if (!node) return;
 
     const computedStyle = window.getComputedStyle(node);
-    const { style = {} } = propsRef.current;
+    const { style = {}, animate: animateProp, view: viewProp } = propsRef.current;
+
+    // The real destination for each key, as declared by `animate`/`view` —
+    // used to revert to the true target instead of wherever a hover/press/
+    // focus interaction happened to interrupt an in-flight reveal.
+    const restingTargets: Record<string, Primitive> = {};
+    for (const key of Object.keys(stateProp)) {
+      const viewRecord = viewProp as Record<string, Descriptor | Primitive> | undefined;
+      const animateRecord = animateProp as Record<string, Descriptor | Primitive> | undefined;
+      const target =
+        (viewRecord && key in viewRecord
+          ? extractRestingTarget(viewRecord[key])
+          : undefined) ??
+        (animateRecord && key in animateRecord
+          ? extractRestingTarget(animateRecord[key])
+          : undefined);
+      if (target !== undefined) restingTargets[key] = target;
+    }
 
     const context: StateAnimationContext = {
       node,
@@ -444,6 +462,7 @@ function useStateAnimations(
       initialValues: initialValuesRef.current,
       stateControllers: stateControllersRef.current,
       cleanup: [],
+      restingTargets,
     };
 
     applyStateAnimation(stateProp, isActive, context);
