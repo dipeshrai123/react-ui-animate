@@ -4,6 +4,8 @@ import dts from 'rollup-plugin-dts';
 
 import pkg from "./package.json" with { type: "json" };
 
+const isWatch = process.env.ROLLUP_WATCH === "true";
+
 // Main bundle configuration
 const mainConfig = {
   input: "src/index.ts",
@@ -33,9 +35,9 @@ const mainConfig = {
     terser({
       compress: {
         passes: 5,
-        drop_console: true,
+        drop_console: !isWatch,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info', 'console.debug', 'console.warn', 'console.error'],
+        pure_funcs: isWatch ? [] : ['console.log', 'console.info', 'console.debug', 'console.warn', 'console.error'],
         unused: true,
         dead_code: true,
         collapse_vars: true,
