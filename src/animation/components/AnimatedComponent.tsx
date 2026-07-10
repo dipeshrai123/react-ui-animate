@@ -13,6 +13,7 @@ import {
   applyStyles,
   applyTransforms,
   createTransformRenderer,
+  formatTransformString,
 } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive, SpringOptions } from '../types';
@@ -570,13 +571,6 @@ function useStateAnimations(
   }, []);
 }
 
-const LAYOUT_TRANSFORM_KEYS = [
-  'translateX',
-  'translateY',
-  'scaleX',
-  'scaleY',
-] as const;
-
 function useLayoutAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
@@ -587,8 +581,7 @@ function useLayoutAnimations(
 ) {
   const prevRectRef = useRef<DOMRect | null>(null);
   const hasMeasuredRef = useRef(false);
-  const ownsTransformKeysRef = useRef(false);
-  const warnedRef = useRef(false);
+  const initializedRef = useRef(false);
   const controllersRef = useRef<Array<{ cancel(): void }>>([]);
   const unsubsRef = useRef<Array<() => void>>([]);
 
@@ -602,15 +595,17 @@ function useLayoutAnimations(
       return;
     }
 
-    // getBoundingClientRect() reflects the currently-applied CSS transform, which
-    // would corrupt the measurement while a previous layout animation is still
-    // in flight (e.g. rapid re-triggers). Briefly neutralize our own transform
-    // to measure the true, untransformed layout box — this happens entirely
-    // within useLayoutEffect, before the browser paints, so it's never visible.
+    // getBoundingClientRect() reflects whatever CSS transform is currently
+    // applied (ours or the consumer's own), which would corrupt the
+    // measurement — e.g. while a previous layout animation is still in
+    // flight (rapid re-triggers), or if a static/animated transform is set
+    // via `style`/`animate`. Briefly neutralize the transform to measure the
+    // true, untransformed layout box — this happens entirely within
+    // useLayoutEffect, before the browser paints, so it's never visible.
     const previousTransform = node.style.transform;
-    if (ownsTransformKeysRef.current) node.style.transform = 'none';
+    node.style.transform = 'none';
     const nextRect = node.getBoundingClientRect();
-    if (ownsTransformKeysRef.current) node.style.transform = previousTransform;
+    node.style.transform = previousTransform;
 
     const prevRect = prevRectRef.current;
     const shouldCompare = hasMeasuredRef.current;
@@ -634,29 +629,16 @@ function useLayoutAnimations(
 
     const animateValues = animateValuesRef.current;
 
-    if (!ownsTransformKeysRef.current) {
-      const conflictingKey = LAYOUT_TRANSFORM_KEYS.find(
-        (key) => animateValues[key]
-      );
-
-      if (conflictingKey) {
-        if (process.env.NODE_ENV !== 'production' && !warnedRef.current) {
-          warnedRef.current = true;
-          console.warn(
-            `[react-ui-animate] "layout" was skipped because "${conflictingKey}" is already ` +
-              'animated via "animate"/"hover"/"press"/"view" on this element. "layout" reserves ' +
-              'translateX/translateY/scaleX/scaleY internally — move the other transform to a ' +
-              'nested element to use both together.'
-          );
-        }
-        return;
-      }
-
-      animateValues.translateX = new AnimateValue(0);
-      animateValues.translateY = new AnimateValue(0);
-      animateValues.scaleX = new AnimateValue(1);
-      animateValues.scaleY = new AnimateValue(1);
-      ownsTransformKeysRef.current = true;
+    // These pseudo-keys are reserved internally by `layout` (see apply.ts) so
+    // they never collide with a same-named transform the consumer is already
+    // animating via `animate`/`hover`/`press`/`view`/`style` — both compose as
+    // independent CSS transform functions instead of overwriting one another.
+    if (!initializedRef.current) {
+      animateValues.__layoutTranslateX = new AnimateValue(0);
+      animateValues.__layoutTranslateY = new AnimateValue(0);
+      animateValues.__layoutScaleX = new AnimateValue(1);
+      animateValues.__layoutScaleY = new AnimateValue(1);
+      initializedRef.current = true;
     }
 
     controllersRef.current.forEach((ctrl) => ctrl.cancel());
@@ -664,10 +646,10 @@ function useLayoutAnimations(
     unsubsRef.current.forEach((unsub) => unsub());
     unsubsRef.current = [];
 
-    const tx = animateValues.translateX;
-    const ty = animateValues.translateY;
-    const sx = animateValues.scaleX;
-    const sy = animateValues.scaleY;
+    const tx = animateValues.__layoutTranslateX;
+    const ty = animateValues.__layoutTranslateY;
+    const sx = animateValues.__layoutScaleX;
+    const sy = animateValues.__layoutScaleY;
 
     // Jump to the inverted delta instantly, then spring back to identity —
     // this is the classic FLIP technique (First, Last, Invert, Play).
@@ -678,7 +660,16 @@ function useLayoutAnimations(
 
     node.style.transformOrigin = 'top left';
 
-    const render = createTransformRenderer(node, animateValues);
+    // Compose with whatever else is contributing to this element's transform
+    // (static `style` values, and any `animate`/`hover`/`press`/`view`-driven
+    // AnimateValues already sitting in animateValuesRef) rather than replacing it.
+    const render = () => {
+      const { style } = propsRef.current;
+      node.style.transform = formatTransformString({
+        ...style,
+        ...animateValuesRef.current,
+      });
+    };
     render();
 
     unsubsRef.current = [

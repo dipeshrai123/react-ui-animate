@@ -163,10 +163,10 @@ lists, filterable grids, and accordions — no manual transform math required.
 </animate.div>
 ```
 
-> `layout` animates using `translateX`/`translateY`/`scaleX`/`scaleY` internally.
-> Avoid also animating those specific properties via `animate`/`hover`/`press`/`view`
-> on the same element — wrap the content in a nested element for extra custom
-> transforms instead.
+`layout` composes with any other transform you set on the same element — static
+`translateX`/`translateY`/`scale`/`rotate`/etc. in `style`, or values animated via
+`animate`/`hover`/`press`/`view` — so you can freely combine it with your own
+transforms without one overwriting the other.
 
 ### 2. useValue Hook
 

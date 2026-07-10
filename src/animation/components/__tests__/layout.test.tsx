@@ -2,6 +2,7 @@ import React, { act } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
+import { AnimateValue } from '../../values/AnimateValue';
 
 describe('layout animation', () => {
   let mockRect: { left: number; top: number; width: number; height: number };
@@ -77,6 +78,53 @@ describe('layout animation', () => {
     rerender(<animate.div data-testid="box" />);
 
     expect(el.style.transform).toBe('');
+  });
+
+  it('composes with a custom transform set via style, instead of dropping it', async () => {
+    const { rerender } = render(
+      <animate.div data-testid="box" layout style={{ translateY: 10 }} />
+    );
+    const el = screen.getByTestId('box');
+    expect(el.style.transform).toBe('translateY(10px)');
+
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    rerender(<animate.div data-testid="box" layout style={{ translateY: 10 }} />);
+
+    // The static translateY(10px) must survive alongside layout's own FLIP invert.
+    expect(el.style.transform).toBe(
+      'translateY(10px) translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    await waitFor(() => {
+      expect(el.style.transform).toBe(
+        'translateY(10px) translateX(0px) translateY(0px) scaleX(1) scaleY(1)'
+      );
+    });
+  });
+
+  it('composes with a real translateX key already in use on the same element, instead of one overwriting the other', () => {
+    const customTranslateX = new AnimateValue(5);
+
+    const { rerender } = render(
+      <animate.div data-testid="box" layout style={{ translateX: customTranslateX }} />
+    );
+    const el = screen.getByTestId('box');
+    expect(el.style.transform).toBe('translateX(5px)');
+
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    rerender(
+      <animate.div data-testid="box" layout style={{ translateX: customTranslateX }} />
+    );
+
+    // Both the pre-existing "translateX" and layout's own internal contribution
+    // must be present — neither should silently overwrite the other.
+    expect(el.style.transform).toBe(
+      'translateX(5px) translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
+    );
   });
 });
 

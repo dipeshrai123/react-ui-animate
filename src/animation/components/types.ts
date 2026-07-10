@@ -91,12 +91,9 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   /**
    * When true, automatically animates position and size changes caused by
    * layout shifts (reordering, resizing, insertion/removal of siblings, etc.)
-   * using a FLIP-style transform animation.
-   *
-   * Note: while `layout` is enabled, avoid also animating `translateX`,
-   * `translateY`, `scaleX` or `scaleY` via `animate`/`hover`/`press`/`view`
-   * on the same element — those transforms are reserved internally for the
-   * layout transition. Use a nested `animate.*` element for custom transforms.
+   * using a FLIP-style transform animation. Composes with any other transform
+   * already applied to the element (via `style`, `animate`, `hover`, `press`,
+   * or `view`) instead of overwriting it.
    */
   layout?: boolean;
   /**
