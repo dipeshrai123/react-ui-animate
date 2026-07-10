@@ -5,7 +5,7 @@ import type {
   SVGAttributes,
 } from 'react';
 import type { AnimateValue } from '../values/AnimateValue';
-import type { Descriptor, Primitive } from '../types';
+import type { Descriptor, Primitive, SpringOptions } from '../types';
 import { transformKeys } from '../utils/apply';
 import type { UseInViewOptions } from '../../hooks/observers/useInView';
 
@@ -56,6 +56,8 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   | 'focus'
   | 'view'
   | 'viewOptions'
+  | 'layout'
+  | 'layoutOptions'
 > & {
   style?: AnimateStyle;
   /**
@@ -86,6 +88,21 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * Options for the IntersectionObserver used by view animations.
    */
   viewOptions?: UseInViewOptions;
+  /**
+   * When true, automatically animates position and size changes caused by
+   * layout shifts (reordering, resizing, insertion/removal of siblings, etc.)
+   * using a FLIP-style transform animation.
+   *
+   * Note: while `layout` is enabled, avoid also animating `translateX`,
+   * `translateY`, `scaleX` or `scaleY` via `animate`/`hover`/`press`/`view`
+   * on the same element — those transforms are reserved internally for the
+   * layout transition. Use a nested `animate.*` element for custom transforms.
+   */
+  layout?: boolean;
+  /**
+   * Spring options used for the `layout` transition.
+   */
+  layoutOptions?: SpringOptions;
 };
 
 export function combineRefs<T>(

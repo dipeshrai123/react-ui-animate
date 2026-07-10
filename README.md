@@ -145,6 +145,29 @@ React to user interactions with `hover`, `press`, `focus`, and `view` props:
 </animate.div>
 ```
 
+**Layout Animations** - Automatically animate position and size changes caused by reordering, filtering, or resizing:
+
+```tsx
+<animate.div layout style={{ padding: 20 }}>
+  I smoothly animate to my new position/size whenever the layout changes
+</animate.div>
+```
+
+`layout` measures the element before and after each render and plays a FLIP-style
+transform animation (translate + scale) between the two. It's ideal for reorderable
+lists, filterable grids, and accordions — no manual transform math required.
+
+```tsx
+<animate.div layout layoutOptions={{ stiffness: 300, damping: 30 }}>
+  Custom spring
+</animate.div>
+```
+
+> `layout` animates using `translateX`/`translateY`/`scaleX`/`scaleY` internally.
+> Avoid also animating those specific properties via `animate`/`hover`/`press`/`view`
+> on the same element — wrap the content in a nested element for extra custom
+> transforms instead.
+
 ### 2. useValue Hook
 
 Create and control animated values programmatically:
@@ -693,6 +716,8 @@ import { animate, withSpring, hoverScale, pressScale } from 'react-ui-animate';
 | `focus` | `AnimateProp` | Animations on focus |
 | `view` | `AnimateProp` | Animations when entering viewport |
 | `viewOptions` | `UseInViewOptions` | IntersectionObserver options |
+| `layout` | `boolean` | Automatically animates position/size changes (FLIP) |
+| `layoutOptions` | `SpringOptions` | Spring options for the `layout` transition |
 
 ### Callbacks
 
