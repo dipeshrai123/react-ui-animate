@@ -29,9 +29,9 @@ const FAQS: FAQItem[] = [
   },
   {
     id: 4,
-    question: 'Can I combine it with spring options?',
+    question: 'Can I tune the transition?',
     answer:
-      'Yes, pass `layoutOptions` with `stiffness`, `damping`, and `mass` to tune the feel of the transition, just like any other spring-based animation in the library.',
+      'Yes — pass `layoutOptions={withSpring({ stiffness, damping })}` or `layoutOptions={withTiming({ duration })}`, the same descriptor helpers used by `animate` / `hover` / `exit`.',
   },
   {
     id: 5,

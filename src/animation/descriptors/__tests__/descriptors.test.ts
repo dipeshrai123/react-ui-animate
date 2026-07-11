@@ -51,6 +51,23 @@ describe('descriptors', () => {
       const descriptor = withSpring('100px');
       expect(descriptor.to).toBe('100px');
     });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withSpring({ stiffness: 400, damping: 32 });
+
+      expect(descriptor.type).toBe('spring');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.stiffness).toBe(400);
+      expect(descriptor.options?.damping).toBe(32);
+      expect(descriptor.options?.mass).toBe(1);
+    });
+
+    it('still treats object values as animation targets', () => {
+      const descriptor = withSpring({ x: 10, y: 20 });
+
+      expect(descriptor.to).toEqual({ x: 10, y: 20 });
+      expect(descriptor.options?.stiffness).toBe(158);
+    });
   });
 
   describe('withTiming', () => {
@@ -95,6 +112,15 @@ describe('descriptors', () => {
     it('handles string values', () => {
       const descriptor = withTiming('rgba(255,0,0,1)');
       expect(descriptor.to).toBe('rgba(255,0,0,1)');
+    });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withTiming({ duration: 300, easing: Easing.linear });
+
+      expect(descriptor.type).toBe('timing');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.duration).toBe(300);
+      expect(descriptor.options?.easing).toBe(Easing.linear);
     });
   });
 

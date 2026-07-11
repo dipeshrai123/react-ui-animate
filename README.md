@@ -158,8 +158,12 @@ transform animation (translate + scale) between the two. It's ideal for reordera
 lists, filterable grids, and accordions — no manual transform math required.
 
 ```tsx
-<animate.div layout layoutOptions={{ stiffness: 300, damping: 30 }}>
+<animate.div layout layoutOptions={withSpring({ stiffness: 300, damping: 30 })}>
   Custom spring
+</animate.div>
+
+<animate.div layout layoutOptions={withTiming({ duration: 280 })}>
+  Timed layout transition
 </animate.div>
 ```
 
@@ -181,6 +185,7 @@ function Tabs({ activeTab, tabs }) {
           {tab === activeTab && (
             <animate.div
               layoutId="tab-indicator"
+              layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
               style={{ height: 2, backgroundColor: 'blue' }}
             />
           )}
@@ -196,10 +201,10 @@ mounts elsewhere with the same `layoutId`, the new element automatically
 plays a FLIP-style transform animation from the previous element's last
 known position/size to its own — no manual coordinate tracking required.
 This is the same underlying FLIP mechanism as `layout`, so `layoutOptions`
-configures its spring the same way:
+accepts the same `withSpring` / `withTiming` descriptors:
 
 ```tsx
-<animate.div layoutId="card" layoutOptions={{ stiffness: 300, damping: 30 }} />
+<animate.div layoutId="card" layoutOptions={withTiming({ duration: 300 })} />
 ```
 
 `layoutId`s are tracked in a single global registry, so keep each one unique
@@ -790,7 +795,7 @@ import { animate, withSpring, hoverScale, pressScale } from 'react-ui-animate';
 | `view` | `AnimateProp` | Animations when entering viewport |
 | `viewOptions` | `UseInViewOptions` | IntersectionObserver options |
 | `layout` | `boolean` | Automatically animates position/size changes (FLIP) |
-| `layoutOptions` | `SpringOptions` | Spring options for the `layout`/`layoutId` transition |
+| `layoutOptions` | `LayoutOptions` | `withSpring` / `withTiming` descriptor (or raw spring options) for `layout`/`layoutId` |
 | `layoutId` | `string` | Morphs into/from another element sharing the same `layoutId` (FLIP) |
 
 ### Callbacks

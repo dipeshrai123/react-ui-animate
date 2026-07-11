@@ -2,8 +2,8 @@ import type { MutableRefObject } from 'react';
 
 import { formatTransformString } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
-import type { Primitive, SpringOptions } from '../types';
-import { spring } from '../drivers/spring';
+import type { Descriptor, Primitive, SpringOptions } from '../types';
+import { buildAnimation } from '../drivers/builder';
 import type { AnimateAttributes } from '../components/types';
 
 // Key set for one FLIP overlay's pseudo transform properties. `layout` and
@@ -47,16 +47,69 @@ export type FlipAnimationRefs = {
   initializedRef: MutableRefObject<boolean>;
 };
 
+/**
+ * Transition config for `layout` / `layoutId`. Prefer the same descriptor
+ * helpers used everywhere else in the library — options-only form, since
+ * FLIP always settles at identity and there is no target value to declare:
+ *
+ *   layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
+ *   layoutOptions={withTiming({ duration: 300 })}
+ *
+ * Raw `SpringOptions` remain supported for backwards compatibility and are
+ * treated as an implicit spring.
+ */
+export type LayoutOptions = Descriptor | SpringOptions;
+
+const DEFAULT_LAYOUT_SPRING: SpringOptions = {
+  stiffness: 500,
+  damping: 40,
+  mass: 1,
+};
+
+function isDescriptor(value: LayoutOptions): value is Descriptor {
+  return typeof value === 'object' && value !== null && 'type' in value;
+}
+
+// Resolves `layoutOptions` into a spring/timing descriptor. Only those two
+// drivers make sense for a FLIP settle-to-identity; anything else falls back
+// to the default layout spring.
+export function resolveLayoutTransition(
+  layoutOptions: LayoutOptions | undefined
+): Descriptor {
+  if (!layoutOptions) {
+    return { type: 'spring', to: 0, options: { ...DEFAULT_LAYOUT_SPRING } };
+  }
+
+  if (isDescriptor(layoutOptions)) {
+    if (layoutOptions.type === 'spring' || layoutOptions.type === 'timing') {
+      return {
+        type: layoutOptions.type,
+        to: 0,
+        options: { ...layoutOptions.options },
+      };
+    }
+
+    return { type: 'spring', to: 0, options: { ...DEFAULT_LAYOUT_SPRING } };
+  }
+
+  return {
+    type: 'spring',
+    to: 0,
+    options: { ...DEFAULT_LAYOUT_SPRING, ...layoutOptions },
+  };
+}
+
 // Shared FLIP (First, Last, Invert, Play) animation used by both the
 // `layout` prop (diffing an element's own rect across renders) and the
 // `layoutId` prop (diffing against a rect recorded by a different element).
-// Jumps to the inverted delta instantly, then springs back to identity.
+// Jumps to the inverted delta instantly, then animates back to identity
+// via the same `withSpring` / `withTiming` drivers used elsewhere.
 export function runFlipAnimation(
   node: HTMLElement,
   delta: FlipDelta,
   keys: FlipKeys,
   refs: FlipAnimationRefs,
-  layoutOptions: SpringOptions | undefined
+  layoutOptions: LayoutOptions | undefined
 ) {
   const {
     animateValuesRef,
@@ -111,18 +164,16 @@ export function runFlipAnimation(
     sy.subscribe(render),
   ];
 
-  const options: SpringOptions = {
-    stiffness: 500,
-    damping: 40,
-    mass: 1,
-    ...layoutOptions,
-  };
+  const transition = resolveLayoutTransition(layoutOptions);
 
+  // Translate channels settle at 0; scale channels settle at 1. Descriptor
+  // `to` (when present) is ignored so options-only forms like
+  // `withTiming({ duration: 300 })` work as layout transitions.
   const controllers = [
-    spring(tx, 0, options),
-    spring(ty, 0, options),
-    spring(sx, 1, options),
-    spring(sy, 1, options),
+    buildAnimation(tx, { ...transition, to: 0 }),
+    buildAnimation(ty, { ...transition, to: 0 }),
+    buildAnimation(sx, { ...transition, to: 1 }),
+    buildAnimation(sy, { ...transition, to: 1 }),
   ];
   controllersRef.current = controllers;
   controllers.forEach((ctrl) => ctrl.start());

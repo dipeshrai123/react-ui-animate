@@ -87,6 +87,7 @@ export type {
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
 } from './components/types';
+export type { LayoutOptions } from './layout';
 
 // ============================================================================
 // Animation Recipes

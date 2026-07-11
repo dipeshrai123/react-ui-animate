@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { animate, Presence, withTiming } from 'react-ui-animate';
+import { animate, Presence, withSpring, withTiming } from 'react-ui-animate';
 import { ExampleLayout } from '../../animations/shared';
 
 interface Card {
@@ -87,7 +87,7 @@ const Example = () => {
             <animate.div
               key={card.id}
               layout
-              layoutOptions={{ stiffness: 260, damping: 28 }}
+              layoutOptions={withSpring({ stiffness: 260, damping: 28 })}
               onClick={() => setExpandedId(isExpanded ? null : card.id)}
               style={
                 isExpanded

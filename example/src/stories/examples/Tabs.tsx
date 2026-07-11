@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { animate } from 'react-ui-animate';
+import { animate, withTiming } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
 
 const TABS = ['Overview', 'Features', 'Pricing', 'FAQ'];
@@ -45,7 +45,7 @@ function Example() {
             {tab === activeTab && (
               <animate.div
                 layoutId="tab-indicator"
-                layoutOptions={{ stiffness: 400, damping: 32 }}
+                layoutOptions={withTiming({ duration: 300 })}
                 style={{
                   position: 'absolute',
                   inset: 0,

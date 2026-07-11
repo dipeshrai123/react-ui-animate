@@ -94,6 +94,7 @@ export type {
   AnimateAttributes,
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
+  LayoutOptions,
   PresenceProps,
   PresenceContextValue,
   AnimateController,

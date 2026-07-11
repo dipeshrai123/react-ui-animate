@@ -3,6 +3,39 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../../values/AnimateValue';
+import { withSpring, withTiming } from '../../descriptors';
+import { resolveLayoutTransition } from '../../layout';
+
+describe('resolveLayoutTransition', () => {
+  it('defaults to the layout spring when options are omitted', () => {
+    expect(resolveLayoutTransition(undefined)).toEqual({
+      type: 'spring',
+      to: 0,
+      options: { stiffness: 500, damping: 40, mass: 1 },
+    });
+  });
+
+  it('treats raw spring option objects as an implicit spring (back-compat)', () => {
+    expect(resolveLayoutTransition({ stiffness: 300, damping: 30 })).toEqual({
+      type: 'spring',
+      to: 0,
+      options: { stiffness: 300, damping: 30, mass: 1 },
+    });
+  });
+
+  it('passes through withSpring / withTiming descriptors', () => {
+    expect(resolveLayoutTransition(withSpring({ stiffness: 200 }))).toMatchObject({
+      type: 'spring',
+      options: expect.objectContaining({ stiffness: 200 }),
+    });
+    expect(
+      resolveLayoutTransition(withTiming({ duration: 250 }))
+    ).toMatchObject({
+      type: 'timing',
+      options: expect.objectContaining({ duration: 250 }),
+    });
+  });
+});
 
 describe('layout animation', () => {
   let mockRect: { left: number; top: number; width: number; height: number };
@@ -125,6 +158,74 @@ describe('layout animation', () => {
     expect(el.style.transform).toBe(
       'translateX(5px) translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
     );
+  });
+
+  it('accepts withTiming as layoutOptions and settles at identity', async () => {
+    const { rerender } = render(
+      <animate.div
+        data-testid="box"
+        layout
+        layoutOptions={withTiming({ duration: 200 })}
+      />
+    );
+    const el = screen.getByTestId('box');
+
+    mockRect = { left: 100, top: 0, width: 100, height: 50 };
+    rerender(
+      <animate.div
+        data-testid="box"
+        layout
+        layoutOptions={withTiming({ duration: 200 })}
+      />
+    );
+
+    expect(el.style.transform).toBe(
+      'translateX(-100px) translateY(0px) scaleX(1) scaleY(1)'
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(250);
+    });
+
+    await waitFor(() => {
+      expect(el.style.transform).toBe(
+        'translateX(0px) translateY(0px) scaleX(1) scaleY(1)'
+      );
+    });
+  });
+
+  it('accepts withSpring as layoutOptions and settles at identity', async () => {
+    const { rerender } = render(
+      <animate.div
+        data-testid="box"
+        layout
+        layoutOptions={withSpring({ stiffness: 400, damping: 40 })}
+      />
+    );
+    const el = screen.getByTestId('box');
+
+    mockRect = { left: 80, top: 40, width: 100, height: 50 };
+    rerender(
+      <animate.div
+        data-testid="box"
+        layout
+        layoutOptions={withSpring({ stiffness: 400, damping: 40 })}
+      />
+    );
+
+    expect(el.style.transform).toBe(
+      'translateX(-80px) translateY(-40px) scaleX(1) scaleY(1)'
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    await waitFor(() => {
+      expect(el.style.transform).toBe(
+        'translateX(0px) translateY(0px) scaleX(1) scaleY(1)'
+      );
+    });
   });
 });
 

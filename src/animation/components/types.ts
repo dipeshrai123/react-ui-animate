@@ -5,9 +5,10 @@ import type {
   SVGAttributes,
 } from 'react';
 import type { AnimateValue } from '../values/AnimateValue';
-import type { Descriptor, Primitive, SpringOptions } from '../types';
+import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
 import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import type { LayoutOptions } from '../layout/flip';
 
 // Helper type to accept any AnimateValue with a compatible type
 export type AnimateValueCompatible =
@@ -98,9 +99,16 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    */
   layout?: boolean;
   /**
-   * Spring options used for the `layout` transition.
+   * Transition used by `layout` / `layoutId`. Same descriptor helpers as
+   * `animate` / `hover` / etc., in options-only form (no target — FLIP
+   * always settles at identity):
+   *
+   *   layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
+   *   layoutOptions={withTiming({ duration: 300 })}
+   *
+   * Raw spring option objects are still accepted for backwards compatibility.
    */
-  layoutOptions?: SpringOptions;
+  layoutOptions?: LayoutOptions;
   /**
    * Identifies this element as part of a shared layout transition. When an
    * element carrying a given `layoutId` unmounts (or moves elsewhere) and a
@@ -108,8 +116,8 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * automatically plays a FLIP-style transform animation from the previous
    * element's last known position/size to its own — useful for tab
    * indicators, expanding cards, and other "morph between elements"
-   * patterns. Uses `layoutOptions` for the spring configuration. Note:
-   * `layoutId`s are tracked in a single global registry, so keep them
+   * patterns. Uses `layoutOptions` for the transition (spring or timing).
+   * Note: `layoutId`s are tracked in a single global registry, so keep them
    * unique per active transition group.
    */
   layoutId?: string;

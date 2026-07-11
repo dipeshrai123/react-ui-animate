@@ -6,9 +6,11 @@ export {
   diffRects,
   measureUntransformedRect,
   readStrandedDisplacement,
+  resolveLayoutTransition,
   runFlipAnimation,
   type FlipDelta,
   type FlipKeys,
+  type LayoutOptions,
 } from './flip';
 export {
   LAYOUT_ID_REGISTRY_KEY,
