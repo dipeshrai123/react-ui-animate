@@ -213,3 +213,125 @@ describe('layout animation — rapid re-triggering', () => {
     });
   });
 });
+
+describe('layoutId shared transitions', () => {
+  let mockRect: { left: number; top: number; width: number; height: number };
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockRect = { left: 0, top: 0, width: 100, height: 50 };
+    jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(
+        () =>
+          ({
+            ...mockRect,
+            right: mockRect.left + mockRect.width,
+            bottom: mockRect.top + mockRect.height,
+            x: mockRect.left,
+            y: mockRect.top,
+            toJSON() {},
+          }) as DOMRect
+      );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('does not animate when it is the first element to ever claim a given layoutId', () => {
+    const id = `test-first-claim-${Math.random()}`;
+    render(<animate.div data-testid="box" layoutId={id} />);
+    const el = screen.getByTestId('box');
+    expect(el.style.transform).toBe('');
+  });
+
+  it('morphs a newly mounted element from the rect last recorded under the same layoutId', async () => {
+    const id = `test-morph-${Math.random()}`;
+
+    mockRect = { left: 0, top: 0, width: 100, height: 50 };
+    const { unmount } = render(
+      <animate.div data-testid="source" layoutId={id} />
+    );
+    unmount();
+
+    // A different element claims the same layoutId at a new position/size.
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    render(<animate.div data-testid="target" layoutId={id} />);
+    const el = screen.getByTestId('target');
+
+    // Inverted back to the source element's last recorded position/size.
+    expect(el.style.transform).toBe(
+      'translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
+    );
+    expect(el.style.transformOrigin).toBe('top left');
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    await waitFor(() => {
+      expect(el.style.transform).toBe(
+        'translateX(0px) translateY(0px) scaleX(1) scaleY(1)'
+      );
+    });
+  });
+
+  it('ignores layoutId shifts smaller than the animation threshold', () => {
+    const id = `test-threshold-${Math.random()}`;
+
+    mockRect = { left: 0, top: 0, width: 100, height: 50 };
+    const { unmount } = render(<animate.div data-testid="source" layoutId={id} />);
+    unmount();
+
+    mockRect = { left: 0.1, top: 0, width: 100, height: 50 };
+    render(<animate.div data-testid="target" layoutId={id} />);
+    const el = screen.getByTestId('target');
+
+    expect(el.style.transform).toBe('');
+  });
+
+  it('does nothing when layoutId is absent', () => {
+    const { rerender } = render(<animate.div data-testid="box" />);
+    const el = screen.getByTestId('box');
+
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    rerender(<animate.div data-testid="box" />);
+
+    expect(el.style.transform).toBe('');
+  });
+
+  it('composes with a custom transform set via style, instead of dropping it', async () => {
+    const id = `test-compose-${Math.random()}`;
+
+    mockRect = { left: 0, top: 0, width: 100, height: 50 };
+    const { unmount } = render(<animate.div data-testid="source" layoutId={id} />);
+    unmount();
+
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    render(
+      <animate.div data-testid="target" layoutId={id} style={{ translateY: 10 }} />
+    );
+    const el = screen.getByTestId('target');
+
+    expect(el.style.transform).toBe(
+      'translateY(10px) translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
+    );
+  });
+
+  it('behaves like `layout` when the same persisting element re-registers under its own layoutId', async () => {
+    const id = `test-persist-${Math.random()}`;
+
+    const { rerender } = render(<animate.div data-testid="box" layoutId={id} />);
+    const el = screen.getByTestId('box');
+    expect(el.style.transform).toBe('');
+
+    mockRect = { left: 150, top: 80, width: 200, height: 50 };
+    rerender(<animate.div data-testid="box" layoutId={id} />);
+
+    expect(el.style.transform).toBe(
+      'translateX(-150px) translateY(-80px) scaleX(0.5) scaleY(1)'
+    );
+  });
+});

@@ -13,12 +13,10 @@ import {
   applyStyles,
   applyTransforms,
   createTransformRenderer,
-  formatTransformString,
 } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
-import type { Descriptor, Primitive, SpringOptions } from '../types';
+import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { spring } from '../drivers/spring';
 import { PresenceContext } from '../modules/Presence';
 import { getInitialValue } from '../utils/initialValues';
 import {
@@ -27,6 +25,10 @@ import {
   type StateAnimationContext,
 } from '../utils/stateAnimations';
 import { setupExitAnimations } from '../utils/exitAnimations';
+import {
+  useLayoutAnimations,
+  useLayoutIdAnimations,
+} from '../layout';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
 import { useInView } from '../../hooks/observers/useInView';
@@ -590,139 +592,6 @@ function useStateAnimations(
   }, []);
 }
 
-function useLayoutAnimations(
-  nodeRef: React.RefObject<HTMLElement>,
-  propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
-  isExitingRef: React.MutableRefObject<boolean>,
-  animateValuesRef: React.MutableRefObject<
-    Record<string, AnimateValue<Primitive>>
-  >
-) {
-  const prevRectRef = useRef<DOMRect | null>(null);
-  const hasMeasuredRef = useRef(false);
-  const initializedRef = useRef(false);
-  const controllersRef = useRef<Array<{ cancel(): void }>>([]);
-  const unsubsRef = useRef<Array<() => void>>([]);
-
-  useLayoutEffect(() => {
-    const node = nodeRef.current;
-    const { layout, layoutOptions } = propsRef.current;
-
-    if (!node || !layout || isExitingRef.current) {
-      hasMeasuredRef.current = false;
-      prevRectRef.current = null;
-      return;
-    }
-
-    // getBoundingClientRect() reflects whatever CSS transform is currently
-    // applied (ours or the consumer's own), which would corrupt the
-    // measurement — e.g. while a previous layout animation is still in
-    // flight (rapid re-triggers), or if a static/animated transform is set
-    // via `style`/`animate`. Briefly neutralize the transform to measure the
-    // true, untransformed layout box — this happens entirely within
-    // useLayoutEffect, before the browser paints, so it's never visible.
-    const previousTransform = node.style.transform;
-    node.style.transform = 'none';
-    const nextRect = node.getBoundingClientRect();
-    node.style.transform = previousTransform;
-
-    const prevRect = prevRectRef.current;
-    const shouldCompare = hasMeasuredRef.current;
-    hasMeasuredRef.current = true;
-    prevRectRef.current = nextRect;
-
-    // Skip the first measurement (mount) and degenerate (hidden) rects
-    if (!shouldCompare || !prevRect) return;
-    if (nextRect.width === 0 || nextRect.height === 0) return;
-
-    const deltaX = prevRect.left - nextRect.left;
-    const deltaY = prevRect.top - nextRect.top;
-    const scaleX = prevRect.width / nextRect.width;
-    const scaleY = prevRect.height / nextRect.height;
-
-    const hasMoved = Math.abs(deltaX) > 0.5 || Math.abs(deltaY) > 0.5;
-    const hasResized =
-      Math.abs(scaleX - 1) > 0.01 || Math.abs(scaleY - 1) > 0.01;
-
-    if (!hasMoved && !hasResized) return;
-
-    const animateValues = animateValuesRef.current;
-
-    // These pseudo-keys are reserved internally by `layout` (see apply.ts) so
-    // they never collide with a same-named transform the consumer is already
-    // animating via `animate`/`hover`/`press`/`view`/`style` — both compose as
-    // independent CSS transform functions instead of overwriting one another.
-    if (!initializedRef.current) {
-      animateValues.__layoutTranslateX = new AnimateValue(0);
-      animateValues.__layoutTranslateY = new AnimateValue(0);
-      animateValues.__layoutScaleX = new AnimateValue(1);
-      animateValues.__layoutScaleY = new AnimateValue(1);
-      initializedRef.current = true;
-    }
-
-    controllersRef.current.forEach((ctrl) => ctrl.cancel());
-    controllersRef.current = [];
-    unsubsRef.current.forEach((unsub) => unsub());
-    unsubsRef.current = [];
-
-    const tx = animateValues.__layoutTranslateX;
-    const ty = animateValues.__layoutTranslateY;
-    const sx = animateValues.__layoutScaleX;
-    const sy = animateValues.__layoutScaleY;
-
-    // Jump to the inverted delta instantly, then spring back to identity —
-    // this is the classic FLIP technique (First, Last, Invert, Play).
-    tx.set(deltaX);
-    ty.set(deltaY);
-    sx.set(scaleX);
-    sy.set(scaleY);
-
-    node.style.transformOrigin = 'top left';
-
-    // Compose with whatever else is contributing to this element's transform
-    // (static `style` values, and any `animate`/`hover`/`press`/`view`-driven
-    // AnimateValues already sitting in animateValuesRef) rather than replacing it.
-    const render = () => {
-      const { style } = propsRef.current;
-      node.style.transform = formatTransformString({
-        ...style,
-        ...animateValuesRef.current,
-      });
-    };
-    render();
-
-    unsubsRef.current = [
-      tx.subscribe(render),
-      ty.subscribe(render),
-      sx.subscribe(render),
-      sy.subscribe(render),
-    ];
-
-    const options: SpringOptions = {
-      stiffness: 500,
-      damping: 40,
-      mass: 1,
-      ...layoutOptions,
-    };
-
-    const controllers = [
-      spring(tx, 0, options),
-      spring(ty, 0, options),
-      spring(sx, 1, options),
-      spring(sy, 1, options),
-    ];
-    controllersRef.current = controllers;
-    controllers.forEach((ctrl) => ctrl.start());
-  });
-
-  useEffect(() => {
-    return () => {
-      controllersRef.current.forEach((ctrl) => ctrl.cancel());
-      unsubsRef.current.forEach((unsub) => unsub());
-    };
-  }, []);
-}
-
 export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
   tag: Tag
 ) {
@@ -775,6 +644,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     );
 
     useLayoutAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useLayoutIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
 
     // Clean destructuring of props to pass only valid HTML attributes to the DOM
     const {
@@ -787,6 +657,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       viewOptions,
       layout,
       layoutOptions,
+      layoutId,
       style,
       ...restProps
     } = props;

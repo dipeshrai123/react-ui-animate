@@ -168,6 +168,44 @@ lists, filterable grids, and accordions — no manual transform math required.
 `animate`/`hover`/`press`/`view` — so you can freely combine it with your own
 transforms without one overwriting the other.
 
+**Shared Layout Transitions** — Morph one element into another across
+components with `layoutId`:
+
+```tsx
+function Tabs({ activeTab, tabs }) {
+  return (
+    <div style={{ display: 'flex' }}>
+      {tabs.map((tab) => (
+        <button key={tab} onClick={() => setActiveTab(tab)}>
+          {tab}
+          {tab === activeTab && (
+            <animate.div
+              layoutId="tab-indicator"
+              style={{ height: 2, backgroundColor: 'blue' }}
+            />
+          )}
+        </button>
+      ))}
+    </div>
+  );
+}
+```
+
+When an element carrying a given `layoutId` unmounts and a different element
+mounts elsewhere with the same `layoutId`, the new element automatically
+plays a FLIP-style transform animation from the previous element's last
+known position/size to its own — no manual coordinate tracking required.
+This is the same underlying FLIP mechanism as `layout`, so `layoutOptions`
+configures its spring the same way:
+
+```tsx
+<animate.div layoutId="card" layoutOptions={{ stiffness: 300, damping: 30 }} />
+```
+
+`layoutId`s are tracked in a single global registry, so keep each one unique
+per active transition group (e.g. don't reuse `"tab-indicator"` for two
+unrelated tab bars rendered at once).
+
 ### 2. useValue Hook
 
 Create and control animated values programmatically:
@@ -307,6 +345,40 @@ withSequence([
   withDelay(500),
   withTiming(1, { duration: 500 }),
 ])
+```
+
+#### withStagger
+
+Delays an animation proportionally to an item's index, so a list of items
+animates in one after another instead of all at once:
+
+```tsx
+import { animate, useValue, withStagger, withSpring } from 'react-ui-animate';
+
+function List({ items }) {
+  return (
+    <>
+      {items.map((item, index) => (
+        <animate.div
+          key={item.id}
+          style={{ opacity: 0 }}
+          animate={{
+            opacity: withStagger(index, withSpring(1), { each: 50 }),
+          }}
+        >
+          {item.label}
+        </animate.div>
+      ))}
+    </>
+  );
+}
+```
+
+```tsx
+withStagger(index, descriptor, {
+  each: 50,   // Delay step between consecutive items in ms (default: 50)
+  delay: 0,   // Base delay applied before staggering starts, in ms (default: 0)
+})
 ```
 
 ### 4. Animation Recipes
@@ -704,6 +776,7 @@ import { animate, withSpring, hoverScale, pressScale } from 'react-ui-animate';
 | `withSequence(animations)` | Run sequentially | `animations` array, callbacks |
 | `withLoop(animation, iterations)` | Repeat animation | `iterations` (0 = infinite), callbacks |
 | `withDelay(ms)` | Add delay | `delay` in milliseconds |
+| `withStagger(index, descriptor, options?)` | Delay proportional to index | `each` (ms/step, default 50), `delay` (base ms, default 0) |
 
 ### Animate Component Props
 
@@ -717,7 +790,8 @@ import { animate, withSpring, hoverScale, pressScale } from 'react-ui-animate';
 | `view` | `AnimateProp` | Animations when entering viewport |
 | `viewOptions` | `UseInViewOptions` | IntersectionObserver options |
 | `layout` | `boolean` | Automatically animates position/size changes (FLIP) |
-| `layoutOptions` | `SpringOptions` | Spring options for the `layout` transition |
+| `layoutOptions` | `SpringOptions` | Spring options for the `layout`/`layoutId` transition |
+| `layoutId` | `string` | Morphs into/from another element sharing the same `layoutId` (FLIP) |
 
 ### Callbacks
 

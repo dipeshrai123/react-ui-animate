@@ -3,8 +3,7 @@ import {
   useScroll,
   animate,
   useValue,
-  withSequence,
-  withDelay,
+  withStagger,
   withSpring,
 } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
@@ -21,7 +20,7 @@ const StaggerItem = ({
   const [top, setTop] = useValue(0);
 
   useLayoutEffect(() => {
-    setTop(withSequence([withDelay(index * 50), withSpring(y)]));
+    setTop(withStagger(index, withSpring(y), { each: 50 }));
   }, [y, index, setTop]);
 
   return (

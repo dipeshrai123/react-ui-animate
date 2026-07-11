@@ -54,13 +54,13 @@ const mainConfig = {
         negate_iife: true,
         if_return: true,
         arrows: true,
-        unsafe: true,
-        unsafe_comps: true,
-        unsafe_math: true,
-        unsafe_methods: true,
-        unsafe_proto: true,
-        unsafe_regexp: true,
-        unsafe_undefined: true,
+        unsafe: false,
+        unsafe_comps: false,
+        unsafe_math: false,
+        unsafe_methods: false,
+        unsafe_proto: false,
+        unsafe_regexp: false,
+        unsafe_undefined: false,
         keep_infinity: true,
       },
       format: {
@@ -70,7 +70,13 @@ const mainConfig = {
       },
       mangle: {
         properties: {
-          regex: /^_/,
+          // Mangle single-underscore private fields (`_foo`), but never
+          // dunder protocol keys (`__layout*`, `__layoutId*`). Those names
+          // are shared across modules as string values in one place and
+          // object keys in another; terser's property mangler rewrites the
+          // keys but leaves the string values alone, which silently turns
+          // every layout / layoutId FLIP into an empty transform.
+          regex: /^_[^_]/
         },
         safari10: true,
         toplevel: false,

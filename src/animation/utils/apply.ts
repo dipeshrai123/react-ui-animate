@@ -67,6 +67,13 @@ export const LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION = {
   __layoutTranslateY: 'translateY',
   __layoutScaleX: 'scaleX',
   __layoutScaleY: 'scaleY',
+  // Separate namespace for the `layoutId` shared transition's own FLIP
+  // contribution, so it can never collide with the `layout` prop's pseudo
+  // keys above if both happen to be set on the same element.
+  __layoutIdTranslateX: 'translateX',
+  __layoutIdTranslateY: 'translateY',
+  __layoutIdScaleX: 'scaleX',
+  __layoutIdScaleY: 'scaleY',
 } as const;
 
 export type LayoutTransformKey = keyof typeof LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION;

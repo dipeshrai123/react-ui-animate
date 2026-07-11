@@ -58,6 +58,7 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   | 'viewOptions'
   | 'layout'
   | 'layoutOptions'
+  | 'layoutId'
 > & {
   style?: AnimateStyle;
   /**
@@ -100,6 +101,18 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * Spring options used for the `layout` transition.
    */
   layoutOptions?: SpringOptions;
+  /**
+   * Identifies this element as part of a shared layout transition. When an
+   * element carrying a given `layoutId` unmounts (or moves elsewhere) and a
+   * different element mounts with the same `layoutId`, the new element
+   * automatically plays a FLIP-style transform animation from the previous
+   * element's last known position/size to its own — useful for tab
+   * indicators, expanding cards, and other "morph between elements"
+   * patterns. Uses `layoutOptions` for the spring configuration. Note:
+   * `layoutId`s are tracked in a single global registry, so keep them
+   * unique per active transition group.
+   */
+  layoutId?: string;
 };
 
 export function combineRefs<T>(

@@ -22,7 +22,7 @@
   "scripts": {
     "start": "npm run storybook",
     "build": "npm run build-storybook",
-    "storybook": "storybook dev -p 6006",
+    "storybook": "storybook dev -p 6006 --exact-port",
     "build-storybook": "storybook build"
   },
   "eslintConfig": {

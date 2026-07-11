@@ -3,6 +3,7 @@ import {
   DecayOptions,
   Descriptor,
   SpringOptions,
+  StaggerOptions,
   TimingOptions,
 } from './types';
 
@@ -75,6 +76,25 @@ export const withSequence = (
     onComplete: opts?.onComplete,
   },
 });
+
+// Wraps `descriptor` with a delay proportional to `index`, so animating a
+// list of items with increasing `index` makes them start one after another
+// instead of all at once. `each` is the delay step between consecutive
+// items (default 50ms); `delay` is a base delay applied before staggering
+// starts (default 0).
+export const withStagger = (
+  index: number,
+  descriptor: Descriptor,
+  opts?: StaggerOptions
+): Descriptor => {
+  const each = opts?.each ?? 50;
+  const baseDelay = opts?.delay ?? 0;
+  const totalDelay = baseDelay + index * each;
+
+  if (totalDelay <= 0) return descriptor;
+
+  return withSequence([withDelay(totalDelay), descriptor]);
+};
 
 export const withLoop = (
   animation: Descriptor,

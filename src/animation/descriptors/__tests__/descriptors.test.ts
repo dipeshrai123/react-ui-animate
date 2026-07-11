@@ -5,6 +5,7 @@ import {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -231,6 +232,45 @@ describe('descriptors', () => {
       const descriptor = withLoop(sequence, 2);
 
       expect(descriptor.options?.animation).toBe(sequence);
+    });
+  });
+
+  describe('withStagger', () => {
+    it('returns the descriptor unchanged for index 0 with default options', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(0, anim);
+
+      expect(descriptor).toBe(anim);
+    });
+
+    it('wraps the descriptor in a delayed sequence proportional to index', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(3, anim, { each: 50 });
+
+      expect(descriptor.type).toBe('sequence');
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(150));
+      expect(descriptor.options?.animations?.[1]).toBe(anim);
+    });
+
+    it('uses a default step of 50ms when `each` is omitted', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(2, anim);
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(100));
+    });
+
+    it('adds a base `delay` before staggering starts', () => {
+      const anim = withTiming(1);
+      const descriptor = withStagger(1, anim, { each: 20, delay: 200 });
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(220));
+    });
+
+    it('returns the descriptor unchanged when total delay is zero or negative', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(0, anim, { each: 50, delay: 0 });
+
+      expect(descriptor).toBe(anim);
     });
   });
 });

@@ -48,6 +48,11 @@ export interface LoopOptions {
   animation?: Descriptor;
 }
 
+export interface StaggerOptions {
+  each?: number;
+  delay?: number;
+}
+
 export type DriverType =
   | 'spring'
   | 'timing'

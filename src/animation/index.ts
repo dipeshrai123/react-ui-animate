@@ -41,6 +41,7 @@ export {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
 } from './descriptors';
 
 // ============================================================================
@@ -74,6 +75,7 @@ export type {
   SequenceOptions,
   DelayOptions,
   LoopOptions,
+  StaggerOptions,
   DriverType,
   Descriptor,
   Controls,
