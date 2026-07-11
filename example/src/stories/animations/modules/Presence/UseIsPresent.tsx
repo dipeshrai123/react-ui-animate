@@ -1,12 +1,6 @@
 import React, { useState } from 'react';
 import { animate, Presence, useIsPresent, withTiming } from 'react-ui-animate';
 
-/**
- * Example: Using useIsPresent to conditionally render content
- * 
- * useIsPresent() returns a boolean indicating if the component is present (not exiting).
- * Use it when you need to conditionally render content based on presence state.
- */
 const AnimatedCard: React.FC = () => {
   const isPresent = useIsPresent();
 
@@ -34,7 +28,6 @@ const AnimatedCard: React.FC = () => {
       <p style={{ margin: 0, fontSize: 14 }}>
         {isPresent ? 'I am present!' : 'I am exiting...'}
       </p>
-      {/* Conditionally show content only when present */}
       {isPresent && (
         <div style={{ marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.2)', borderRadius: 4 }}>
           This content only shows when the card is present

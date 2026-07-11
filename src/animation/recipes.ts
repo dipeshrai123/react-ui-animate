@@ -5,238 +5,107 @@ import type { AnimateProp } from './components/types';
  * Animation Recipes - Pre-built, tested animations for common use cases
  */
 
-// ============================================================================
-// Fade Animations
-// ============================================================================
+// Shared spring configs, reused across recipes below (deduped so the
+// minifier can collapse repeated `{ stiffness, damping }` literals into a
+// single shared reference instead of ~40 structurally-identical copies).
+const SOFT = { stiffness: 100, damping: 15 };
+const SCALE = { stiffness: 200, damping: 20 };
+const BOUNCE = { stiffness: 300, damping: 10 };
+const SPIN = { stiffness: 50, damping: 10 };
+const FLIP = { stiffness: 150, damping: 15 };
+const HOVER = { stiffness: 300, damping: 20 };
+const PRESS = { stiffness: 400, damping: 25 };
 
-export const fadeIn: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-};
+const soft = (to: number) => /*#__PURE__*/ withSpring(to, SOFT);
+const scale = (to: number) => /*#__PURE__*/ withSpring(to, SCALE);
 
-export const fadeOut: AnimateProp = {
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-};
+export const fadeIn: AnimateProp = { opacity: soft(1) };
+export const fadeOut: AnimateProp = { opacity: soft(0) };
+export const fadeInUp: AnimateProp = { opacity: soft(1), translateY: soft(0) };
+export const fadeInDown: AnimateProp = { opacity: soft(1), translateY: soft(0) };
+export const fadeInLeft: AnimateProp = { opacity: soft(1), translateX: soft(0) };
+export const fadeInRight: AnimateProp = { opacity: soft(1), translateX: soft(0) };
 
-export const fadeInUp: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(0, { stiffness: 100, damping: 15 }),
-};
+export const slideInUp: AnimateProp = { translateY: soft(0) };
+export const slideInDown: AnimateProp = { translateY: soft(0) };
+export const slideInLeft: AnimateProp = { translateX: soft(0) };
+export const slideInRight: AnimateProp = { translateX: soft(0) };
+export const slideOutUp: AnimateProp = { translateY: soft(-100) };
+export const slideOutDown: AnimateProp = { translateY: soft(100) };
+export const slideOutLeft: AnimateProp = { translateX: soft(-100) };
+export const slideOutRight: AnimateProp = { translateX: soft(100) };
 
-export const fadeInDown: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const fadeInLeft: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-  translateX: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const fadeInRight: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-  translateX: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-// ============================================================================
-// Slide Animations
-// ============================================================================
-
-export const slideInUp: AnimateProp = {
-  translateY: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const slideInDown: AnimateProp = {
-  translateY: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const slideInLeft: AnimateProp = {
-  translateX: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const slideInRight: AnimateProp = {
-  translateX: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const slideOutUp: AnimateProp = {
-  translateY: withSpring(-100, { stiffness: 100, damping: 15 }),
-};
-
-export const slideOutDown: AnimateProp = {
-  translateY: withSpring(100, { stiffness: 100, damping: 15 }),
-};
-
-export const slideOutLeft: AnimateProp = {
-  translateX: withSpring(-100, { stiffness: 100, damping: 15 }),
-};
-
-export const slideOutRight: AnimateProp = {
-  translateX: withSpring(100, { stiffness: 100, damping: 15 }),
-};
-
-// ============================================================================
-// Scale Animations
-// ============================================================================
-
-export const scaleIn: AnimateProp = {
-  scale: withSpring(1, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-};
-
-export const scaleOut: AnimateProp = {
-  scale: withSpring(0, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
+export const scaleIn: AnimateProp = { scale: scale(1), opacity: soft(1) };
+export const scaleOut: AnimateProp = { scale: scale(0), opacity: soft(0) };
 export const scaleUp: AnimateProp = {
-  scale: withSpring(1.1, { stiffness: 150, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(1.1, { stiffness: 150, damping: 15 }),
 };
-
 export const scaleDown: AnimateProp = {
-  scale: withSpring(0.9, { stiffness: 150, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(0.9, { stiffness: 150, damping: 15 }),
 };
-
-// ============================================================================
-// Bounce Animations
-// ============================================================================
 
 export const bounceIn: AnimateProp = {
-  scale: withSpring(1, { stiffness: 300, damping: 10 }),
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(1, BOUNCE),
+  opacity: soft(1),
 };
-
 export const bounceOut: AnimateProp = {
-  scale: withSpring(0, { stiffness: 300, damping: 10 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(0, BOUNCE),
+  opacity: soft(0),
 };
 
-// ============================================================================
-// Rotate Animations
-// ============================================================================
-
-export const rotateIn: AnimateProp = {
-  rotate: withSpring(0, { stiffness: 100, damping: 15 }),
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-};
-
-export const rotateOut: AnimateProp = {
-  rotate: withSpring(180, { stiffness: 100, damping: 15 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
+export const rotateIn: AnimateProp = { rotate: soft(0), opacity: soft(1) };
+export const rotateOut: AnimateProp = { rotate: soft(180), opacity: soft(0) };
 export const spin: AnimateProp = {
-  rotate: withSpring(360, { stiffness: 50, damping: 10 }),
+  rotate: /*#__PURE__*/ withSpring(360, SPIN),
 };
 
-// ============================================================================
-// Zoom Animations
-// ============================================================================
-
-export const zoomIn: AnimateProp = {
-  scale: withSpring(1, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-};
-
-export const zoomOut: AnimateProp = {
-  scale: withSpring(0, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-// ============================================================================
-// Flip Animations
-// ============================================================================
+export const zoomIn: AnimateProp = { scale: scale(1), opacity: soft(1) };
+export const zoomOut: AnimateProp = { scale: scale(0), opacity: soft(0) };
 
 export const flipX: AnimateProp = {
-  rotateX: withSpring(0, { stiffness: 150, damping: 15 }),
+  rotateX: /*#__PURE__*/ withSpring(0, FLIP),
 };
-
 export const flipY: AnimateProp = {
-  rotateY: withSpring(0, { stiffness: 150, damping: 15 }),
+  rotateY: /*#__PURE__*/ withSpring(0, FLIP),
 };
 
-// ============================================================================
-// Combined Animations
-// ============================================================================
-
-export const slideFadeIn: AnimateProp = {
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const slideFadeOut: AnimateProp = {
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(20, { stiffness: 100, damping: 15 }),
-};
-
-export const scaleFadeIn: AnimateProp = {
-  scale: withSpring(1, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(1, { stiffness: 100, damping: 15 }),
-};
-
+export const slideFadeIn: AnimateProp = { opacity: soft(1), translateY: soft(0) };
+export const slideFadeOut: AnimateProp = { opacity: soft(0), translateY: soft(20) };
+export const scaleFadeIn: AnimateProp = { scale: scale(1), opacity: soft(1) };
 export const scaleFadeOut: AnimateProp = {
-  scale: withSpring(0.8, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(0.8, SCALE),
+  opacity: soft(0),
 };
-
-// ============================================================================
-// Hover Animations (for state animations)
-// ============================================================================
 
 export const hoverScale: AnimateProp = {
-  scale: withSpring(1.05, { stiffness: 300, damping: 20 }),
+  scale: /*#__PURE__*/ withSpring(1.05, HOVER),
 };
-
 export const hoverLift: AnimateProp = {
-  translateY: withSpring(-5, { stiffness: 300, damping: 20 }),
-  scale: withSpring(1.02, { stiffness: 300, damping: 20 }),
+  translateY: /*#__PURE__*/ withSpring(-5, HOVER),
+  scale: /*#__PURE__*/ withSpring(1.02, HOVER),
 };
-
 export const hoverGlow: AnimateProp = {
-  scale: withSpring(1.05, { stiffness: 300, damping: 20 }),
-  opacity: withSpring(0.9, { stiffness: 300, damping: 20 }),
+  scale: /*#__PURE__*/ withSpring(1.05, HOVER),
+  opacity: /*#__PURE__*/ withSpring(0.9, HOVER),
 };
-
-// ============================================================================
-// Press Animations (for state animations)
-// ============================================================================
 
 export const pressScale: AnimateProp = {
-  scale: withSpring(0.95, { stiffness: 400, damping: 25 }),
+  scale: /*#__PURE__*/ withSpring(0.95, PRESS),
 };
-
 export const pressDown: AnimateProp = {
-  translateY: withSpring(2, { stiffness: 400, damping: 25 }),
-  scale: withSpring(0.98, { stiffness: 400, damping: 25 }),
+  translateY: /*#__PURE__*/ withSpring(2, PRESS),
+  scale: /*#__PURE__*/ withSpring(0.98, PRESS),
 };
 
-// ============================================================================
-// Exit Animations (for exit prop)
-// ============================================================================
-
-export const exitFade: AnimateProp = {
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-};
-
-export const exitSlideUp: AnimateProp = {
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(-20, { stiffness: 100, damping: 15 }),
-};
-
-export const exitSlideDown: AnimateProp = {
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
-  translateY: withSpring(20, { stiffness: 100, damping: 15 }),
-};
-
+export const exitFade: AnimateProp = { opacity: soft(0) };
+export const exitSlideUp: AnimateProp = { opacity: soft(0), translateY: soft(-20) };
+export const exitSlideDown: AnimateProp = { opacity: soft(0), translateY: soft(20) };
 export const exitScale: AnimateProp = {
-  scale: withSpring(0.8, { stiffness: 200, damping: 20 }),
-  opacity: withSpring(0, { stiffness: 100, damping: 15 }),
+  scale: /*#__PURE__*/ withSpring(0.8, SCALE),
+  opacity: soft(0),
 };
-
-// ============================================================================
-// Recipe Collections
-// ============================================================================
 
 export const recipes = {
-  // Fade
   fadeIn,
   fadeOut,
   fadeInUp,
@@ -244,7 +113,6 @@ export const recipes = {
   fadeInLeft,
   fadeInRight,
 
-  // Slide
   slideInUp,
   slideInDown,
   slideInLeft,
@@ -254,45 +122,36 @@ export const recipes = {
   slideOutLeft,
   slideOutRight,
 
-  // Scale
   scaleIn,
   scaleOut,
   scaleUp,
   scaleDown,
 
-  // Bounce
   bounceIn,
   bounceOut,
 
-  // Rotate
   rotateIn,
   rotateOut,
   spin,
 
-  // Zoom
   zoomIn,
   zoomOut,
 
-  // Flip
   flipX,
   flipY,
 
-  // Combined
   slideFadeIn,
   slideFadeOut,
   scaleFadeIn,
   scaleFadeOut,
 
-  // Hover
   hoverScale,
   hoverLift,
   hoverGlow,
 
-  // Press
   pressScale,
   pressDown,
 
-  // Exit
   exitFade,
   exitSlideUp,
   exitSlideDown,

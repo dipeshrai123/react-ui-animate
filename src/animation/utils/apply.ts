@@ -1,7 +1,6 @@
 import type { AnimateValue } from '../values/AnimateValue';
 import { isAnimateValue } from '../values/AnimateValue';
 
-// Unitless CSS properties that don't need 'px' suffix
 const UNIT_LESS = new Set([
   'borderImageOutset',
   'borderImageSlice',
@@ -39,7 +38,6 @@ const UNIT_LESS = new Set([
   'lineClamp',
 ]);
 
-// Internal transform keys - exported for internal use only
 export const transformKeys = [
   'translateX',
   'translateY',
@@ -55,6 +53,28 @@ export const transformKeys = [
   'skewY',
   'perspective',
 ] as const;
+
+// Internal-only pseudo transform keys reserved for the `layout` prop's own
+// translate/scale contribution. They're stored under these distinct object
+// keys (instead of e.g. "translateX") specifically so they never overwrite a
+// same-named transform the consumer is animating via `animate`/`hover`/
+// `press`/`view`/`style` on the same element — both contributions compose as
+// separate CSS transform functions in the final string instead.
+export const LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION = {
+  __layoutTranslateX: 'translateX',
+  __layoutTranslateY: 'translateY',
+  __layoutScaleX: 'scaleX',
+  __layoutScaleY: 'scaleY',
+  // Separate namespace for the `layoutId` shared transition's own FLIP
+  // contribution, so it can never collide with the `layout` prop's pseudo
+  // keys above if both happen to be set on the same element.
+  __layoutIdTranslateX: 'translateX',
+  __layoutIdTranslateY: 'translateY',
+  __layoutIdScaleX: 'scaleX',
+  __layoutIdScaleY: 'scaleY',
+} as const;
+
+export type LayoutTransformKey = keyof typeof LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION;
 
 // Internal function - exported for testing only (not re-exported from main index)
 export function applyStyleProp(el: HTMLElement, key: string, v: any) {
@@ -77,25 +97,48 @@ function defaultUnit(key: string) {
 }
 
 function formatTransformFunction(key: string, raw: any) {
+  const cssFunction =
+    (LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION as Record<string, string>)[key] ??
+    key;
+
   const cur =
     raw && typeof (raw as AnimateValue<any>).subscribe === 'function'
       ? (raw as AnimateValue<any>).current
       : raw;
 
   if (Array.isArray(cur)) {
-    return `${key}(${cur.join(',')})`;
+    return `${cssFunction}(${cur.join(',')})`;
   }
 
   const str = String(cur);
 
   const { value, unit: parsedUnit } = splitCSSValueAndUnit(str);
-  const unit = parsedUnit || defaultUnit(key);
-  return `${key}(${value}${unit})`;
+  const unit = parsedUnit || defaultUnit(cssFunction);
+  return `${cssFunction}(${value}${unit})`;
 }
 
 // Internal function - exported for internal use only
 export function isTransformKey(key: string) {
-  return transformKeys.includes(key as (typeof transformKeys)[number]);
+  return (
+    transformKeys.includes(key as (typeof transformKeys)[number]) ||
+    key in LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION
+  );
+}
+
+// Formats an already-merged style/animateValues object (values may be raw
+// primitives or AnimateValue instances) into a single CSS transform string.
+// Exported so systems that manage their own transform rendering (e.g. the
+// `layout` prop) can compose with whatever else is contributing transforms
+// to the same element.
+export function formatTransformString(txProps: Record<string, any>): string {
+  const transformKeyList = Object.keys(txProps).filter(isTransformKey);
+  if (transformKeyList.length > 0) {
+    return transformKeyList
+      .map((key) => formatTransformFunction(key, txProps[key]))
+      .join(' ');
+  }
+  if (typeof txProps.transform === 'string') return txProps.transform;
+  return '';
 }
 
 // Internal function - exported for testing only (not re-exported from main index)
@@ -136,7 +179,6 @@ export function applyTransformsStyle(
   return unsubs;
 }
 
-// Internal functions - not exported
 function applyStyles(
   node: HTMLElement,
   style: Record<string, any>
@@ -195,8 +237,6 @@ function applyTransforms(
   return applyTransformsStyle(elRef, txProps);
 }
 
-// Helper function to create a transform render function from AnimateValues
-// This is used by state animations to render transforms from animateValues
 export function createTransformRenderer(
   node: HTMLElement,
   animateValues: Record<string, AnimateValue<any>>
@@ -212,5 +252,4 @@ export function createTransformRenderer(
   };
 }
 
-// Export internal functions for use within the library
 export { applyStyles, applyAttrs, applyTransforms };

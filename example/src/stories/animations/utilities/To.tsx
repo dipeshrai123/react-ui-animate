@@ -9,22 +9,18 @@ const Example: React.FC = () => {
   const [animatedScroll, setAnimatedScroll] = useValue(0);
   const [animatedScrollValue, setAnimatedScrollValue] = useState(0);
 
-  // Immediate update (no animation) - good for sliders
   useEffect(() => {
     setScroll(scrollValue);
   }, [scrollValue, setScroll]);
 
-  // Animated update - smooth transitions
   useEffect(() => {
     setAnimatedScroll(withSpring(animatedScrollValue));
   }, [animatedScrollValue, setAnimatedScroll]);
 
-  // Interpolate scroll value to different ranges
   const opacity = scroll.to([0, 100], [0, 1]);
   const scale = scroll.to([0, 100], [0.5, 1.5]);
   const color = scroll.to([0, 100], ['#3399ff', '#ff6b6b']);
 
-  // Animated interpolations
   const animatedOpacity = animatedScroll.to([0, 100], [0, 1]);
   const animatedScale = animatedScroll.to([0, 100], [0.5, 1.5]);
   const animatedColor = animatedScroll.to([0, 100], ['#3399ff', '#ff6b6b']);

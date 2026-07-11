@@ -3,7 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../../values/AnimateValue';
-import { withTiming, withSpring } from '../../descriptors';
+import { withTiming, withSpring, withSequence, withDelay } from '../../descriptors';
 
 describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {
@@ -264,6 +264,247 @@ describe('〈animate> components', () => {
       await waitFor(() => {
         const finalOpacity = parseFloat(el.style.opacity);
         expect(finalOpacity).toBeCloseTo(1, 1);
+      });
+    });
+
+    // Extracts the numeric translateY value out of a computed transform string.
+    const readTranslateY = (transform: string) => {
+      const match = transform.match(/translateY\(([-\d.]+)px\)/);
+      return match ? parseFloat(match[1]) : NaN;
+    };
+
+    it('reverts hover to the current settled value rather than a stale pre-animation value', async () => {
+      // Mirrors a real-world pattern: a static initial style animated in via
+      // `animate`/`view` to a settled value, with `hover` also targeting the
+      // same property. Hovering out must snap back to the *settled* value,
+      // not whatever the property happened to be before the reveal finished.
+      render(
+        <animate.div
+          data-testid="settle-then-hover"
+          style={{ translateY: 40 }}
+          animate={{ translateY: withTiming(0, { duration: 100 }) }}
+          hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+        />
+      );
+      const el = screen.getByTestId('settle-then-hover') as HTMLElement;
+
+      // Let the reveal animation fully settle (40 -> 0) before ever hovering.
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
+      });
+
+      // Hover in, then out.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Must revert to the settled value (0), never the original static
+      // style value (40) it started from before the reveal animation ran.
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
+      });
+    });
+
+    it('self-corrects on a later hover cycle after the settled value changes again', async () => {
+      function TestComponent({ target }: { target: number }) {
+        return (
+          <animate.div
+            data-testid="racy-hover"
+            style={{ translateY: 40 }}
+            animate={{ translateY: withTiming(target, { duration: 50 }) }}
+            hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+          />
+        );
+      }
+
+      const { rerender } = render(<TestComponent target={0} />);
+      const el = screen.getByTestId('racy-hover') as HTMLElement;
+
+      // Hover fires immediately, before the 40 -> 0 reveal has progressed at
+      // all — its captured revert target is whatever was current then (~40).
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Re-trigger `animate` to a new settled value (e.g. a later `view`
+      // reveal), independent of the earlier hover cycle.
+      rerender(<TestComponent target={10} />);
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(10, 1);
+      });
+
+      // A later hover cycle must revert to *this* settled value (10), not
+      // whatever was captured during the very first, earlier hover.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(10, 1);
+      });
+    });
+
+    it('reverts to the real withSequence/withDelay target even if hover interrupts it mid-spring', async () => {
+      // Mirrors the exact reported pattern: `view`/`animate` staggers in via
+      // withSequence([withDelay(...), withSpring(0, ...)]), and `hover`
+      // targets the same key. `withDelay` is just a plain timer (unrelated
+      // to the AnimateValue itself), so hovering *during the delay* doesn't
+      // actually stop the sequence — the delay still elapses and the spring
+      // step still claims the value afterwards. The real interruption
+      // happens once the spring step has *started*: at that point hovering
+      // cancels it outright, and nothing ever resumes it. Reverting to a
+      // merely *captured* value would then snap back to wherever that
+      // interruption left it (partway between 40 and 0), not its real
+      // destination (0).
+      render(
+        <animate.div
+          data-testid="sequence-hover"
+          style={{ translateY: 40 }}
+          animate={{
+            translateY: withSequence([
+              withDelay(100),
+              withSpring(0, { stiffness: 140, damping: 22 }),
+            ]),
+          }}
+          hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+        />
+      );
+      const el = screen.getByTestId('sequence-hover') as HTMLElement;
+
+      // Let the delay elapse and the spring step start moving, then
+      // interrupt with hover partway through — well before it reaches 0.
+      act(() => {
+        jest.advanceTimersByTime(130);
+      });
+      const midFlightValue = readTranslateY(el.style.transform);
+      expect(midFlightValue).toBeLessThan(40);
+      expect(midFlightValue).toBeGreaterThan(1);
+
+      // Hover in (cancels the in-flight spring) then out.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Must settle at the sequence's real target (0), never the
+      // interrupted starting value (40).
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
+      });
+    });
+
+    it('continues hover-out animation when parent re-renders with new hover object reference', async () => {
+      function TestComponent({ label }: { label: string }) {
+        return (
+          <animate.div
+            data-testid="hover-rerender-test"
+            style={{ scale: 1 }}
+            hover={{
+              scale: withSpring(1.5, { stiffness: 300, damping: 20 }),
+            }}
+          >
+            {label}
+          </animate.div>
+        );
+      }
+
+      const { rerender } = render(<TestComponent label="A" />);
+      const el = screen.getByTestId('hover-rerender-test') as HTMLElement;
+
+      const parseScale = () => {
+        const match = el.style.transform.match(/scale\(([\d.]+)\)/);
+        return match ? parseFloat(match[1]) : 1;
+      };
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(200);
+      });
+
+      expect(parseScale()).toBeGreaterThan(1.2);
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(80);
+      });
+
+      const scaleDuringRevert = parseScale();
+      expect(scaleDuringRevert).toBeGreaterThan(1);
+      expect(scaleDuringRevert).toBeLessThan(1.5);
+
+      // Re-render creates a new hover object with identical animation config
+      rerender(<TestComponent label="B" />);
+
+      act(() => {
+        jest.advanceTimersByTime(80);
+      });
+
+      const scaleAfterRerender = parseScale();
+      expect(scaleAfterRerender).toBeGreaterThan(1);
+      expect(scaleAfterRerender).toBeLessThan(scaleDuringRevert);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+
+      await waitFor(() => {
+        expect(parseScale()).toBeCloseTo(1, 1);
       });
     });
 

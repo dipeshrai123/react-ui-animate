@@ -1,15 +1,6 @@
 import { useRef } from 'react';
 import { animate, useDrag, useValue, withSpring } from 'react-ui-animate';
 
-/**
- * Real-world example: Draggable Card
- *
- * This demonstrates useDrag for creating a draggable card that:
- * - Can be dragged around the screen
- * - Returns to center when released
- * - Shows visual feedback during drag
- * - Uses spring physics for smooth animations
- */
 const Example = () => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [x, setX] = useValue(0);
@@ -18,16 +9,13 @@ const Example = () => {
   const [rotation, setRotation] = useValue(0);
 
   useDrag(cardRef, ({ down, movement, velocity }) => {
-    // Update position while dragging
     setX(down ? movement.x : withSpring(0, { stiffness: 300, damping: 30 }));
     setY(down ? movement.y : withSpring(0, { stiffness: 300, damping: 30 }));
 
-    // Scale down slightly when dragging for visual feedback
     setScale(
       down ? withSpring(0.95, { stiffness: 400, damping: 25 }) : withSpring(1)
     );
 
-    // Add slight rotation based on horizontal movement
     setRotation(
       down
         ? withSpring(movement.x * 0.1, { stiffness: 200, damping: 20 })

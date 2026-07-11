@@ -13,10 +13,6 @@ import {
   type ReactNode,
 } from 'react';
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export interface PresenceProps {
   /**
    * Children to animate. Each direct child should have a unique `key` prop.
@@ -65,10 +61,6 @@ export interface PresenceContextValue {
   _forceUpdate?: number;
 }
 
-// ============================================================================
-// Context
-// ============================================================================
-
 export const PresenceContext = createContext<PresenceContextValue | null>(null);
 
 /**
@@ -76,12 +68,7 @@ export const PresenceContext = createContext<PresenceContextValue | null>(null);
  */
 export function usePresence(): [boolean, () => void] {
   const context = useContext(PresenceContext);
-
-  if (!context) {
-    // Not inside Presence, always present
-    return [true, () => {}];
-  }
-
+  if (!context) return [true, () => {}];
   return [!context.isExiting, context.onExitComplete];
 }
 
@@ -93,46 +80,36 @@ export function useIsPresent(): boolean {
   return context ? !context.isExiting : true;
 }
 
-// ============================================================================
-// Internal Types
-// ============================================================================
-
 interface ChildState {
   key: string | number;
   element: ReactElement;
   isExiting: boolean;
 }
 
-// Wrapper that forces React to re-render entire subtree when exiting
-// Uses key change to unmount/remount which makes children read fresh context
-function PresenceChild({ 
-  children, 
+// `exitingState` forces a re-render once `isExiting` flips, so this subtree
+// re-reads the (now exiting) PresenceContext instead of staying stale.
+function PresenceChild({
+  children,
   isExiting,
-  mode 
-}: { 
+  mode,
+}: {
   children: ReactElement;
   isExiting: boolean;
   mode: string;
 }): ReactElement | null {
-  // Use a state that changes when isExiting becomes true
-  // This triggers a re-render of this component
   const [exitingState, setExitingState] = useState(false);
-  
+
   useLayoutEffect(() => {
     if (isExiting && !exitingState) {
       setExitingState(true);
     }
   }, [isExiting, exitingState]);
-  
+
   if (mode === 'popLayout' && isExiting) {
     return <div style={{ position: 'absolute' }}>{children}</div>;
   }
   return children;
 }
-
-// ============================================================================
-// Component
-// ============================================================================
 
 /**
  * Presence enables exit animations when children are removed from the tree.
@@ -157,18 +134,12 @@ export function Presence({
   onExitComplete,
   mode = 'sync',
 }: PresenceProps): ReactElement {
-  // Track whether this is the first render
   const isInitialMount = useRef(true);
-
-  // Track all children (including exiting ones)
   const [childStates, setChildStates] = useState<Map<string | number, ChildState>>(
     () => new Map()
   );
-
-  // Track exiting children count for onExitComplete callback
   const exitingCount = useRef(0);
 
-  // Get current children as an array with keys
   const currentChildren = useMemo(() => {
     const result: Array<{ key: string | number; element: ReactElement }> = [];
 
@@ -182,27 +153,25 @@ export function Presence({
     return result;
   }, [children]);
 
-  // Current child keys for comparison
   const currentKeys = useMemo(
     () => new Set(currentChildren.map((c) => c.key)),
     [currentChildren]
   );
 
-  // Update child states when children change
   useLayoutEffect(() => {
     setChildStates((prev) => {
       const next = new Map<string | number, ChildState>();
-      
-      // Build a map of current children for quick lookup
       const currentChildrenMap = new Map(
         currentChildren.map(({ key, element }) => [key, element])
       );
 
-      // First, preserve order from previous state and update elements
+      // Two passes: first carry forward everything from `prev` (updating
+      // elements that still exist, marking the rest as exiting), then append
+      // any brand-new keys — so existing children keep their render order
+      // and new ones land at the end.
       for (const [key, state] of prev) {
         if (currentChildrenMap.has(key)) {
-          // Child still exists - update element
-          // If it was exiting, it's now re-entering, so decrement counter
+          // Was exiting and came back before its exit finished re-entering.
           if (state.isExiting) {
             exitingCount.current--;
           }
@@ -212,7 +181,6 @@ export function Presence({
             isExiting: false,
           });
         } else {
-          // Child is exiting - keep old element
           if (!state.isExiting) {
             exitingCount.current++;
           }
@@ -223,7 +191,6 @@ export function Presence({
         }
       }
 
-      // Then, add any NEW children that weren't in prev (at the end)
       for (const { key, element } of currentChildren) {
         if (!prev.has(key)) {
           next.set(key, {
@@ -238,14 +205,12 @@ export function Presence({
     });
   }, [currentChildren, currentKeys]);
 
-  // Mark initial mount as complete after first render
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
     }
   }, []);
 
-  // Create handler for when a child's exit animation completes
   const handleExitComplete = useCallback((key: string | number) => {
     setChildStates((prev) => {
       const next = new Map(prev);
@@ -259,16 +224,14 @@ export function Presence({
     }
   }, [onExitComplete]);
 
-  // Render children with presence context
   const renderedChildren = useMemo(() => {
     const result: ReactElement[] = [];
 
-    // In 'wait' mode, don't render entering children if there are exiting ones
+    // In 'wait' mode, entering children stay unrendered until nothing is exiting.
     const hasExiting = Array.from(childStates.values()).some((s) => s.isExiting);
     const shouldWait = mode === 'wait' && hasExiting;
 
     for (const [key, state] of childStates) {
-      // Skip entering children in wait mode
       if (shouldWait && !state.isExiting) {
         continue;
       }

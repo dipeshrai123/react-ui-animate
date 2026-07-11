@@ -1,18 +1,9 @@
 import { useRef } from 'react';
 import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
 
-/**
- * Real-world example: Parallax Cards
- *
- * This demonstrates useMove for creating parallax effects:
- * - Multiple layers moving at different speeds
- * - Creates depth and visual interest
- * - Smooth spring-based animations
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Different spring configs for different layers
   const [layer1X, setLayer1X] = useValue(0);
   const [layer1Y, setLayer1Y] = useValue(0);
   const [layer2X, setLayer2X] = useValue(0);
@@ -26,15 +17,12 @@ const Example = () => {
     const deltaX = (offset.x - centerX) * 0.1;
     const deltaY = (offset.y - centerY) * 0.1;
 
-    // Fastest layer (closest)
     setLayer1X(withSpring(deltaX * 1.5, { stiffness: 200, damping: 25 }));
     setLayer1Y(withSpring(deltaY * 1.5, { stiffness: 200, damping: 25 }));
 
-    // Medium layer
     setLayer2X(withSpring(deltaX, { stiffness: 150, damping: 20 }));
     setLayer2Y(withSpring(deltaY, { stiffness: 150, damping: 20 }));
 
-    // Slowest layer (furthest)
     setLayer3X(withSpring(deltaX * 0.5, { stiffness: 100, damping: 15 }));
     setLayer3Y(withSpring(deltaY * 0.5, { stiffness: 100, damping: 15 }));
   });

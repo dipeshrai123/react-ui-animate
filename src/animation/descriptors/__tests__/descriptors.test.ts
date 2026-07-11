@@ -5,6 +5,7 @@ import {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -50,6 +51,23 @@ describe('descriptors', () => {
       const descriptor = withSpring('100px');
       expect(descriptor.to).toBe('100px');
     });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withSpring({ stiffness: 400, damping: 32 });
+
+      expect(descriptor.type).toBe('spring');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.stiffness).toBe(400);
+      expect(descriptor.options?.damping).toBe(32);
+      expect(descriptor.options?.mass).toBe(1);
+    });
+
+    it('still treats object values as animation targets', () => {
+      const descriptor = withSpring({ x: 10, y: 20 });
+
+      expect(descriptor.to).toEqual({ x: 10, y: 20 });
+      expect(descriptor.options?.stiffness).toBe(158);
+    });
   });
 
   describe('withTiming', () => {
@@ -94,6 +112,15 @@ describe('descriptors', () => {
     it('handles string values', () => {
       const descriptor = withTiming('rgba(255,0,0,1)');
       expect(descriptor.to).toBe('rgba(255,0,0,1)');
+    });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withTiming({ duration: 300, easing: Easing.linear });
+
+      expect(descriptor.type).toBe('timing');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.duration).toBe(300);
+      expect(descriptor.options?.easing).toBe(Easing.linear);
     });
   });
 
@@ -231,6 +258,45 @@ describe('descriptors', () => {
       const descriptor = withLoop(sequence, 2);
 
       expect(descriptor.options?.animation).toBe(sequence);
+    });
+  });
+
+  describe('withStagger', () => {
+    it('returns the descriptor unchanged for index 0 with default options', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(0, anim);
+
+      expect(descriptor).toBe(anim);
+    });
+
+    it('wraps the descriptor in a delayed sequence proportional to index', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(3, anim, { each: 50 });
+
+      expect(descriptor.type).toBe('sequence');
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(150));
+      expect(descriptor.options?.animations?.[1]).toBe(anim);
+    });
+
+    it('uses a default step of 50ms when `each` is omitted', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(2, anim);
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(100));
+    });
+
+    it('adds a base `delay` before staggering starts', () => {
+      const anim = withTiming(1);
+      const descriptor = withStagger(1, anim, { each: 20, delay: 200 });
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(220));
+    });
+
+    it('returns the descriptor unchanged when total delay is zero or negative', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(0, anim, { each: 50, delay: 0 });
+
+      expect(descriptor).toBe(anim);
     });
   });
 });

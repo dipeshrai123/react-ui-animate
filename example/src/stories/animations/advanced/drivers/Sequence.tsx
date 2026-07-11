@@ -9,13 +9,11 @@ const Example: React.FC = () => {
 
   const startSequence = () => {
     controllerRef.current?.cancel();
-    
-    // Create a sequence of animations
+
     const step1 = timing(valueRef.current, 100, { duration: 500 });
     const step2 = spring(valueRef.current, 200, { stiffness: 100, damping: 15 });
     const step3 = timing(valueRef.current, 0, { duration: 500 });
-    
-    // Run them in sequence
+
     controllerRef.current = sequence([step1, step2, step3], {
       onStart: () => console.log('Sequence started'),
       onComplete: () => console.log('Sequence completed'),

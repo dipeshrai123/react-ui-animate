@@ -9,11 +9,10 @@ const Example: React.FC = () => {
 
   const startWithDelay = () => {
     controllerRef.current?.cancel();
-    
-    // Create a sequence with delay
-    const delayCtrl = delay(1000); // 1 second delay
+
+    const delayCtrl = delay(1000);
     const animation = timing(valueRef.current, 200, { duration: 500 });
-    
+
     controllerRef.current = sequence([delayCtrl, animation], {
       onStart: () => console.log('Animation with delay started'),
       onComplete: () => console.log('Animation completed'),

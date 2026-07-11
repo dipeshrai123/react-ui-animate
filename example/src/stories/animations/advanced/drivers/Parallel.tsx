@@ -11,13 +11,11 @@ const Example: React.FC = () => {
 
   const startParallel = () => {
     controllerRef.current?.cancel();
-    
-    // Create multiple animations
+
     const timingCtrl = timing(xRef.current, 200, { duration: 1000 });
     const springCtrl = spring(yRef.current, 100, { stiffness: 100, damping: 15 });
     const scaleCtrl = spring(scaleRef.current, 1.5, { stiffness: 200, damping: 20 });
-    
-    // Run them in parallel
+
     controllerRef.current = parallel([timingCtrl, springCtrl, scaleCtrl], {
       onStart: () => console.log('Parallel animation started'),
       onComplete: () => console.log('Parallel animation completed'),

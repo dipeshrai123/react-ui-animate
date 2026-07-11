@@ -118,6 +118,15 @@ class TimingController implements AnimateController {
 
     if (t < 1) {
       this.position = this.fromValue + (this.target - this.fromValue) * this.easing(t);
+
+      if (Math.abs(this.target - this.position) < 0.01) {
+        this.position = this.target;
+        this.value._internalSet(this.position);
+        this.hooks.onChange?.(this.position);
+        this.hooks.onComplete?.();
+        return;
+      }
+
       this.value._internalSet(this.position);
       this.hooks.onChange?.(this.position);
       this.frameId = requestAnimationFrame(this.animate);

@@ -32,26 +32,16 @@ const ScaleDisplay = ({ scale }: { scale: AnimateValue<number> }) => {
   );
 };
 
-/**
- * Real-world example: Zoom on Wheel
- *
- * This demonstrates useWheel for creating zoom effects:
- * - Zoom in/out with mouse wheel
- * - Smooth spring animations
- * - Useful for image viewers, maps, etc.
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useValue(1);
   const [rotation, setRotation] = useValue(0);
 
   useWheel(containerRef, ({ event }) => {
-    // Zoom in/out based on wheel delta
     const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
     const newScale = Math.max(0.5, Math.min(3, scale.current * zoomFactor));
     setScale(withSpring(newScale, { stiffness: 300, damping: 30 }));
 
-    // Add slight rotation for visual interest
     const rotationDelta = event.deltaY * 0.5;
     setRotation(
       withSpring(rotation.current + rotationDelta, {

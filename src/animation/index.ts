@@ -1,16 +1,7 @@
-// ============================================================================
-// Components
-// ============================================================================
 export { animate, makeAnimated } from './components/animate';
 
-// ============================================================================
-// Core Values
-// ============================================================================
 export { AnimateValue, isAnimateValue } from './values/AnimateValue';
 
-// ============================================================================
-// Animation Drivers (low-level APIs)
-// ============================================================================
 export type {
   AnimateController,
   AnimateHooks,
@@ -20,20 +11,11 @@ export { spring } from './drivers/spring';
 export { decay } from './drivers/decay';
 export { parallel, sequence, loop, delay } from './drivers/compose';
 
-// ============================================================================
-// Utilities
-// ============================================================================
 export { Easing } from './utils/easing';
 export { combine } from './utils/combine';
 
-// ============================================================================
-// Interpolation
-// ============================================================================
 export { to } from './to';
 
-// ============================================================================
-// Animation Descriptors
-// ============================================================================
 export {
   withSpring,
   withTiming,
@@ -41,16 +23,11 @@ export {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
 } from './descriptors';
 
-// ============================================================================
-// React Hooks
-// ============================================================================
 export { useValue } from './hooks/useValue';
 
-// ============================================================================
-// Modules
-// ============================================================================
 export {
   Presence,
   PresenceContext,
@@ -60,9 +37,6 @@ export {
   type PresenceContextValue,
 } from './modules/Presence';
 
-// ============================================================================
-// Types
-// ============================================================================
 export type {
   Primitive,
   ExtrapolateConfig,
@@ -74,6 +48,7 @@ export type {
   SequenceOptions,
   DelayOptions,
   LoopOptions,
+  StaggerOptions,
   DriverType,
   Descriptor,
   Controls,
@@ -85,10 +60,8 @@ export type {
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
 } from './components/types';
+export type { LayoutOptions } from './layout';
 
-// ============================================================================
-// Animation Recipes
-// ============================================================================
 export { recipes } from './recipes';
 export {
   fadeIn,

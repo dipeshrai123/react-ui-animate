@@ -1,6 +1,5 @@
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
-// Parallel: Run multiple animations simultaneously
 class ParallelController implements AnimateController {
   private completedCount = 0;
   private isPaused = false;
@@ -78,7 +77,6 @@ class ParallelController implements AnimateController {
   }
 }
 
-// Sequence: Run animations one after another
 class SequenceController implements AnimateController {
   private index = 0;
   private isPaused = false;
@@ -158,7 +156,6 @@ class SequenceController implements AnimateController {
   }
 }
 
-// Loop: Repeat an animation a number of times
 class LoopController implements AnimateController {
   private count = 0;
   private isCancelled = false;
@@ -231,7 +228,6 @@ class LoopController implements AnimateController {
   }
 }
 
-// Delay: Simple delay controller
 class DelayController implements AnimateController {
   private timerId?: number;
   private onComplete?: () => void;

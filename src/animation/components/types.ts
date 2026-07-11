@@ -8,6 +8,7 @@ import type { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
 import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import type { LayoutOptions } from '../layout/flip';
 
 // Helper type to accept any AnimateValue with a compatible type
 export type AnimateValueCompatible =
@@ -56,6 +57,9 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   | 'focus'
   | 'view'
   | 'viewOptions'
+  | 'layout'
+  | 'layoutOptions'
+  | 'layoutId'
 > & {
   style?: AnimateStyle;
   /**
@@ -86,6 +90,37 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * Options for the IntersectionObserver used by view animations.
    */
   viewOptions?: UseInViewOptions;
+  /**
+   * When true, automatically animates position and size changes caused by
+   * layout shifts (reordering, resizing, insertion/removal of siblings, etc.)
+   * using a FLIP-style transform animation. Composes with any other transform
+   * already applied to the element (via `style`, `animate`, `hover`, `press`,
+   * or `view`) instead of overwriting it.
+   */
+  layout?: boolean;
+  /**
+   * Transition used by `layout` / `layoutId`. Same descriptor helpers as
+   * `animate` / `hover` / etc., in options-only form (no target — FLIP
+   * always settles at identity):
+   *
+   *   layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
+   *   layoutOptions={withTiming({ duration: 300 })}
+   *
+   * Raw spring option objects are still accepted for backwards compatibility.
+   */
+  layoutOptions?: LayoutOptions;
+  /**
+   * Identifies this element as part of a shared layout transition. When an
+   * element carrying a given `layoutId` unmounts (or moves elsewhere) and a
+   * different element mounts with the same `layoutId`, the new element
+   * automatically plays a FLIP-style transform animation from the previous
+   * element's last known position/size to its own — useful for tab
+   * indicators, expanding cards, and other "morph between elements"
+   * patterns. Uses `layoutOptions` for the transition (spring or timing).
+   * Note: `layoutId`s are tracked in a single global registry, so keep them
+   * unique per active transition group.
+   */
+  layoutId?: string;
 };
 
 export function combineRefs<T>(

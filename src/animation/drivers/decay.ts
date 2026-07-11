@@ -5,7 +5,7 @@ import { rubberClamp } from '../../utils';
 interface DecayOptions extends AnimateHooks {
   decay?: number;
   clamp?: [number, number];
-  elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
+  elastic?: boolean | number;
   onChange?(value: number): void;
 }
 
@@ -28,7 +28,6 @@ class DecayController implements AnimateController {
     private hooks: DecayOptions
   ) {
     this.clampBounds = hooks.clamp;
-    // Determine elastic constant: if elastic is a number, use it; if true, use default 0.15; if false/undefined, no elastic
     if (hooks.elastic === true) {
       this.elasticConstant = 0.15;
     } else if (typeof hooks.elastic === 'number') {
@@ -69,7 +68,6 @@ class DecayController implements AnimateController {
     if (this.clampBounds) {
       const [min, max] = this.clampBounds;
       if (this.elasticConstant !== undefined) {
-        // Use elastic/rubber clamping
         this.position = rubberClamp(
           this.position,
           min,
@@ -77,7 +75,6 @@ class DecayController implements AnimateController {
           this.elasticConstant
         );
       } else {
-        // Use hard clamping
         if (this.position < min) {
           this.position = min;
         } else if (this.position > max) {

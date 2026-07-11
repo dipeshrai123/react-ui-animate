@@ -5,7 +5,7 @@ const cache = new Map<
   ReturnType<typeof makeAnimated>
 >();
 
-export const animate = new Proxy({} as any, {
+export const animate = /*#__PURE__*/ new Proxy({} as any, {
   get(_, tag: keyof JSX.IntrinsicElements) {
     if (!cache.has(tag)) {
       cache.set(tag, makeAnimated(tag));

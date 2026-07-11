@@ -22,7 +22,6 @@ export function setupExitAnimations(
   const { exitProp, animateValues, controllers, onExitComplete, node, style } =
     context;
 
-  // Track completed animations
   let completedCount = 0;
   const totalAnimations = Object.keys(exitProp).length;
   const newSubscriptions: (() => void)[] = [];
@@ -36,7 +35,6 @@ export function setupExitAnimations(
 
   const computedStyle = window.getComputedStyle(node);
 
-  // Create AnimateValues for exit-only properties that don't exist
   for (const key of Object.keys(exitProp)) {
     if (!animateValues[key]) {
       const initial = getInitialValue(key, style, node, computedStyle);
@@ -44,28 +42,24 @@ export function setupExitAnimations(
     }
   }
 
-  // Re-apply all styles including the new exit-only properties
-  // This ensures all AnimateValues are properly subscribed to the DOM
+  // Re-apply the full merged style (including the exit-only AnimateValues
+  // just created above) so every value is actually subscribed to the DOM.
   const mergedStyle: Record<string, any> = { ...style };
   for (const key of Object.keys(animateValues)) {
     mergedStyle[key] = animateValues[key];
   }
 
-  // Separate normal styles and transforms
   const normal: Record<string, any> = {};
   const transforms: Record<string, any> = {};
   for (const [key, value] of Object.entries(mergedStyle)) {
     if (value && typeof value === 'object' && 'subscribe' in value) {
-      // Only include AnimateValues, not static values
       (isTransformKey(key) ? transforms : normal)[key] = value;
     }
   }
 
-  // Apply styles and transforms, collecting subscriptions
   newSubscriptions.push(...applyStyles(node, normal));
   newSubscriptions.push(...applyTransforms(node, transforms));
 
-  // Start exit animations
   for (const [key, valueOrDescriptor] of Object.entries(exitProp)) {
     const value = animateValues[key];
     if (!value) {
@@ -73,7 +67,6 @@ export function setupExitAnimations(
       continue;
     }
 
-    // Convert primitive values to spring descriptors for convenience
     const baseDescriptor: Descriptor =
       typeof valueOrDescriptor === 'number' ||
       typeof valueOrDescriptor === 'string'
@@ -84,7 +77,6 @@ export function setupExitAnimations(
           }
         : valueOrDescriptor;
 
-    // Add onComplete callback to track when animation finishes
     const exitDescriptor: Descriptor = {
       ...baseDescriptor,
       options: {
@@ -101,6 +93,5 @@ export function setupExitAnimations(
     controller.start();
   }
 
-  // Return cleanup subscriptions
   return newSubscriptions;
 }

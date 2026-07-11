@@ -1,26 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { animate, Presence, usePresence, useIsPresent, withTiming } from 'react-ui-animate';
 
-/**
- * Example: Using usePresence for manual exit control
- * 
- * usePresence() returns [isPresent, onExitComplete]:
- * - isPresent: boolean indicating if component is present (not exiting)
- * - onExitComplete: function to manually call when exit animation completes
- * 
- * Use this when you need to:
- * - Manually control when exit completes (e.g., for async operations)
- * - Access both the presence state and the completion callback
- * - Implement custom exit logic
- */
 const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
   const [isPresent, onExitComplete] = usePresence();
   const [shouldRender, setShouldRender] = useState(true);
 
-  // Example: Custom exit logic - delay removal after animation
   useEffect(() => {
     if (!isPresent && shouldRender) {
-      // Wait a bit before actually removing from DOM
       const timer = setTimeout(() => {
         setShouldRender(false);
         onExitComplete();
@@ -61,16 +47,9 @@ const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
   );
 };
 
-/**
- * Example: Using usePresence in nested components
- * 
- * When you have nested components inside Presence, you can use usePresence
- * or useIsPresent to access presence state from any level of nesting.
- */
 const NestedComponent: React.FC = () => {
   const isPresent = useIsPresent();
 
-  // Example: Log presence state changes
   useEffect(() => {
     console.log('Presence state changed:', isPresent);
   }, [isPresent]);
@@ -146,7 +125,6 @@ const Example: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Notification example */}
       <div>
         <h3 style={{ margin: '0 0 12px' }}>Notifications with usePresence</h3>
         <button
@@ -178,7 +156,6 @@ const Example: React.FC = () => {
         </div>
       </div>
 
-      {/* Panel example */}
       <div>
         <h3 style={{ margin: '0 0 12px' }}>Panel with usePresence</h3>
         <button
