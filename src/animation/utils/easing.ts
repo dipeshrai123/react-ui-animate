@@ -273,5 +273,5 @@ export class Easing {
   }
 }
 
-var ease = Easing.bezier(0.42, 0, 1, 1);
+var ease = /*#__PURE__*/ Easing.bezier(0.42, 0, 1, 1);
 

@@ -5,6 +5,7 @@ import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive, SpringOptions } from '../types';
 import { buildAnimation } from '../drivers/builder';
 import type { AnimateAttributes } from '../components/types';
+import { isDescriptor } from '../helpers';
 
 // Key set for one FLIP overlay's pseudo transform properties. `layout` and
 // `layoutId` each use their own namespace (see apply.ts) so they can coexist
@@ -65,10 +66,6 @@ const DEFAULT_LAYOUT_SPRING: SpringOptions = {
   damping: 40,
   mass: 1,
 };
-
-function isDescriptor(value: LayoutOptions): value is Descriptor {
-  return typeof value === 'object' && value !== null && 'type' in value;
-}
 
 // Resolves `layoutOptions` into a spring/timing descriptor. Only those two
 // drivers make sense for a FLIP settle-to-identity; anything else falls back

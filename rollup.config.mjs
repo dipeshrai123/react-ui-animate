@@ -1,12 +1,24 @@
 import typescript from "rollup-plugin-typescript2";
-import terser from '@rollup/plugin-terser';
 import dts from 'rollup-plugin-dts';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 import pkg from "./package.json" with { type: "json" };
 
-const isWatch = process.env.ROLLUP_WATCH === "true";
+const isAnalyze = process.env.ANALYZE === "true";
 
 // Main bundle configuration
+//
+// Deliberately NOT minified with terser: this package is consumed by other
+// bundlers (webpack/vite/esbuild/Rollup), and terser's statement-fusing
+// optimizations (sequences/join_vars/collapse_vars) merge originally-separate
+// top-level bindings together. Once fused, a downstream bundler can no longer
+// prove any individual piece is side-effect-free, so it keeps the whole fused
+// blob instead of tree-shaking unused exports — verified empirically: the
+// same `import { clamp } from 'react-ui-animate'` pulled ~46KB minified from
+// the old terser output vs ~1KB from this unminified one. Shipping compiled
+// but unminified ESM lets the consumer's own build tree-shake first and
+// minify the (much smaller) result — the standard pattern for libraries
+// meant to be bundled into an app (e.g. Redux, Preact).
 const mainConfig = {
   input: "src/index.ts",
   output: [
@@ -32,57 +44,13 @@ const mainConfig = {
         },
       },
     }),
-    terser({
-      compress: {
-        passes: 5,
-        drop_console: !isWatch,
-        drop_debugger: true,
-        pure_funcs: isWatch ? [] : ['console.log', 'console.info', 'console.debug', 'console.warn', 'console.error'],
-        unused: true,
-        dead_code: true,
-        collapse_vars: true,
-        reduce_vars: true,
-        inline: 2,
-        sequences: true,
-        properties: true,
-        evaluate: true,
-        booleans: true,
-        typeofs: true,
-        loops: true,
-        conditionals: true,
-        join_vars: true,
-        negate_iife: true,
-        if_return: true,
-        arrows: true,
-        unsafe: false,
-        unsafe_comps: false,
-        unsafe_math: false,
-        unsafe_methods: false,
-        unsafe_proto: false,
-        unsafe_regexp: false,
-        unsafe_undefined: false,
-        keep_infinity: true,
-      },
-      format: {
-        comments: false,
-        ascii_only: false,
-        ecma: 2017,
-      },
-      mangle: {
-        properties: {
-          // Mangle single-underscore private fields (`_foo`), but never
-          // dunder protocol keys (`__layout*`, `__layoutId*`). Those names
-          // are shared across modules as string values in one place and
-          // object keys in another; terser's property mangler rewrites the
-          // keys but leaves the string values alone, which silently turns
-          // every layout / layoutId FLIP into an empty transform.
-          regex: /^_[^_]/
-        },
-        safari10: true,
-        toplevel: false,
-      },
-    }),
-  ],
+    isAnalyze &&
+      visualizer({
+        filename: "dist/stats.html",
+        gzipSize: true,
+        brotliSize: true,
+      }),
+  ].filter(Boolean),
   external: ["react", "react-dom", "react/jsx-runtime"],
 };
 

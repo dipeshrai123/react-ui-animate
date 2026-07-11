@@ -20,7 +20,6 @@
     "react": ">=16.8.0 || >=17.0.0 || >=18.0.0 || >=19.0.0"
   },
   "devDependencies": {
-    "@rollup/plugin-terser": "^0.4.4",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^16.3.1",
     "@types/jest": "^29.5.14",
@@ -37,12 +36,15 @@
     "rollup": "^4.54.0",
     "rollup-plugin-dts": "^6.3.0",
     "rollup-plugin-typescript2": "^0.36.0",
+    "rollup-plugin-visualizer": "^7.0.1",
     "ts-jest": "^29.1.2",
     "typescript": "^5.9.3"
   },
   "scripts": {
     "clean": "rimraf -rf dist .dts-temp",
-    "build": "npm run clean && rollup -c && rimraf -rf .dts-temp",
+    "build": "npm run clean && rollup -c && rimraf -rf .dts-temp && npm run size",
+    "size": "node -e \"const {gzipSync}=require('zlib');const {readFileSync}=require('fs');const raw=readFileSync('dist/index.mjs');const gz=gzipSync(raw);console.log('index.mjs: '+raw.length+' bytes raw / '+gz.length+' bytes gzip');\"",
+    "analyze": "npm run clean && ANALYZE=true rollup -c && rimraf -rf .dts-temp",
     "start": "npm run clean && rollup -c -w",
     "start:dev": "cd example && npm start",
     "dev": "concurrently -n lib,example -c blue,green \"npm run start\" \"npm run start:dev\"",
