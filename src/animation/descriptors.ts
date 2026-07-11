@@ -7,7 +7,6 @@ import {
   TimingOptions,
 } from './types';
 
-// Default spring configuration values
 const DEFAULT_STIFFNESS = 158;
 const DEFAULT_DAMPING = 20;
 const DEFAULT_MASS = 1;

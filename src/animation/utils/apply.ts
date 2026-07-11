@@ -1,7 +1,6 @@
 import type { AnimateValue } from '../values/AnimateValue';
 import { isAnimateValue } from '../values/AnimateValue';
 
-// Unitless CSS properties that don't need 'px' suffix
 const UNIT_LESS = new Set([
   'borderImageOutset',
   'borderImageSlice',
@@ -39,7 +38,6 @@ const UNIT_LESS = new Set([
   'lineClamp',
 ]);
 
-// Internal transform keys - exported for internal use only
 export const transformKeys = [
   'translateX',
   'translateY',
@@ -181,7 +179,6 @@ export function applyTransformsStyle(
   return unsubs;
 }
 
-// Internal functions - not exported
 function applyStyles(
   node: HTMLElement,
   style: Record<string, any>
@@ -240,8 +237,6 @@ function applyTransforms(
   return applyTransformsStyle(elRef, txProps);
 }
 
-// Helper function to create a transform render function from AnimateValues
-// This is used by state animations to render transforms from animateValues
 export function createTransformRenderer(
   node: HTMLElement,
   animateValues: Record<string, AnimateValue<any>>
@@ -257,5 +252,4 @@ export function createTransformRenderer(
   };
 }
 
-// Export internal functions for use within the library
 export { applyStyles, applyAttrs, applyTransforms };

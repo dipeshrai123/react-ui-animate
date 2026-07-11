@@ -133,7 +133,6 @@ function useEnterAnimations(
     const node = nodeRef.current;
     const isExiting = presenceContext?.isExiting ?? false;
 
-    // Track transition from exiting to entering
     const justReEntered = wasExitingRef.current && !isExiting;
     wasExitingRef.current = isExiting;
 
@@ -154,7 +153,6 @@ function useEnterAnimations(
       if (animateProp) {
         const computedStyle = window.getComputedStyle(node);
 
-        // Initialize values if they don't exist
         if (Object.keys(animateValuesRef.current).length === 0) {
           const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
           for (const key of Object.keys(animateProp)) {
@@ -213,12 +211,11 @@ function useExitAnimations(
   const onExitCompleteRef = useRef<(() => void) | null>(null);
   const prevIsExitingRef = useRef<boolean>(false);
 
-  // Store the latest onExitComplete callback in a ref so it's always current
   useLayoutEffect(() => {
     onExitCompleteRef.current = presenceContext?.onExitComplete ?? null;
   });
 
-  // Use useLayoutEffect to ensure this runs in sync with useEnterAnimations
+  // useLayoutEffect (not useEffect) so this runs in sync with useEnterAnimations.
   useLayoutEffect(() => {
     const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
     const node = nodeRef.current;
@@ -226,10 +223,8 @@ function useExitAnimations(
     const prevIsExiting = prevIsExitingRef.current;
     prevIsExitingRef.current = isExiting;
 
-    // If not exiting, reset the flag and cancel any ongoing exit animations
     if (!isExiting) {
       if (isExitingRef.current) {
-        // Child was exiting but is now re-entering - cancel exit animations only
         isExitingRef.current = false;
         exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
         exitControllersRef.current = [];
@@ -239,32 +234,28 @@ function useExitAnimations(
       return;
     }
 
-    // If already exiting, don't start another exit animation
-    // Only start if we transitioned from not-exiting to exiting
     if (isExitingRef.current || !exitProp || !node) {
       return;
     }
 
-    // Only start exit animation if we just transitioned to exiting state
-    // This prevents cancelling ongoing animations when context object reference changes
+    // Gate on the not-exiting -> exiting transition (not just `isExiting`)
+    // so a PresenceContext object identity change alone doesn't re-trigger
+    // (and cancel) an exit animation already in flight.
     if (!prevIsExiting && isExiting) {
       isExitingRef.current = true;
-      // Cancel enter animations when starting exit
       enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
       enterControllersRef.current = [];
 
-      // Clean up any previous exit subscriptions
       exitCleanupRef.current.forEach((cleanup) => cleanup());
       exitCleanupRef.current = [];
 
-      // Setup exit animations with separate controllers
       exitCleanupRef.current = setupExitAnimations({
         exitProp,
         animateValues: animateValuesRef.current,
         controllers: exitControllersRef.current,
         onExitComplete: () => {
-          // Only call onExitComplete if we're still exiting
-          // (child might have been re-added during exit animation)
+          // Guard against a child that got re-added mid-exit and is no
+          // longer exiting by the time this fires.
           if (isExitingRef.current && onExitCompleteRef.current) {
             exitCleanupRef.current.forEach((cleanup) => cleanup());
             exitCleanupRef.current = [];
@@ -277,10 +268,9 @@ function useExitAnimations(
       });
     }
 
-    // Cleanup function - only runs when isExiting changes or on unmount
     return () => {
-      // Only clean up if we're actually exiting (prevents cancelling on every render)
-      // This handles the unmount case where we need to clean up
+      // Only tear down if actually exiting — this also runs on every
+      // non-exiting re-render, where there's nothing to clean up.
       if (isExitingRef.current) {
         exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
         exitControllersRef.current = [];
@@ -306,22 +296,19 @@ function useViewAnimations(
   const isInView = useInView(nodeRef, viewOptions || {});
   const hasInitializedRef = useRef(false);
 
-  // Initialize view animation values with initial style values before any animation
-  // This ensures that initial values (like opacity: 0) are applied immediately
+  // Applies initial values (e.g. opacity: 0) to the DOM immediately, before
+  // any animation runs, so the element never flashes with default styles.
   useLayoutEffect(() => {
     if (!view) return;
 
     const node = nodeRef.current;
     if (!node) return;
 
-    // Only initialize once
     if (hasInitializedRef.current) return;
 
     const computedStyle = window.getComputedStyle(node);
     const { style = {} } = propsRef.current;
 
-    // Initialize AnimateValues for all view properties with their initial values
-    // and immediately apply them to the DOM to prevent flash of incorrect styles
     for (const key of Object.keys(view)) {
       if (!animateValuesRef.current[key]) {
         const initial = getInitialValue(key, style, node, computedStyle);
@@ -329,17 +316,13 @@ function useViewAnimations(
         animateValuesRef.current[key] = value;
         initialValuesRef.current[key] = initial;
 
-        // Immediately apply the initial value to the DOM
-        // This prevents the element from showing with default values before animation
         if (isTransformKey(key)) {
-          // For transforms, update the transform property
           const render = createTransformRenderer(
             node,
             animateValuesRef.current
           );
           render();
         } else {
-          // For normal styles, apply immediately
           const css =
             typeof initial === 'number' &&
             !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
@@ -359,7 +342,6 @@ function useViewAnimations(
     const node = nodeRef.current;
     if (!node) return;
 
-    // Clean up previous subscriptions
     cleanupRef.current.forEach((cleanup) => cleanup());
     cleanupRef.current = [];
 
@@ -382,7 +364,6 @@ function useViewAnimations(
   useEffect(() => {
     if (!view) return;
 
-    // Apply animation based on view state
     applyViewAnimationWrapper(isInView);
 
     return () => {
@@ -609,7 +590,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     propsRef.current = props;
 
-    // Run hooks
     useExitAnimations(
       nodeRef,
       propsRef,
@@ -646,7 +626,6 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
     useLayoutAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
     useLayoutIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
 
-    // Clean destructuring of props to pass only valid HTML attributes to the DOM
     const {
       animate,
       exit,

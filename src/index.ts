@@ -1,8 +1,3 @@
-// ============================================================================
-// Main entry point - re-export public APIs with named exports for tree-shaking
-// ============================================================================
-
-// Animation APIs
 export {
   animate,
   makeAnimated,
@@ -73,7 +68,6 @@ export {
   exitScale,
 } from './animation';
 
-// Type exports
 export type {
   Primitive,
   ExtrapolateConfig,
@@ -101,11 +95,9 @@ export type {
   AnimateHooks,
 } from './animation';
 
-// General hooks
 export { useOutsideClick } from './hooks/events/useOutsideClick';
 export { useInView, type UseInViewOptions } from './hooks/observers/useInView';
 
-// Gesture hooks
 export { useDrag } from './gestures/hooks/useDrag';
 export { useMove } from './gestures/hooks/useMove';
 export { useScroll } from './gestures/hooks/useScroll';
@@ -116,11 +108,9 @@ export {
 export { useWheel } from './gestures/hooks/useWheel';
 export { useRecognizer } from './gestures/hooks/useRecognizer';
 
-// Gesture types
 export type { DragEvent, DragConfig } from './gestures/controllers/DragGesture';
 export type { MoveEvent } from './gestures/controllers/MoveGesture';
 export type { ScrollEvent } from './gestures/controllers/ScrollGesture';
 export type { WheelEvent } from './gestures/controllers/WheelGesture';
 
-// Utilities
 export { clamp, rubberClamp, snapTo, move } from './utils';

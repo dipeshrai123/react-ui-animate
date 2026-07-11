@@ -30,14 +30,6 @@ const ScaleDisplay = ({ scale }: { scale: AnimateValue<number> }) => {
   );
 };
 
-/**
- * Real-world example: Scale on Wheel
- *
- * This demonstrates useWheel for creating scale effects:
- * - Scale elements based on wheel delta
- * - Different scaling for different elements
- * - Smooth animations
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale1, setScale1] = useValue(1);
@@ -45,12 +37,11 @@ const Example = () => {
   const [scale3, setScale3] = useValue(1);
 
   useWheel(containerRef, ({ event }) => {
-    // Different scaling speeds for different elements
     const speed1 = 0.05;
     const speed2 = 0.03;
     const speed3 = 0.08;
 
-    const deltaScale = event.deltaY * -0.01; // Negative to make scroll up = scale up
+    const deltaScale = event.deltaY * -0.01; // negative: scroll up = scale up
 
     setScale1(
       withSpring(

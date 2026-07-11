@@ -1,14 +1,6 @@
 import { useRef } from 'react';
 import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
 
-/**
- * Real-world example: Cursor Follower
- * 
- * This demonstrates useMove for creating a custom cursor follower that:
- * - Tracks mouse movement smoothly
- * - Uses spring physics for natural motion
- * - Can be used for custom cursor effects
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [cursorX, setCursorX] = useValue(0);
@@ -16,12 +8,10 @@ const Example = () => {
   const [dotX, setDotX] = useValue(0);
   const [dotY, setDotY] = useValue(0);
 
-  // Track mouse position on the container
   useMove(containerRef, ({ offset }) => {
     setCursorX(withSpring(offset.x, { stiffness: 300, damping: 30 }));
     setCursorY(withSpring(offset.y, { stiffness: 300, damping: 30 }));
-    
-    // Secondary dot with more damping for trailing effect
+
     setDotX(withSpring(offset.x, { stiffness: 150, damping: 25 }));
     setDotY(withSpring(offset.y, { stiffness: 150, damping: 25 }));
   });
@@ -38,7 +28,6 @@ const Example = () => {
         cursor: 'none',
       }}
     >
-      {/* Main cursor dot */}
       <animate.div
         style={{
           position: 'absolute',
@@ -52,7 +41,6 @@ const Example = () => {
         }}
       />
       
-      {/* Trailing dot */}
       <animate.div
         style={{
           position: 'absolute',
@@ -66,7 +54,6 @@ const Example = () => {
         }}
       />
       
-      {/* Content */}
       <div
         style={{
           position: 'absolute',

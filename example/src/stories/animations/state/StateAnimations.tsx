@@ -11,7 +11,6 @@ const Example: React.FC = () => {
       description="Animations triggered by user interactions and viewport visibility. Demonstrates how properties like boxShadow, background, and filters work without initial styles."
       showRestartButton={false}
     >
-      {/* Basic State Animations */}
       <Section title="Basic State Animations" description="Hover, press, and focus states with numeric properties">
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <ExampleCard description="Scale and color change on hover">
@@ -67,7 +66,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* String Properties - boxShadow */}
       <Section 
         title="String Properties: boxShadow" 
         description="boxShadow animates from empty (no shadow) to shadow without initial style. Works with all states."
@@ -86,7 +84,6 @@ const Example: React.FC = () => {
                 color: 'white',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                // No boxShadow in initial style
               }}
               hover={{
                 boxShadow: '0 8px 24px rgba(51, 153, 255, 0.4)',
@@ -108,7 +105,6 @@ const Example: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                // No boxShadow in initial style
               }}
               press={{
                 boxShadow: '0 4px 12px rgba(81, 207, 102, 0.5)',
@@ -130,7 +126,6 @@ const Example: React.FC = () => {
                 fontSize: 16,
                 outline: 'none',
                 width: 200,
-                // No boxShadow in initial style
               }}
               focus={{
                 boxShadow: '0 0 0 3px rgba(255, 107, 107, 0.3)',
@@ -141,7 +136,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* View State */}
       <Section 
         title="View State Animation" 
         description="Animations triggered when element enters viewport. Properties work without initial styles."
@@ -161,7 +155,6 @@ const Example: React.FC = () => {
                     justifyContent: 'center',
                     color: 'white',
                     fontWeight: 'bold',
-                    // No boxShadow or opacity in initial style
                   }}
                   view={{
                     boxShadow: '0 12px 32px rgba(132, 94, 247, 0.4)',
@@ -192,7 +185,6 @@ const Example: React.FC = () => {
                     justifyContent: 'center',
                     color: 'white',
                     fontWeight: 'bold',
-                    // No opacity, scale, or boxShadow in initial style
                   }}
                   view={{
                     opacity: 1,
@@ -211,7 +203,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* Exit State */}
       <Section 
         title="Exit State Animation" 
         description="Exit animations work with string properties without initial styles."
@@ -248,7 +239,6 @@ const Example: React.FC = () => {
                       color: '#333',
                       fontSize: 16,
                       fontWeight: 'bold',
-                      // No boxShadow or opacity in initial style
                     }}
                     exit={{
                       boxShadow: '0 0 0 0 rgba(255, 212, 59, 0)',
@@ -294,7 +284,6 @@ const Example: React.FC = () => {
                       color: 'white',
                       fontSize: 16,
                       fontWeight: 'bold',
-                      // No opacity in initial style
                     }}
                     exit={{
                       opacity: 0,
@@ -310,7 +299,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* Background and Filters */}
       <Section 
         title="Background and Filters" 
         description="String properties like background and filter work without initial styles."
@@ -329,7 +317,6 @@ const Example: React.FC = () => {
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 backgroundColor: '#3399ff',
-                // No background gradient in initial style
               }}
               hover={{
                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -353,7 +340,6 @@ const Example: React.FC = () => {
                 color: 'white',
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                // No filter in initial style
               }}
               hover={{
                 filter: 'blur(2px) brightness(1.2)',
@@ -379,7 +365,6 @@ const Example: React.FC = () => {
                 fontWeight: 'bold',
                 cursor: 'pointer',
                 position: 'relative',
-                // No backdropFilter in initial style
               }}
               press={{
                 backdropFilter: 'blur(10px)',
@@ -398,7 +383,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* Multiple Properties */}
       <Section 
         title="Multiple Properties Together" 
         description="Multiple properties (numeric and string) animate together without initial styles."
@@ -418,7 +402,6 @@ const Example: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                // No opacity, scale, or boxShadow in initial style
               }}
               hover={{
                 opacity: 0.8,
@@ -441,7 +424,6 @@ const Example: React.FC = () => {
                 fontSize: 16,
                 fontWeight: 'bold',
                 cursor: 'pointer',
-                // No translateY, scale, or boxShadow in initial style
               }}
               press={{
                 translateY: 2,
@@ -467,7 +449,6 @@ const Example: React.FC = () => {
                     justifyContent: 'center',
                     color: '#333',
                     fontWeight: 'bold',
-                    // No properties in initial style
                   }}
                   view={{
                     opacity: 1,
@@ -487,7 +468,6 @@ const Example: React.FC = () => {
         </div>
       </Section>
 
-      {/* Combined States */}
       <Section 
         title="Combined State Animations" 
         description="Multiple states working together with properties that don't have initial styles."
@@ -506,7 +486,6 @@ const Example: React.FC = () => {
                 justifyContent: 'center',
                 color: 'white',
                 fontWeight: 'bold',
-                // No scale or boxShadow in initial style
               }}
               hover={{
                 scale: 1.1,
@@ -533,7 +512,6 @@ const Example: React.FC = () => {
                 borderRadius: 8,
                 outline: 'none',
                 width: 200,
-                // No boxShadow or borderColor in initial style
               }}
               hover={{
                 boxShadow: '0 2px 8px rgba(0,0,0,0.1)',

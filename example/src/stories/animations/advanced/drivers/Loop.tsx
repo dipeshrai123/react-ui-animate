@@ -16,15 +16,13 @@ const Example: React.FC = () => {
 
   const startLoop = () => {
     controllerRef.current?.cancel();
-    valueRef.current.set(0); // Reset to initial value
+    valueRef.current.set(0);
 
-    // Create an animation to loop - use 'from' to ensure it starts from 0 each time
     const animation = timing(valueRef.current, 200, {
       duration: 500,
-      from: 0, // Explicitly start from 0 each iteration
+      from: 0,
     });
 
-    // Loop it 3 times
     controllerRef.current = loop(animation, 3, {
       onStart: () => console.log('Loop started'),
       onComplete: () => console.log('Loop completed'),
@@ -35,16 +33,15 @@ const Example: React.FC = () => {
 
   const startInfiniteLoop = () => {
     controllerRef.current?.cancel();
-    valueRef.current.set(0); // Reset to initial value
+    valueRef.current.set(0);
 
     const animation = spring(valueRef.current, 200, {
       stiffness: 100,
       damping: 15,
-      from: 0, // Explicitly start from 0 each iteration
+      from: 0,
     });
 
-    // Loop infinitely - use a very large number since 0 means "no iterations"
-    // Note: The loop implementation treats 0 as "no iterations", so we use a large number
+    // loop() treats 0 iterations as "no iterations", so use a large number for infinite
     controllerRef.current = loop(animation, 999999, {
       onStart: () => console.log('Infinite loop started'),
     });
@@ -54,17 +51,15 @@ const Example: React.FC = () => {
 
   const startSequenceLoop = () => {
     controllerRef.current?.cancel();
-    valueRef.current.set(0); // Reset to initial value
+    valueRef.current.set(0);
 
-    // Create a sequence - first step should start from 0
     const step1 = timing(valueRef.current, 100, {
       duration: 300,
-      from: 0, // Start from 0
+      from: 0,
     });
     const step2 = timing(valueRef.current, 200, { duration: 300 });
     const seq = sequence([step1, step2]);
 
-    // Loop the sequence
     controllerRef.current = loop(seq, 3);
     controllerRef.current.start();
   };

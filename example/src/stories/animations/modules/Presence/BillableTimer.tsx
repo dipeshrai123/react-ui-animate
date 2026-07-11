@@ -24,7 +24,6 @@ function makeExit(type: AnimationType) {
   };
 }
 
-// ─── minimal style tokens ─────────────────────────────────────────────────────
 const shell: React.CSSProperties = {
   border: '1px solid #e2e8f0',
   borderRadius: 16,
@@ -66,7 +65,6 @@ const overline: React.CSSProperties = {
 
 const muted: React.CSSProperties = { fontSize: 13, color: '#64748b', marginTop: 4 };
 
-// ─── tiny elapsed timer ───────────────────────────────────────────────────────
 function ElapsedTimer({ startedAt }: { startedAt: number | null }) {
   const [elapsed, setElapsed] = React.useState(0);
 
@@ -87,7 +85,6 @@ function ElapsedTimer({ startedAt }: { startedAt: number | null }) {
   );
 }
 
-// ─── main example ─────────────────────────────────────────────────────────────
 const BillableTimerExample: React.FC<{
   bgColor?: string;
   animationType?: AnimationType;
@@ -104,7 +101,6 @@ const BillableTimerExample: React.FC<{
 
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif' }}>
-      {/* animation type badge */}
       <div style={{ marginBottom: 10, textAlign: 'center' }}>
         <span style={{
           display: 'inline-block',
@@ -131,7 +127,6 @@ const BillableTimerExample: React.FC<{
               animate={enterRunning}
               exit={exitRunning}
             >
-              {/* ── Running state ── */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -158,7 +153,6 @@ const BillableTimerExample: React.FC<{
               animate={enterReady}
               exit={exitReady}
             >
-              {/* ── Ready state ── */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#94a3b8' }}>

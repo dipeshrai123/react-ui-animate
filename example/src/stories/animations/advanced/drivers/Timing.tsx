@@ -8,10 +8,8 @@ const Example: React.FC = () => {
   const controllerRef = useRef<ReturnType<typeof timing> | null>(null);
 
   const startAnimation = () => {
-    // Cancel any existing animation
     controllerRef.current?.cancel();
 
-    // Create and start timing animation
     controllerRef.current = timing(valueRef.current, 200, {
       duration: 1000,
       easing: Easing.ease,

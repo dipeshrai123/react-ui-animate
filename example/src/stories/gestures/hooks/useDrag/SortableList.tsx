@@ -7,14 +7,6 @@ interface Task {
   completed: boolean;
 }
 
-/**
- * Real-world example: Sortable Task List
- * 
- * This demonstrates useDrag with multiple elements for:
- * - Dragging items to reorder
- * - Visual feedback during drag
- * - Maintaining list order state
- */
 const Example = () => {
   const [tasks, setTasks] = useState<Task[]>([
     { id: 1, title: 'Design new landing page', completed: false },
@@ -24,18 +16,15 @@ const Example = () => {
     { id: 5, title: 'Deploy to production', completed: false },
   ]);
 
-  // Create refs for all tasks - use a ref to store them
   const refsMapRef = useRef<Map<number, React.RefObject<HTMLDivElement>>>(new Map());
-  
-  // Get or create ref for each task ID
+
   const getRef = (id: number): React.RefObject<HTMLDivElement> => {
     if (!refsMapRef.current.has(id)) {
       refsMapRef.current.set(id, { current: null });
     }
     return refsMapRef.current.get(id)!;
   };
-  
-  // Create array of refs in the same order as tasks
+
   const taskRefs = useMemo(
     () => tasks.map((task) => getRef(task.id)),
     [tasks]
@@ -50,14 +39,10 @@ const Example = () => {
     taskRefs,
     ({ down, movement, index }) => {
       if (!down && draggedIndex !== null) {
-        // Calculate new position based on movement
-        const newIndex = Math.round(
-          draggedIndex + movement.y / 60 // 60px per item
-        );
+        const newIndex = Math.round(draggedIndex + movement.y / 60); // 60px per item
         const clampedIndex = Math.max(0, Math.min(tasks.length - 1, newIndex));
-        
+
         if (clampedIndex !== draggedIndex) {
-          // Reorder tasks
           const newTasks = [...tasks];
           const [moved] = newTasks.splice(draggedIndex, 1);
           newTasks.splice(clampedIndex, 0, moved);

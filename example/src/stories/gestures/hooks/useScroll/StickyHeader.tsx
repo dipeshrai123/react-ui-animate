@@ -1,14 +1,6 @@
 import { useRef } from 'react';
 import { animate, useScroll, useValue, withSpring } from 'react-ui-animate';
 
-/**
- * Real-world example: Sticky Header with Scroll Effects
- *
- * This demonstrates useScroll for creating a sticky header that:
- * - Changes appearance on scroll
- * - Shrinks/grows based on scroll position
- * - Shows scroll progress
- */
 const Example = () => {
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerHeight, setHeaderHeight] = useValue(80);
@@ -18,7 +10,6 @@ const Example = () => {
   useScroll(window, ({ offset }) => {
     const scrollY = offset.y;
 
-    // Shrink header on scroll
     if (scrollY > 0) {
       setHeaderHeight(withSpring(60, { stiffness: 300, damping: 30 }));
       setHeaderOpacity(withSpring(0.95, { stiffness: 300, damping: 30 }));
@@ -27,7 +18,6 @@ const Example = () => {
       setHeaderOpacity(withSpring(1, { stiffness: 300, damping: 30 }));
     }
 
-    // Calculate scroll progress
     const maxScroll =
       document.documentElement.scrollHeight - window.innerHeight;
     const progress = Math.min(1, scrollY / maxScroll);
@@ -36,7 +26,6 @@ const Example = () => {
 
   return (
     <div style={{ backgroundColor: '#f5f5f5' }}>
-      {/* Sticky Header */}
       <animate.div
         ref={headerRef}
         style={{
@@ -78,7 +67,6 @@ const Example = () => {
         </nav>
       </animate.div>
 
-      {/* Scroll Progress Bar */}
       <animate.div
         style={{
           position: 'fixed',
@@ -91,7 +79,6 @@ const Example = () => {
         }}
       />
 
-      {/* Content */}
       <div style={{ padding: '80px 40px' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
           <h1

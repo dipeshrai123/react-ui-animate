@@ -46,20 +46,11 @@ const ScrollIndicator = ({
   );
 };
 
-/**
- * Real-world example: Horizontal Scroll on Wheel
- *
- * This demonstrates useWheel for creating horizontal scrolling:
- * - Scroll horizontally with vertical wheel
- * - Smooth spring animations
- * - Useful for horizontal galleries, timelines, etc.
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollX, setScrollX] = useValue(0);
 
   useWheel(containerRef, ({ event }) => {
-    // Convert vertical wheel to horizontal scroll
     const scrollAmount = event.deltaY * 2;
     const maxScroll = containerRef.current
       ? containerRef.current.scrollWidth - containerRef.current.clientWidth

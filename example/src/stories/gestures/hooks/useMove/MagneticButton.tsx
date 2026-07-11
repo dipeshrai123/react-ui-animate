@@ -7,14 +7,6 @@ import {
   combine,
 } from 'react-ui-animate';
 
-/**
- * Real-world example: Magnetic Button
- *
- * This demonstrates useMove for creating a magnetic button effect:
- * - Button follows mouse when nearby
- * - Creates an engaging interactive element
- * - Smooth spring animations
- */
 const Example = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [offsetX, setOffsetX] = useValue(0);
@@ -48,11 +40,9 @@ const Example = () => {
     const distanceY = offset.y - centerPoint.y;
     const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
 
-    // Magnetic effect radius
     const radius = 150;
 
     if (distance < radius) {
-      // Calculate pull strength (stronger when closer)
       const strength = 1 - distance / radius;
       const pullX = distanceX * strength * 0.3;
       const pullY = distanceY * strength * 0.3;
@@ -63,21 +53,18 @@ const Example = () => {
         withSpring(1 + strength * 0.1, { stiffness: 400, damping: 30 })
       );
     } else {
-      // Return to center when mouse is far
       setOffsetX(withSpring(0, { stiffness: 300, damping: 25 }));
       setOffsetY(withSpring(0, { stiffness: 300, damping: 25 }));
       setMagneticScale(withSpring(1, { stiffness: 300, damping: 25 }));
     }
   });
 
-  // Combine all scales multiplicatively using combine utility
   const combinedScale = useMemo(
     () =>
       combine([magneticScale, hoverScale, pressScale], (m, h, p) => m * h * p),
     [magneticScale, hoverScale, pressScale]
   );
 
-  // Handle hover state
   useEffect(() => {
     if (isHovered) {
       setHoverScale(withSpring(1.05, { stiffness: 400, damping: 25 }));
@@ -86,7 +73,6 @@ const Example = () => {
     }
   }, [isHovered, setHoverScale]);
 
-  // Handle press state
   useEffect(() => {
     if (isPressed) {
       setPressScale(withSpring(0.95, { stiffness: 400, damping: 25 }));

@@ -1,14 +1,6 @@
 import { useRef } from 'react';
 import { animate, useScroll } from 'react-ui-animate';
 
-/**
- * Real-world example: Scroll Parallax Effect
- * 
- * This demonstrates useScroll with scroll progress for:
- * - Parallax scrolling effects
- * - Multiple elements moving at different speeds
- * - Smooth scroll-based animations
- */
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll(window, {
@@ -19,7 +11,6 @@ const Example = () => {
   return (
     <div style={{ backgroundColor: '#0a0a0a', minHeight: '300vh' }}>
       <div ref={containerRef} style={{ position: 'relative', height: '200vh' }}>
-        {/* Background layer - moves slowest */}
         <animate.div
           style={{
             position: 'fixed',
@@ -33,7 +24,6 @@ const Example = () => {
           }}
         />
 
-        {/* Middle layer */}
         <animate.div
           style={{
             position: 'fixed',
@@ -50,7 +40,6 @@ const Example = () => {
           }}
         />
 
-        {/* Foreground layer - moves fastest */}
         <animate.div
           style={{
             position: 'fixed',
@@ -67,7 +56,6 @@ const Example = () => {
           }}
         />
 
-        {/* Content */}
         <div
           style={{
             position: 'relative',
@@ -87,7 +75,6 @@ const Example = () => {
         </div>
       </div>
 
-      {/* Additional content */}
       <div style={{ padding: '40px', color: 'white', minHeight: '100vh' }}>
         <div style={{ maxWidth: 800, margin: '0 auto' }}>
           {Array.from({ length: 5 }).map((_, i) => (

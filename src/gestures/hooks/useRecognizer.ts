@@ -44,7 +44,6 @@ export function useRecognizer<T extends HTMLElement, C, E>(
   const prevCleanupsRef = useRef<(() => void)[]>([]);
   const listLengthRef = useRef(list.length);
 
-  // Recreate gestures if list length changes
   if (gesturesRef.current.length !== list.length) {
     gesturesRef.current = list.map((_, i) => {
       const g = new GestureClass(configRef.current);
@@ -56,7 +55,6 @@ export function useRecognizer<T extends HTMLElement, C, E>(
   }
 
   useEffect(() => {
-    // Cleanup previous attachments
     prevCleanupsRef.current.forEach((fn) => fn());
     prevCleanupsRef.current = [];
 

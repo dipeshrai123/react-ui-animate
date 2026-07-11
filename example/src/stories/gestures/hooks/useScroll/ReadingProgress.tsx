@@ -60,14 +60,6 @@ const ProgressDisplay = ({
   );
 };
 
-/**
- * Real-world example: Reading Progress Indicator
- *
- * This demonstrates useScroll with scroll progress for:
- * - Tracking reading progress through content
- * - Visual progress indicators
- * - Smooth animated progress values
- */
 const Example = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll(window, {
@@ -79,7 +71,6 @@ const Example = () => {
     <div style={{ backgroundColor: '#f8f9fa', minHeight: '200vh' }}>
       <ProgressBar scrollYProgress={scrollYProgress} />
 
-      {/* Content */}
       <div
         ref={contentRef}
         style={{ padding: '80px 40px', maxWidth: 800, margin: '0 auto' }}
@@ -130,7 +121,6 @@ const Example = () => {
           </div>
         ))}
 
-        {/* Progress Percentage Display */}
         <div style={{ position: 'fixed', bottom: 40, right: 40, zIndex: 1000 }}>
           <ProgressDisplay scrollYProgress={scrollYProgress} />
         </div>

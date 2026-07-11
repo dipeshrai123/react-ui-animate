@@ -7,14 +7,6 @@ import {
   withTiming,
 } from 'react-ui-animate';
 
-/**
- * Real-world example: Scroll Reveal Animations
- *
- * This demonstrates useScroll for creating scroll-triggered animations:
- * - Elements animate in as you scroll
- * - Smooth reveal effects
- * - Performance-optimized scroll handling
- */
 const Example = () => {
   const section1Ref = useRef<HTMLDivElement>(null);
   const section2Ref = useRef<HTMLDivElement>(null);
@@ -28,7 +20,6 @@ const Example = () => {
   const [section3Rotate, setSection3Rotate] = useValue(-10);
 
   useScroll(window, ({ offset }) => {
-    // Section 1: Fade in from bottom
     if (section1Ref.current) {
       const rect = section1Ref.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
@@ -43,7 +34,6 @@ const Example = () => {
       );
     }
 
-    // Section 2: Scale in
     if (section2Ref.current) {
       const rect = section2Ref.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
@@ -58,7 +48,6 @@ const Example = () => {
       );
     }
 
-    // Section 3: Rotate in
     if (section3Ref.current) {
       const rect = section3Ref.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;

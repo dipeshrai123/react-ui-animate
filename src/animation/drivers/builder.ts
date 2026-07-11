@@ -34,17 +34,13 @@ export function buildAnimation(
 
       let innerController: ReturnType<typeof timing>;
 
-      // For loops, we use the AnimateValue's initial value as the starting point
-      // This ensures loops always animate from the initial value to the target,
-      // regardless of the current value
+      // Each loop iteration restarts from the AnimateValue's initial value
+      // (not its current value) unless a step already sets an explicit `from`.
       const loopFromValue = value.initial as number;
 
       if (innerDesc.type === 'sequence') {
-        // For sequences, build each step with `from` support for the first animation
         const animations = innerDesc.options?.animations ?? [];
         const controllers = animations.map((step, index) => {
-          // For the first animation in a sequence within a loop,
-          // use initial value if no explicit `from` is specified
           if (index === 0 && (step.type === 'spring' || step.type === 'timing')) {
             const explicitFrom = step.options?.from;
             return buildAnimation(value, {
@@ -56,8 +52,6 @@ export function buildAnimation(
         });
         innerController = sequence(controllers, innerDesc.options);
       } else if (innerDesc.type === 'spring' || innerDesc.type === 'timing') {
-        // For single spring/timing animations in a loop,
-        // use initial value if no explicit `from` is specified
         const explicitFrom = innerDesc.options?.from;
         innerController = buildAnimation(value, {
           ...innerDesc,

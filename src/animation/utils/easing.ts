@@ -34,12 +34,10 @@ function C(aA1: number) {
   return 3.0 * aA1;
 }
 
-// Returns x(t) given t, x1, and x2, or y(t) given t, y1, and y2.
 function calcBezier(aT: number, aA1: number, aA2: number) {
   return ((A(aA1, aA2) * aT + B(aA1, aA2)) * aT + C(aA1)) * aT;
 }
 
-// Returns dx/dt given t, x1, and x2, or dy/dt given t, y1, and y2.
 function getSlope(aT: number, aA1: number, aA2: number) {
   return 3.0 * A(aA1, aA2) * aT * aT + 2.0 * B(aA1, aA2) * aT + C(aA1);
 }
@@ -99,7 +97,6 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
     return LinearEasing;
   }
 
-  // Precompute samples table
   var sampleValues = float32ArraySupported
     ? new Float32Array(kSplineTableSize)
     : new Array(kSplineTableSize);
@@ -121,7 +118,6 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
     }
     --currentSample;
 
-    // Interpolate to provide an initial guess for t
     var dist =
       (aX - sampleValues[currentSample]) /
       (sampleValues[currentSample + 1] - sampleValues[currentSample]);

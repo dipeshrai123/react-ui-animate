@@ -76,35 +76,26 @@ export function applyStateAnimation(
     restingTargets,
   } = context;
 
-  // Cancel any existing state animations
   stateControllers.forEach((ctrl) => ctrl.cancel());
   stateControllers.length = 0;
 
   const newSubscriptions: (() => void)[] = [];
 
-  // For each property in the state animation
   for (const [key, valueOrDescriptor] of Object.entries(stateProp)) {
-    // Get or create AnimateValue for this property
     let value = animateValues[key];
 
     if (!value) {
-      // Create a new AnimateValue if it doesn't exist
       const initial = getInitialValue(key, style, node, computedStyle);
       value = new AnimateValue(initial);
       animateValues[key] = value;
 
-      // Store the initial value immediately for state animations
       initialValues[key] = initial;
 
-      // Manually subscribe to the new AnimateValue
       if (isTransformKey(key)) {
-        // For transforms, we need to re-render all transforms
-        // So we'll trigger a full transform update
         const render = createTransformRenderer(node, animateValues);
         newSubscriptions.push(value.subscribe(render));
-        render(); // Initial render
+        render();
       } else {
-        // For normal styles, subscribe directly
         const updateStyle = (v: Primitive) => {
           const css =
             typeof v === 'number' &&
@@ -114,7 +105,6 @@ export function applyStateAnimation(
           (node.style as any)[key] = css;
         };
         newSubscriptions.push(value.subscribe(updateStyle));
-        // Immediately apply the initial value to ensure it's set before animation starts
         updateStyle(initial);
       }
     } else {
@@ -134,14 +124,13 @@ export function applyStateAnimation(
         initialValues[key] = getInitialValue(key, style, node, computedStyle);
       }
 
-      // Ensure subscriptions exist for pre-initialized AnimateValues (e.g., from view prop initialization)
-      // This is necessary because AnimateValues created in useLayoutEffect need subscriptions to update the DOM
+      // AnimateValues created in useLayoutEffect (e.g. by the `view` prop)
+      // need their subscriptions (re)established here too, or they'd never
+      // reach the DOM.
       if (isTransformKey(key)) {
-        // For transforms, we need to re-render all transforms
         const render = createTransformRenderer(node, animateValues);
         newSubscriptions.push(value.subscribe(render));
       } else {
-        // For normal styles, subscribe directly
         newSubscriptions.push(
           value.subscribe((v) => {
             const css =
@@ -155,14 +144,12 @@ export function applyStateAnimation(
       }
     }
 
-    // Check if it's a raw primitive (animate with spring) or a descriptor (animate)
     const isPrimitive =
       typeof valueOrDescriptor === 'number' ||
       typeof valueOrDescriptor === 'string';
 
     if (isActive) {
       if (isPrimitive) {
-        // Animate to the state animation target with spring
         const springDescriptor: Descriptor = {
           type: 'spring',
           to: valueOrDescriptor,
@@ -172,7 +159,6 @@ export function applyStateAnimation(
         stateControllers.push(controller);
         controller.start();
       } else {
-        // Animate to the state animation target
         const controller = buildAnimation(value, valueOrDescriptor);
         stateControllers.push(controller);
         controller.start();
@@ -184,7 +170,6 @@ export function applyStateAnimation(
       const initialValue = restingTargets?.[key] ?? initialValues[key];
 
       if (isPrimitive) {
-        // Animate back to initial value with spring
         const revertDescriptor: Descriptor = {
           type: 'spring',
           to: initialValue,
@@ -195,7 +180,6 @@ export function applyStateAnimation(
         stateControllers.push(controller);
         controller.start();
       } else {
-        // Animate back to initial value with spring (consistent behavior)
         const revertDescriptor: Descriptor = {
           type: 'spring',
           to: initialValue,
@@ -209,6 +193,5 @@ export function applyStateAnimation(
     }
   }
 
-  // Add new subscriptions to cleanup
   cleanup.push(...newSubscriptions);
 }

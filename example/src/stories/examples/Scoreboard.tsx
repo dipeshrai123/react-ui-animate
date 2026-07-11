@@ -3,10 +3,8 @@ import type { CSSProperties } from 'react';
 import { animate, useValue, withSpring, withSequence, withTiming, withDelay } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
 
-// How many extra full 0-9 loops to render above/below the "real" digit, so a
-// single roll (even one that wraps past 9 -> 0, or accumulates a few rapid
-// updates before settling) always has somewhere to scroll to without ever
-// running out of rows. 2 loops on each side comfortably covers normal use.
+// Extra 0-9 loops rendered above/below the real digit, so a roll always has
+// headroom to scroll into (even mid-wrap or after a rapid burst of updates).
 const LOOPS_EACH_SIDE = 2;
 const DIGIT_STRIP = Array.from(
   { length: 10 * (LOOPS_EACH_SIDE * 2 + 1) },
@@ -14,13 +12,6 @@ const DIGIT_STRIP = Array.from(
 );
 const CANONICAL_OFFSET = LOOPS_EACH_SIDE * 10;
 
-/**
- * A single rolling digit column, iOS/odometer style: a vertical strip of
- * 0-9 (repeated a few times for headroom) sits inside a clipped, one-row-tall
- * window, and slides via `translateY` to whichever copy of the target digit
- * keeps the roll going in the right direction — so incrementing through
- * 9 -> 0 keeps scrolling forward instead of snapping backward.
- */
 function DigitColumn({
   digit,
   direction,
@@ -42,13 +33,21 @@ function DigitColumn({
     prevDigitRef.current = digit;
 
     let delta = digit - prevDigit;
-    // A digit moving the "wrong way" relative to the overall trend means it
-    // wrapped (e.g. 9 -> 0 while incrementing, or 0 -> 9 while decrementing)
-    // — keep rolling the same direction instead of reversing.
+    // Wrap (e.g. 9 -> 0) moves delta the "wrong way" — keep rolling forward.
     if (direction > 0 && delta < 0) delta += 10;
     else if (direction < 0 && delta > 0) delta -= 10;
 
     continuousRef.current += delta;
+
+    // Rapid clicks cancel the in-flight spring before it settles, so
+    // onComplete's re-center below may never run — fold back into the
+    // strip's headroom here too (by exact multiples of 10, so the digit
+    // mod 10 is unaffected) or the column scrolls past DIGIT_STRIP's bounds.
+    const canonical = digit + CANONICAL_OFFSET;
+    const maxDrift = (LOOPS_EACH_SIDE - 1) * 10;
+    while (continuousRef.current - canonical > maxDrift) continuousRef.current -= 10;
+    while (canonical - continuousRef.current > maxDrift) continuousRef.current += 10;
+
     const target = continuousRef.current;
 
     setPosition(
@@ -56,10 +55,7 @@ function DigitColumn({
         stiffness: 230,
         damping: 26,
         onComplete: () => {
-          // Re-center back into the canonical band once settled (no visual
-          // change — every copy of a digit in the strip looks identical) so
-          // the strip's row budget never runs low no matter how many rolls
-          // have happened over the component's lifetime.
+          // Re-center once settled so the strip's row budget doesn't drift.
           const canonical = digit + CANONICAL_OFFSET;
           continuousRef.current = canonical;
           position.set(-canonical * height);
@@ -91,12 +87,6 @@ function DigitColumn({
   );
 }
 
-/**
- * Renders a number as a row of iOS-style rolling digit columns — each digit
- * scrolls smoothly to its new value instead of the text simply changing.
- * Non-digit characters (commas, a decimal point, `$`, `%`, a leading `-`)
- * are rendered as plain static text alongside the rolling digits.
- */
 function AnimatedOdometer({
   value,
   format = (v) => Math.round(v).toLocaleString(),
@@ -149,9 +139,8 @@ function AnimatedOdometer({
 
         return (
           <DigitColumn
-            // Key by distance-from-the-right so a digit column keeps its
-            // identity (and roll direction) as new higher-order digits are
-            // added to the left (e.g. 9 -> 10).
+            // Keyed by distance-from-right so identity survives digits
+            // being added to the left (e.g. 9 -> 10).
             key={`digit-${chars.length - i}`}
             digit={parseInt(ch, 10)}
             direction={directionRef.current}
@@ -164,12 +153,8 @@ function AnimatedOdometer({
   );
 }
 
-/**
- * A small "▲ +3" / "▼ -2" badge that flashes in and fades out whenever the
- * score it's attached to changes. Keyed by a change counter so each update
- * gets a fresh mount and always replays its enter animation, even if the
- * previous flash hadn't finished fading yet.
- */
+// Keyed by trendKey so each score change remounts and replays the flash,
+// even if the previous one hadn't finished fading out.
 function TrendBadge({ trendKey, delta, color }: { trendKey: number; delta: number; color: string }) {
   if (delta === 0) return null;
   const isUp = delta > 0;
