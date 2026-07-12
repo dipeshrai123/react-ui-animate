@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import { animate, useScroll } from 'react-ui-animate';
+import { animate, useScrollProgress } from 'react-ui-animate';
 
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll(window, {
+  const { scrollYProgress } = useScrollProgress(window, {
     target: containerRef,
     offset: ['start start', 'end end'],
   });

@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import {
   animate,
-  useWheel,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
   AnimateValue,
@@ -50,17 +51,20 @@ const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollX, setScrollX] = useValue(0);
 
-  useWheel(containerRef, ({ event }) => {
-    const scrollAmount = event.deltaY * 2;
-    const maxScroll = containerRef.current
-      ? containerRef.current.scrollWidth - containerRef.current.clientWidth
-      : 0;
-    const newScrollX = Math.max(
-      0,
-      Math.min(maxScroll, scrollX.current - scrollAmount)
-    );
-    setScrollX(withSpring(newScrollX, { stiffness: 200, damping: 25 }));
-  });
+  useGesture(
+    containerRef,
+    Gesture.Wheel().onChange(({ event }) => {
+      const scrollAmount = event.deltaY * 2;
+      const maxScroll = containerRef.current
+        ? containerRef.current.scrollWidth - containerRef.current.clientWidth
+        : 0;
+      const newScrollX = Math.max(
+        0,
+        Math.min(maxScroll, scrollX.current - scrollAmount)
+      );
+      setScrollX(withSpring(newScrollX, { stiffness: 200, damping: 25 }));
+    })
+  );
 
   const items = Array.from({ length: 10 }, (_, i) => ({
     id: i,

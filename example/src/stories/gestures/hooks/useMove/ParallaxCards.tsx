@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -11,21 +11,24 @@ const Example = () => {
   const [layer3X, setLayer3X] = useValue(0);
   const [layer3Y, setLayer3Y] = useValue(0);
 
-  useMove(containerRef, ({ offset }) => {
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-    const deltaX = (offset.x - centerX) * 0.1;
-    const deltaY = (offset.y - centerY) * 0.1;
+  useGesture(
+    containerRef,
+    Gesture.Move().onChange(({ offset }) => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const deltaX = (offset.x - centerX) * 0.1;
+      const deltaY = (offset.y - centerY) * 0.1;
 
-    setLayer1X(withSpring(deltaX * 1.5, { stiffness: 200, damping: 25 }));
-    setLayer1Y(withSpring(deltaY * 1.5, { stiffness: 200, damping: 25 }));
+      setLayer1X(withSpring(deltaX * 1.5, { stiffness: 200, damping: 25 }));
+      setLayer1Y(withSpring(deltaY * 1.5, { stiffness: 200, damping: 25 }));
 
-    setLayer2X(withSpring(deltaX, { stiffness: 150, damping: 20 }));
-    setLayer2Y(withSpring(deltaY, { stiffness: 150, damping: 20 }));
+      setLayer2X(withSpring(deltaX, { stiffness: 150, damping: 20 }));
+      setLayer2Y(withSpring(deltaY, { stiffness: 150, damping: 20 }));
 
-    setLayer3X(withSpring(deltaX * 0.5, { stiffness: 100, damping: 15 }));
-    setLayer3Y(withSpring(deltaY * 0.5, { stiffness: 100, damping: 15 }));
-  });
+      setLayer3X(withSpring(deltaX * 0.5, { stiffness: 100, damping: 15 }));
+      setLayer3Y(withSpring(deltaY * 0.5, { stiffness: 100, damping: 15 }));
+    })
+  );
 
   const Card = ({
     x,

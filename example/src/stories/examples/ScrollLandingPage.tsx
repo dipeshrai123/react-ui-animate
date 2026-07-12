@@ -1,7 +1,9 @@
 import React, { useRef } from 'react';
 import {
   animate,
-  useScroll,
+  Gesture,
+  useGesture,
+  useScrollProgress,
   useValue,
   withDelay,
   withLoop,
@@ -89,11 +91,11 @@ const CODE_LINES: {
   dim?: boolean;
   highlight?: boolean;
 }[] = [
-  { text: "import { animate, useScroll, withSpring } from 'react-ui-animate';" },
+  { text: "import { animate, useScrollProgress, withSpring } from 'react-ui-animate';" },
   { text: '' },
   { text: 'function Hero() {' },
   { text: '  const ref = useRef(null);' },
-  { text: '  const { scrollYProgress } = useScroll(window, {' },
+  { text: '  const { scrollYProgress } = useScrollProgress(window, {' },
   { text: '    target: ref,', dim: true },
   { text: "    offset: ['start start', 'end start'],", dim: true },
   { text: '  });' },
@@ -154,38 +156,41 @@ const Example = () => {
   const [navHeight, setNavHeight] = useValue(72);
   const [navBorder, setNavBorder] = useValue('rgba(226,232,240,0)');
 
-  const { scrollYProgress: pageProgress } = useScroll(window, {
+  const { scrollYProgress: pageProgress } = useScrollProgress(window, {
     target: pageRef,
     offset: ['start start', 'end end'],
     animate: false,
   });
 
-  const { scrollYProgress: heroProgress } = useScroll(window, {
+  const { scrollYProgress: heroProgress } = useScrollProgress(window, {
     target: heroRef,
     offset: ['start start', 'end start'],
     animate: false,
   });
 
-  const { scrollYProgress: showcaseProgress } = useScroll(window, {
+  const { scrollYProgress: showcaseProgress } = useScrollProgress(window, {
     target: showcaseRef,
     offset: ['start end', 'end start'],
     animate: false,
   });
 
-  useScroll(window, ({ offset }) => {
-    const y = offset.y;
-    if (y > 40) {
-      setNavBg(withSpring('rgba(255,255,255,0.88)', { stiffness: 300, damping: 30 }));
-      setNavBlur(withSpring(12, { stiffness: 300, damping: 30 }));
-      setNavHeight(withSpring(60, { stiffness: 300, damping: 30 }));
-      setNavBorder(withSpring('rgba(226,232,240,0.9)', { stiffness: 300, damping: 30 }));
-    } else {
-      setNavBg(withSpring('rgba(255,255,255,0)', { stiffness: 300, damping: 30 }));
-      setNavBlur(withSpring(0, { stiffness: 300, damping: 30 }));
-      setNavHeight(withSpring(72, { stiffness: 300, damping: 30 }));
-      setNavBorder(withSpring('rgba(226,232,240,0)', { stiffness: 300, damping: 30 }));
-    }
-  });
+  useGesture(
+    window,
+    Gesture.Scroll().onChange(({ offset }) => {
+      const y = offset.y;
+      if (y > 40) {
+        setNavBg(withSpring('rgba(255,255,255,0.88)', { stiffness: 300, damping: 30 }));
+        setNavBlur(withSpring(12, { stiffness: 300, damping: 30 }));
+        setNavHeight(withSpring(60, { stiffness: 300, damping: 30 }));
+        setNavBorder(withSpring('rgba(226,232,240,0.9)', { stiffness: 300, damping: 30 }));
+      } else {
+        setNavBg(withSpring('rgba(255,255,255,0)', { stiffness: 300, damping: 30 }));
+        setNavBlur(withSpring(0, { stiffness: 300, damping: 30 }));
+        setNavHeight(withSpring(72, { stiffness: 300, damping: 30 }));
+        setNavBorder(withSpring('rgba(226,232,240,0)', { stiffness: 300, damping: 30 }));
+      }
+    })
+  );
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });

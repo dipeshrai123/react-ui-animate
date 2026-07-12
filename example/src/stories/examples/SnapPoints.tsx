@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import {
   animate,
-  useDrag,
+  Gesture,
+  useGesture,
   useValue,
   snapTo,
   withSpring,
@@ -25,26 +26,29 @@ function Example() {
   const offset = useRef({ x: 0, y: 0 });
   const ref = useRef(null);
 
-  useDrag(ref, ({ movement, velocity, down }) => {
-    if (!down) {
-      offset.current = {
-        x: movement.x + offset.current.x,
-        y: movement.y + offset.current.y,
-      };
+  useGesture(
+    ref,
+    Gesture.Pan()
+      .onUpdate(({ movement }) => {
+        setXY({
+          x: movement.x + offset.current.x,
+          y: movement.y + offset.current.y,
+        });
+      })
+      .onEnd(({ movement, velocity }) => {
+        offset.current = {
+          x: movement.x + offset.current.x,
+          y: movement.y + offset.current.y,
+        };
 
-      const snapX = snapTo(offset.current.x, velocity.x, [0, 200, 400, 600]);
-      const snapY = snapTo(offset.current.y, velocity.y, [0, 200, 400, 600]);
+        const snapX = snapTo(offset.current.x, velocity.x, [0, 200, 400, 600]);
+        const snapY = snapTo(offset.current.y, velocity.y, [0, 200, 400, 600]);
 
-      setXY(withSpring({ x: snapX, y: snapY }));
+        setXY(withSpring({ x: snapX, y: snapY }));
 
-      offset.current = { x: snapX, y: snapY };
-    } else {
-      setXY({
-        x: movement.x + offset.current.x,
-        y: movement.y + offset.current.y,
-      });
-    }
-  });
+        offset.current = { x: snapX, y: snapY };
+      })
+  );
 
   return (
     <>

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { animate, useScroll, AnimateValue } from 'react-ui-animate';
+import { animate, useScrollProgress, AnimateValue } from 'react-ui-animate';
 
 const ProgressBar = ({
   scrollYProgress,
@@ -62,7 +62,7 @@ const ProgressDisplay = ({
 
 const Example = () => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll(window, {
+  const { scrollYProgress } = useScrollProgress(window, {
     target: contentRef,
     offset: ['start start', 'end end'],
   });

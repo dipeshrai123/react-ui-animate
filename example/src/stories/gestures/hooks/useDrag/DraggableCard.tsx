@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { animate, useDrag, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 
 const Example = () => {
   const cardRef = useRef<HTMLDivElement>(null);
@@ -8,20 +8,24 @@ const Example = () => {
   const [scale, setScale] = useValue(1);
   const [rotation, setRotation] = useValue(0);
 
-  useDrag(cardRef, ({ down, movement, velocity }) => {
-    setX(down ? movement.x : withSpring(0, { stiffness: 300, damping: 30 }));
-    setY(down ? movement.y : withSpring(0, { stiffness: 300, damping: 30 }));
-
-    setScale(
-      down ? withSpring(0.95, { stiffness: 400, damping: 25 }) : withSpring(1)
-    );
-
-    setRotation(
-      down
-        ? withSpring(movement.x * 0.1, { stiffness: 200, damping: 20 })
-        : withSpring(0, { stiffness: 200, damping: 20 })
-    );
-  });
+  useGesture(
+    cardRef,
+    Gesture.Pan()
+      .onStart(() => {
+        setScale(withSpring(0.95, { stiffness: 400, damping: 25 }));
+      })
+      .onUpdate(({ movement }) => {
+        setX(movement.x);
+        setY(movement.y);
+        setRotation(withSpring(movement.x * 0.1, { stiffness: 200, damping: 20 }));
+      })
+      .onEnd(() => {
+        setX(withSpring(0, { stiffness: 300, damping: 30 }));
+        setY(withSpring(0, { stiffness: 300, damping: 30 }));
+        setScale(withSpring(1));
+        setRotation(withSpring(0, { stiffness: 200, damping: 20 }));
+      })
+  );
 
   return (
     <div

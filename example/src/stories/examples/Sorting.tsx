@@ -1,7 +1,8 @@
 import { createRef, useMemo, useRef, useState } from 'react';
 import {
   animate,
-  useDrag,
+  Gesture,
+  useGesture,
   clamp,
   move,
   useValue,
@@ -19,11 +20,11 @@ const Example = () => {
     ITEMS.map((_, i) => createRef<HTMLDivElement>())
   ).current;
 
-  useDrag(boxes, ({ index: i, down, movement }) => {
-    const index = originalIndex.current.indexOf(i!);
+  const applyDrag = (i: number, movementY: number, down: boolean) => {
+    const index = originalIndex.current.indexOf(i);
 
     const newIndex = clamp(
-      Math.round((index * 70 + movement.y) / 70),
+      Math.round((index * 70 + movementY) / 70),
       0,
       ITEMS.length - 1
     );
@@ -37,13 +38,19 @@ const Example = () => {
     const v = [];
     for (let j = 0; j < ITEMS.length; j++) {
       const isActive = down && j === i;
-      a[j] = isActive ? index * 70 + movement.y : newOrder.indexOf(j) * 70;
+      a[j] = isActive ? index * 70 + movementY : newOrder.indexOf(j) * 70;
       v[j] = isActive ? 1 : 0;
     }
 
     setAnimationY(withSpring(a));
     setZIndex(v);
-  });
+  };
+
+  useGesture(boxes, (i) =>
+    Gesture.Pan()
+      .onUpdate(({ movement }) => applyDrag(i, movement.y, true))
+      .onEnd(({ movement }) => applyDrag(i, movement.y, false))
+  );
 
   const boxShadows = useMemo(
     () =>

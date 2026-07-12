@@ -1,5 +1,5 @@
 import { useRef, useState, useMemo } from 'react';
-import { animate, useDrag, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 
 interface Task {
   id: number;
@@ -35,33 +35,31 @@ const Example = () => {
     tasks.map(() => ({ x: 0, y: 0 }))
   );
 
-  useDrag(
-    taskRefs,
-    ({ down, movement, index }) => {
-      if (!down && draggedIndex !== null) {
-        const newIndex = Math.round(draggedIndex + movement.y / 60); // 60px per item
+  useGesture(taskRefs, (index) =>
+    Gesture.Pan()
+      .onStart(() => {
+        if (draggedIndex === null) setDraggedIndex(index);
+      })
+      .onUpdate(({ movement }) => {
+        const newOffsets = [...offsets];
+        newOffsets[index] = { x: movement.x, y: movement.y };
+        setOffsets(newOffsets);
+      })
+      .onEnd(({ movement }) => {
+        const origin = draggedIndex ?? index;
+        const newIndex = Math.round(origin + movement.y / 60); // 60px per item
         const clampedIndex = Math.max(0, Math.min(tasks.length - 1, newIndex));
 
-        if (clampedIndex !== draggedIndex) {
+        if (clampedIndex !== origin) {
           const newTasks = [...tasks];
-          const [moved] = newTasks.splice(draggedIndex, 1);
+          const [moved] = newTasks.splice(origin, 1);
           newTasks.splice(clampedIndex, 0, moved);
           setTasks(newTasks);
         }
-        
+
         setDraggedIndex(null);
         setOffsets(tasks.map(() => ({ x: 0, y: 0 })));
-      } else if (down) {
-        if (draggedIndex === null) setDraggedIndex(index);
-        
-        const newOffsets = [...offsets];
-        newOffsets[index] = {
-          x: down ? movement.x : 0,
-          y: down ? movement.y : 0,
-        };
-        setOffsets(newOffsets);
-      }
-    }
+      })
   );
 
   return (

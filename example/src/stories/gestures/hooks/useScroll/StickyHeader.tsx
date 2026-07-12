@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { animate, useScroll, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 
 const Example = () => {
   const headerRef = useRef<HTMLDivElement>(null);
@@ -7,22 +7,25 @@ const Example = () => {
   const [headerOpacity, setHeaderOpacity] = useValue(1);
   const [scrollProgress, setScrollProgress] = useValue(0);
 
-  useScroll(window, ({ offset }) => {
-    const scrollY = offset.y;
+  useGesture(
+    window,
+    Gesture.Scroll().onChange(({ offset }) => {
+      const scrollY = offset.y;
 
-    if (scrollY > 0) {
-      setHeaderHeight(withSpring(60, { stiffness: 300, damping: 30 }));
-      setHeaderOpacity(withSpring(0.95, { stiffness: 300, damping: 30 }));
-    } else {
-      setHeaderHeight(withSpring(80, { stiffness: 300, damping: 30 }));
-      setHeaderOpacity(withSpring(1, { stiffness: 300, damping: 30 }));
-    }
+      if (scrollY > 0) {
+        setHeaderHeight(withSpring(60, { stiffness: 300, damping: 30 }));
+        setHeaderOpacity(withSpring(0.95, { stiffness: 300, damping: 30 }));
+      } else {
+        setHeaderHeight(withSpring(80, { stiffness: 300, damping: 30 }));
+        setHeaderOpacity(withSpring(1, { stiffness: 300, damping: 30 }));
+      }
 
-    const maxScroll =
-      document.documentElement.scrollHeight - window.innerHeight;
-    const progress = Math.min(1, scrollY / maxScroll);
-    setScrollProgress(progress);
-  });
+      const maxScroll =
+        document.documentElement.scrollHeight - window.innerHeight;
+      const progress = Math.min(1, scrollY / maxScroll);
+      setScrollProgress(progress);
+    })
+  );
 
   return (
     <div style={{ backgroundColor: '#f5f5f5' }}>

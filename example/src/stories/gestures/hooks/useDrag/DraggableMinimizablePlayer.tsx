@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { animate, useDrag, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 import { ExampleLayout } from '../../../animations/shared';
 
 const EXPANDED = { width: 480, height: 270 };
@@ -13,17 +13,32 @@ function Example() {
   const [y, setY] = useValue(0);
   const [expanded, setExpanded] = useState(true);
 
-  useDrag(playerRef, ({ down, offset }) => {
-    setX(down ? offset.x : withSpring(offset.x, { stiffness: 300, damping: 30 }));
-    setY(down ? offset.y : withSpring(offset.y, { stiffness: 300, damping: 30 }));
-  });
+  // `movement` resets every drag — track the position it started from so
+  // consecutive drags accumulate instead of jumping back to (0, 0).
+  const dragStartRef = useRef({ x: 0, y: 0 });
+
+  useGesture(
+    playerRef,
+    Gesture.Pan()
+      .onStart(() => {
+        dragStartRef.current = { x: x.current, y: y.current };
+      })
+      .onUpdate(({ movement }) => {
+        setX(dragStartRef.current.x + movement.x);
+        setY(dragStartRef.current.y + movement.y);
+      })
+      .onEnd(({ movement }) => {
+        setX(withSpring(dragStartRef.current.x + movement.x, { stiffness: 300, damping: 30 }));
+        setY(withSpring(dragStartRef.current.y + movement.y, { stiffness: 300, damping: 30 }));
+      })
+  );
 
   const size = expanded ? EXPANDED : MINIMIZED;
 
   return (
     <ExampleLayout
       title="Draggable, Minimizable Player"
-      description="Dragging the player moves it around; a plain tap toggles expand/minimize. useDrag now swallows the synthetic click the browser fires after a drag, so dragging never also triggers onClick."
+      description="Dragging the player moves it around; a plain tap toggles expand/minimize. Gesture.Pan() swallows the synthetic click the browser fires after a drag, so dragging never also triggers onClick."
       showRestartButton={false}
     >
       <div

@@ -1,5 +1,10 @@
-import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
+import {
+  computeMovement,
+  createKinematicState,
+  updateKinematics,
+  type KinematicState,
+} from '../engine/PointerTracker';
 
 export interface MoveEvent {
   movement: { x: number; y: number };
@@ -12,12 +17,10 @@ export interface MoveEvent {
 export class MoveGesture extends Gesture<MoveEvent> {
   private attachedEls = new Set<HTMLElement | Window>();
 
-  private prev = { x: 0, y: 0 };
-  private lastTime = 0;
+  private kinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
-  private velocity = { x: 0, y: 0 };
   private startPos: { x: number; y: number } | null = null;
 
   attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
@@ -43,25 +46,22 @@ export class MoveGesture extends Gesture<MoveEvent> {
   cancel(): void {}
 
   private onMove(e: PointerEvent) {
-    const now = e.timeStamp;
-
     if (this.startPos === null) {
       this.startPos = { x: e.clientX, y: e.clientY };
-      this.prev = { x: e.clientX, y: e.clientY };
-      this.lastTime = now;
+      this.kinematics = createKinematicState({
+        x: e.clientX,
+        y: e.clientY,
+        t: e.timeStamp,
+      });
     }
 
-    const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
-    this.lastTime = now;
+    this.kinematics = updateKinematics(this.kinematics, {
+      x: e.clientX,
+      y: e.clientY,
+      t: e.timeStamp,
+    });
 
-    const dx = e.clientX - this.prev.x;
-    const dy = e.clientY - this.prev.y;
-    this.prev = { x: e.clientX, y: e.clientY };
-
-    this.movement = {
-      x: e.clientX - this.startPos.x,
-      y: e.clientY - this.startPos.y,
-    };
+    this.movement = computeMovement(this.startPos, { x: e.clientX, y: e.clientY });
 
     const tgt = e.currentTarget as HTMLElement | Window;
     const rect =
@@ -74,17 +74,10 @@ export class MoveGesture extends Gesture<MoveEvent> {
       y: e.clientY - rect.top,
     };
 
-    const rawVx = dx / dt / 1000;
-    const rawVy = dy / dt / 1000;
-    this.velocity = {
-      x: clamp(rawVx, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
-      y: clamp(rawVy, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
-    };
-
     this.emitChange({
       movement: { ...this.movement },
       offset: { ...this.offset },
-      velocity: { ...this.velocity },
+      velocity: { ...this.kinematics.velocity },
       event: e,
       cancel: () => this.onLeave(e),
     });
@@ -94,7 +87,7 @@ export class MoveGesture extends Gesture<MoveEvent> {
     this.emitEnd({
       movement: { ...this.movement },
       offset: { ...this.offset },
-      velocity: { ...this.velocity },
+      velocity: { ...this.kinematics.velocity },
       event: e,
       cancel: () => {},
     });

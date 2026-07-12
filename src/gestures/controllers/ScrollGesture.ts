@@ -1,5 +1,9 @@
-import { clamp } from '../../utils';
 import { Gesture } from './Gesture';
+import {
+  createKinematicState,
+  updateKinematics,
+  type KinematicState,
+} from '../engine/PointerTracker';
 
 export interface ScrollEvent {
   movement: { x: number; y: number };
@@ -14,10 +18,9 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
 
   private movement = { x: 0, y: 0 };
   private offset = { x: 0, y: 0 };
-  private velocity = { x: 0, y: 0 };
+  private kinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
 
   private prevScroll = { x: 0, y: 0 };
-  private lastTime = 0;
   private endTimeout?: number;
 
   attach(elements: HTMLElement | HTMLElement[] | Window): () => void {
@@ -46,8 +49,6 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
 
   private onScroll(e: Event) {
     const now = Date.now();
-    const dt = Math.max((now - this.lastTime) / 1000, 1e-6);
-    this.lastTime = now;
 
     const tgt = e.currentTarget as HTMLElement | Window;
     const x = tgt instanceof HTMLElement ? tgt.scrollLeft : window.scrollX;
@@ -60,17 +61,12 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
     this.movement = { x: dx, y: dy };
     this.offset = { x, y };
 
-    const rawX = dx / dt / 1000;
-    const rawY = dy / dt / 1000;
-    this.velocity = {
-      x: clamp(rawX, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
-      y: clamp(rawY, -Gesture.VELOCITY_LIMIT, Gesture.VELOCITY_LIMIT),
-    };
+    this.kinematics = updateKinematics(this.kinematics, { x, y, t: now });
 
     this.emitChange({
       movement: { ...this.movement },
       offset: { ...this.offset },
-      velocity: { ...this.velocity },
+      velocity: { ...this.kinematics.velocity },
       event: e,
       cancel: () => {
         if (this.endTimeout != null) clearTimeout(this.endTimeout);
@@ -82,7 +78,7 @@ export class ScrollGesture extends Gesture<ScrollEvent> {
       this.emitEnd({
         movement: { ...this.movement },
         offset: { ...this.offset },
-        velocity: { ...this.velocity },
+        velocity: { ...this.kinematics.velocity },
         event: e,
         cancel: () => {},
       });

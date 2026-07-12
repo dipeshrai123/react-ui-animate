@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { useValue, useDrag, animate, withSpring } from 'react-ui-animate';
+import { useValue, Gesture, useGesture, animate, withSpring } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
 
 function Example() {
@@ -7,10 +7,22 @@ function Example() {
   const [followX, setFollowX] = useValue(0);
   const ref = useRef(null);
 
-  useDrag(ref, ({ offset }) => {
-    setDragX(offset.x);
-    setFollowX(withSpring(offset.x));
-  });
+  // `movement` resets every drag — track where the circle started so
+  // consecutive drags accumulate instead of jumping back to 0.
+  const dragStartRef = useRef(0);
+
+  useGesture(
+    ref,
+    Gesture.Pan()
+      .onStart(() => {
+        dragStartRef.current = dragX.current;
+      })
+      .onUpdate(({ movement }) => {
+        const x = dragStartRef.current + movement.x;
+        setDragX(x);
+        setFollowX(withSpring(x));
+      })
+  );
 
   return (
     <ExampleLayout

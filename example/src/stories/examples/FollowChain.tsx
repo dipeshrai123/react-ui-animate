@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { animate, useDrag, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
 
 const START = { x: 60, y: 110 };
@@ -26,13 +26,20 @@ function Example() {
   const [x4, setX4] = useValue(START.x);
   const [y4, setY4] = useValue(START.y);
 
-  useDrag(
+  // `movement` resets every drag — track the head's position so consecutive
+  // drags accumulate instead of jumping back to the start each time.
+  const dragStartRef = useRef({ x: START.x, y: START.y });
+
+  useGesture(
     containerRef,
-    ({ offset }) => {
-      setX0(offset.x);
-      setY0(offset.y);
-    },
-    { initial: () => ({ ...START }) }
+    Gesture.Pan()
+      .onStart(() => {
+        dragStartRef.current = { x: x0.current, y: y0.current };
+      })
+      .onUpdate(({ movement }) => {
+        setX0(dragStartRef.current.x + movement.x);
+        setY0(dragStartRef.current.y + movement.y);
+      })
   );
 
   // Each link follows the AnimateValue of the link ahead of it — passing an

@@ -1,7 +1,8 @@
 import { useRef } from 'react';
 import {
   animate,
-  useScroll,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
   withTiming,
@@ -19,7 +20,9 @@ const Example = () => {
   const [section3Opacity, setSection3Opacity] = useValue(0);
   const [section3Rotate, setSection3Rotate] = useValue(-10);
 
-  useScroll(window, ({ offset }) => {
+  useGesture(
+    window,
+    Gesture.Scroll().onChange(() => {
     if (section1Ref.current) {
       const rect = section1Ref.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
@@ -61,7 +64,8 @@ const Example = () => {
         withSpring(-10 + progress * 10, { stiffness: 200, damping: 20 })
       );
     }
-  });
+    })
+  );
 
   const Section = ({
     sectionRef,

@@ -1,7 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import {
   animate,
-  useWheel,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
   AnimateValue,
@@ -37,19 +38,22 @@ const Example = () => {
   const [scale, setScale] = useValue(1);
   const [rotation, setRotation] = useValue(0);
 
-  useWheel(containerRef, ({ event }) => {
-    const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.max(0.5, Math.min(3, scale.current * zoomFactor));
-    setScale(withSpring(newScale, { stiffness: 300, damping: 30 }));
+  useGesture(
+    containerRef,
+    Gesture.Wheel().onChange(({ event }) => {
+      const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
+      const newScale = Math.max(0.5, Math.min(3, scale.current * zoomFactor));
+      setScale(withSpring(newScale, { stiffness: 300, damping: 30 }));
 
-    const rotationDelta = event.deltaY * 0.5;
-    setRotation(
-      withSpring(rotation.current + rotationDelta, {
-        stiffness: 200,
-        damping: 25,
-      })
-    );
-  });
+      const rotationDelta = event.deltaY * 0.5;
+      setRotation(
+        withSpring(rotation.current + rotationDelta, {
+          stiffness: 200,
+          damping: 25,
+        })
+      );
+    })
+  );
 
   return (
     <div

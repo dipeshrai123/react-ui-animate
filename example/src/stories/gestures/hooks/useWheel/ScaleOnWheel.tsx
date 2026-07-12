@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   animate,
-  useWheel,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
   AnimateValue,
@@ -36,32 +37,35 @@ const Example = () => {
   const [scale2, setScale2] = useValue(1);
   const [scale3, setScale3] = useValue(1);
 
-  useWheel(containerRef, ({ event }) => {
-    const speed1 = 0.05;
-    const speed2 = 0.03;
-    const speed3 = 0.08;
+  useGesture(
+    containerRef,
+    Gesture.Wheel().onChange(({ event }) => {
+      const speed1 = 0.05;
+      const speed2 = 0.03;
+      const speed3 = 0.08;
 
-    const deltaScale = event.deltaY * -0.01; // negative: scroll up = scale up
+      const deltaScale = event.deltaY * -0.01; // negative: scroll up = scale up
 
-    setScale1(
-      withSpring(
-        Math.max(0.5, Math.min(2, scale1.current + deltaScale * speed1)),
-        { stiffness: 300, damping: 30 }
-      )
-    );
-    setScale2(
-      withSpring(
-        Math.max(0.5, Math.min(2, scale2.current + deltaScale * speed2)),
-        { stiffness: 250, damping: 25 }
-      )
-    );
-    setScale3(
-      withSpring(
-        Math.max(0.5, Math.min(2, scale3.current + deltaScale * speed3)),
-        { stiffness: 350, damping: 35 }
-      )
-    );
-  });
+      setScale1(
+        withSpring(
+          Math.max(0.5, Math.min(2, scale1.current + deltaScale * speed1)),
+          { stiffness: 300, damping: 30 }
+        )
+      );
+      setScale2(
+        withSpring(
+          Math.max(0.5, Math.min(2, scale2.current + deltaScale * speed2)),
+          { stiffness: 250, damping: 25 }
+        )
+      );
+      setScale3(
+        withSpring(
+          Math.max(0.5, Math.min(2, scale3.current + deltaScale * speed3)),
+          { stiffness: 350, damping: 35 }
+        )
+      );
+    })
+  );
 
   const Card = ({
     scale,

@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { animate, useMove, useValue, withSpring } from 'react-ui-animate';
+import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
 
 const Example = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -8,13 +8,16 @@ const Example = () => {
   const [dotX, setDotX] = useValue(0);
   const [dotY, setDotY] = useValue(0);
 
-  useMove(containerRef, ({ offset }) => {
-    setCursorX(withSpring(offset.x, { stiffness: 300, damping: 30 }));
-    setCursorY(withSpring(offset.y, { stiffness: 300, damping: 30 }));
+  useGesture(
+    containerRef,
+    Gesture.Move().onChange(({ offset }) => {
+      setCursorX(withSpring(offset.x, { stiffness: 300, damping: 30 }));
+      setCursorY(withSpring(offset.y, { stiffness: 300, damping: 30 }));
 
-    setDotX(withSpring(offset.x, { stiffness: 150, damping: 25 }));
-    setDotY(withSpring(offset.y, { stiffness: 150, damping: 25 }));
-  });
+      setDotX(withSpring(offset.x, { stiffness: 150, damping: 25 }));
+      setDotY(withSpring(offset.y, { stiffness: 150, damping: 25 }));
+    })
+  );
 
   return (
     <div

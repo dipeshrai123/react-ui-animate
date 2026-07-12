@@ -1,7 +1,8 @@
 import { useRef, useState, useEffect, useMemo } from 'react';
 import {
   animate,
-  useMove,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
   combine,
@@ -33,31 +34,34 @@ const Example = () => {
     }
   }, [centerPoint]);
 
-  useMove(window, ({ offset }) => {
-    if (!centerPoint) return;
+  useGesture(
+    window,
+    Gesture.Move().onChange(({ offset }) => {
+      if (!centerPoint) return;
 
-    const distanceX = offset.x - centerPoint.x;
-    const distanceY = offset.y - centerPoint.y;
-    const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
+      const distanceX = offset.x - centerPoint.x;
+      const distanceY = offset.y - centerPoint.y;
+      const distance = Math.sqrt(distanceX ** 2 + distanceY ** 2);
 
-    const radius = 150;
+      const radius = 150;
 
-    if (distance < radius) {
-      const strength = 1 - distance / radius;
-      const pullX = distanceX * strength * 0.3;
-      const pullY = distanceY * strength * 0.3;
+      if (distance < radius) {
+        const strength = 1 - distance / radius;
+        const pullX = distanceX * strength * 0.3;
+        const pullY = distanceY * strength * 0.3;
 
-      setOffsetX(withSpring(pullX, { stiffness: 400, damping: 30 }));
-      setOffsetY(withSpring(pullY, { stiffness: 400, damping: 30 }));
-      setMagneticScale(
-        withSpring(1 + strength * 0.1, { stiffness: 400, damping: 30 })
-      );
-    } else {
-      setOffsetX(withSpring(0, { stiffness: 300, damping: 25 }));
-      setOffsetY(withSpring(0, { stiffness: 300, damping: 25 }));
-      setMagneticScale(withSpring(1, { stiffness: 300, damping: 25 }));
-    }
-  });
+        setOffsetX(withSpring(pullX, { stiffness: 400, damping: 30 }));
+        setOffsetY(withSpring(pullY, { stiffness: 400, damping: 30 }));
+        setMagneticScale(
+          withSpring(1 + strength * 0.1, { stiffness: 400, damping: 30 })
+        );
+      } else {
+        setOffsetX(withSpring(0, { stiffness: 300, damping: 25 }));
+        setOffsetY(withSpring(0, { stiffness: 300, damping: 25 }));
+        setMagneticScale(withSpring(1, { stiffness: 300, damping: 25 }));
+      }
+    })
+  );
 
   const combinedScale = useMemo(
     () =>
