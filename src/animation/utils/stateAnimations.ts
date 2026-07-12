@@ -169,27 +169,21 @@ export function applyStateAnimation(
       // to the captured value.
       const initialValue = restingTargets?.[key] ?? initialValues[key];
 
-      if (isPrimitive) {
-        const revertDescriptor: Descriptor = {
-          type: 'spring',
-          to: initialValue,
-          options: {},
-        };
+      // Reuse the driver type/options the developer configured for this key
+      // (spring/timing/decay) rather than always springing back — otherwise
+      // a `withTiming` entry/exit would enter with the declared timing but
+      // always exit with a default spring.
+      const revertDescriptor: Descriptor =
+        !isPrimitive &&
+        (valueOrDescriptor.type === 'spring' ||
+          valueOrDescriptor.type === 'timing' ||
+          valueOrDescriptor.type === 'decay')
+          ? { ...valueOrDescriptor, to: initialValue }
+          : { type: 'spring', to: initialValue, options: {} };
 
-        const controller = buildAnimation(value, revertDescriptor);
-        stateControllers.push(controller);
-        controller.start();
-      } else {
-        const revertDescriptor: Descriptor = {
-          type: 'spring',
-          to: initialValue,
-          options: {},
-        };
-
-        const controller = buildAnimation(value, revertDescriptor);
-        stateControllers.push(controller);
-        controller.start();
-      }
+      const controller = buildAnimation(value, revertDescriptor);
+      stateControllers.push(controller);
+      controller.start();
     }
   }
 
