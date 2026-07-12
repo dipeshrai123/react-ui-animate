@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './HorizontalScroll';
+import Example from './MagneticButton';
 
 const meta = {
-  title: 'Gestures/Hooks/useWheel/Horizontal Scroll',
+  title: 'Gestures/Move/Magnetic Button',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const HorizontalScroll: Story = {};
+export const MagneticButton: Story = {};
 

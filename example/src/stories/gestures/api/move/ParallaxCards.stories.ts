@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './StickyHeader';
+import Example from './ParallaxCards';
 
 const meta = {
-  title: 'Gestures/Hooks/useScroll/Sticky Header',
+  title: 'Gestures/Move/Parallax Cards',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const StickyHeader: Story = {};
+export const ParallaxCards: Story = {};
 

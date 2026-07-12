@@ -3,8 +3,23 @@ import { GesturePhase } from '../../engine/phases';
 import type { RecognizerContext } from '../../engine/GestureRecognizer';
 import { createKinematicState } from '../../engine/PointerTracker';
 
+beforeAll(() => {
+  HTMLElement.prototype.setPointerCapture = jest.fn();
+  HTMLElement.prototype.releasePointerCapture = jest.fn();
+});
+
+afterEach(() => {
+  jest.clearAllMocks();
+});
+
 function fakeEvent(x: number, y: number, t = 0): PointerEvent {
-  return { clientX: x, clientY: y, timeStamp: t } as PointerEvent;
+  return {
+    clientX: x,
+    clientY: y,
+    timeStamp: t,
+    pointerId: 1,
+    preventDefault: () => {},
+  } as unknown as PointerEvent;
 }
 
 function fakeCtx(target: HTMLElement | Window = document.createElement('div')): RecognizerContext {
@@ -123,6 +138,44 @@ describe('PanRecognizer', () => {
     r.onPointerDown(fakeEvent(0, 0), fakeCtx());
 
     expect(r.phase).toBe(GesturePhase.UNDETERMINED);
+  });
+
+  // Regression: setPointerCapture/preventDefault were dropped when porting
+  // DragGesture's logic into this recognizer, which let the browser's
+  // default text-selection drag run alongside the gesture (visible as
+  // selected/highlighted text while dragging list items).
+  it('captures the pointer and prevents default once the drag activates, releases on up', () => {
+    const el = document.createElement('div');
+    const captureSpy = jest.spyOn(el, 'setPointerCapture');
+    const releaseSpy = jest.spyOn(el, 'releasePointerCapture');
+    const r = new PanRecognizer({ minDistance: 5 }, {});
+    const ctx = fakeCtx(el);
+
+    r.onPointerDown(fakeEvent(0, 0), ctx);
+    expect(captureSpy).not.toHaveBeenCalled(); // not yet — still POSSIBLE
+
+    const moveEvent = fakeEvent(20, 0);
+    const preventDefaultSpy = jest.spyOn(moveEvent, 'preventDefault');
+    r.onPointerMove(moveEvent, ctx);
+
+    expect(captureSpy).toHaveBeenCalledTimes(1);
+    expect(preventDefaultSpy).toHaveBeenCalledTimes(1);
+
+    r.onPointerUp(fakeEvent(20, 0), ctx);
+    expect(releaseSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not capture the pointer or prevent default for a plain click (never crosses minDistance)', () => {
+    const el = document.createElement('div');
+    const captureSpy = jest.spyOn(el, 'setPointerCapture');
+    const r = new PanRecognizer({ minDistance: 10 }, {});
+    const ctx = fakeCtx(el);
+
+    r.onPointerDown(fakeEvent(0, 0), ctx);
+    r.onPointerMove(fakeEvent(2, 0), ctx); // under minDistance
+    r.onPointerUp(fakeEvent(2, 0), ctx);
+
+    expect(captureSpy).not.toHaveBeenCalled();
   });
 
   it('marks down=true only once BEGAN/ACTIVE, not while POSSIBLE', () => {

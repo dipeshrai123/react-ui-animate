@@ -12,6 +12,9 @@ beforeAll(() => {
       }
     };
   }
+
+  HTMLElement.prototype.setPointerCapture = jest.fn();
+  HTMLElement.prototype.releasePointerCapture = jest.fn();
 });
 
 function firePointer(target: HTMLElement | Window, type: string, x: number, y: number) {

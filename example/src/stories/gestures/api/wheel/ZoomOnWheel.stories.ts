@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './DraggableCard';
+import Example from './ZoomOnWheel';
 
 const meta = {
-  title: 'Gestures/Hooks/useDrag/Draggable Card',
+  title: 'Gestures/Wheel/Zoom on Wheel',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const DraggableCard: Story = {};
+export const ZoomOnWheel: Story = {};
 

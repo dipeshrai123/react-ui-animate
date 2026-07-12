@@ -21,6 +21,7 @@ export class PanRecognizer implements GestureRecognizer {
   private pointerDownPos = { x: 0, y: 0 };
   private movement = { x: 0, y: 0 };
   private target: HTMLElement | null = null;
+  private captured = false;
 
   constructor(
     private config: BaseGestureConfig,
@@ -41,6 +42,7 @@ export class PanRecognizer implements GestureRecognizer {
     this.target = ctx.target instanceof HTMLElement ? ctx.target : null;
     this.pointerDownPos = { x: e.clientX, y: e.clientY };
     this.movement = { x: 0, y: 0 };
+    this.captured = false;
     this.phase = GesturePhase.POSSIBLE;
   }
 
@@ -67,15 +69,31 @@ export class PanRecognizer implements GestureRecognizer {
         return;
       }
 
+      // Capture the pointer and block the browser's default handling (text
+      // selection, native drag-image, touch scrolling) once this is
+      // recognized as a real drag — not on every pointerdown, so a plain
+      // click still lets text selection/native behavior work normally.
+      if (this.target) {
+        this.target.setPointerCapture(e.pointerId);
+        this.captured = true;
+      }
+
       this.phase = GesturePhase.BEGAN;
       this.handlers.onStart?.(this.buildEvent(e, ctx));
       this.phase = GesturePhase.ACTIVE;
     }
 
+    if (this.captured) e.preventDefault();
+
     this.handlers.onChange?.(this.buildEvent(e, ctx));
   }
 
   onPointerUp(e: PointerEvent, ctx: RecognizerContext): void {
+    if (this.captured && this.target) {
+      this.target.releasePointerCapture(e.pointerId);
+      this.captured = false;
+    }
+
     if (this.phase === GesturePhase.ACTIVE) {
       // Arm click suppression here, not at threshold-cross: the browser's
       // synthetic click fires right after pointerup, but a drag can run for
@@ -97,6 +115,11 @@ export class PanRecognizer implements GestureRecognizer {
   }
 
   onPointerCancel(e: PointerEvent, ctx: RecognizerContext): void {
+    if (this.captured && this.target) {
+      this.target.releasePointerCapture(e.pointerId);
+      this.captured = false;
+    }
+
     if (
       this.phase === GesturePhase.ACTIVE ||
       this.phase === GesturePhase.POSSIBLE ||

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout } from '../../../animations/shared';
 
 function Example() {
   const boxRef = useRef<HTMLDivElement>(null);

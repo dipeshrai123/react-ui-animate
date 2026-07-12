@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './ScrollReveal';
+import Example from './ScrollParallax';
 
 const meta = {
-  title: 'Gestures/Hooks/useScroll/Scroll Reveal',
+  title: 'Gestures/Scroll/Scroll Parallax',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ScrollReveal: Story = {};
+export const ScrollParallax: Story = {};
 

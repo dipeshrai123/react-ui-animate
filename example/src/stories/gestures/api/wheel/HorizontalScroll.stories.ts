@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './ParallaxCards';
+import Example from './HorizontalScroll';
 
 const meta = {
-  title: 'Gestures/Hooks/useMove/Parallax Cards',
+  title: 'Gestures/Wheel/Horizontal Scroll',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ParallaxCards: Story = {};
+export const HorizontalScroll: Story = {};
 

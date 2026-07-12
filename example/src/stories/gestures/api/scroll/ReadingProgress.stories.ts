@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import Example from './ScaleOnWheel';
+import Example from './ReadingProgress';
 
 const meta = {
-  title: 'Gestures/Hooks/useWheel/Scale on Wheel',
+  title: 'Gestures/Scroll/Reading Progress',
   component: Example,
   parameters: {
     layout: 'fullscreen',
@@ -13,5 +13,5 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const ScaleOnWheel: Story = {};
+export const ReadingProgress: Story = {};
 
