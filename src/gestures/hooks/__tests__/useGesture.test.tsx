@@ -200,7 +200,7 @@ describe('useGesture', () => {
   });
 
   describe('continuous gestures (move/wheel/scroll)', () => {
-    it('routes Gesture.Move() through the legacy MoveGesture controller', () => {
+    it('dispatches Gesture.Move() via the shared ElementGestureTracker', () => {
       const onChange = jest.fn();
       renderHook(() => useGesture({ current: el }, Gesture.Move().onChange(onChange)));
 

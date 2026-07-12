@@ -1,8 +1,5 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { getOrCreateTracker } from '../engine/registry';
-import { MoveGesture } from '../controllers/MoveGesture';
-import { WheelGesture } from '../controllers/WheelGesture';
-import { ScrollGesture } from '../controllers/ScrollGesture';
 import type { BaseGestureConfig, GestureDescriptor, GestureHandlers } from '../api/Gesture';
 
 interface ActiveRegistration {
@@ -11,51 +8,20 @@ interface ActiveRegistration {
   unregister(): void;
 }
 
-function createContinuousController(type: 'move' | 'wheel' | 'scroll') {
-  switch (type) {
-    case 'move':
-      return new MoveGesture();
-    case 'wheel':
-      return new WheelGesture();
-    case 'scroll':
-      return new ScrollGesture();
-  }
-}
-
-// Registers one descriptor against one concrete target. 'pan' goes through
-// the shared ElementGestureTracker/GestureRecognizer engine; the continuous
-// types (no recognition gate) directly drive their existing controller
-// class, with handlers kept live via a closure variable reassigned in
-// `updateHandlers` rather than re-subscribing on every change.
+// Every gesture type (Pan/Move/Wheel/Scroll) is registered against the
+// shared per-element/window `ElementGestureTracker` the same way — there is
+// no per-type special-casing here, which is what makes gestures composable:
+// two `useGesture` calls on the same node always end up on one tracker.
 function registerGesture(
   target: HTMLElement | Window,
   descriptor: GestureDescriptor<any>
 ): ActiveRegistration {
-  if (descriptor.type === 'pan') {
-    const tracker = getOrCreateTracker(target);
-    const id = tracker.register(descriptor);
-    return {
-      updateConfig: (config) => tracker.updateConfig(id, config),
-      updateHandlers: (handlers) => tracker.updateHandlers(id, handlers),
-      unregister: () => tracker.unregister(id),
-    };
-  }
-
-  const controller = createContinuousController(descriptor.type);
-  let handlers = descriptor.handlers;
-
-  const detach = controller.attach(target);
-  controller.onChange((e: any) => handlers.onChange?.(e));
-  controller.onEnd((e: any) => handlers.onEnd?.(e));
-
+  const tracker = getOrCreateTracker(target);
+  const id = tracker.register(descriptor);
   return {
-    updateConfig: () => {
-      // Continuous gestures (move/wheel/scroll) have no live-tunable config today.
-    },
-    updateHandlers: (next) => {
-      handlers = next;
-    },
-    unregister: () => detach(),
+    updateConfig: (config) => tracker.updateConfig(id, config),
+    updateHandlers: (handlers) => tracker.updateHandlers(id, handlers),
+    unregister: () => tracker.unregister(id),
   };
 }
 

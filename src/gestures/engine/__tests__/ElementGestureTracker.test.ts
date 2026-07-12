@@ -106,4 +106,82 @@ describe('ElementGestureTracker', () => {
 
     tracker.unregister(id);
   });
+
+  describe('unified dispatch across gesture types', () => {
+    it('dispatches Move via ungated pointermove on the target, independent of Pan', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onPanChange = jest.fn();
+      const onMoveChange = jest.fn();
+
+      const panId = tracker.register(Gesture.Pan().minDistance(1000).onChange(onPanChange));
+      const moveId = tracker.register(Gesture.Move().onChange(onMoveChange));
+
+      // No pointerdown at all — Move should still fire, Pan (press-gated) should not.
+      firePointer(el, 'pointermove', 10, 10);
+
+      expect(onMoveChange).toHaveBeenCalledTimes(1);
+      expect(onPanChange).not.toHaveBeenCalled();
+
+      tracker.unregister(panId);
+      tracker.unregister(moveId);
+    });
+
+    it('dispatches Wheel and Scroll independently on the same tracker', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onWheelChange = jest.fn();
+      const onScrollChange = jest.fn();
+
+      const wheelId = tracker.register(Gesture.Wheel().onChange(onWheelChange));
+      const scrollId = tracker.register(Gesture.Scroll().onChange(onScrollChange));
+
+      el.dispatchEvent(
+        new WheelEvent('wheel', { deltaX: 10, deltaY: 0, bubbles: true, cancelable: true })
+      );
+      expect(onWheelChange).toHaveBeenCalledTimes(1);
+      expect(onScrollChange).not.toHaveBeenCalled();
+
+      el.dispatchEvent(new Event('scroll', { bubbles: true }));
+      expect(onScrollChange).toHaveBeenCalledTimes(1);
+      expect(onWheelChange).toHaveBeenCalledTimes(1);
+
+      tracker.unregister(wheelId);
+      tracker.unregister(scrollId);
+    });
+
+    it('only attaches native listeners for categories that are actually registered', () => {
+      const addSpy = jest.spyOn(el, 'addEventListener');
+      const tracker = new ElementGestureTracker(el);
+
+      const id = tracker.register(Gesture.Wheel().onChange(() => {}));
+
+      const types = addSpy.mock.calls.map(([type]) => type);
+      expect(types).toContain('wheel');
+      expect(types).not.toContain('pointerdown');
+      expect(types).not.toContain('scroll');
+
+      tracker.unregister(id);
+      addSpy.mockRestore();
+    });
+
+    it('removes a category listener once its last registration leaves, keeps others attached', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onWheelChange = jest.fn();
+      const onScrollChange = jest.fn();
+
+      const wheelId = tracker.register(Gesture.Wheel().onChange(onWheelChange));
+      const scrollId = tracker.register(Gesture.Scroll().onChange(onScrollChange));
+
+      tracker.unregister(wheelId);
+
+      el.dispatchEvent(
+        new WheelEvent('wheel', { deltaX: 10, deltaY: 0, bubbles: true, cancelable: true })
+      );
+      expect(onWheelChange).not.toHaveBeenCalled();
+
+      el.dispatchEvent(new Event('scroll', { bubbles: true }));
+      expect(onScrollChange).toHaveBeenCalledTimes(1);
+
+      tracker.unregister(scrollId);
+    });
+  });
 });
