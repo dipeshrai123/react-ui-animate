@@ -134,4 +134,39 @@ describe('PanRecognizer', () => {
 
     expect(events[0].down).toBe(true);
   });
+
+  describe('click suppression', () => {
+    // Regression test: suppressNextClick was previously armed at the
+    // threshold-cross point (onPointerMove) rather than at drag-end
+    // (onPointerUp). Its fallback cleanup is a 0ms macrotask, so any real
+    // drag lasting longer than that — i.e. any real drag at all — would
+    // let the fallback remove the suppressor long before pointerup/click
+    // actually happened, silently un-suppressing the click. Uses real
+    // timers deliberately: this class of bug is invisible with
+    // synchronous/fake-timer dispatch since there's no elapsed time for the
+    // fallback to race against.
+    it('still suppresses the synthetic click after a real-length drag', (done) => {
+      const el = document.createElement('div');
+      document.body.appendChild(el);
+      const onDomClick = jest.fn();
+      el.addEventListener('click', onDomClick);
+
+      const r = new PanRecognizer({ minDistance: 5 }, {});
+      const ctx = fakeCtx(el);
+
+      r.onPointerDown(fakeEvent(0, 0, 0), ctx);
+      r.onPointerMove(fakeEvent(20, 0, 10), ctx); // crosses threshold -> ACTIVE
+
+      // Simulate a real drag that takes noticeably longer than a macrotask
+      // tick before the user releases.
+      setTimeout(() => {
+        r.onPointerUp(fakeEvent(20, 0, 300), ctx);
+        el.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+
+        expect(onDomClick).not.toHaveBeenCalled();
+        el.remove();
+        done();
+      }, 300);
+    });
+  });
 });

@@ -67,8 +67,6 @@ export class PanRecognizer implements GestureRecognizer {
         return;
       }
 
-      if (this.target) suppressNextClick(this.target);
-
       this.phase = GesturePhase.BEGAN;
       this.handlers.onStart?.(this.buildEvent(e, ctx));
       this.phase = GesturePhase.ACTIVE;
@@ -79,6 +77,14 @@ export class PanRecognizer implements GestureRecognizer {
 
   onPointerUp(e: PointerEvent, ctx: RecognizerContext): void {
     if (this.phase === GesturePhase.ACTIVE) {
+      // Arm click suppression here, not at threshold-cross: the browser's
+      // synthetic click fires right after pointerup, but a drag can run for
+      // any length of time before that — arming earlier and relying on
+      // suppressNextClick's macrotask fallback cleanup meant the fallback
+      // could (and for any real-length drag, would) remove the suppressor
+      // long before the click ever arrived.
+      if (this.target) suppressNextClick(this.target);
+
       this.phase = GesturePhase.END;
       const evt = this.buildEvent(e, ctx);
       this.handlers.onEnd?.(evt);
