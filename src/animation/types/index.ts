@@ -1,3 +1,5 @@
+import type { AnimateValue } from '../values/AnimateValue';
+
 export type Primitive = number | string;
 
 // ExtrapolateConfig is defined here to avoid circular dependency
@@ -63,7 +65,11 @@ export type DriverType =
 
 export interface Descriptor {
   type: DriverType;
-  to?: Primitive | Primitive[] | Record<string, Primitive>;
+  to?:
+    | Primitive
+    | Primitive[]
+    | Record<string, Primitive>
+    | AnimateValue<Primitive>;
   options?: SpringOptions &
     TimingOptions &
     DecayOptions &
