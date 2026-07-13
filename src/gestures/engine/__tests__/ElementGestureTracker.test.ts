@@ -186,5 +186,60 @@ describe('ElementGestureTracker', () => {
 
       tracker.unregister(scrollId);
     });
+
+    it('dispatches Swipe end to end on a fast, sufficiently-long drag', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onSwipe = jest.fn();
+
+      const id = tracker.register(Gesture.Swipe().onSwipe(onSwipe));
+
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 100, 0);
+      firePointer(window, 'pointerup', 100, 0);
+
+      expect(onSwipe).toHaveBeenCalledTimes(1);
+      expect(onSwipe.mock.calls[0][0].direction).toBe('right');
+
+      tracker.unregister(id);
+    });
+
+    it('dispatches Hover via pointermove/pointerleave on the target', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onStart = jest.fn();
+      const onChange = jest.fn();
+      const onEnd = jest.fn();
+
+      const id = tracker.register(
+        Gesture.Hover().onStart(onStart).onChange(onChange).onEnd(onEnd)
+      );
+
+      firePointer(el, 'pointermove', 10, 10);
+      el.dispatchEvent(new (window as any).PointerEvent('pointerleave', { bubbles: false }));
+
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onStart.mock.calls[0][0].hovering).toBe(true);
+      expect(onChange).toHaveBeenCalledTimes(1);
+      expect(onEnd).toHaveBeenCalledTimes(1);
+      expect(onEnd.mock.calls[0][0].hovering).toBe(false);
+
+      tracker.unregister(id);
+    });
+
+    it('lets Move and Hover, registered on the same element, both independently receive pointermove', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onMoveChange = jest.fn();
+      const onHoverChange = jest.fn();
+
+      const moveId = tracker.register(Gesture.Move().onChange(onMoveChange));
+      const hoverId = tracker.register(Gesture.Hover().onChange(onHoverChange));
+
+      firePointer(el, 'pointermove', 10, 10);
+
+      expect(onMoveChange).toHaveBeenCalledTimes(1);
+      expect(onHoverChange).toHaveBeenCalledTimes(1);
+
+      tracker.unregister(moveId);
+      tracker.unregister(hoverId);
+    });
   });
 });

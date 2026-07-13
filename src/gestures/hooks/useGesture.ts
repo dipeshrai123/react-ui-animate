@@ -1,10 +1,10 @@
 import { useEffect, useRef, type RefObject } from 'react';
 import { getOrCreateTracker } from '../engine/registry';
-import type { BaseGestureConfig, GestureDescriptor, GestureHandlers } from '../api/Gesture';
+import type { BaseGestureConfig, GestureDescriptor } from '../api/Gesture';
 
 interface ActiveRegistration {
   updateConfig(config: BaseGestureConfig): void;
-  updateHandlers(handlers: GestureHandlers<any>): void;
+  updateHandlers(handlers: any): void;
   unregister(): void;
 }
 
@@ -14,7 +14,7 @@ interface ActiveRegistration {
 // two `useGesture` calls on the same node always end up on one tracker.
 function registerGesture(
   target: HTMLElement | Window,
-  descriptor: GestureDescriptor<any>
+  descriptor: GestureDescriptor<any, any>
 ): ActiveRegistration {
   const tracker = getOrCreateTracker(target);
   const id = tracker.register(descriptor);
@@ -25,15 +25,16 @@ function registerGesture(
   };
 }
 
-function withIndex(handlers: GestureHandlers<any>, index: number): GestureHandlers<any> {
-  const wrap = (fn?: (e: any) => void) => (fn ? (e: any) => fn({ ...e, index }) : undefined);
-  return {
-    onStart: wrap(handlers.onStart),
-    onChange: wrap(handlers.onChange),
-    onUpdate: wrap(handlers.onUpdate),
-    onEnd: wrap(handlers.onEnd),
-    onFinalize: wrap(handlers.onFinalize),
-  };
+// Generic over the handlers shape so gesture kinds with a non-standard
+// handlers object (e.g. Swipe's `{ onSwipe }`) still get `index` merged in
+// array mode, not just the start/change/update/end/finalize stream.
+function withIndex(handlers: Record<string, unknown>, index: number): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const key in handlers) {
+    const fn = handlers[key];
+    result[key] = typeof fn === 'function' ? (e: any) => (fn as any)({ ...e, index }) : fn;
+  }
+  return result;
 }
 
 /**
@@ -49,24 +50,24 @@ function withIndex(handlers: GestureHandlers<any>, index: number): GestureHandle
  */
 export function useGesture<T extends HTMLElement>(
   ref: RefObject<T>,
-  gesture: GestureDescriptor<any>
+  gesture: GestureDescriptor<any, any>
 ): void;
-export function useGesture(target: Window, gesture: GestureDescriptor<any>): void;
+export function useGesture(target: Window, gesture: GestureDescriptor<any, any>): void;
 export function useGesture<T extends HTMLElement>(
   refs: RefObject<T>[],
-  gesture: GestureDescriptor<any> | ((index: number) => GestureDescriptor<any>)
+  gesture: GestureDescriptor<any, any> | ((index: number) => GestureDescriptor<any, any>)
 ): void;
 export function useGesture(
   target: RefObject<HTMLElement> | RefObject<HTMLElement>[] | Window,
-  gesture: GestureDescriptor<any> | ((index: number) => GestureDescriptor<any>)
+  gesture: GestureDescriptor<any, any> | ((index: number) => GestureDescriptor<any, any>)
 ): void {
   const singleRegistrationRef = useRef<ActiveRegistration | null>(null);
   const arrayRegistrationsRef = useRef<Map<RefObject<HTMLElement>, ActiveRegistration>>(new Map());
 
-  const resolveDescriptor = (): GestureDescriptor<any> => gesture as GestureDescriptor<any>;
-  const resolveIndexedDescriptor = (index: number): GestureDescriptor<any> => {
+  const resolveDescriptor = (): GestureDescriptor<any, any> => gesture as GestureDescriptor<any, any>;
+  const resolveIndexedDescriptor = (index: number): GestureDescriptor<any, any> => {
     const base = typeof gesture === 'function' ? gesture(index) : gesture;
-    return { ...base, handlers: withIndex(base.handlers, index) };
+    return { ...base, handlers: withIndex(base.handlers as Record<string, unknown>, index) };
   };
 
   // Register on mount, unregister on unmount — single ref/window mode.

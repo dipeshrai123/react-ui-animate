@@ -1,4 +1,4 @@
-import { createRef, useMemo, useRef, useState } from 'react';
+import { createRef, useMemo, useRef } from 'react';
 import {
   animate,
   Gesture,

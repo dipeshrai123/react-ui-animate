@@ -2,6 +2,8 @@ import { PanRecognizer } from '../recognizers/PanRecognizer';
 import { MoveRecognizer } from '../recognizers/MoveRecognizer';
 import { WheelRecognizer } from '../recognizers/WheelRecognizer';
 import { ScrollRecognizer } from '../recognizers/ScrollRecognizer';
+import { SwipeRecognizer } from '../recognizers/SwipeRecognizer';
+import { HoverRecognizer } from '../recognizers/HoverRecognizer';
 import type { GestureRecognizer, RecognizerContext } from './GestureRecognizer';
 import {
   createKinematicState,
@@ -17,7 +19,7 @@ import type {
 
 interface UpdatableRecognizer extends GestureRecognizer {
   updateConfig?(config: BaseGestureConfig): void;
-  updateHandlers?(handlers: GestureHandlers<any>): void;
+  updateHandlers?(handlers: any): void;
 }
 
 // Every gesture type is dispatched from exactly one native-event category.
@@ -32,6 +34,8 @@ const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
   move: 'hover',
   wheel: 'wheel',
   scroll: 'scroll',
+  swipe: 'pointer',
+  hover: 'hover',
 };
 
 interface Registration {
@@ -39,7 +43,7 @@ interface Registration {
   group: ListenerGroup;
 }
 
-function createRecognizer(descriptor: GestureDescriptor<any>): UpdatableRecognizer {
+function createRecognizer(descriptor: GestureDescriptor<any, any>): UpdatableRecognizer {
   switch (descriptor.type) {
     case 'pan':
       return new PanRecognizer(descriptor.config, descriptor.handlers);
@@ -49,6 +53,10 @@ function createRecognizer(descriptor: GestureDescriptor<any>): UpdatableRecogniz
       return new WheelRecognizer(descriptor.config, descriptor.handlers);
     case 'scroll':
       return new ScrollRecognizer(descriptor.config, descriptor.handlers);
+    case 'swipe':
+      return new SwipeRecognizer(descriptor.config, descriptor.handlers);
+    case 'hover':
+      return new HoverRecognizer(descriptor.config, descriptor.handlers);
     default:
       throw new Error(`[useGesture] Unknown gesture type: ${(descriptor as GestureDescriptor).type}`);
   }
@@ -59,8 +67,8 @@ function createRecognizer(descriptor: GestureDescriptor<any>): UpdatableRecogniz
  * listeners for every event category any registered recognizer needs —
  * attached lazily per category on first registration needing it, removed
  * once the last one leaves — and fans events out to the matching
- * recognizers. Every gesture type (Pan/Move/Wheel/Scroll) is a plain
- * `GestureRecognizer` registered here the same way, so N gestures of any
+ * recognizers. Every gesture type (Pan/Move/Wheel/Scroll/Swipe/Hover) is a
+ * plain `GestureRecognizer` registered here the same way, so N gestures of any
  * mix on one element share listeners per category instead of each attaching
  * its own (as the pre-unification per-type controller classes did).
  */
@@ -100,7 +108,7 @@ export class ElementGestureTracker {
 
   constructor(private target: HTMLElement | Window) {}
 
-  register(descriptor: GestureDescriptor<any>): symbol {
+  register(descriptor: GestureDescriptor<any, any>): symbol {
     const id = Symbol('gesture');
     const group = GROUP_BY_TYPE[descriptor.type];
     this.registrations.set(id, { recognizer: createRecognizer(descriptor), group });
