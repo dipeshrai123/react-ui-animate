@@ -3,13 +3,6 @@ export {
   makeAnimated,
   AnimateValue,
   isAnimateValue,
-  timing,
-  spring,
-  decay,
-  parallel,
-  sequence,
-  loop,
-  delay,
   Easing,
   combine,
   to,
@@ -80,7 +73,6 @@ export type {
   DelayOptions,
   LoopOptions,
   StaggerOptions,
-  DriverType,
   Descriptor,
   Controls,
   AnimateProp,
@@ -91,8 +83,6 @@ export type {
   LayoutOptions,
   PresenceProps,
   PresenceContextValue,
-  AnimateController,
-  AnimateHooks,
 } from './animation';
 
 export { useOutsideClick } from './hooks/events/useOutsideClick';
