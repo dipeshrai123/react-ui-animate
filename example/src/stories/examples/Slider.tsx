@@ -2,7 +2,8 @@ import { useRef } from 'react';
 import {
   animate,
   useValue,
-  useDrag,
+  Gesture,
+  useGesture,
   clamp,
   withSpring,
   to,
@@ -18,24 +19,35 @@ export default function Example() {
   const [balloonLeft, setBalloonLeft] = useValue(0);
   const [velocity, setVelocity] = useValue(0);
 
-  useDrag(ref, ({ movement, down, velocity }) => {
-    setIsDown(withSpring(down ? 1 : 0));
-    setVelocity(velocity.x);
-
-    const ballX = clamp(offsetLeft.current + movement.x, 0, 190);
-    if (down) {
-      setLeft(ballX);
-      setBalloonLeft(withSpring(ballX));
-    } else {
-      offsetLeft.current = ballX;
-    }
-
+  const updateBalloonLabel = (ballX: number) => {
     if (balloonRef.current) {
       balloonRef.current.innerHTML = `${Number(
         to(ballX, [0, 190], [0, 100])
       ).toFixed(0)}%`;
     }
-  });
+  };
+
+  useGesture(
+    ref,
+    Gesture.Pan()
+      .onStart(() => {
+        setIsDown(withSpring(1));
+      })
+      .onUpdate(({ movement, velocity: v }) => {
+        setVelocity(v.x);
+        const ballX = clamp(offsetLeft.current + movement.x, 0, 190);
+        setLeft(ballX);
+        setBalloonLeft(withSpring(ballX));
+        updateBalloonLabel(ballX);
+      })
+      .onEnd(({ movement, velocity: v }) => {
+        setIsDown(withSpring(0));
+        setVelocity(v.x);
+        const ballX = clamp(offsetLeft.current + movement.x, 0, 190);
+        offsetLeft.current = ballX;
+        updateBalloonLabel(ballX);
+      })
+  );
 
   return (
     <ExampleLayout

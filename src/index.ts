@@ -3,13 +3,6 @@ export {
   makeAnimated,
   AnimateValue,
   isAnimateValue,
-  timing,
-  spring,
-  decay,
-  parallel,
-  sequence,
-  loop,
-  delay,
   Easing,
   combine,
   to,
@@ -80,7 +73,6 @@ export type {
   DelayOptions,
   LoopOptions,
   StaggerOptions,
-  DriverType,
   Descriptor,
   Controls,
   AnimateProp,
@@ -91,26 +83,32 @@ export type {
   LayoutOptions,
   PresenceProps,
   PresenceContextValue,
-  AnimateController,
-  AnimateHooks,
 } from './animation';
 
 export { useOutsideClick } from './hooks/events/useOutsideClick';
 export { useInView, type UseInViewOptions } from './hooks/observers/useInView';
 
-export { useDrag } from './gestures/hooks/useDrag';
-export { useMove } from './gestures/hooks/useMove';
-export { useScroll } from './gestures/hooks/useScroll';
 export {
   useScrollProgress,
   type UseScrollProgressOptions,
 } from './gestures/hooks/useScrollProgress';
-export { useWheel } from './gestures/hooks/useWheel';
-export { useRecognizer } from './gestures/hooks/useRecognizer';
 
-export type { DragEvent, DragConfig } from './gestures/controllers/DragGesture';
-export type { MoveEvent } from './gestures/controllers/MoveGesture';
-export type { ScrollEvent } from './gestures/controllers/ScrollGesture';
-export type { WheelEvent } from './gestures/controllers/WheelGesture';
+export { Gesture } from './gestures/api/Gesture';
+export { useGesture } from './gestures/hooks/useGesture';
+export { GesturePhase } from './gestures/engine/phases';
+export type {
+  GestureType,
+  GestureHandlers,
+  BaseGestureConfig,
+  GestureDescriptor,
+  PanEvent,
+  MoveEvent,
+  WheelEvent,
+  ScrollEvent,
+  SwipeEvent,
+  SwipeGestureConfig,
+  SwipeHandlers,
+  HoverEvent,
+} from './gestures/api/Gesture';
 
 export { clamp, rubberClamp, snapTo, move } from './utils';

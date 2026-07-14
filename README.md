@@ -36,7 +36,7 @@ function App() {
 - **`useValue`** — create and control animated values programmatically, with interpolation via `.to()`
 - **Descriptors** — `withSpring`, `withTiming`, `withDecay`, `withSequence`, `withLoop`, `withDelay`, `withStagger`
 - **`Presence`** — mount/unmount (exit) animations
-- **Gestures** — `useDrag`, `useMove`, `useScroll`, `useWheel`, `useScrollProgress`
+- **Gestures** — a unified `useGesture` + `Gesture.Pan/Move/Wheel/Scroll/Swipe/Hover` API, plus `useScrollProgress`
 - **Recipes** — a library of ready-made animations (`fadeIn`, `slideInUp`, `scaleIn`, `hoverScale`, etc.)
 - Fully typed, tree-shakeable, zero runtime dependencies
 

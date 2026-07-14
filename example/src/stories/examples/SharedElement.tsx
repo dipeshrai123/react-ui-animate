@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import {
   clamp,
   animate,
-  useDrag,
+  Gesture,
+  useGesture,
   useValue,
   withTiming,
   withSpring,
@@ -31,17 +32,20 @@ function Example() {
     translateY: 0,
   });
 
-  useDrag(ref, ({ down, movement }) => {
-    setValue(
-      withSpring({
-        translateY: down ? clamp(movement.y, 0, 300) : 0,
+  useGesture(
+    ref,
+    Gesture.Pan()
+      .onUpdate(({ movement }) => {
+        setValue(withSpring({ translateY: clamp(movement.y, 0, 300) }));
       })
-    );
+      .onEnd(({ movement }) => {
+        setValue(withSpring({ translateY: 0 }));
 
-    if (movement.y > 200 && !down) {
-      closeSharedElement();
-    }
-  });
+        if (movement.y > 200) {
+          closeSharedElement();
+        }
+      })
+  );
 
   React.useLayoutEffect(() => {
     if (activeIndex !== null) {

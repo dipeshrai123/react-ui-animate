@@ -1,6 +1,7 @@
 import { Children, useLayoutEffect, useState } from 'react';
 import {
-  useScroll,
+  Gesture,
+  useGesture,
   animate,
   useValue,
   withStagger,
@@ -59,9 +60,12 @@ const Stagger = ({ y, children }: any) => {
 function Example() {
   const [y, setY] = useState(0);
 
-  useScroll(window, ({ offset }) => {
-    setY(offset.y);
-  });
+  useGesture(
+    window,
+    Gesture.Scroll().onChange(({ offset }) => {
+      setY(offset.y);
+    })
+  );
 
   return (
     <ExampleLayout

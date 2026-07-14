@@ -2,8 +2,8 @@ import { RefObject, useEffect, useRef } from 'react';
 import { AnimateValue } from '../../animation';
 
 import { useValue, withSpring } from '../../animation';
-import { ScrollGesture } from '../controllers/ScrollGesture';
-import { useRecognizer } from './useRecognizer';
+import { Gesture } from '../api/Gesture';
+import { useGesture } from './useGesture';
 import { type Descriptor } from '../../animation/types';
 
 type SupportedEdgeUnit = 'px' | 'vw' | 'vh' | '%';
@@ -53,24 +53,27 @@ export function useScrollProgress(
     );
   }, [refs, target, axis, offset]);
 
-  useRecognizer(ScrollGesture, refs, (e) => {
-    const pos = axis === 'y' ? e.offset.y : e.offset.x;
-    const [start, end] = rangeRef.current;
+  useGesture(
+    refs as RefObject<HTMLElement>,
+    Gesture.Scroll().onChange((e) => {
+      const pos = axis === 'y' ? e.offset.y : e.offset.x;
+      const [start, end] = rangeRef.current;
 
-    const raw =
-      end === start ? (pos < start ? 0 : 1) : (pos - start) / (end - start);
+      const raw =
+        end === start ? (pos < start ? 0 : 1) : (pos - start) / (end - start);
 
-    const t = Math.min(Math.max(raw, 0), 1);
-    const apply = animate ? toDescriptor : (v: number) => v;
+      const t = Math.min(Math.max(raw, 0), 1);
+      const apply = animate ? toDescriptor : (v: number) => v;
 
-    if (axis === 'y') {
-      setYProgress(apply(t));
-      setXProgress(0);
-    } else {
-      setXProgress(apply(t));
-      setYProgress(0);
-    }
-  });
+      if (axis === 'y') {
+        setYProgress(apply(t));
+        setXProgress(0);
+      } else {
+        setXProgress(apply(t));
+        setYProgress(0);
+      }
+    })
+  );
 
   return { scrollYProgress: yProgress, scrollXProgress: xProgress };
 }

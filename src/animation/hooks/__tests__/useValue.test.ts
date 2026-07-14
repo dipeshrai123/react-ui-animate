@@ -131,6 +131,66 @@ describe('useValue', () => {
       expect(value.current).toBeCloseTo(100, 1);
     });
 
+    it('snaps to another AnimateValue and keeps following it', () => {
+      const { result: source } = renderHook(() => useValue(0));
+      const { result: follower } = renderHook(() => useValue(0));
+      const [sourceValue, setSourceValue] = source.current;
+      const [followerValue, setFollowerValue] = follower.current;
+
+      act(() => {
+        setFollowerValue(sourceValue);
+      });
+
+      expect(followerValue.current).toBe(0);
+
+      act(() => {
+        setSourceValue(42);
+      });
+
+      expect(followerValue.current).toBe(42);
+
+      act(() => {
+        setSourceValue(7);
+      });
+
+      expect(followerValue.current).toBe(7);
+    });
+
+    it('follows another AnimateValue with withSpring, retargeting on change', () => {
+      const { result: source } = renderHook(() => useValue(0));
+      const { result: follower } = renderHook(() => useValue(0));
+      const [sourceValue, setSourceValue] = source.current;
+      const [followerValue, setFollowerValue] = follower.current;
+
+      act(() => {
+        setFollowerValue(withSpring(sourceValue, { stiffness: 200, damping: 20 }));
+      });
+
+      act(() => {
+        setSourceValue(100);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(50);
+      });
+
+      expect(followerValue.current).toBeGreaterThan(0);
+      expect(followerValue.current).toBeLessThan(100);
+
+      // Retarget mid-flight — value keeps moving, no snap back to 0.
+      const midFlight = followerValue.current;
+
+      act(() => {
+        setSourceValue(200);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(0);
+      });
+
+      expect(followerValue.current).toBeGreaterThanOrEqual(midFlight);
+    });
+
     it('provides controls for animation', () => {
       const { result } = renderHook(() => useValue(0));
       const [, setValue, controls] = result.current;

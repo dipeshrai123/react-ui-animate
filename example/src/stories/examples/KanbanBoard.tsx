@@ -2,7 +2,8 @@ import { createRef, useMemo, useRef, useState } from 'react';
 import {
   animate,
   clamp,
-  useDrag,
+  Gesture,
+  useGesture,
   useValue,
   withSpring,
 } from 'react-ui-animate';
@@ -228,13 +229,12 @@ const Example = () => {
     setRotate(CARDS.map(() => 0));
   };
 
-  useDrag(
-    refs,
-    ({ index: refIndex, down, movement }) => {
-      const cardId = CARDS[refIndex!].id;
-      const i = refIndex!;
+  useGesture(refs, (i) =>
+    Gesture.Pan()
+      .minDistance(6)
+      .onUpdate(({ movement }) => {
+        const cardId = CARDS[i].id;
 
-      if (down) {
         if (!dragOriginRef.current) {
           dragOriginRef.current = getCardOrigin(cardId);
         }
@@ -275,7 +275,9 @@ const Example = () => {
         setScale(withSpring(scales, { stiffness: 400, damping: 25 }));
         setZIndex(zs);
         setRotate(withSpring(rots, { stiffness: 300, damping: 20 }));
-      } else {
+      })
+      .onEnd(({ movement }) => {
+        const cardId = CARDS[i].id;
         const origin = dragOriginRef.current ?? getCardOrigin(cardId);
         dragOriginRef.current = null;
 
@@ -303,9 +305,7 @@ const Example = () => {
         setScale(withSpring(CARDS.map(() => 1), { stiffness: 400, damping: 25 }));
         setZIndex(CARDS.map(() => 1));
         setRotate(withSpring(CARDS.map(() => 0), { stiffness: 300, damping: 20 }));
-      }
-    },
-    { threshold: 6 }
+      })
   );
 
   const shadows = useMemo(

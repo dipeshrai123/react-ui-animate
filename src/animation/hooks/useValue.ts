@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
 import { delay, sequence, loop } from '../drivers';
-import { AnimateValue } from '../values/AnimateValue';
+import { AnimateValue, isAnimateValue } from '../values/AnimateValue';
 
 import { buildAnimation, buildParallel } from '../drivers/builder';
 import { filterCallbackOptions, isDescriptor } from '../helpers';
@@ -18,7 +18,11 @@ type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
 export function useValue<T extends Base>(
   initial: T
-): [ValueReturn<T>, (to: Base | Descriptor) => void, Controls] {
+): [
+  ValueReturn<T>,
+  (to: Base | Descriptor | AnimateValue<Primitive>) => void,
+  Controls,
+] {
   const controllerRef = useRef<Controls | null>(null);
 
   const value = useMemo(() => {
@@ -35,7 +39,7 @@ export function useValue<T extends Base>(
     return new AnimateValue(initial);
   }, []) as ValueReturn<T>;
 
-  function set(to: Base | Descriptor) {
+  function set(to: Base | Descriptor | AnimateValue<Primitive>) {
     let ctrl: Controls | null = null;
 
     if (Array.isArray(initial)) {
@@ -51,7 +55,7 @@ export function useValue<T extends Base>(
     } else {
       ctrl = handlePrimitive(
         value as AnimateValue<Primitive>,
-        to as Primitive | Descriptor
+        to as Primitive | Descriptor | AnimateValue<Primitive>
       );
     }
 
@@ -72,11 +76,24 @@ export function useValue<T extends Base>(
 
 function handlePrimitive(
   value: AnimateValue<Primitive>,
-  to: Primitive | Descriptor
+  to: Primitive | Descriptor | AnimateValue<Primitive>
 ) {
+  // `setValue(otherAnimatedValue)` — snap-follow another AnimateValue with
+  // no easing, mirroring its updates as they happen.
+  if (isAnimateValue(to)) {
+    return followValue(value, to);
+  }
+
   if (typeof to === 'number' || typeof to === 'string') {
     value.set(to);
     return null;
+  }
+
+  // `setValue(withSpring(otherAnimatedValue))` / `withTiming(...)` — re-run
+  // the driver toward the source's latest value every time it changes,
+  // instead of animating to a single fixed target.
+  if (isAnimateValue(to.to)) {
+    return followValue(value, to.to as AnimateValue<Primitive>, to);
   }
 
   if (to.type === 'sequence') {
@@ -103,6 +120,53 @@ function handlePrimitive(
   }
 
   return buildAnimation(value, to);
+}
+
+// Drives `value` off of `source` for as long as the returned controls are
+// active: every time `source` changes, either snap `value` to it directly
+// (no `descriptor`) or restart the described animation (spring/timing, ...)
+// toward the new target. Springs/timings inherit velocity/progress from
+// their own previous run (see SpringController/TimingController), so
+// re-triggering on each change reads as a smooth, continuous follow rather
+// than a series of separate animations.
+function followValue(
+  value: AnimateValue<Primitive>,
+  source: AnimateValue<Primitive>,
+  descriptor?: Descriptor
+): Controls {
+  let unsubscribe: (() => void) | undefined;
+  let inner: Controls | null = null;
+
+  const runFor = (current: Primitive) => {
+    if (!descriptor) {
+      value.set(current);
+      return;
+    }
+
+    inner = buildAnimation(value, { ...descriptor, to: current }) as Controls;
+    inner.start();
+  };
+
+  return {
+    start() {
+      unsubscribe?.();
+      unsubscribe = source.subscribe(runFor);
+    },
+    pause() {
+      inner?.pause();
+    },
+    resume() {
+      inner?.resume();
+    },
+    cancel() {
+      unsubscribe?.();
+      unsubscribe = undefined;
+      inner?.cancel();
+    },
+    reset() {
+      inner?.reset();
+    },
+  };
 }
 
 function handleArray(
