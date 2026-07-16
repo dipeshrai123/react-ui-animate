@@ -63,6 +63,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ New Features
 
+- **`prefers-reduced-motion` support**: `timing`, `spring`, and `decay` (and everything built on them — `withSpring`, `withTiming`, `withDecay`, recipes, etc.) now check the user's OS-level `prefers-reduced-motion` setting and, when enabled, resolve straight to the animation's end state instead of animating. Use `setReducedMotion(true | false | null)` to override the media query (e.g. for testing, or an in-app "reduce motion" toggle), and `isReducedMotionEnabled()` to read the current effective value:
+
+  ```tsx
+  import { setReducedMotion, isReducedMotionEnabled } from 'react-ui-animate';
+
+  setReducedMotion(true); // force-disable animation everywhere
+  setReducedMotion(null); // go back to following the OS setting
+  ```
+
+- **`withKeyframes`**: Animate a value through a list of intermediate stops in one call, instead of hand-rolling a `withSequence` of `withTiming` steps:
+
+  ```tsx
+  import { useValue, withKeyframes } from 'react-ui-animate';
+
+  const [x, setX] = useValue(0);
+
+  setX(withKeyframes([0, 100, 50, 100], { duration: 600 }));
+
+  // per-step overrides
+  setX(
+    withKeyframes([0, { to: 100, duration: 200, easing: Easing.linear }, 50])
+  );
+  ```
+
 - **Animation Recipes**: Added 40+ pre-built animation recipes for common use cases:
 
   - Fade animations: `fadeIn`, `fadeOut`, `fadeInUp`, `fadeInDown`, `fadeInLeft`, `fadeInRight`

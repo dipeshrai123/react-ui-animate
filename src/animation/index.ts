@@ -13,6 +13,7 @@ export { parallel, sequence, loop, delay } from './drivers/compose';
 
 export { Easing } from './utils/easing';
 export { combine } from './utils/combine';
+export { isReducedMotionEnabled, setReducedMotion } from './utils/reducedMotion';
 
 export { to } from './to';
 
@@ -24,6 +25,7 @@ export {
   withSequence,
   withLoop,
   withStagger,
+  withKeyframes,
 } from './descriptors';
 
 export { useValue } from './hooks/useValue';
@@ -49,6 +51,8 @@ export type {
   DelayOptions,
   LoopOptions,
   StaggerOptions,
+  KeyframeStep,
+  KeyframeOptions,
   DriverType,
   Descriptor,
   Controls,

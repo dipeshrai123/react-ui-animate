@@ -1,6 +1,7 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 import { rubberClamp } from '../../utils';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 
 interface DecayOptions extends AnimateHooks {
   decay?: number;
@@ -51,6 +52,13 @@ class DecayController implements AnimateController {
 
     this.from = this.position = this.value.current;
     this.startTime = performance.now();
+
+    if (isReducedMotionEnabled()) {
+      this.value._internalSet(this.position);
+      this.hooks.onChange?.(this.position);
+      this.hooks.onComplete?.();
+      return;
+    }
 
     this.frameId = requestAnimationFrame(this.animate);
   }

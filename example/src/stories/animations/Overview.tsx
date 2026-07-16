@@ -21,6 +21,7 @@ const Example: React.FC = () => {
         { name: 'withDelay', path: '/animations/descriptors/withDelay' },
         { name: 'withSequence', path: '/animations/descriptors/withSequence' },
         { name: 'withLoop', path: '/animations/descriptors/withLoop' },
+        { name: 'withKeyframes', path: '/animations/descriptors/withKeyframes' },
       ],
     },
     {
@@ -30,6 +31,7 @@ const Example: React.FC = () => {
         { name: 'Easing', path: '/animations/utilities/Easing' },
         { name: 'combine', path: '/animations/utilities/combine' },
         { name: 'to', path: '/animations/utilities/to' },
+        { name: 'Reduced Motion', path: '/animations/utilities/reduced-motion' },
       ],
     },
     {

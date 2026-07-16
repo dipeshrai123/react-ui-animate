@@ -6,6 +6,7 @@ import {
   withSequence,
   withLoop,
   withStagger,
+  withKeyframes,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -258,6 +259,58 @@ describe('descriptors', () => {
       const descriptor = withLoop(sequence, 2);
 
       expect(descriptor.options?.animation).toBe(sequence);
+    });
+  });
+
+  describe('withKeyframes', () => {
+    it('builds a sequence of timing steps splitting the total duration evenly', () => {
+      const descriptor = withKeyframes([0, 100, 50], { duration: 300 });
+
+      expect(descriptor.type).toBe('sequence');
+      const animations = descriptor.options?.animations ?? [];
+      expect(animations).toHaveLength(3);
+      animations.forEach((anim, i) => {
+        expect(anim.type).toBe('timing');
+        expect(anim.options?.duration).toBe(100);
+        expect(anim.to).toBe([0, 100, 50][i]);
+      });
+    });
+
+    it('lets individual steps override duration and easing', () => {
+      const customEasing = (t: number) => t;
+      const descriptor = withKeyframes(
+        [0, { to: 100, duration: 500, easing: customEasing }, 50],
+        { duration: 300 }
+      );
+
+      const animations = descriptor.options?.animations ?? [];
+      expect(animations[0].options?.duration).toBe(100);
+      expect(animations[1].options?.duration).toBe(500);
+      expect(animations[1].options?.easing).toBe(customEasing);
+    });
+
+    it('applies onStart/onComplete at the sequence level and onChange to every step', () => {
+      const onStart = jest.fn();
+      const onComplete = jest.fn();
+      const onChange = jest.fn();
+
+      const descriptor = withKeyframes([0, 100], {
+        onStart,
+        onComplete,
+        onChange,
+      });
+
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
+      descriptor.options?.animations?.forEach((anim) => {
+        expect(anim.options?.onChange).toBe(onChange);
+      });
+    });
+
+    it('defaults to a 300ms total duration split across steps', () => {
+      const descriptor = withKeyframes([0, 50, 100, 150]);
+      const animations = descriptor.options?.animations ?? [];
+      animations.forEach((anim) => expect(anim.options?.duration).toBe(75));
     });
   });
 

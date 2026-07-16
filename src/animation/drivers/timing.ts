@@ -1,5 +1,6 @@
 import { Easing } from '../utils/easing';
 import { AnimateValue } from '../values/AnimateValue';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
 interface TimingOptions extends AnimateHooks {
@@ -104,6 +105,14 @@ class TimingController implements AnimateController {
     this.isCancelled = false;
     this.pausedAt = null;
     this.elapsedBeforePause = 0;
+
+    if (isReducedMotionEnabled()) {
+      this.position = this.target;
+      this.value._internalSet(this.position);
+      this.hooks.onChange?.(this.position);
+      this.hooks.onComplete?.();
+      return;
+    }
 
     this.frameId = requestAnimationFrame(this.animate);
   }

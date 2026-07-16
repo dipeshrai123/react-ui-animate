@@ -2,6 +2,9 @@ import {
   Callbacks,
   DecayOptions,
   Descriptor,
+  KeyframeOptions,
+  KeyframeStep,
+  Primitive,
   SpringOptions,
   StaggerOptions,
   TimingOptions,
@@ -174,6 +177,38 @@ export const withStagger = (
   if (totalDelay <= 0) return descriptor;
 
   return withSequence([withDelay(totalDelay), descriptor]);
+};
+
+// Animates through a list of intermediate values in one call, e.g.
+// `withKeyframes([0, 100, 50, 100])`. Each stop gets an equal share of the
+// total `duration` (default 300ms) unless a step provides its own
+// `{ to, duration, easing }`. Built on top of `withTiming` + `withSequence`,
+// so it inherits their `from`-chaining behavior — each stop starts from
+// wherever the previous one left off.
+export const withKeyframes = (
+  steps: Array<Primitive | KeyframeStep>,
+  opts?: KeyframeOptions & Callbacks
+): Descriptor => {
+  const totalDuration = opts?.duration ?? 300;
+  const perStepDuration = steps.length > 0 ? totalDuration / steps.length : 0;
+
+  const animations = steps.map((step) => {
+    const normalized: KeyframeStep =
+      typeof step === 'object' && step !== null && 'to' in step
+        ? (step as KeyframeStep)
+        : { to: step as Primitive };
+
+    return withTiming(normalized.to, {
+      duration: normalized.duration ?? perStepDuration,
+      easing: normalized.easing ?? opts?.easing,
+      onChange: opts?.onChange,
+    });
+  });
+
+  return withSequence(animations, {
+    onStart: opts?.onStart,
+    onComplete: opts?.onComplete,
+  });
 };
 
 export const withLoop = (

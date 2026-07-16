@@ -55,6 +55,17 @@ export interface StaggerOptions {
   delay?: number;
 }
 
+export interface KeyframeStep {
+  to: Primitive;
+  duration?: number;
+  easing?: (t: number) => number;
+}
+
+export interface KeyframeOptions {
+  duration?: number;
+  easing?: (t: number) => number;
+}
+
 export type DriverType =
   | 'spring'
   | 'timing'

@@ -1,4 +1,5 @@
 import { AnimateValue } from '../values/AnimateValue';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
 interface SpringOptions extends AnimateHooks {
@@ -102,6 +103,15 @@ class SpringController implements AnimateController {
 
     this.isPaused = false;
     this.isCancelled = false;
+
+    if (isReducedMotionEnabled()) {
+      this.velocity = 0;
+      this.position = this.target;
+      this.value._internalSet(this.position);
+      this.hooks.onChange?.(this.position);
+      this.hooks.onComplete?.();
+      return;
+    }
 
     this.frameId = requestAnimationFrame(this.animate);
   }
