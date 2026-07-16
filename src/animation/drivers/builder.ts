@@ -32,11 +32,33 @@ export function buildAnimation(
         return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
       }
 
-      let innerController: ReturnType<typeof timing>;
-
       // Each loop iteration restarts from the AnimateValue's initial value
       // (not its current value) unless a step already sets an explicit `from`.
       const loopFromValue = value.initial as number;
+
+      if (innerDesc.type === 'spring' || innerDesc.type === 'timing') {
+        const target = innerDesc.to as number;
+        const from = innerDesc.options?.from ?? loopFromValue;
+
+        if (options.yoyo) {
+          // `iterations` counts legs, so forward+back = 2 (matches GSAP's `yoyo`).
+          const factory = (iteration: number) => {
+            const reversed = iteration % 2 === 1;
+            return buildAnimation(value, {
+              ...innerDesc,
+              to: reversed ? from : target,
+              options: { ...innerDesc.options, from: reversed ? target : from },
+            });
+          };
+          return loop(factory, options.iterations ?? 0, options);
+        }
+
+        const innerController = buildAnimation(value, {
+          ...innerDesc,
+          options: { ...innerDesc.options, from },
+        });
+        return loop(innerController, options.iterations ?? 0, options);
+      }
 
       if (innerDesc.type === 'sequence') {
         const animations = innerDesc.options?.animations ?? [];
@@ -50,18 +72,11 @@ export function buildAnimation(
           }
           return buildAnimation(value, step);
         });
-        innerController = sequence(controllers, innerDesc.options);
-      } else if (innerDesc.type === 'spring' || innerDesc.type === 'timing') {
-        const explicitFrom = innerDesc.options?.from;
-        innerController = buildAnimation(value, {
-          ...innerDesc,
-          options: { ...innerDesc.options, from: explicitFrom ?? loopFromValue },
-        });
-      } else {
-        innerController = buildAnimation(value, innerDesc);
+        const innerController = sequence(controllers, innerDesc.options);
+        return loop(innerController, options.iterations ?? 0, options);
       }
 
-      return loop(innerController, options.iterations ?? 0, options);
+      return loop(buildAnimation(value, innerDesc), options.iterations ?? 0, options);
     }
 
     default:

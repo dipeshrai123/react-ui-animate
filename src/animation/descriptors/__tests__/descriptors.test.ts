@@ -261,6 +261,16 @@ describe('descriptors', () => {
 
       expect(descriptor.options?.animation).toBe(sequence);
     });
+
+    it('passes through the yoyo option', () => {
+      const descriptor = withLoop(withTiming(100), 4, { yoyo: true });
+      expect(descriptor.options?.yoyo).toBe(true);
+    });
+
+    it('defaults yoyo to undefined', () => {
+      const descriptor = withLoop(withTiming(100), 4);
+      expect(descriptor.options?.yoyo).toBeUndefined();
+    });
   });
 
   describe('withKeyframes', () => {

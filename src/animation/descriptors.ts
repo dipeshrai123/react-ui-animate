@@ -214,12 +214,13 @@ export const withKeyframes = (
 export const withLoop = (
   animation: Descriptor,
   iterations = Infinity,
-  opts?: Omit<Callbacks, 'onChange'>
+  opts?: Omit<Callbacks, 'onChange'> & { yoyo?: boolean }
 ): Descriptor => ({
   type: 'loop',
   options: {
     animation,
     iterations,
+    yoyo: opts?.yoyo,
     onStart: opts?.onStart,
     onComplete: opts?.onComplete,
   },

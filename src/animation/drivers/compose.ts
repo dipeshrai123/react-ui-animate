@@ -1,4 +1,5 @@
 import type { AnimateController, AnimateHooks } from './AnimateController';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 
 class ParallelController implements AnimateController {
   private completedCount = 0;
@@ -161,22 +162,42 @@ class LoopController implements AnimateController {
   private isCancelled = false;
   private isPaused = false;
   private onComplete?: () => void;
-  private originalComplete?: () => void;
+  private current!: AnimateController;
+  private currentOriginalComplete?: () => void;
+  private effectiveIterations = 0;
+  // True for the duration of a `runIteration()` call. A controller that
+  // completes synchronously inside its own `start()` (e.g. a driver skipping
+  // straight to the end state under reduced motion) would otherwise trigger
+  // `handleIterationComplete` -> `runIteration()` recursively on the same
+  // call stack, overflowing it for large/Infinity iteration counts.
+  private isRunningIteration = false;
 
   constructor(
-    private controller: AnimateController,
+    private controllerFactory: (iteration: number) => AnimateController,
     private iterations: number,
     private hooks: AnimateHooks = {}
-  ) {
-    this.originalComplete = (controller as any)?.hooks?.onComplete;
-  }
+  ) {}
+
+  // A stable reference passed to `setOnComplete` every iteration, instead of
+  // a fresh closure per call. The factory can return the same controller
+  // instance across iterations (a plain, non-yoyo loop reuses one), and that
+  // instance's `hooks.onComplete` is exactly what this sets — a fresh
+  // closure each time would wrap the *previous* iteration's wrapper instead
+  // of the true original, growing an ever-deeper call chain that eventually
+  // overflows the stack once enough iterations have run.
+  private handleCurrentComplete = () => {
+    this.currentOriginalComplete?.();
+    this.handleIterationComplete();
+  };
 
   private handleIterationComplete = () => {
     this.count++;
-    this.originalComplete?.();
-    if (this.count < this.iterations) {
-      this.controller.reset?.();
-      this.runIteration();
+    if (this.count < this.effectiveIterations) {
+      if (this.isRunningIteration) {
+        queueMicrotask(() => this.runIteration());
+      } else {
+        this.runIteration();
+      }
     } else {
       this.onComplete?.();
       this.hooks.onComplete?.();
@@ -185,42 +206,59 @@ class LoopController implements AnimateController {
 
   private runIteration() {
     if (this.isCancelled || this.isPaused) return;
-    this.controller.setOnComplete?.(this.handleIterationComplete);
-    this.controller.start();
+    this.isRunningIteration = true;
+
+    const next = this.controllerFactory(this.count);
+    if (next !== this.current) {
+      this.currentOriginalComplete = (next as any)?.hooks?.onComplete;
+    }
+    this.current = next;
+
+    this.current.setOnComplete?.(this.handleCurrentComplete);
+    this.current.reset?.();
+    this.current.start();
+    this.isRunningIteration = false;
   }
 
   start() {
     this.isCancelled = false;
     this.isPaused = false;
     this.count = 0;
-    this.controller.reset();
+    // Reduced motion makes every iteration resolve synchronously/instantly,
+    // so an unbounded loop (`iterations: Infinity`) would otherwise spin
+    // forever doing no visible work. Run just one iteration in that case,
+    // matching how a single spring/timing/decay skips straight to its end
+    // state instead of animating.
+    this.effectiveIterations = isReducedMotionEnabled()
+      ? Math.min(this.iterations, 1)
+      : this.iterations;
     this.hooks.onStart?.();
     this.runIteration();
   }
 
   pause() {
     this.isPaused = true;
-    this.controller.pause();
+    this.current?.pause();
     this.hooks.onPause?.();
   }
 
   resume() {
     if (this.isCancelled || !this.isPaused) return;
     this.isPaused = false;
-    this.controller.resume();
+    this.current?.resume();
     this.hooks.onResume?.();
   }
 
   cancel() {
     this.isCancelled = true;
-    this.controller.cancel();
+    this.current?.cancel();
   }
 
   reset() {
     this.isCancelled = false;
     this.isPaused = false;
     this.count = 0;
-    this.controller.reset?.();
+    this.current?.reset?.();
   }
 
   setOnComplete(fn: () => void) {
@@ -271,11 +309,12 @@ export function sequence(
 }
 
 export function loop(
-  controller: AnimateController,
+  controller: AnimateController | ((iteration: number) => AnimateController),
   iterations: number,
   hooks: AnimateHooks = {}
 ): AnimateController {
-  return new LoopController(controller, iterations, hooks);
+  const factory = typeof controller === 'function' ? controller : () => controller;
+  return new LoopController(factory, iterations, hooks);
 }
 
 export function delay(duration: number): AnimateController {

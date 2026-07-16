@@ -48,6 +48,7 @@ export interface DelayOptions {
 export interface LoopOptions {
   iterations?: number;
   animation?: Descriptor;
+  yoyo?: boolean;
 }
 
 export interface StaggerOptions {

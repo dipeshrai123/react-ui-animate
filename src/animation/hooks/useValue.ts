@@ -103,20 +103,7 @@ function handlePrimitive(
   }
 
   if (to.type === 'loop') {
-    const animation = to.options?.animation;
-    if (!animation) return null;
-
-    if (animation.type === 'sequence') {
-      const animations = animation.options?.animations ?? [];
-      const controllers = animations.map((step) => buildAnimation(value, step));
-      return loop(sequence(controllers), to.options?.iterations ?? 0, to.options);
-    }
-
-    return loop(
-      buildAnimation(value, animation),
-      to.options?.iterations ?? 0,
-      to.options
-    );
+    return buildAnimation(value, to);
   }
 
   return buildAnimation(value, to);

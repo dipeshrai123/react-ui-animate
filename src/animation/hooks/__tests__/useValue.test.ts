@@ -113,30 +113,49 @@ describe('useValue', () => {
       expect(value.current).toBeCloseTo(100, 1);
     });
 
-    it('handles withLoop', async () => {
+    it('handles withLoop, restarting toward the same target every iteration', async () => {
       const { result } = renderHook(() => useValue(0));
       const [value, setValue] = result.current;
 
       act(() => {
-        setValue(
-          withLoop(withTiming(100, { duration: 50 }), 2)
-        );
+        setValue(withLoop(withTiming(100, { duration: 50 }), 2));
       });
 
-      // Advance enough time for first iteration to complete
+      // Well past both iterations: each restarts toward the same target, so
+      // once the loop finishes the value settles at 100.
       act(() => {
-        jest.advanceTimersByTime(100);
-      });
-
-      expect(value.current).toBeCloseTo(100, 1);
-
-      // Should loop back and complete second iteration
-      act(() => {
-        jest.advanceTimersByTime(100);
+        jest.advanceTimersByTime(400);
       });
 
       expect(value.current).toBeCloseTo(100, 1);
     });
+
+    it.each([
+      [1, 100],
+      [2, 0],
+      [3, 100],
+      [4, 0],
+    ])(
+      'yoyo alternates direction each iteration (%i legs settles at %i)',
+      async (iterations, expected) => {
+        const { result } = renderHook(() => useValue(0));
+        const [value, setValue] = result.current;
+
+        act(() => {
+          setValue(
+            withLoop(withTiming(100, { duration: 50 }), iterations, { yoyo: true })
+          );
+        });
+
+        // Well past every leg finishing (a settle-based check avoids relying
+        // on hitting an exact frame boundary mid-loop).
+        act(() => {
+          jest.advanceTimersByTime(400);
+        });
+
+        expect(value.current).toBeCloseTo(expected, 1);
+      }
+    );
 
     it('snaps to another AnimateValue and keeps following it', () => {
       const { result: source } = renderHook(() => useValue(0));

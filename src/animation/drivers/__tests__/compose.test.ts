@@ -1,5 +1,49 @@
 import { parallel, sequence, loop, delay } from '../compose';
 import type { AnimateController } from '../AnimateController';
+import { setReducedMotion } from '../../utils/reducedMotion';
+
+// A controller that completes synchronously inside start(), the way
+// timing/spring/decay do when reduced motion is enabled.
+class SyncCompleteController implements AnimateController {
+  startedCount = 0;
+  private completeCb?: () => void;
+
+  setOnComplete(fn: () => void) {
+    this.completeCb = fn;
+  }
+  start() {
+    this.startedCount++;
+    this.completeCb?.();
+  }
+  pause() {}
+  resume() {}
+  cancel() {}
+  reset() {}
+}
+
+// Mirrors how timing/spring/decay actually implement setOnComplete — by
+// mutating a `hooks.onComplete` field in place — rather than an opaque
+// callback field, since that's what a real reused (non-factory) loop
+// iteration reads back out via `(controller as any).hooks.onComplete`.
+class HooksBasedController implements AnimateController {
+  startedCount = 0;
+  hooks: { onComplete?: () => void } = {};
+
+  setOnComplete(fn: () => void) {
+    this.hooks.onComplete = fn;
+  }
+  start() {
+    this.startedCount++;
+  }
+  pause() {}
+  resume() {}
+  cancel() {}
+  reset() {}
+
+  complete() {
+    this.hooks.onComplete?.();
+  }
+}
 
 // Shared test helper
 class TestController implements AnimateController {
@@ -338,6 +382,92 @@ describe('loop', () => {
 
     controller.start();
     expect(driver.startedCount).toBe(beforeStarted + 1);
+  });
+
+  it('accepts a factory, building a fresh controller per iteration', () => {
+    const drivers: TestController[] = [];
+    const factory = jest.fn(() => {
+      const d = new TestController();
+      drivers.push(d);
+      return d;
+    });
+
+    const controller = loop(factory, 3);
+    controller.start();
+
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(factory).toHaveBeenCalledWith(0);
+    expect(drivers[0].startedCount).toBe(1);
+
+    drivers[0].complete();
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(factory).toHaveBeenCalledWith(1);
+    expect(drivers[1]).not.toBe(drivers[0]);
+
+    drivers[1].complete();
+    expect(factory).toHaveBeenCalledTimes(3);
+    expect(factory).toHaveBeenCalledWith(2);
+  });
+
+  it('does not overflow the call stack when every iteration completes synchronously', async () => {
+    // Reproduces reduced motion: each driver resolves inside its own
+    // start(), so without a re-entrancy guard this recurses on one call
+    // stack — enough iterations here to have blown a naive recursive stack.
+    const iterations = 50000;
+    const controller = loop(() => new SyncCompleteController(), iterations);
+
+    await new Promise<void>((resolve, reject) => {
+      controller.setOnComplete?.(resolve);
+      try {
+        controller.start();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+
+  it('reusing the same controller across many iterations does not grow an ever-deeper completion chain', () => {
+    // Reproduces the real (non-reduced-motion) `withLoop(..., Infinity)`
+    // case: one driver instance restarted every iteration, exactly how
+    // timing/spring/decay expose completion via a mutable `hooks.onComplete`
+    // field. Left running long enough (many iterations), re-reading that
+    // field each iteration would wrap the previous iteration's wrapper
+    // instead of the true original, eventually overflowing the stack when
+    // the whole chain finally unwinds.
+    const driver = new HooksBasedController();
+    const iterations = 20000;
+    const controller = loop(driver, iterations);
+
+    controller.start();
+    expect(driver.startedCount).toBe(1);
+
+    expect(() => {
+      for (let i = 0; i < iterations - 1; i++) {
+        driver.complete();
+      }
+    }).not.toThrow();
+
+    expect(driver.startedCount).toBe(iterations);
+  });
+
+  it('runs only one iteration when reduced motion is enabled, even for Infinity', () => {
+    setReducedMotion(true);
+    try {
+      const drivers: SyncCompleteController[] = [];
+      const factory = jest.fn(() => {
+        const d = new SyncCompleteController();
+        drivers.push(d);
+        return d;
+      });
+      const onComplete = jest.fn();
+
+      loop(factory, Infinity, { onComplete }).start();
+
+      expect(factory).toHaveBeenCalledTimes(1);
+      expect(onComplete).toHaveBeenCalledTimes(1);
+    } finally {
+      setReducedMotion(null);
+    }
   });
 });
 

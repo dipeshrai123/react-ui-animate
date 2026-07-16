@@ -111,6 +111,31 @@ const Example: React.FC = () => {
       </div>
 
       <div style={{ marginBottom: 40 }}>
+        <h2 style={{ marginBottom: 20 }}>Yoyo</h2>
+        <animate.div
+          key={trigger}
+          style={{
+            width: 100,
+            height: 100,
+            backgroundColor: '#20c997',
+            borderRadius: 8,
+            translateX: 0,
+          }}
+          animate={{
+            translateX: withLoop(withSpring(200, { stiffness: 200, damping: 20 }), 6, {
+              yoyo: true,
+            }),
+          }}
+        />
+        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+          <code>{'{ yoyo: true }'}</code> alternates direction each
+          iteration (0 → 200 → 0 → ...) instead of restarting forward every
+          time. <code>iterations</code> counts legs, so 6 here means 3 round
+          trips.
+        </p>
+      </div>
+
+      <div style={{ marginBottom: 40 }}>
         <h2 style={{ marginBottom: 20 }}>With Callbacks</h2>
         <animate.div
           key={trigger}
