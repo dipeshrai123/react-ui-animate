@@ -1,6 +1,6 @@
 export { animate, makeAnimated } from './components/animate';
 
-export { AnimateValue, isAnimateValue } from './values/AnimateValue';
+export { AnimateValue } from './values/AnimateValue';
 
 export type {
   AnimateController,
@@ -15,7 +15,7 @@ export { Easing } from './utils/easing';
 export { combine } from './utils/combine';
 export { isReducedMotionEnabled, setReducedMotion } from './utils/reducedMotion';
 
-export { to } from './to';
+export { interpolate } from './to';
 
 export {
   withSpring,
@@ -69,45 +69,3 @@ export type {
 export type { LayoutOptions } from './layout';
 
 export { recipes } from './recipes';
-export {
-  fadeIn,
-  fadeOut,
-  fadeInUp,
-  fadeInDown,
-  fadeInLeft,
-  fadeInRight,
-  slideInUp,
-  slideInDown,
-  slideInLeft,
-  slideInRight,
-  slideOutUp,
-  slideOutDown,
-  slideOutLeft,
-  slideOutRight,
-  scaleIn,
-  scaleOut,
-  scaleUp,
-  scaleDown,
-  bounceIn,
-  bounceOut,
-  rotateIn,
-  rotateOut,
-  spin,
-  zoomIn,
-  zoomOut,
-  flipX,
-  flipY,
-  slideFadeIn,
-  slideFadeOut,
-  scaleFadeIn,
-  scaleFadeOut,
-  hoverScale,
-  hoverLift,
-  hoverGlow,
-  pressScale,
-  pressDown,
-  exitFade,
-  exitSlideUp,
-  exitSlideDown,
-  exitScale,
-} from './recipes';

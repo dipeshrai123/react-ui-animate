@@ -6,7 +6,7 @@ import {
   useGesture,
   clamp,
   withSpring,
-  to,
+  interpolate,
 } from 'react-ui-animate';
 import { ExampleLayout } from '../animations/shared';
 
@@ -22,7 +22,7 @@ export default function Example() {
   const updateBalloonLabel = (ballX: number) => {
     if (balloonRef.current) {
       balloonRef.current.innerHTML = `${Number(
-        to(ballX, [0, 190], [0, 100])
+        interpolate(ballX, [0, 190], [0, 100])
       ).toFixed(0)}%`;
     }
   };

@@ -37,7 +37,11 @@ const TIMING_OPTION_KEYS = new Set([
 // including `{}`. Used to support the target-less overload:
 //   withSpring({ stiffness: 400 })
 //   withTiming({ duration: 300 })
-// without breaking object targets like withSpring({ x: 10, y: 20 }).
+// without breaking object targets like withSpring({ x: 10, y: 20 }). This is
+// load-bearing for `layoutOptions` (see `src/animation/layout/flip.ts`),
+// where a FLIP transition computes its own from/to and the descriptor is
+// only used for its stiffness/damping/duration — there's no real value to
+// pass as a target.
 function isOptionsOnly(
   value: unknown,
   optionKeys: Set<string>

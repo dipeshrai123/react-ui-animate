@@ -28,9 +28,10 @@ export interface UseDragOptions {
   elastic?: boolean | number;
   /** Fling on release using the pointer's release velocity. Default `true`. */
   momentum?: boolean;
-  onDragStart?: (e: PanEvent) => void;
-  onDrag?: (e: PanEvent) => void;
-  onDragEnd?: (e: PanEvent) => void;
+  /** Matches `Gesture.Pan()`'s own callback names. */
+  onStart?: (e: PanEvent) => void;
+  onChange?: (e: PanEvent) => void;
+  onEnd?: (e: PanEvent) => void;
 }
 
 export interface UseDragResult {
@@ -80,9 +81,9 @@ export function useDrag<T extends HTMLElement>(
     bounds,
     elastic = true,
     momentum = true,
-    onDragStart,
-    onDrag,
-    onDragEnd,
+    onStart,
+    onChange,
+    onEnd,
   } = options;
 
   const [position, setPosition, controls] = useValue({
@@ -131,7 +132,7 @@ export function useDrag<T extends HTMLElement>(
       dragStartRef.current = { x: position.x.current, y: position.y.current };
       resolvedBoundsRef.current = resolveBounds(e.target);
       setIsDragging(true);
-      onDragStart?.(e);
+      onStart?.(e);
     })
     .onUpdate((e) => {
       const rawX = dragStartRef.current.x + e.movement.x;
@@ -142,7 +143,7 @@ export function useDrag<T extends HTMLElement>(
       const nextY = b ? rubberClamp(rawY, b.top, b.bottom, elasticConstant) : rawY;
 
       setPosition({ x: nextX, y: nextY });
-      onDrag?.(e);
+      onChange?.(e);
     })
     .onEnd((e) => {
       setIsDragging(false);
@@ -170,7 +171,7 @@ export function useDrag<T extends HTMLElement>(
         );
       }
 
-      onDragEnd?.(e);
+      onEnd?.(e);
     });
 
   useGesture(ref, gesture);

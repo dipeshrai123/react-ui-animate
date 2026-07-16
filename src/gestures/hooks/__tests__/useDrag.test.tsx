@@ -228,9 +228,9 @@ describe('useDrag', () => {
 
   it('does not respond to pointer events when disabled', () => {
     const ref = { current: el };
-    const onDragStart = jest.fn();
+    const onStart = jest.fn();
     const { result } = renderHook(() =>
-      useDrag(ref, { enabled: false, onDragStart })
+      useDrag(ref, { enabled: false, onStart })
     );
 
     act(() => {
@@ -238,18 +238,18 @@ describe('useDrag', () => {
       firePointer(window, 'pointermove', 40, 0);
     });
 
-    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onStart).not.toHaveBeenCalled();
     expect(result.current.x.current).toBe(0);
   });
 
-  it('fires onDragStart/onDrag/onDragEnd', () => {
+  it('fires onStart/onChange/onEnd', () => {
     const ref = { current: el };
-    const onDragStart = jest.fn();
-    const onDrag = jest.fn();
-    const onDragEnd = jest.fn();
+    const onStart = jest.fn();
+    const onChange = jest.fn();
+    const onEnd = jest.fn();
 
     renderHook(() =>
-      useDrag(ref, { momentum: false, onDragStart, onDrag, onDragEnd })
+      useDrag(ref, { momentum: false, onStart, onChange, onEnd })
     );
 
     act(() => {
@@ -258,9 +258,9 @@ describe('useDrag', () => {
       firePointer(window, 'pointerup', 10, 0);
     });
 
-    expect(onDragStart).toHaveBeenCalledTimes(1);
-    expect(onDrag).toHaveBeenCalledTimes(1);
-    expect(onDragEnd).toHaveBeenCalledTimes(1);
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(onChange).toHaveBeenCalledTimes(1);
+    expect(onEnd).toHaveBeenCalledTimes(1);
   });
 
   it('exposes controls that can cancel in-flight momentum', () => {

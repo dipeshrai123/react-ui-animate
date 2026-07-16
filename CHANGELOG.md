@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚨 Breaking Changes
 
+- **API cleanup — removed unused/leaked exports, one rename**:
+
+  - `isAnimateValue` and `GesturePhase` are no longer exported — both were
+    internal implementation details with no real consumer path. Use `phase`
+    directly off gesture events instead of comparing against `GesturePhase`.
+  - The 40 flat recipe exports (`fadeIn`, `slideInUp`, `scaleIn`, ...) have
+    been removed in favor of the `recipes` namespace object, which already
+    contained the same values:
+
+    ```tsx
+    // Before
+    import { fadeIn, slideInUp } from 'react-ui-animate';
+
+    // After
+    import { recipes } from 'react-ui-animate';
+    // recipes.fadeIn, recipes.slideInUp
+    ```
+
+  - The standalone `to()` interpolation function has been renamed to
+    `interpolate()` to avoid colliding with `Descriptor.to` and
+    `AnimateValue.prototype.to()` (the reactive interpolation method most
+    code should use instead — `to()` is now only for one-off mapping of a
+    plain number):
+
+    ```tsx
+    // Before
+    import { to } from 'react-ui-animate';
+    to(50, [0, 100], [0, 1]);
+
+    // After
+    import { interpolate } from 'react-ui-animate';
+    interpolate(50, [0, 100], [0, 1]);
+    ```
+
+  - `useDrag`'s callbacks have been renamed to match `Gesture.*`'s
+    vocabulary:
+
+    ```tsx
+    // Before
+    useDrag(ref, { onDragStart, onDrag, onDragEnd });
+
+    // After
+    useDrag(ref, { onStart, onChange, onEnd });
+    ```
+
 - **`useMount` hook removed**: The `useMount` hook has been removed. Use the new `Presence` component instead for mount/unmount animations:
 
   ```tsx
