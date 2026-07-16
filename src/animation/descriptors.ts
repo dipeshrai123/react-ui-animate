@@ -224,3 +224,19 @@ export const withLoop = (
     onComplete: opts?.onComplete,
   },
 });
+
+// Runs a different descriptor per key of an object/array `useValue`
+// concurrently, e.g. `withParallel({ x: withSpring(100), y: withTiming(50) })`.
+// A plain descriptor already animates every key at once, but shares one
+// driver/options across all of them; use this when keys need different ones.
+export const withParallel = (
+  animations: Record<string, Descriptor> | Descriptor[],
+  opts?: Omit<Callbacks, 'onChange'>
+): Descriptor => ({
+  type: 'parallel',
+  options: {
+    parallel: animations,
+    onStart: opts?.onStart,
+    onComplete: opts?.onComplete,
+  },
+});

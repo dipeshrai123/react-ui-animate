@@ -1,5 +1,5 @@
 import { useMemo, useRef } from 'react';
-import { delay, sequence, loop } from '../drivers';
+import { delay, sequence, loop, parallel } from '../drivers';
 import { AnimateValue, isAnimateValue } from '../values/AnimateValue';
 
 import { buildAnimation, buildParallel } from '../drivers/builder';
@@ -169,6 +169,38 @@ function followValue(
   };
 }
 
+function buildParallelFromMap(
+  values: Record<string, AnimateValue<Primitive>>,
+  animations: Record<string, Descriptor> | Descriptor[]
+) {
+  const entries = Array.isArray(animations)
+    ? animations.map((d, i) => [i.toString(), d] as const)
+    : Object.entries(animations);
+
+  return entries
+    .filter(([key, desc]) => desc && values[key])
+    .map(([key, desc]) => buildAnimation(values[key], desc));
+}
+
+function buildParallelStep(
+  values: Record<string, AnimateValue<Primitive>>,
+  step: Descriptor
+) {
+  return parallel(
+    buildParallelFromMap(values, step.options?.parallel ?? {}),
+    step.options
+  );
+}
+
+function resolveMultiStep(
+  values: Record<string, AnimateValue<Primitive>>,
+  step: Descriptor
+) {
+  if (step.type === 'delay') return delay(step.options?.delay ?? 0);
+  if (step.type === 'parallel') return buildParallelStep(values, step);
+  return buildParallel(values, step);
+}
+
 function handleArray(
   values: Array<AnimateValue<Primitive>>,
   to: Primitive[] | Descriptor
@@ -186,21 +218,22 @@ function handleArray(
     values.map((value, idx) => [idx.toString(), value])
   ) as Record<string, AnimateValue<Primitive>>;
 
+  const resolveArrayStep = (step: Descriptor) => {
+    if (step.type === 'delay') return delay(step.options?.delay ?? 0);
+    if (step.type === 'parallel') return buildParallelStep(valuesRecord, step);
+    return buildParallel(valuesRecord, {
+      ...step,
+      to: Array.isArray(step.to)
+        ? Object.fromEntries(
+            (step.to as Primitive[]).map((v, i) => [i.toString(), v])
+          )
+        : step.to,
+    });
+  };
+
   switch (desc.type) {
     case 'sequence': {
-      const controllers = desc.options!.animations!.map((step) =>
-        step.type === 'delay'
-          ? delay(step.options?.delay ?? 0)
-          : buildParallel(valuesRecord, {
-              ...step,
-              to: Array.isArray(step.to)
-                ? Object.fromEntries(
-                    (step.to as Primitive[]).map((v, i) => [i.toString(), v])
-                  )
-                : step.to,
-            })
-      );
-
+      const controllers = desc.options!.animations!.map(resolveArrayStep);
       return sequence(controllers, desc.options);
     }
 
@@ -208,16 +241,7 @@ function handleArray(
       const inner = desc.options!.animation!;
 
       if (inner.type === 'sequence') {
-        const seqControllers = inner.options!.animations!.map((step) =>
-          buildParallel(valuesRecord, {
-            ...step,
-            to: Array.isArray(step.to)
-              ? Object.fromEntries(
-                  (step.to as Primitive[]).map((v, i) => [i.toString(), v])
-                )
-              : step.to,
-          })
-        );
+        const seqControllers = inner.options!.animations!.map(resolveArrayStep);
 
         const seq = sequence(
           seqControllers,
@@ -231,13 +255,20 @@ function handleArray(
         );
       }
 
-      const parallel = buildParallel(valuesRecord, inner);
+      const innerController =
+        inner.type === 'parallel'
+          ? buildParallelStep(valuesRecord, inner)
+          : buildParallel(valuesRecord, inner);
+
       return loop(
-        parallel,
+        innerController,
         desc.options!.iterations ?? 0,
         filterCallbackOptions(desc.options, true)
       );
     }
+
+    case 'parallel':
+      return buildParallelStep(valuesRecord, desc);
 
     case 'decay':
       return buildParallel(valuesRecord, desc);
@@ -255,9 +286,7 @@ function handleObject(
     switch (to.type) {
       case 'sequence': {
         const controllers = to.options!.animations!.map((step) =>
-          step.type === 'delay'
-            ? delay(step.options!.delay ?? 0)
-            : buildParallel(values, step)
+          resolveMultiStep(values, step)
         );
         return sequence(controllers, to.options);
       }
@@ -266,7 +295,7 @@ function handleObject(
         const inner = to.options!.animation!;
         if (inner.type === 'sequence') {
           const controllers = inner.options!.animations!.map((step) =>
-            buildParallel(values, step)
+            resolveMultiStep(values, step)
           );
           return loop(
             sequence(controllers, filterCallbackOptions(inner.options, true)),
@@ -275,11 +304,14 @@ function handleObject(
           );
         }
         return loop(
-          buildParallel(values, inner),
+          resolveMultiStep(values, inner),
           to.options!.iterations ?? 0,
           filterCallbackOptions(to.options, true)
         );
       }
+
+      case 'parallel':
+        return buildParallelStep(values, to);
 
       case 'decay':
         return buildParallel(values, to);

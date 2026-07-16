@@ -16,6 +16,7 @@ export {
   withLoop,
   withStagger,
   withKeyframes,
+  withParallel,
   useValue,
   Presence,
   PresenceContext,
@@ -78,6 +79,7 @@ export type {
   StaggerOptions,
   KeyframeStep,
   KeyframeOptions,
+  ParallelOptions,
   Descriptor,
   Controls,
   AnimateProp,
@@ -97,6 +99,13 @@ export {
   useScrollProgress,
   type UseScrollProgressOptions,
 } from './gestures/hooks/useScrollProgress';
+
+export {
+  useDrag,
+  type UseDragOptions,
+  type UseDragResult,
+  type DragBounds,
+} from './gestures/hooks/useDrag';
 
 export { Gesture } from './gestures/api/Gesture';
 export { useGesture } from './gestures/hooks/useGesture';

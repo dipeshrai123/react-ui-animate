@@ -55,6 +55,10 @@ export interface StaggerOptions {
   delay?: number;
 }
 
+export interface ParallelOptions {
+  parallel?: Record<string, Descriptor> | Descriptor[];
+}
+
 export interface KeyframeStep {
   to: Primitive;
   duration?: number;
@@ -72,7 +76,8 @@ export type DriverType =
   | 'decay'
   | 'delay'
   | 'sequence'
-  | 'loop';
+  | 'loop'
+  | 'parallel';
 
 export interface Descriptor {
   type: DriverType;
@@ -87,6 +92,7 @@ export interface Descriptor {
     SequenceOptions &
     DelayOptions &
     LoopOptions &
+    ParallelOptions &
     Callbacks;
 }
 

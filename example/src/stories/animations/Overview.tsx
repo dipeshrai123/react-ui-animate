@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 
 const Example: React.FC = () => {
   const categories = [
@@ -22,6 +21,7 @@ const Example: React.FC = () => {
         { name: 'withSequence', path: '/animations/descriptors/withSequence' },
         { name: 'withLoop', path: '/animations/descriptors/withLoop' },
         { name: 'withKeyframes', path: '/animations/descriptors/withKeyframes' },
+        { name: 'withParallel', path: '/animations/descriptors/withParallel' },
       ],
     },
     {

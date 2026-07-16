@@ -1,6 +1,13 @@
 import { renderHook, act } from '@testing-library/react';
 import { useValue } from '../useValue';
-import { withTiming, withSpring, withSequence, withLoop, withDelay } from '../../descriptors';
+import {
+  withTiming,
+  withSpring,
+  withSequence,
+  withLoop,
+  withDelay,
+  withParallel,
+} from '../../descriptors';
 import { AnimateValue } from '../../values/AnimateValue';
 
 describe('useValue', () => {
@@ -336,6 +343,66 @@ describe('useValue', () => {
 
       expect(value.x.current).toBeCloseTo(100, 1);
       expect(value.y.current).toBeCloseTo(100, 1);
+    });
+
+    it('lets withParallel run a different driver per key', async () => {
+      const { result } = renderHook(() => useValue({ x: 0, y: 0 }));
+      const [value, setValue] = result.current;
+
+      act(() => {
+        setValue(
+          withParallel({
+            x: withTiming(100, { duration: 100 }),
+            y: withTiming(50, { duration: 100 }),
+          })
+        );
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+
+      expect(value.x.current).toBeCloseTo(100, 1);
+      expect(value.y.current).toBeCloseTo(50, 1);
+    });
+
+    it('only animates keys included in withParallel', async () => {
+      const { result } = renderHook(() => useValue({ x: 0, y: 0 }));
+      const [value, setValue] = result.current;
+
+      act(() => {
+        setValue(withParallel({ x: withTiming(100, { duration: 100 }) }));
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+
+      expect(value.x.current).toBeCloseTo(100, 1);
+      expect(value.y.current).toBe(0);
+    });
+  });
+
+  describe('array values with withParallel', () => {
+    it('runs a different driver per index', async () => {
+      const { result } = renderHook(() => useValue([0, 0]));
+      const [value, setValue] = result.current;
+
+      act(() => {
+        setValue(
+          withParallel([
+            withTiming(100, { duration: 100 }),
+            withTiming(50, { duration: 100 }),
+          ])
+        );
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+
+      expect(value[0].current).toBeCloseTo(100, 1);
+      expect(value[1].current).toBeCloseTo(50, 1);
     });
   });
 });

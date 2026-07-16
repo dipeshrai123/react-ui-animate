@@ -26,6 +26,7 @@ export {
   withLoop,
   withStagger,
   withKeyframes,
+  withParallel,
 } from './descriptors';
 
 export { useValue } from './hooks/useValue';
@@ -53,6 +54,7 @@ export type {
   StaggerOptions,
   KeyframeStep,
   KeyframeOptions,
+  ParallelOptions,
   DriverType,
   Descriptor,
   Controls,

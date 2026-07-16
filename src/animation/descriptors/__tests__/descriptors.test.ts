@@ -7,6 +7,7 @@ import {
   withLoop,
   withStagger,
   withKeyframes,
+  withParallel,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -311,6 +312,35 @@ describe('descriptors', () => {
       const descriptor = withKeyframes([0, 50, 100, 150]);
       const animations = descriptor.options?.animations ?? [];
       animations.forEach((anim) => expect(anim.options?.duration).toBe(75));
+    });
+  });
+
+  describe('withParallel', () => {
+    it('creates a parallel descriptor from a keyed record', () => {
+      const x = withSpring(100);
+      const y = withTiming(50, { duration: 800 });
+      const descriptor = withParallel({ x, y });
+
+      expect(descriptor.type).toBe('parallel');
+      expect(descriptor.options?.parallel).toEqual({ x, y });
+    });
+
+    it('creates a parallel descriptor from an array aligned by index', () => {
+      const first = withSpring(100);
+      const second = withTiming(50);
+      const descriptor = withParallel([first, second]);
+
+      expect(descriptor.type).toBe('parallel');
+      expect(descriptor.options?.parallel).toEqual([first, second]);
+    });
+
+    it('attaches onStart/onComplete but not onChange', () => {
+      const onStart = jest.fn();
+      const onComplete = jest.fn();
+      const descriptor = withParallel({ x: withSpring(1) }, { onStart, onComplete });
+
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
     });
   });
 
