@@ -11,6 +11,7 @@ import {
   isTransformKey,
   applyAttrs,
   applyStyles,
+  applyStyleProp,
   applyTransforms,
   createTransformRenderer,
 } from '../utils/apply';
@@ -99,6 +100,26 @@ function applyStylesToNode(
     ...applyTransforms(node, mergedStyle),
     ...applyAttrs(node, rest),
   ];
+}
+
+// Re-applies tracked animated styles after every commit, so React clearing a
+// key newly excluded from `filteredStyle` (once hover/press/view promotes it
+// into `animateValuesRef`) gets immediately undone.
+function useSyncAnimatedStyles(
+  nodeRef: React.RefObject<HTMLElement>,
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >
+) {
+  useLayoutEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+
+    for (const [key, value] of Object.entries(animateValuesRef.current)) {
+      if (isTransformKey(key)) continue;
+      applyStyleProp(node, key, value.current);
+    }
+  });
 }
 
 function isFocusable(node: HTMLElement): boolean {
@@ -624,6 +645,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     useLayoutAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
     useLayoutIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useSyncAnimatedStyles(nodeRef, animateValuesRef);
 
     const {
       animate,

@@ -476,6 +476,59 @@ describe('〈animate> components', () => {
       });
     });
 
+    it('keeps a static style value (e.g. backgroundColor) after hover promotes it into an animated value, across a later unrelated re-render', async () => {
+      function Wrapper() {
+        const [, setTick] = React.useState(0);
+        return (
+          <>
+            <animate.div
+              data-testid="promoted-style-test"
+              style={{ backgroundColor: 'rgb(255, 0, 0)' }}
+              hover={{
+                backgroundColor: withTiming('rgb(0, 255, 0)', { duration: 50 }),
+              }}
+            >
+              Hover me
+            </animate.div>
+            <button
+              data-testid="rerender-trigger"
+              onClick={() => setTick((t) => t + 1)}
+            />
+          </>
+        );
+      }
+
+      render(<Wrapper />);
+
+      const el = screen.getByTestId('promoted-style-test') as HTMLElement;
+      expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      await waitFor(() => {
+        expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+      });
+
+      // Unrelated re-render used to wipe backgroundColor from the DOM.
+      const button = screen.getByTestId('rerender-trigger');
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    });
+
     // Extracts the numeric translateY value out of a computed transform string.
     const readTranslateY = (transform: string) => {
       const match = transform.match(/translateY\(([-\d.]+)px\)/);
