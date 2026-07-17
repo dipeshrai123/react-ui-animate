@@ -1,4 +1,5 @@
 import {
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -17,7 +18,8 @@ import {
   runFlipAnimation,
   type FlipController,
 } from './flip';
-import { layoutIdRegistry } from './registry';
+import { layoutIdRegistry as globalLayoutIdRegistry } from './registry';
+import { LayoutGroupContext } from './LayoutGroupContext';
 
 /**
  * Shared-element transitions via `layoutId`. On each layout flush the
@@ -31,6 +33,7 @@ export function useLayoutIdAnimations(
   isExitingRef: MutableRefObject<boolean>,
   animateValuesRef: MutableRefObject<Record<string, AnimateValue<Primitive>>>
 ) {
+  const registry = useContext(LayoutGroupContext) ?? globalLayoutIdRegistry;
   const initializedRef = useRef(false);
   const controllersRef = useRef<FlipController[]>([]);
   const unsubsRef = useRef<Array<() => void>>([]);
@@ -48,8 +51,8 @@ export function useLayoutIdAnimations(
     if (!node || !layoutId || isExitingRef.current) return;
 
     const nextRect = measureUntransformedRect(node);
-    const prevEntry = layoutIdRegistry.get(layoutId);
-    layoutIdRegistry.set(layoutId, { rect: nextRect, node });
+    const prevEntry = registry.get(layoutId);
+    registry.set(layoutId, { rect: nextRect, node });
     claimRef.current = { layoutId, node };
 
     // If a FLIP was already in flight but its controllers were canceled
@@ -103,11 +106,15 @@ export function useLayoutIdAnimations(
       // later, unrelated remount (a different page/story, or Fast Refresh)
       // doesn't inherit a stale rect and produce a bogus transition.
       queueMicrotask(() => {
-        const entry = layoutIdRegistry.get(claim.layoutId);
+        const entry = registry.get(claim.layoutId);
         if (entry && entry.node === claim.node) {
-          layoutIdRegistry.delete(claim.layoutId);
+          registry.delete(claim.layoutId);
         }
       });
     };
+    // `registry` is stable for this component's lifetime (either the
+    // module-level global Map, or a LayoutGroup's own Map created once via
+    // useRef) — safe to capture in this mount-only cleanup closure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

@@ -1,5 +1,6 @@
 export { useLayoutAnimations } from './useLayoutAnimations';
 export { useLayoutIdAnimations } from './useLayoutIdAnimations';
+export { LayoutGroup, type LayoutGroupProps } from './LayoutGroup';
 export {
   LAYOUT_FLIP_KEYS,
   LAYOUT_ID_FLIP_KEYS,

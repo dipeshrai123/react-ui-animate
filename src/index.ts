@@ -23,6 +23,7 @@ export {
   usePresence,
   useIsPresent,
   recipes,
+  LayoutGroup,
 } from './animation';
 
 export type {
@@ -48,6 +49,7 @@ export type {
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
   LayoutOptions,
+  LayoutGroupProps,
   PresenceProps,
   PresenceContextValue,
 } from './animation';

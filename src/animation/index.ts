@@ -68,5 +68,6 @@ export type {
   AnimateSVGAttributes,
 } from './components/types';
 export type { LayoutOptions } from './layout';
+export { LayoutGroup, type LayoutGroupProps } from './layout';
 
 export { recipes } from './recipes';
