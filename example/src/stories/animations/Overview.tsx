@@ -31,6 +31,7 @@ const Example: React.FC = () => {
         { name: 'Easing', path: '/animations/utilities/Easing' },
         { name: 'combine', path: '/animations/utilities/combine' },
         { name: 'to', path: '/animations/utilities/to' },
+        { name: 'animateTo', path: '/animations/utilities/animateTo' },
         { name: 'Reduced Motion', path: '/animations/utilities/reduced-motion' },
       ],
     },

@@ -5,6 +5,7 @@ export {
   Easing,
   combine,
   interpolate,
+  animateTo,
   isReducedMotionEnabled,
   setReducedMotion,
   withSpring,

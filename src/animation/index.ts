@@ -16,6 +16,7 @@ export { combine } from './utils/combine';
 export { isReducedMotionEnabled, setReducedMotion } from './utils/reducedMotion';
 
 export { interpolate } from './to';
+export { animateTo } from './utils/animateTo';
 
 export {
   withSpring,
