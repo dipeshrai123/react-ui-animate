@@ -39,7 +39,7 @@ export {
   useIsPresent,
   type PresenceProps,
   type PresenceContextValue,
-} from './modules/Presence';
+} from './presence/Presence';
 
 export type {
   Primitive,

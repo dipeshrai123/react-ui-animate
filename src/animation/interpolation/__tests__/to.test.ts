@@ -1,4 +1,4 @@
-import { to } from '../to';
+import { to } from '..';
 
 describe('numeric → numeric', () => {
   it('linearly interpolates numbers', () => {

@@ -17,22 +17,21 @@ import {
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { PresenceContext } from '../modules/Presence';
-import { getInitialValue } from '../utils/initialValues';
+import { PresenceContext } from '../presence/Presence';
+import { getInitialValue } from './initialValues';
 import {
   applyStateAnimation,
   extractRestingTarget,
   type StateAnimationContext,
-} from '../utils/stateAnimations';
-import { setupExitAnimations } from '../utils/exitAnimations';
+} from './stateAnimations';
+import { setupExitAnimations } from './exitAnimations';
 import {
   useLayoutAnimations,
   useLayoutIdAnimations,
 } from '../layout';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
-import { useInView } from '../../hooks/observers/useInView';
-import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import { useInView, type UseInViewOptions } from '../../shared/hooks';
 
 function serializeAnimateProp(prop: AnimateProp | undefined): string {
   if (!prop) return '';

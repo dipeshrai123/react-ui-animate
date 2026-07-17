@@ -4,12 +4,10 @@ import type { BaseGestureConfig, GestureHandlers, ScrollEvent } from '../api/Ges
 
 /**
  * Scroll events. `offset` is the absolute scroll position; `movement` is the
- * delta from the last scroll event this recognizer instance ever saw
- * (matching the pre-unification `ScrollGesture` controller's `prevScroll`,
- * which persisted for the recognizer's whole lifetime). Fires `onChange`
- * (with `onStart` on the first event of a burst) per scroll event,
- * `onEnd`/`onFinalize` 150ms after the last one (debounced, since there's no
- * native "scroll end" event).
+ * delta from the last scroll event this recognizer instance ever saw. Fires
+ * `onChange` (with `onStart` on the first event of a burst) per scroll
+ * event, `onEnd`/`onFinalize` 150ms after the last one (debounced, since
+ * there's no native "scroll end" event).
  */
 export class ScrollRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;

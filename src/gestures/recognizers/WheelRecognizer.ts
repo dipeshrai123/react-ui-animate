@@ -4,10 +4,9 @@ import type { BaseGestureConfig, GestureHandlers, WheelEvent } from '../api/Gest
 
 /**
  * Wheel events. `movement` is the per-event delta, `offset` accumulates
- * forever across the recognizer's lifetime (matching the pre-unification
- * `WheelGesture` controller — never reset between "sessions"). Fires
- * `onChange` (with `onStart` on the first event of a burst) per wheel event,
- * `onEnd`/`onFinalize` 150ms after the last one (debounced, since there's no
+ * forever across the recognizer's lifetime. Fires `onChange` (with
+ * `onStart` on the first event of a burst) per wheel event, `onEnd`/
+ * `onFinalize` 150ms after the last one (debounced, since there's no
  * native "wheel end" event).
  */
 export class WheelRecognizer implements GestureRecognizer {

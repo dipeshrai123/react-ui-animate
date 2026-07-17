@@ -363,7 +363,7 @@ describe('〈animate> components', () => {
     });
 
     it('applies exit animation for opacity when not in initial style', async () => {
-      const { Presence } = await import('../../modules/Presence');
+      const { Presence } = await import('../../presence/Presence');
       const onExitComplete = jest.fn();
       let show = true;
 
@@ -868,7 +868,7 @@ describe('〈animate> components', () => {
     });
 
     it('applies string properties like boxShadow in exit state when not in initial style', async () => {
-      const { Presence } = await import('../../modules/Presence');
+      const { Presence } = await import('../../presence/Presence');
       const onExitComplete = jest.fn();
       let show = true;
 

@@ -7,16 +7,14 @@ import type {
 import type { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
-import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import type { UseInViewOptions } from '../../shared/hooks';
 import type { LayoutOptions } from '../layout/flip';
 
-// Helper type to accept any AnimateValue with a compatible type
 export type AnimateValueCompatible =
   | AnimateValue<number>
   | AnimateValue<string>
   | AnimateValue<number | string>;
 
-// Exclude transform keys from CSSProperties to avoid type conflicts
 export type CSSPropertiesWithoutTransforms = Omit<
   CSSProperties,
   (typeof transformKeys)[number]
@@ -62,33 +60,19 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   | 'layoutId'
 > & {
   style?: AnimateStyle;
-  /**
-   * Declarative animations to run when the component mounts or updates.
-   */
+  /** Declarative animations to run when the component mounts or updates. */
   animate?: AnimateProp;
-  /**
-   * Declarative animations to run when the component exits (inside AnimatePresence).
-   */
+  /** Declarative animations to run when the component exits (inside Presence). */
   exit?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is hovered.
-   */
+  /** Animations or styles to apply when the element is hovered. */
   hover?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is pressed (mouse down or touch start).
-   */
+  /** Animations or styles to apply when the element is pressed (mouse down or touch start). */
   press?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is focused.
-   */
+  /** Animations or styles to apply when the element is focused. */
   focus?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element enters the viewport.
-   */
+  /** Animations or styles to apply when the element enters the viewport. */
   view?: AnimateProp;
-  /**
-   * Options for the IntersectionObserver used by view animations.
-   */
+  /** Options for the IntersectionObserver used by `view` animations. */
   viewOptions?: UseInViewOptions;
   /**
    * When true, automatically animates position and size changes caused by

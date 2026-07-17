@@ -54,8 +54,7 @@ export type {
   PresenceContextValue,
 } from './animation';
 
-export { useOutsideClick } from './hooks/events/useOutsideClick';
-export { useInView, type UseInViewOptions } from './hooks/observers/useInView';
+export { useOutsideClick, useInView, type UseInViewOptions } from './shared/hooks';
 
 export {
   useScrollProgress,
@@ -90,4 +89,4 @@ export type {
   RotateGestureConfig,
 } from './gestures/api/Gesture';
 
-export { clamp, rubberClamp, snapTo, move } from './utils';
+export { clamp, rubberClamp, snapTo, move } from './shared/utils';

@@ -7,9 +7,8 @@ import { buildAnimation } from '../drivers/builder';
 import type { AnimateAttributes } from '../components/types';
 import { isDescriptor } from '../helpers';
 
-// Key set for one FLIP overlay's pseudo transform properties. `layout` and
-// `layoutId` each use their own namespace (see apply.ts) so they can coexist
-// on the same element without one overwriting the other.
+// `layout` and `layoutId` each use their own namespace (see apply.ts) so
+// they can coexist on the same element without one overwriting the other.
 export type FlipKeys = {
   tx: string;
   ty: string;
@@ -67,9 +66,8 @@ const DEFAULT_LAYOUT_SPRING: SpringOptions = {
   mass: 1,
 };
 
-// Resolves `layoutOptions` into a spring/timing descriptor. Only those two
-// drivers make sense for a FLIP settle-to-identity; anything else falls back
-// to the default layout spring.
+// Only spring/timing make sense for a FLIP settle-to-identity; anything else
+// falls back to the default layout spring.
 export function resolveLayoutTransition(
   layoutOptions: LayoutOptions | undefined
 ): Descriptor {

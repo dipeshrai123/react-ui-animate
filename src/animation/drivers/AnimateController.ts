@@ -7,7 +7,6 @@ export interface AnimateController {
   setOnComplete?(fn: () => void): void;
 }
 
-// Shared hooks interface for all animation drivers
 export interface AnimateHooks {
   onStart?(): void;
   onPause?(): void;

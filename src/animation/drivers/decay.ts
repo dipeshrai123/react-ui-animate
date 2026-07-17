@@ -1,6 +1,6 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
-import { rubberClamp } from '../../utils';
+import { rubberClamp } from '../../shared/utils';
 import { isReducedMotionEnabled } from '../utils/reducedMotion';
 
 interface DecayOptions extends AnimateHooks {

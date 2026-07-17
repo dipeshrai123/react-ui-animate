@@ -24,11 +24,9 @@ interface UpdatableRecognizer extends GestureRecognizer {
   updateHandlers?(handlers: any): void;
 }
 
-// Every gesture type is dispatched from exactly one native-event category.
 // 'pointer' is press-gated (requires pointerdown); 'hover' is the same
-// pointermove event but ungated (no press required) so it needs its own
-// listener attached directly to the target instead of window; 'wheel'/
-// 'scroll' are entirely different native event types.
+// pointermove event but ungated, so it needs its own listener on the target
+// instead of window; 'wheel'/'scroll' are separate native event types.
 type ListenerGroup = 'pointer' | 'hover' | 'wheel' | 'scroll';
 
 const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
@@ -42,10 +40,8 @@ const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
   rotate: 'pointer',
 };
 
-// Multi-pointer gesture types (Pinch/Rotate) share the 'pointer' native
-// listeners with Pan/Swipe but are dispatched differently — they see every
-// tracked pointer once 2+ are down, instead of being gated to a single
-// primary pointer.
+// Pinch/Rotate share the 'pointer' native listeners with Pan/Swipe but see
+// every tracked pointer once 2+ are down, instead of one primary pointer.
 const MULTI_POINTER_TYPES = new Set<GestureType>(['pinch', 'rotate']);
 
 interface Registration {
@@ -81,12 +77,9 @@ function createRecognizer(descriptor: GestureDescriptor<any, any>): UpdatableRec
 /**
  * One instance per DOM node/window (see `registry.ts`). Owns the native
  * listeners for every event category any registered recognizer needs —
- * attached lazily per category on first registration needing it, removed
- * once the last one leaves — and fans events out to the matching
- * recognizers. Every gesture type (Pan/Move/Wheel/Scroll/Swipe/Hover) is a
- * plain `GestureRecognizer` registered here the same way, so N gestures of any
- * mix on one element share listeners per category instead of each attaching
- * its own (as the pre-unification per-type controller classes did).
+ * attached lazily per category, removed once the last one leaves — and
+ * fans events out to the matching recognizers, so N gestures of any mix on
+ * one element share listeners per category instead of each attaching its own.
  */
 export class ElementGestureTracker {
   private registrations = new Map<symbol, Registration>();
@@ -98,25 +91,20 @@ export class ElementGestureTracker {
   };
   private attachedGroups = new Set<ListenerGroup>();
 
-  // Press-gated pointer stream state (Pan/Swipe, and Pinch/Rotate once 2+
-  // pointers join). `activePointers` tracks every currently-down pointer;
-  // `primaryPointerId` is the one single-pointer recognizers (Pan/Swipe)
-  // exclusively react to — set on the first pointerdown of a stream and
-  // left as-is if it lifts before the others (no promotion to a remaining
-  // pointer; the stream only fully resets once every pointer is up).
+  // `activePointers` tracks every currently-down pointer; `primaryPointerId`
+  // is the one single-pointer recognizers (Pan/Swipe) react to — set on the
+  // first pointerdown of a stream and left as-is if it lifts before the
+  // others (no promotion; the stream fully resets only once all pointers
+  // are up).
   private activePointers = new Map<number, { x: number; y: number }>();
   private primaryPointerId: number | null = null;
   private pointerKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
-  // Per-gesture-stream arbitration claim for the 'pointer' group's
-  // single-pointer recognizers, scoped by gesture *kind* rather than by
-  // individual registration — e.g. two independent `Gesture.Pan()`
-  // registrations on the same element must both keep firing (not a
-  // conflict, just two listeners), but a Pan and a Swipe genuinely
-  // interpreting the same drag differently should not both fire. First kind
-  // to call `requestActivation()` in a stream wins; further calls from that
-  // same kind keep succeeding, calls from any other kind are denied until
-  // the next fresh pointerdown sequence resets it. Multi-pointer recognizers
-  // (Pinch/Rotate) don't use this — they activate independently.
+  // Arbitration claim for the 'pointer' group's single-pointer recognizers,
+  // scoped by gesture *kind* — two independent Pan registrations must both
+  // keep firing (not a conflict), but Pan and Swipe genuinely interpreting
+  // the same drag should not both fire. First kind to call
+  // `requestActivation()` in a stream wins; other kinds are denied until
+  // the next pointerdown sequence resets it. Pinch/Rotate don't use this.
   private activeOwnerType: GestureType | null = null;
 
   // Ungated hover stream state (Move).

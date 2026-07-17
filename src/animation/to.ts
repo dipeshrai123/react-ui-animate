@@ -1,5 +1,5 @@
 import type { ExtrapolateConfig } from './types';
-import { to as mapRange } from './utils/to';
+import { to as mapRange } from './interpolation';
 
 // Maps a plain number through a range, right now — for a reactive
 // AnimateValue, use its `.to(inRange, outRange, config)` instance method

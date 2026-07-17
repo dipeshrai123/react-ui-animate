@@ -9,9 +9,7 @@ import type { BaseGestureConfig, GestureHandlers, MoveEvent } from '../api/Gestu
  * over the target, `onEnd`/`onFinalize` on `pointerleave`.
  *
  * `movement` is measured from the position of the very first move this
- * recognizer instance ever saw — matching the pre-unification `MoveGesture`
- * controller, which never reset its `startPos` even across multiple
- * enter/leave cycles.
+ * recognizer instance ever saw, even across multiple enter/leave cycles.
  */
 export class MoveRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
@@ -59,8 +57,7 @@ export class MoveRecognizer implements GestureRecognizer {
   }
 
   reset(): void {
-    // Only the recognition phase resets — `startPos` intentionally persists
-    // (see class doc) to match prior behavior.
+    // Only the recognition phase resets — `startPos` intentionally persists (see class doc).
     this.phase = GesturePhase.UNDETERMINED;
   }
 

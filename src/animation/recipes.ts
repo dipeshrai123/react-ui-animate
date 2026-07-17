@@ -1,10 +1,6 @@
 import { withSpring } from './descriptors';
 import type { AnimateProp } from './components/types';
 
-/**
- * Animation Recipes - Pre-built, tested animations for common use cases
- */
-
 // Shared spring configs, reused across recipes below (deduped so the
 // minifier can collapse repeated `{ stiffness, damping }` literals into a
 // single shared reference instead of ~40 structurally-identical copies).

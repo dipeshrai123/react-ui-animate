@@ -1,7 +1,7 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { isTransformKey, createTransformRenderer } from './apply';
+import { isTransformKey, createTransformRenderer } from '../utils/apply';
 import { getInitialValue } from './initialValues';
 
 type AnimateValuesMap = Record<string, AnimateValue<Primitive>>;
@@ -19,13 +19,11 @@ export interface StateAnimationContext {
   cleanup: CleanupList;
   /**
    * The real destination each key is meant to settle at, as declared by
-   * `animate`/`view` (unwrapping `withSequence`/`withDelay` to find the
-   * final step). Preferred over `initialValues` when reverting, since a
-   * hover/press/focus interaction can interrupt an in-flight `animate`/`view`
-   * transition before it ever reaches its target — reverting to a merely
-   * *captured* value would then snap back to wherever that interruption left
-   * it (e.g. a still-unrevealed `view` starting value), not where it was
-   * actually headed.
+   * `animate`/`view` (unwrapping `withSequence`/`withDelay`). Preferred over
+   * `initialValues` when reverting, since a hover/press/focus interaction can
+   * interrupt an in-flight `animate`/`view` transition before it reaches its
+   * target — reverting to a merely *captured* value would snap back to
+   * wherever the interruption left it, not where it was actually headed.
    */
   restingTargets?: Record<string, Primitive>;
 }
@@ -108,14 +106,11 @@ export function applyStateAnimation(
         updateStyle(initial);
       }
     } else {
-      // If value already exists (e.g. pre-initialized by `animate`/`view`),
-      // capture the revert target fresh on every activation rather than only
-      // once. The value right before a hover/press/focus starts is always
-      // the correct "resting" baseline to snap back to — a *view* (or
-      // `animate`) transition can move that baseline well after mount (e.g.
-      // translateY settling from 40 -> 0), and caching the target only once
-      // would permanently lock in whatever the value happened to be during
-      // the very first activation, even after the real baseline has moved on.
+      // Capture the revert target fresh on every activation rather than only
+      // once: the value right before a hover/press/focus starts is always
+      // the correct "resting" baseline, and an `animate`/`view` transition
+      // can move that baseline well after mount (e.g. translateY settling
+      // from 40 -> 0) — caching it only once would lock in a stale value.
       if (isActive) {
         initialValues[key] = value.current;
       } else if (!(key in initialValues)) {

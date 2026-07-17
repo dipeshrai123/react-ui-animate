@@ -1,4 +1,4 @@
-import { clamp } from '../../utils';
+import { clamp } from '../../shared/utils';
 
 export const DEFAULT_VELOCITY_LIMIT = 20;
 
@@ -18,8 +18,7 @@ export function createKinematicState(sample: KinematicSample): KinematicState {
   return { prev: sample, velocity: { x: 0, y: 0 } };
 }
 
-// Shared velocity math previously duplicated (dx/dt/1000, clamped) across
-// DragGesture, MoveGesture, WheelGesture and ScrollGesture.
+// Shared velocity math (dx/dt/1000, clamped) used by every recognizer.
 export function updateKinematics(
   state: KinematicState,
   sample: KinematicSample,

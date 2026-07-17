@@ -3,7 +3,7 @@ import { useValue, withDecay, withSpring, withParallel, AnimateValue } from '../
 import type { Controls, Descriptor } from '../../animation/types';
 import { Gesture, type PanEvent } from '../api/Gesture';
 import { useGesture } from './useGesture';
-import { clamp, rubberClamp } from '../../utils';
+import { clamp, rubberClamp } from '../../shared/utils';
 
 export interface DragBounds {
   left?: number;

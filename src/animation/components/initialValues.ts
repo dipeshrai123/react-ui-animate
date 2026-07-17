@@ -1,5 +1,5 @@
 import type { Primitive } from '../types';
-import { isTransformKey } from './apply';
+import { isTransformKey } from '../utils/apply';
 
 export function getStaticStyleValue(style: any, key: string): Primitive | null {
   if (!style || !(key in style)) return null;
@@ -7,7 +7,6 @@ export function getStaticStyleValue(style: any, key: string): Primitive | null {
   const value = style[key];
   if (value === undefined || value === null) return null;
 
-  // Skip AnimateValues - we want static initial values
   if (value && typeof value === 'object' && 'subscribe' in value) return null;
 
   if (typeof value === 'number') return value;

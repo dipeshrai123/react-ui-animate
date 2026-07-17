@@ -2,7 +2,7 @@ import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
 import { getInitialValue } from './initialValues';
-import { applyStyles, applyTransforms, isTransformKey } from './apply';
+import { applyStyles, applyTransforms, isTransformKey } from '../utils/apply';
 
 type AnimateValuesMap = Record<string, AnimateValue<Primitive>>;
 type ControllersList = Array<{ cancel(): void }>;

@@ -14,67 +14,38 @@ import {
 } from 'react';
 
 export interface PresenceProps {
-  /**
-   * Children to animate. Each direct child should have a unique `key` prop.
-   */
+  /** Children to animate. Each direct child should have a unique `key` prop. */
   children?: ReactNode;
 
-  /**
-   * When true, the initial render will skip the enter animation.
-   * @default true
-   */
+  /** When true, the initial render skips the enter animation. @default true */
   initial?: boolean;
 
-  /**
-   * Callback when all exiting nodes have completed animating out.
-   */
+  /** Called once all exiting nodes have finished animating out. */
   onExitComplete?: () => void;
 
   /**
-   * When a new child enters, determines behavior of existing children.
-   * - "sync": (default) Exiting and entering children animate simultaneously.
-   * - "wait": Exiting children complete before entering children start.
-   * - "popLayout": Exiting children are removed from layout flow immediately.
+   * - "sync": (default) exiting and entering children animate simultaneously.
+   * - "wait": exiting children complete before entering children start.
+   * - "popLayout": exiting children are removed from layout flow immediately.
    */
   mode?: 'sync' | 'wait' | 'popLayout';
 }
 
 export interface PresenceContextValue {
-  /**
-   * Whether this is the initial mount (skip enter animation if Presence.initial=false)
-   */
   isInitialMount: boolean;
-
-  /**
-   * Whether this element is exiting
-   */
   isExiting: boolean;
-
-  /**
-   * Call this when exit animation completes to remove the element
-   */
   onExitComplete: () => void;
-
-  /**
-   * Internal: Counter to force re-renders when exit state changes
-   */
   _forceUpdate?: number;
 }
 
 export const PresenceContext = createContext<PresenceContextValue | null>(null);
 
-/**
- * Hook to access presence state from within an animated component.
- */
 export function usePresence(): [boolean, () => void] {
   const context = useContext(PresenceContext);
   if (!context) return [true, () => {}];
   return [!context.isExiting, context.onExitComplete];
 }
 
-/**
- * Hook to check if this is the initial mount (for skipping initial animations).
- */
 export function useIsPresent(): boolean {
   const context = useContext(PresenceContext);
   return context ? !context.isExiting : true;
