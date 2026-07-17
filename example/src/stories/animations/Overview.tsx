@@ -88,6 +88,7 @@ const Example: React.FC = () => {
         { name: 'Loop', path: '/examples/Loop' },
         { name: 'InView', path: '/examples/InView' },
         { name: 'SVG', path: '/examples/Svg' },
+        { name: 'SVG Path Animation', path: '/examples/SvgPathAnimation' },
         { name: 'Sorting', path: '/examples/Sorting' },
         { name: 'Snap Points', path: '/examples/SnapPoints' },
         { name: 'Shared Element', path: '/examples/SharedElement' },

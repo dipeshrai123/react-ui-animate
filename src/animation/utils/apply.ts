@@ -196,13 +196,77 @@ function applyStyles(
   return subscriptions;
 }
 
+// JSX uses camelCase for these SVG presentation attributes (matching their
+// CSS property names), but the real XML attribute is hyphenated —
+// `node.setAttribute('strokeDashoffset', ...)` silently sets an attribute
+// SVG doesn't recognize and has no visual effect. React's own JSX renderer
+// maps these correctly, but `applyAttrs` calls `setAttribute` directly, so
+// it needs to do the same translation itself. Attributes not in this map
+// (geometry attrs like `cx`/`d`, or SVG attributes that are genuinely
+// camelCase like `viewBox`/`preserveAspectRatio`) pass through unchanged.
+const SVG_ATTRIBUTE_NAME_MAP: Record<string, string> = {
+  alignmentBaseline: 'alignment-baseline',
+  baselineShift: 'baseline-shift',
+  clipPath: 'clip-path',
+  clipRule: 'clip-rule',
+  colorInterpolation: 'color-interpolation',
+  colorInterpolationFilters: 'color-interpolation-filters',
+  colorRendering: 'color-rendering',
+  dominantBaseline: 'dominant-baseline',
+  enableBackground: 'enable-background',
+  fillOpacity: 'fill-opacity',
+  fillRule: 'fill-rule',
+  floodColor: 'flood-color',
+  floodOpacity: 'flood-opacity',
+  fontFamily: 'font-family',
+  fontSize: 'font-size',
+  fontSizeAdjust: 'font-size-adjust',
+  fontStretch: 'font-stretch',
+  fontStyle: 'font-style',
+  fontVariant: 'font-variant',
+  fontWeight: 'font-weight',
+  glyphOrientationHorizontal: 'glyph-orientation-horizontal',
+  glyphOrientationVertical: 'glyph-orientation-vertical',
+  imageRendering: 'image-rendering',
+  letterSpacing: 'letter-spacing',
+  lightingColor: 'lighting-color',
+  markerEnd: 'marker-end',
+  markerMid: 'marker-mid',
+  markerStart: 'marker-start',
+  paintOrder: 'paint-order',
+  pointerEvents: 'pointer-events',
+  shapeRendering: 'shape-rendering',
+  stopColor: 'stop-color',
+  stopOpacity: 'stop-opacity',
+  strokeDasharray: 'stroke-dasharray',
+  strokeDashoffset: 'stroke-dashoffset',
+  strokeLinecap: 'stroke-linecap',
+  strokeLinejoin: 'stroke-linejoin',
+  strokeMiterlimit: 'stroke-miterlimit',
+  strokeOpacity: 'stroke-opacity',
+  strokeWidth: 'stroke-width',
+  textAnchor: 'text-anchor',
+  textDecoration: 'text-decoration',
+  textRendering: 'text-rendering',
+  transformOrigin: 'transform-origin',
+  underlinePosition: 'underline-position',
+  underlineThickness: 'underline-thickness',
+  unicodeBidi: 'unicode-bidi',
+  wordSpacing: 'word-spacing',
+  writingMode: 'writing-mode',
+  className: 'class',
+  htmlFor: 'for',
+  xlinkHref: 'xlink:href',
+};
+
 function applyAttrs(
   node: HTMLElement,
   props: Record<string, any>
 ): (() => void)[] {
   const subscriptions: (() => void)[] = [];
 
-  for (const [key, value] of Object.entries(props)) {
+  for (const [propKey, value] of Object.entries(props)) {
+    const key = SVG_ATTRIBUTE_NAME_MAP[propKey] ?? propKey;
     const setBool = (v: boolean) => {
       if (v) node.setAttribute(key, '');
       else node.removeAttribute(key);

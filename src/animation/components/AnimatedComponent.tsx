@@ -657,8 +657,19 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       }
     }
 
+    // Non-style attributes (SVG positional attrs like `cx`/`x1`/`d`, etc.)
+    // driven by an AnimateValue are set imperatively by `applyAttrs` in the
+    // layout effect above, before paint. Passing the AnimateValue itself
+    // here would have React try to render it as the raw attribute value on
+    // this declarative pass, which fails (e.g. `cx="[object Object]"`).
+    const filteredRestProps: Record<string, any> = {};
+    for (const [key, value] of Object.entries(restProps)) {
+      if (value instanceof AnimateValue) continue;
+      filteredRestProps[key] = value;
+    }
+
     return createElement(tag, {
-      ...restProps,
+      ...filteredRestProps,
       style: filteredStyle,
       ref: combineRefs(nodeRef, ref),
     });

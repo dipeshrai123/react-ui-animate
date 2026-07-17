@@ -1,9 +1,10 @@
 import React, { createRef, act } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../../values/AnimateValue';
 import { withTiming, withSpring, withSequence, withDelay } from '../../descriptors';
+import { useValue } from '../../hooks/useValue';
 
 describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {
@@ -56,6 +57,214 @@ describe('〈animate> components', () => {
 
     expect(el.style.transform).toBe('translateX(25px)');
     expect(el.style.opacity).toBe('0.8');
+  });
+
+  it('sets AnimateValue-driven non-style attributes (e.g. SVG cx/d) without passing the AnimateValue to React', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const cx = new AnimateValue(50);
+    const d = new AnimateValue('M 0 0 L 10 10');
+
+    render(
+      <svg>
+        <animate.circle data-testid="svg-circle" cx={cx} cy={10} r={5} />
+        <animate.path data-testid="svg-path" d={d} />
+      </svg>
+    );
+
+    const circle = screen.getByTestId('svg-circle');
+    const path = screen.getByTestId('svg-path');
+
+    expect(circle.getAttribute('cx')).toBe('50');
+    expect(path.getAttribute('d')).toBe('M 0 0 L 10 10');
+
+    act(() => {
+      cx.set(75);
+      d.set('M 0 0 L 20 20');
+    });
+
+    expect(circle.getAttribute('cx')).toBe('75');
+    expect(path.getAttribute('d')).toBe('M 0 0 L 20 20');
+
+    // React never received the raw AnimateValue as a DOM attribute value
+    // (would log "Expected length, [object Object]" or similar).
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  describe('SVG presentation attributes (camelCase JSX prop vs. real hyphenated attribute)', () => {
+    it('sets the real hyphenated attribute, not the literal camelCase prop name, for a static value', () => {
+      render(
+        <svg>
+          <animate.circle
+            data-testid="circle"
+            cx={50}
+            cy={50}
+            r={20}
+            strokeWidth={4}
+            strokeDasharray={100}
+          />
+        </svg>
+      );
+      const circle = screen.getByTestId('circle');
+
+      expect(circle.getAttribute('stroke-width')).toBe('4');
+      expect(circle.getAttribute('stroke-dasharray')).toBe('100');
+      expect(circle.getAttribute('strokeWidth')).toBeNull();
+      expect(circle.getAttribute('strokeDasharray')).toBeNull();
+    });
+
+    it('sets the real hyphenated attribute for an AnimateValue-driven value, and keeps it updated', () => {
+      const dashoffset = new AnimateValue(100);
+      render(
+        <svg>
+          <animate.circle
+            data-testid="circle"
+            cx={50}
+            cy={50}
+            r={20}
+            strokeDasharray={100}
+            strokeDashoffset={dashoffset}
+          />
+        </svg>
+      );
+      const circle = screen.getByTestId('circle');
+
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('100');
+      expect(circle.getAttribute('strokeDashoffset')).toBeNull();
+
+      act(() => {
+        dashoffset.set(40);
+      });
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('40');
+
+      act(() => {
+        dashoffset.set(0);
+      });
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('0');
+      // Never set the wrong-case attribute at any point.
+      expect(circle.getAttribute('strokeDashoffset')).toBeNull();
+    });
+
+    it('leaves genuinely camelCase SVG attributes and plain geometry attributes untouched', () => {
+      const cx = new AnimateValue(10);
+      render(
+        <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+          <animate.circle data-testid="circle" cx={cx} cy={50} r={20} />
+        </svg>
+      );
+      const svg = document.querySelector('svg')!;
+      const circle = screen.getByTestId('circle');
+
+      expect(svg.getAttribute('viewBox')).toBe('0 0 200 200');
+      expect(svg.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
+      expect(circle.getAttribute('cx')).toBe('10');
+      expect(circle.getAttribute('cy')).toBe('50');
+      expect(circle.getAttribute('r')).toBe('20');
+
+      act(() => cx.set(30));
+      expect(circle.getAttribute('cx')).toBe('30');
+    });
+
+    it('real example: a stroke-draw circle actually reveals via stroke-dashoffset as it animates', () => {
+      jest.useFakeTimers();
+
+      const CIRCUMFERENCE = 2 * Math.PI * 70;
+
+      function StrokeDrawCircle() {
+        const [dashoffset, setDashoffset] = useValue(CIRCUMFERENCE);
+        return (
+          <svg>
+            <animate.circle
+              data-testid="draw-circle"
+              cx={100}
+              cy={100}
+              r={70}
+              fill="none"
+              stroke="#3399ff"
+              strokeWidth={8}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={dashoffset}
+            />
+            <button
+              data-testid="draw-button"
+              onClick={() => setDashoffset(withTiming(0, { duration: 300 }))}
+            />
+          </svg>
+        );
+      }
+
+      render(<StrokeDrawCircle />);
+      const circle = screen.getByTestId('draw-circle');
+      const button = screen.getByTestId('draw-button');
+
+      // Fully hidden at rest: dashoffset equals the whole circumference.
+      expect(circle.getAttribute('stroke-dasharray')).toBe(String(CIRCUMFERENCE));
+      expect(circle.getAttribute('stroke-dashoffset')).toBe(String(CIRCUMFERENCE));
+
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+      const midOffset = Number(circle.getAttribute('stroke-dashoffset'));
+      expect(midOffset).toBeGreaterThan(0);
+      expect(midOffset).toBeLessThan(CIRCUMFERENCE);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(Number(circle.getAttribute('stroke-dashoffset'))).toBeCloseTo(0, 1);
+
+      jest.useRealTimers();
+    });
+
+    it('real example: same-topology path morph updates the real d attribute end to end', () => {
+      jest.useFakeTimers();
+
+      const SQUARE = 'M 40 40 L 160 40 L 160 160 L 40 160 Z';
+      const DIAMOND = 'M 100 20 L 180 100 L 100 180 L 20 100 Z';
+
+      function MorphPath() {
+        const [path, setPath] = useValue(SQUARE);
+        return (
+          <svg>
+            <animate.path data-testid="morph-path" d={path} fill="#845ef7" />
+            <button
+              data-testid="morph-button"
+              onClick={() => setPath(withTiming(DIAMOND, { duration: 200 }))}
+            />
+          </svg>
+        );
+      }
+
+      render(<MorphPath />);
+      const path = screen.getByTestId('morph-path');
+      const button = screen.getByTestId('morph-button');
+
+      expect(path.getAttribute('d')).toBe(SQUARE);
+
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+      const midPath = path.getAttribute('d');
+      expect(midPath).not.toBe(SQUARE);
+      expect(midPath).not.toBe(DIAMOND);
+      // Still a well-formed path with the same number of numeric tokens.
+      expect(midPath?.match(/-?\d+(\.\d+)?/g)).toHaveLength(8);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(path.getAttribute('d')).toBe(DIAMOND);
+
+      jest.useRealTimers();
+    });
   });
 
   it('applies raw transform string when no transformKeys are present', () => {
