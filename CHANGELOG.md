@@ -108,6 +108,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### ✨ New Features
 
+- **`Gesture.Pinch()` and `Gesture.Rotate()`**: two-finger pinch/zoom and
+  rotation, built on a new multi-pointer tracking layer. Both can be
+  registered together on the same ref and read from the same two-pointer
+  stream simultaneously — they don't compete with each other, only with
+  single-pointer gestures (a second finger joining mid-drag automatically
+  cancels an in-flight `Pan`, handing off to `Pinch`/`Rotate`):
+
+  ```tsx
+  import { Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
+
+  const [scale, setScale] = useValue(1);
+  const startScale = useRef(1);
+
+  useGesture(
+    ref,
+    Gesture.Pinch()
+      .threshold(0.02)
+      .onStart(() => { startScale.current = scale.current; })
+      .onUpdate(({ scale: s }) => setScale(startScale.current * s))
+      .onEnd(() => setScale(withSpring(Math.min(Math.max(scale.current, 0.5), 3))))
+  );
+  ```
+
+  `Gesture.Rotate()` follows the same shape, reporting cumulative `rotation`
+  in degrees instead of `scale`.
+
 - **`prefers-reduced-motion` support**: `timing`, `spring`, and `decay` (and everything built on them — `withSpring`, `withTiming`, `withDecay`, recipes, etc.) now check the user's OS-level `prefers-reduced-motion` setting and, when enabled, resolve straight to the animation's end state instead of animating. Use `setReducedMotion(true | false | null)` to override the media query (e.g. for testing, or an in-app "reduce motion" toggle), and `isReducedMotionEnabled()` to read the current effective value:
 
   ```tsx
@@ -253,6 +279,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- Fixed `Gesture.Pan()` and `Gesture.Swipe()` both firing when registered on
+  the same element for a single fast drag (`onEnd` and `onSwipe` used to
+  both fire for what the user experienced as one gesture) — the first one
+  to actually recognize the gesture now wins for that pointer stream; the
+  other stays quiet instead of firing a contradictory second callback.
 - Fixed exit animation callbacks not firing issue
 - Fixed multiple state animation bug where animations would conflict
 - Fixed animation glitches on re-render

@@ -10,8 +10,18 @@ export interface RecognizerContext {
   target: HTMLElement | Window;
   kinematics: KinematicState;
   /**
-   * Requests exclusive activation. Returns true if granted. With no
-   * composition grouping in play (the only case today), this always grants.
+   * All currently-down pointers on this element (pointerId -> last known
+   * position). Single-pointer recognizers (Pan/Swipe) don't need this —
+   * multi-pointer ones (Pinch/Rotate) read it to compute geometry across
+   * the tracked pair. Empty when no pointer is down.
+   */
+  pointers: ReadonlyMap<number, { x: number; y: number }>;
+  /**
+   * Requests exclusive activation within this recognizer's pointer stream.
+   * Returns true if granted (first caller in a gesture stream wins; later
+   * callers are denied until the stream resets on the next pointerdown
+   * sequence). Used to arbitrate between recognizers that could both claim
+   * the same single-pointer drag (e.g. Pan vs Swipe).
    */
   requestActivation(): boolean;
   /** Cedes activation to another recognizer, e.g. after losing a Race. */

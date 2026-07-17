@@ -84,6 +84,10 @@ export type {
   SwipeGestureConfig,
   SwipeHandlers,
   HoverEvent,
+  PinchEvent,
+  PinchGestureConfig,
+  RotateEvent,
+  RotateGestureConfig,
 } from './gestures/api/Gesture';
 
 export { clamp, rubberClamp, snapTo, move } from './utils';

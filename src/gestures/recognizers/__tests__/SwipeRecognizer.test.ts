@@ -29,6 +29,7 @@ function fakeCtx(
   return {
     target,
     kinematics: { ...createKinematicState({ x: 0, y: 0, t: 0 }), velocity },
+    pointers: new Map(),
     requestActivation: () => true,
     yieldTo: () => {},
   };

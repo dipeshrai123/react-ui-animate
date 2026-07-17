@@ -4,6 +4,8 @@ import { WheelRecognizer } from '../recognizers/WheelRecognizer';
 import { ScrollRecognizer } from '../recognizers/ScrollRecognizer';
 import { SwipeRecognizer } from '../recognizers/SwipeRecognizer';
 import { HoverRecognizer } from '../recognizers/HoverRecognizer';
+import { PinchRecognizer } from '../recognizers/PinchRecognizer';
+import { RotateRecognizer } from '../recognizers/RotateRecognizer';
 import type { GestureRecognizer, RecognizerContext } from './GestureRecognizer';
 import {
   createKinematicState,
@@ -36,11 +38,21 @@ const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
   scroll: 'scroll',
   swipe: 'pointer',
   hover: 'hover',
+  pinch: 'pointer',
+  rotate: 'pointer',
 };
+
+// Multi-pointer gesture types (Pinch/Rotate) share the 'pointer' native
+// listeners with Pan/Swipe but are dispatched differently — they see every
+// tracked pointer once 2+ are down, instead of being gated to a single
+// primary pointer.
+const MULTI_POINTER_TYPES = new Set<GestureType>(['pinch', 'rotate']);
 
 interface Registration {
   recognizer: UpdatableRecognizer;
   group: ListenerGroup;
+  multiPointer: boolean;
+  type: GestureType;
 }
 
 function createRecognizer(descriptor: GestureDescriptor<any, any>): UpdatableRecognizer {
@@ -57,6 +69,10 @@ function createRecognizer(descriptor: GestureDescriptor<any, any>): UpdatableRec
       return new SwipeRecognizer(descriptor.config, descriptor.handlers);
     case 'hover':
       return new HoverRecognizer(descriptor.config, descriptor.handlers);
+    case 'pinch':
+      return new PinchRecognizer(descriptor.config, descriptor.handlers);
+    case 'rotate':
+      return new RotateRecognizer(descriptor.config, descriptor.handlers);
     default:
       throw new Error(`[useGesture] Unknown gesture type: ${(descriptor as GestureDescriptor).type}`);
   }
@@ -82,9 +98,26 @@ export class ElementGestureTracker {
   };
   private attachedGroups = new Set<ListenerGroup>();
 
-  // Press-gated pointer stream state (Pan, future Tap/LongPress).
-  private activePointerId: number | null = null;
+  // Press-gated pointer stream state (Pan/Swipe, and Pinch/Rotate once 2+
+  // pointers join). `activePointers` tracks every currently-down pointer;
+  // `primaryPointerId` is the one single-pointer recognizers (Pan/Swipe)
+  // exclusively react to — set on the first pointerdown of a stream and
+  // left as-is if it lifts before the others (no promotion to a remaining
+  // pointer; the stream only fully resets once every pointer is up).
+  private activePointers = new Map<number, { x: number; y: number }>();
+  private primaryPointerId: number | null = null;
   private pointerKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
+  // Per-gesture-stream arbitration claim for the 'pointer' group's
+  // single-pointer recognizers, scoped by gesture *kind* rather than by
+  // individual registration — e.g. two independent `Gesture.Pan()`
+  // registrations on the same element must both keep firing (not a
+  // conflict, just two listeners), but a Pan and a Swipe genuinely
+  // interpreting the same drag differently should not both fire. First kind
+  // to call `requestActivation()` in a stream wins; further calls from that
+  // same kind keep succeeding, calls from any other kind are denied until
+  // the next fresh pointerdown sequence resets it. Multi-pointer recognizers
+  // (Pinch/Rotate) don't use this — they activate independently.
+  private activeOwnerType: GestureType | null = null;
 
   // Ungated hover stream state (Move).
   private hoverKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
@@ -111,7 +144,13 @@ export class ElementGestureTracker {
   register(descriptor: GestureDescriptor<any, any>): symbol {
     const id = Symbol('gesture');
     const group = GROUP_BY_TYPE[descriptor.type];
-    this.registrations.set(id, { recognizer: createRecognizer(descriptor), group });
+    const multiPointer = MULTI_POINTER_TYPES.has(descriptor.type);
+    this.registrations.set(id, {
+      recognizer: createRecognizer(descriptor),
+      group,
+      multiPointer,
+      type: descriptor.type,
+    });
     this.groupCounts[group]++;
     this.ensureGroupListeners(group);
     return id;
@@ -193,8 +232,9 @@ export class ElementGestureTracker {
     const ctx: RecognizerContext = {
       target: this.target,
       kinematics,
-      // No composition/arbitration yet (Phase 4) — every registered
-      // recognizer runs simultaneously by default, so activation is always granted.
+      pointers: this.activePointers,
+      // No composition/arbitration for these groups — only the 'pointer'
+      // group's single-pointer recognizers arbitrate (see makeContext).
       requestActivation: () => true,
       yieldTo: () => {},
     };
@@ -204,48 +244,129 @@ export class ElementGestureTracker {
     });
   }
 
-  // ---- press-gated pointer stream (Pan) ----
+  private makeContext(type: GestureType): RecognizerContext {
+    return {
+      target: this.target,
+      kinematics: this.pointerKinematics,
+      pointers: this.activePointers,
+      requestActivation: () => {
+        if (this.activeOwnerType === null || this.activeOwnerType === type) {
+          this.activeOwnerType = type;
+          return true;
+        }
+        return false;
+      },
+      yieldTo: () => {},
+    };
+  }
+
+  private dispatchSinglePointer(
+    fn: (recognizer: GestureRecognizer, ctx: RecognizerContext) => void
+  ): void {
+    this.registrations.forEach((reg) => {
+      if (reg.group !== 'pointer' || reg.multiPointer) return;
+      fn(reg.recognizer, this.makeContext(reg.type));
+    });
+  }
+
+  private dispatchMultiPointer(
+    fn: (recognizer: GestureRecognizer, ctx: RecognizerContext) => void
+  ): void {
+    this.registrations.forEach((reg) => {
+      if (reg.group !== 'pointer' || !reg.multiPointer) return;
+      fn(reg.recognizer, this.makeContext(reg.type));
+    });
+  }
+
+  // ---- press-gated pointer stream (Pan, Swipe, Pinch, Rotate) ----
 
   private onPointerDownNative(e: Event): void {
     const pe = e as PointerEvent;
     if (pe.button !== 0) return;
-    // Single active pointer per element for now (see Phase 5 note re:
-    // multi-touch — this tracker's public shape doesn't preclude it later).
-    if (this.activePointerId !== null) return;
 
-    this.activePointerId = pe.pointerId;
-    this.pointerKinematics = createKinematicState({ x: pe.clientX, y: pe.clientY, t: pe.timeStamp });
+    const wasEmpty = this.activePointers.size === 0;
+    this.activePointers.set(pe.pointerId, { x: pe.clientX, y: pe.clientY });
 
-    this.dispatch('pointer', this.pointerKinematics, (r, ctx) => r.onPointerDown?.(pe, ctx));
+    if (wasEmpty) {
+      this.primaryPointerId = pe.pointerId;
+      this.activeOwnerType = null;
+      this.pointerKinematics = createKinematicState({ x: pe.clientX, y: pe.clientY, t: pe.timeStamp });
+      this.dispatchSinglePointer((r, ctx) => r.onPointerDown?.(pe, ctx));
+      return;
+    }
+
+    if (this.activePointers.size === 2) {
+      // A second concurrent pointer joins mid-stream: hand off from any
+      // active/possible single-pointer recognizer (Pan/Swipe) to the
+      // multi-pointer ones (Pinch/Rotate), reusing each single-pointer
+      // recognizer's existing onPointerCancel handling for the hand-off —
+      // no recognizer-side code needed for this.
+      this.dispatchSinglePointer((r, ctx) => r.onPointerCancel?.(pe, ctx));
+    }
+
+    this.dispatchMultiPointer((r, ctx) => r.onPointerDown?.(pe, ctx));
   }
 
   private onPointerMoveNative(e: Event): void {
     const pe = e as PointerEvent;
-    if (this.activePointerId !== pe.pointerId) return;
+    if (!this.activePointers.has(pe.pointerId)) return;
 
-    this.pointerKinematics = updateKinematics(this.pointerKinematics, {
-      x: pe.clientX,
-      y: pe.clientY,
-      t: pe.timeStamp,
-    });
+    this.activePointers.set(pe.pointerId, { x: pe.clientX, y: pe.clientY });
 
-    this.dispatch('pointer', this.pointerKinematics, (r, ctx) => r.onPointerMove?.(pe, ctx));
+    if (pe.pointerId === this.primaryPointerId) {
+      this.pointerKinematics = updateKinematics(this.pointerKinematics, {
+        x: pe.clientX,
+        y: pe.clientY,
+        t: pe.timeStamp,
+      });
+      this.dispatchSinglePointer((r, ctx) => r.onPointerMove?.(pe, ctx));
+    }
+
+    if (this.activePointers.size >= 2) {
+      this.dispatchMultiPointer((r, ctx) => r.onPointerMove?.(pe, ctx));
+    }
   }
 
   private onPointerUpNative(e: Event): void {
     const pe = e as PointerEvent;
-    if (this.activePointerId !== pe.pointerId) return;
+    if (!this.activePointers.has(pe.pointerId)) return;
 
-    this.dispatch('pointer', this.pointerKinematics, (r, ctx) => r.onPointerUp?.(pe, ctx));
-    this.activePointerId = null;
+    const wasMultiPointer = this.activePointers.size >= 2;
+
+    if (pe.pointerId === this.primaryPointerId) {
+      this.dispatchSinglePointer((r, ctx) => r.onPointerUp?.(pe, ctx));
+    }
+    if (wasMultiPointer) {
+      this.dispatchMultiPointer((r, ctx) => r.onPointerUp?.(pe, ctx));
+    }
+
+    this.activePointers.delete(pe.pointerId);
+
+    if (this.activePointers.size === 0) {
+      this.primaryPointerId = null;
+      this.activeOwnerType = null;
+    }
   }
 
   private onPointerCancelNative(e: Event): void {
     const pe = e as PointerEvent;
-    if (this.activePointerId !== pe.pointerId) return;
+    if (!this.activePointers.has(pe.pointerId)) return;
 
-    this.dispatch('pointer', this.pointerKinematics, (r, ctx) => r.onPointerCancel?.(pe, ctx));
-    this.activePointerId = null;
+    const wasMultiPointer = this.activePointers.size >= 2;
+
+    if (pe.pointerId === this.primaryPointerId) {
+      this.dispatchSinglePointer((r, ctx) => r.onPointerCancel?.(pe, ctx));
+    }
+    if (wasMultiPointer) {
+      this.dispatchMultiPointer((r, ctx) => r.onPointerCancel?.(pe, ctx));
+    }
+
+    this.activePointers.delete(pe.pointerId);
+
+    if (this.activePointers.size === 0) {
+      this.primaryPointerId = null;
+      this.activeOwnerType = null;
+    }
   }
 
   // ---- ungated hover stream (Move) ----

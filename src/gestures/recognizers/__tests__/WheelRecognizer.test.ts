@@ -11,6 +11,7 @@ function fakeCtx(): RecognizerContext {
   return {
     target: document.createElement('div'),
     kinematics: createKinematicState({ x: 0, y: 0, t: 0 }),
+    pointers: new Map(),
     requestActivation: () => true,
     yieldTo: () => {},
   };

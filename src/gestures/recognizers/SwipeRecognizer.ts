@@ -91,7 +91,11 @@ export class SwipeRecognizer implements GestureRecognizer {
       ? Math.abs(ctx.kinematics.velocity.x)
       : Math.abs(ctx.kinematics.velocity.y);
 
-    if (dominantDistance >= distanceThreshold && dominantVelocity >= velocityThreshold) {
+    if (
+      dominantDistance >= distanceThreshold &&
+      dominantVelocity >= velocityThreshold &&
+      ctx.requestActivation()
+    ) {
       const direction: SwipeEvent['direction'] = horizontal
         ? this.movement.x < 0
           ? 'left'
@@ -104,6 +108,10 @@ export class SwipeRecognizer implements GestureRecognizer {
       if (this.target) suppressNextClick(this.target);
       this.handlers.onSwipe?.(this.buildEvent(e, ctx, direction));
     } else {
+      // Distance/velocity qualified but another recognizer (e.g. a Pan that
+      // already crossed its own minDistance) claimed this stream first —
+      // stay quiet instead of firing a second, contradictory callback for
+      // what the user already interpreted as a drag.
       this.phase = GesturePhase.FAILED;
     }
 

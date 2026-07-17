@@ -26,6 +26,7 @@ function fakeCtx(target: HTMLElement | Window = document.createElement('div')): 
   return {
     target,
     kinematics: createKinematicState({ x: 0, y: 0, t: 0 }),
+    pointers: new Map(),
     requestActivation: () => true,
     yieldTo: () => {},
   };

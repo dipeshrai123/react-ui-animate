@@ -16,12 +16,18 @@ beforeAll(() => {
   HTMLElement.prototype.releasePointerCapture = jest.fn();
 });
 
-function firePointer(target: HTMLElement | Window, type: string, x: number, y: number) {
+function firePointer(
+  target: HTMLElement | Window,
+  type: string,
+  x: number,
+  y: number,
+  pointerId = 1
+) {
   target.dispatchEvent(
     new (window as any).PointerEvent(type, {
       clientX: x,
       clientY: y,
-      pointerId: 1,
+      pointerId,
       bubbles: true,
       cancelable: true,
       button: 0,
@@ -203,6 +209,51 @@ describe('ElementGestureTracker', () => {
       tracker.unregister(id);
     });
 
+    // Regression test for the documented arbitration gap ("Swipe and Pan
+    // both listen on the 'pointer' group with no arbitration between them
+    // yet ... a fast enough drag can fire both Pan's onEnd and Swipe's
+    // onSwipe" — see Gesture.ts). A single fast, long-enough drag qualifies
+    // for both simultaneously; only one should actually fire.
+    it('arbitrates between Pan and Swipe registered on the same element — only one fires', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onPanEnd = jest.fn();
+      const onSwipe = jest.fn();
+
+      const panId = tracker.register(Gesture.Pan().minDistance(10).onEnd(onPanEnd));
+      const swipeId = tracker.register(Gesture.Swipe().onSwipe(onSwipe));
+
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 100, 0);
+      firePointer(window, 'pointerup', 100, 0);
+
+      // Pan crosses minDistance during the move (before pointerup), so it
+      // claims the stream first — Swipe must stay quiet.
+      expect(onPanEnd).toHaveBeenCalledTimes(1);
+      expect(onSwipe).not.toHaveBeenCalled();
+
+      tracker.unregister(panId);
+      tracker.unregister(swipeId);
+    });
+
+    it('two independent Pan registrations on the same element both keep firing (not a conflict)', () => {
+      const tracker = new ElementGestureTracker(el);
+      const onChangeA = jest.fn();
+      const onChangeB = jest.fn();
+
+      const idA = tracker.register(Gesture.Pan().minDistance(5).onChange(onChangeA));
+      const idB = tracker.register(Gesture.Pan().minDistance(5).onChange(onChangeB));
+
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 20, 0);
+      firePointer(window, 'pointerup', 20, 0);
+
+      expect(onChangeA).toHaveBeenCalledTimes(1);
+      expect(onChangeB).toHaveBeenCalledTimes(1);
+
+      tracker.unregister(idA);
+      tracker.unregister(idB);
+    });
+
     it('dispatches Hover via pointermove/pointerleave on the target', () => {
       const tracker = new ElementGestureTracker(el);
       const onStart = jest.fn();
@@ -240,6 +291,101 @@ describe('ElementGestureTracker', () => {
 
       tracker.unregister(moveId);
       tracker.unregister(hoverId);
+    });
+
+    describe('multi-pointer (Pinch/Rotate) end to end', () => {
+      it('dispatches Pinch end to end on a real two-pointer sequence, ignored by a registered Pan', () => {
+        const tracker = new ElementGestureTracker(el);
+        const onPinchChange = jest.fn();
+        const onPanChange = jest.fn();
+
+        const pinchId = tracker.register(
+          Gesture.Pinch().threshold(0.1).onChange(onPinchChange)
+        );
+        const panId = tracker.register(Gesture.Pan().minDistance(5).onChange(onPanChange));
+
+        // First finger down: only Pan's primary pointer, no pinch pair yet.
+        firePointer(el, 'pointerdown', 0, 0, 1);
+        expect(onPanChange).not.toHaveBeenCalled();
+
+        // Second finger joins: hands off from Pan (forced cancel) to Pinch.
+        firePointer(el, 'pointerdown', 100, 0, 2);
+        firePointer(window, 'pointermove', 200, 0, 2);
+
+        expect(onPinchChange).toHaveBeenCalledTimes(1);
+        expect(onPinchChange.mock.calls[0][0].scale).toBeCloseTo(2, 5);
+        // Pan never got far enough to move before the 2nd pointer cancelled it.
+        expect(onPanChange).not.toHaveBeenCalled();
+
+        tracker.unregister(pinchId);
+        tracker.unregister(panId);
+      });
+
+      it('cancels an already-ACTIVE Pan when a second pointer joins, handing off to Pinch', () => {
+        const tracker = new ElementGestureTracker(el);
+        const onPanFinalize = jest.fn();
+        const onPinchStart = jest.fn();
+
+        const panId = tracker.register(
+          Gesture.Pan().minDistance(5).onFinalize(onPanFinalize)
+        );
+        const pinchId = tracker.register(Gesture.Pinch().threshold(0.1).onStart(onPinchStart));
+
+        firePointer(el, 'pointerdown', 0, 0, 1);
+        firePointer(window, 'pointermove', 20, 0, 1); // Pan crosses minDistance -> ACTIVE
+
+        firePointer(el, 'pointerdown', 120, 0, 2); // 2nd pointer joins
+        expect(onPanFinalize).toHaveBeenCalledTimes(1);
+        expect(onPanFinalize.mock.calls[0][0].phase).toBe('CANCELLED');
+
+        firePointer(window, 'pointermove', 220, 0, 2);
+        expect(onPinchStart).toHaveBeenCalledTimes(1);
+
+        tracker.unregister(panId);
+        tracker.unregister(pinchId);
+      });
+
+      it('ends Pinch cleanly when one of the two pointers is released', () => {
+        const tracker = new ElementGestureTracker(el);
+        const onPinchEnd = jest.fn();
+
+        const pinchId = tracker.register(
+          Gesture.Pinch().threshold(0.1).onEnd(onPinchEnd)
+        );
+
+        firePointer(el, 'pointerdown', 0, 0, 1);
+        firePointer(el, 'pointerdown', 100, 0, 2);
+        firePointer(window, 'pointermove', 200, 0, 2);
+        firePointer(window, 'pointerup', 200, 0, 2);
+
+        expect(onPinchEnd).toHaveBeenCalledTimes(1);
+
+        tracker.unregister(pinchId);
+      });
+
+      it('lets Pinch and Rotate, registered on the same element, both independently receive the same two-pointer stream', () => {
+        const tracker = new ElementGestureTracker(el);
+        const onPinchChange = jest.fn();
+        const onRotateChange = jest.fn();
+
+        const pinchId = tracker.register(
+          Gesture.Pinch().threshold(0.1).onChange(onPinchChange)
+        );
+        const rotateId = tracker.register(
+          Gesture.Rotate().threshold(1).onChange(onRotateChange)
+        );
+
+        firePointer(el, 'pointerdown', 0, 0, 1);
+        firePointer(el, 'pointerdown', 100, 0, 2);
+        // Both scale (100 -> 200 apart) and rotate (along +x -> +y) at once.
+        firePointer(window, 'pointermove', 0, 200, 2);
+
+        expect(onPinchChange).toHaveBeenCalledTimes(1);
+        expect(onRotateChange).toHaveBeenCalledTimes(1);
+
+        tracker.unregister(pinchId);
+        tracker.unregister(rotateId);
+      });
     });
   });
 });

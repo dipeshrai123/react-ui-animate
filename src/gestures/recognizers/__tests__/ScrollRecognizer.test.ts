@@ -7,6 +7,7 @@ function fakeCtx(target: HTMLElement | Window): RecognizerContext {
   return {
     target,
     kinematics: createKinematicState({ x: 0, y: 0, t: 0 }),
+    pointers: new Map(),
     requestActivation: () => true,
     yieldTo: () => {},
   };
