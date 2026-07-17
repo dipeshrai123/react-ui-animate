@@ -16,6 +16,8 @@ type ValueReturn<T> = T extends Primitive
 
 type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
+// The tuple return here is a grandfathered exception, not the pattern to
+// copy — new hooks should return an object (see CONTRIBUTING.md).
 export function useValue<T extends Base>(
   initial: T
 ): [
