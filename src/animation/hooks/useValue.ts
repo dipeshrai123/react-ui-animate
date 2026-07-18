@@ -100,29 +100,32 @@ function handlePrimitive(
     return followValue(value, to);
   }
 
-  if (typeof to === 'number' || typeof to === 'string') {
-    value.set(to);
-    return null;
+  if (isDescriptor(to)) {
+    return handleDescriptor(value, to);
   }
 
+  // Guaranteed Primitive by elimination — isAnimateValue/isDescriptor above
+  // ruled out the other two union members, but that's a runtime fact the
+  // compiler can't derive from an `any`-typed instanceof guard.
+  value.set(to as Primitive);
+  return null;
+}
+
+function handleDescriptor(value: AnimateValue<Primitive>, descriptor: Descriptor) {
   // `setValue(withSpring(otherAnimatedValue))` / `withTiming(...)` — re-run
   // the driver toward the source's latest value every time it changes,
   // instead of animating to a single fixed target.
-  if (isAnimateValue(to.to)) {
-    return followValue(value, to.to as AnimateValue<Primitive>, to);
+  if (isAnimateValue(descriptor.to)) {
+    return followValue(value, descriptor.to, descriptor);
   }
 
-  if (to.type === 'sequence') {
-    const animations = to.options?.animations ?? [];
+  if (descriptor.type === 'sequence') {
+    const animations = descriptor.options?.animations ?? [];
     const controllers = animations.map((step) => buildAnimation(value, step));
-    return sequence(controllers, to.options);
+    return sequence(controllers, descriptor.options);
   }
 
-  if (to.type === 'loop') {
-    return buildAnimation(value, to);
-  }
-
-  return buildAnimation(value, to);
+  return buildAnimation(value, descriptor);
 }
 
 // Drives `value` off of `source` for as long as the returned controls are
