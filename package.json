@@ -1,6 +1,6 @@
 {
   "name": "react-ui-animate",
-  "version": "5.4.0-next.3",
+  "version": "5.4.0-next.4",
   "description": "React library for gestures and animation",
   "type": "module",
   "main": "dist/index.mjs",
