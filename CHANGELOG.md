@@ -279,6 +279,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- Fixed `useValue`'s `set` function and `controls` object being recreated on
+  every render instead of holding a stable identity like `useState`'s
+  setter. A fresh identity each render would spuriously re-run any
+  `useEffect` that (correctly, per `exhaustive-deps`) listed it as a
+  dependency — restarting whatever animation that effect was driving any
+  time an unrelated parent re-render happened.
 - Fixed `Gesture.Pan()` and `Gesture.Swipe()` both firing when registered on
   the same element for a single fast drag (`onEnd` and `onSwipe` used to
   both fire for what the user experienced as one gesture) — the first one

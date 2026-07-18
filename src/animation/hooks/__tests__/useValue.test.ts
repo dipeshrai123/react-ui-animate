@@ -249,6 +249,22 @@ describe('useValue', () => {
       // Value should change when resumed
       expect(result.current[0].current).not.toBe(pausedValue);
     });
+
+    it('keeps setValue and controls referentially stable across re-renders', () => {
+      const { result, rerender } = renderHook(() => useValue(0));
+      const [, setValueBefore, controlsBefore] = result.current;
+
+      rerender();
+
+      const [, setValueAfter, controlsAfter] = result.current;
+
+      // A stable identity (like useState's setter) matters here: consumers
+      // routinely list it in a useEffect dependency array, and a fresh
+      // function on every render would spuriously re-run that effect on
+      // every unrelated parent re-render.
+      expect(setValueAfter).toBe(setValueBefore);
+      expect(controlsAfter).toBe(controlsBefore);
+    });
   });
 
   describe('array values', () => {

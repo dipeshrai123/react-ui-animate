@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useMemo, useRef } from 'react';
 import { delay, sequence, loop, parallel } from '../drivers';
 import { AnimateValue, isAnimateValue } from '../values/AnimateValue';
 
@@ -41,37 +41,51 @@ export function useValue<T extends Base>(
     return new AnimateValue(initial);
   }, []) as ValueReturn<T>;
 
-  function set(to: Base | Descriptor | AnimateValue<Primitive>) {
-    let ctrl: Controls | null = null;
+  // Stable across the component's lifetime, like useState's setter — `set`
+  // only closes over `initial` (read-once, same contract as useState's
+  // initial value) and the memoized `value`/`controllerRef`, so an empty
+  // dep array is correct, not just expedient. Without this, a fresh `set`
+  // identity on every render will spuriously re-run any effect that lists
+  // it as a dependency (the idiomatic, exhaustive-deps-compliant thing to
+  // do), restarting whatever that effect was driving.
+  const set = useCallback(
+    (to: Base | Descriptor | AnimateValue<Primitive>) => {
+      let ctrl: Controls | null = null;
 
-    if (Array.isArray(initial)) {
-      ctrl = handleArray(
-        value as Array<AnimateValue<Primitive>>,
-        to as Primitive[] | Descriptor
-      );
-    } else if (typeof initial === 'object') {
-      ctrl = handleObject(
-        value as Record<string, AnimateValue<Primitive>>,
-        to as Record<string, Primitive> | Descriptor
-      );
-    } else {
-      ctrl = handlePrimitive(
-        value as AnimateValue<Primitive>,
-        to as Primitive | Descriptor | AnimateValue<Primitive>
-      );
-    }
+      if (Array.isArray(initial)) {
+        ctrl = handleArray(
+          value as Array<AnimateValue<Primitive>>,
+          to as Primitive[] | Descriptor
+        );
+      } else if (typeof initial === 'object') {
+        ctrl = handleObject(
+          value as Record<string, AnimateValue<Primitive>>,
+          to as Record<string, Primitive> | Descriptor
+        );
+      } else {
+        ctrl = handlePrimitive(
+          value as AnimateValue<Primitive>,
+          to as Primitive | Descriptor | AnimateValue<Primitive>
+        );
+      }
 
-    controllerRef.current = ctrl;
-    if (ctrl) ctrl.start();
-  }
+      controllerRef.current = ctrl;
+      if (ctrl) ctrl.start();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    []
+  );
 
-  const controls = {
-    start: () => controllerRef.current?.start(),
-    pause: () => controllerRef.current?.pause(),
-    resume: () => controllerRef.current?.resume(),
-    cancel: () => controllerRef.current?.cancel(),
-    reset: () => controllerRef.current?.reset(),
-  };
+  const controls = useMemo<Controls>(
+    () => ({
+      start: () => controllerRef.current?.start(),
+      pause: () => controllerRef.current?.pause(),
+      resume: () => controllerRef.current?.resume(),
+      cancel: () => controllerRef.current?.cancel(),
+      reset: () => controllerRef.current?.reset(),
+    }),
+    []
+  );
 
   return [value, set, controls] as const;
 }
