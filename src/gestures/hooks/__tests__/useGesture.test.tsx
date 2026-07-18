@@ -112,6 +112,29 @@ describe('useGesture', () => {
     expect(onStart).not.toHaveBeenCalled();
   });
 
+  it('attaches once a conditionally-rendered ref is populated on a later render', () => {
+    const ref = { current: null as HTMLDivElement | null };
+    const onStart = jest.fn();
+
+    const { rerender } = renderHook(
+      () => useGesture(ref, Gesture.Pan().minDistance(5).onStart(onStart)),
+      { initialProps: {} }
+    );
+
+    firePointer(el, 'pointerdown', 0, 0);
+    firePointer(window, 'pointermove', 20, 0);
+    expect(onStart).not.toHaveBeenCalled();
+
+    // Simulates a node that mounts later (e.g. gated by `activeIndex !== null`).
+    ref.current = el;
+    rerender({});
+
+    firePointer(window, 'pointerup', 20, 0);
+    firePointer(el, 'pointerdown', 0, 0);
+    firePointer(window, 'pointermove', 20, 0);
+    expect(onStart).toHaveBeenCalledTimes(1);
+  });
+
   describe('array mode', () => {
     let elB: HTMLDivElement;
 

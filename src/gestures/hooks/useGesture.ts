@@ -62,6 +62,7 @@ export function useGesture(
   gesture: GestureDescriptor<any, any> | ((index: number) => GestureDescriptor<any, any>)
 ): void {
   const singleRegistrationRef = useRef<ActiveRegistration | null>(null);
+  const singleRegisteredElRef = useRef<HTMLElement | Window | null>(null);
   const arrayRegistrationsRef = useRef<Map<RefObject<HTMLElement>, ActiveRegistration>>(new Map());
 
   const resolveDescriptor = (): GestureDescriptor<any, any> => gesture as GestureDescriptor<any, any>;
@@ -70,22 +71,32 @@ export function useGesture(
     return { ...base, handlers: withIndex(base.handlers as Record<string, unknown>, index) };
   };
 
-  // Register on mount, unregister on unmount — single ref/window mode.
+  // Register on mount, unregister on unmount - single ref/window mode.
   useEffect(() => {
     if (Array.isArray(target)) return;
 
     const el: HTMLElement | Window | null =
       target instanceof Window ? target : target.current;
-    if (!el) return;
 
-    const reg = registerGesture(el, resolveDescriptor());
-    singleRegistrationRef.current = reg;
+    if (el === singleRegisteredElRef.current) return;
 
+    singleRegistrationRef.current?.unregister();
+    singleRegistrationRef.current = null;
+    singleRegisteredElRef.current = el;
+
+    if (el) {
+      singleRegistrationRef.current = registerGesture(el, resolveDescriptor());
+    }
+  });
+
+  // Unregister on unmount — single ref/window mode.
+  useEffect(() => {
+    if (Array.isArray(target)) return;
     return () => {
-      reg.unregister();
+      singleRegistrationRef.current?.unregister();
       singleRegistrationRef.current = null;
+      singleRegisteredElRef.current = null;
     };
-    // Mount/unmount only — ref identity isn't expected to change without a remount.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
