@@ -1,5 +1,15 @@
+import { TextEncoder, TextDecoder } from 'util';
+
+// jsdom's test environment doesn't provide these, but react-dom/server's
+// browser build (what Jest resolves under jsdom) needs them at import time.
+if (typeof (globalThis as any).TextEncoder === 'undefined') {
+  (globalThis as any).TextEncoder = TextEncoder;
+  (globalThis as any).TextDecoder = TextDecoder;
+}
+
 import React, { createRef, act } from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../../values/AnimateValue';
@@ -35,6 +45,29 @@ describe('〈animate> components', () => {
     expect(el.style.transform).toBe('translateX(15px) scale(2)');
     expect(el.getAttribute('id')).toBe('my-id');
     expect(el.getAttribute('title')).toBe('hello');
+  });
+
+  it('renders the AnimateValue resting state into static (SSR) markup, not the default one', () => {
+    // Regression: style/transform props bound directly to an AnimateValue
+    // (the `useValue` + `style={{ opacity }}` pattern) used to be entirely
+    // skipped when building the element's style, relying on a
+    // useLayoutEffect to push `.current` to the DOM after mount. That
+    // effect never runs during server rendering, so the server-rendered
+    // HTML showed the un-animated default (opacity: 1, no transform) until
+    // client JS hydrated and snapped it to the real starting value — a
+    // visible flash on any SSR'd page (e.g. a Docusaurus/Next.js site).
+    const opacity = new AnimateValue(0);
+    const translateY = new AnimateValue(14);
+
+    const html = renderToStaticMarkup(
+      <animate.div
+        data-testid="ssr-div"
+        style={{ opacity, translateY }}
+      />
+    );
+
+    expect(html).toContain('opacity:0');
+    expect(html).toContain('transform:translateY(14px)');
   });
 
   it('updates style when AnimateValue-driven props change', () => {

@@ -14,6 +14,7 @@ import {
   applyStyleProp,
   applyTransforms,
   createTransformRenderer,
+  formatTransformString,
 } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
@@ -669,13 +670,37 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       ...(animate ? Object.keys(animate) : []),
     ]);
 
+    // AnimateValues bound directly via `style` (e.g. `style={{ opacity }}`
+    // from `useValue`) are otherwise only ever pushed to the DOM
+    // imperatively, from a `useLayoutEffect` in useSyncAnimatedStyles /
+    // useEnterAnimations. That effect never runs during SSR and — more
+    // importantly — never runs before the *first* client paint on a
+    // server-rendered page, since that paint happens as soon as the static
+    // HTML arrives, well before hydration executes any effects. Rendering
+    // `.current` here too means the resting/initial value is already
+    // correct in that first paint, instead of the un-animated default
+    // flashing until hydration catches up.
+    const transformStyleProps: Record<string, any> = {};
+
     if (style) {
       for (const [key, value] of Object.entries(style)) {
-        if (isTransformKey(key) || animatedKeys.has(key)) continue;
-        if (value && typeof value === 'object' && 'subscribe' in value)
+        const current =
+          value && typeof (value as AnimateValue<any>).subscribe === 'function'
+            ? (value as AnimateValue<any>).current
+            : value;
+
+        if (isTransformKey(key)) {
+          transformStyleProps[key] = current;
           continue;
-        filteredStyle[key] = value;
+        }
+
+        if (animatedKeys.has(key)) continue;
+        filteredStyle[key] = current;
       }
+    }
+
+    if (Object.keys(transformStyleProps).length > 0) {
+      filteredStyle.transform = formatTransformString(transformStyleProps);
     }
 
     // Non-style attributes (SVG positional attrs like `cx`/`x1`/`d`, etc.)
