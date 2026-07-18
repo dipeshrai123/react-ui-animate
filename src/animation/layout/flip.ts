@@ -174,6 +174,17 @@ export function runFlipAnimation(
   controllers.forEach((ctrl) => ctrl.start());
 }
 
+// Just the fields FLIP actually diffs — plain object rather than a real
+// DOMRect so `measureUntransformedRect` can report document-relative
+// coordinates (see below) without fighting DOMRect's read-only, viewport-
+// relative fields.
+export type MeasuredRect = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
 // Measures `node`'s untransformed layout box. getBoundingClientRect()
 // reflects whatever CSS transform is currently applied (ours or the
 // consumer's own), which would corrupt the measurement — e.g. while a
@@ -181,12 +192,27 @@ export function runFlipAnimation(
 // static/animated transform is set via `style`/`animate`. Briefly
 // neutralizing the transform happens entirely within useLayoutEffect, before
 // the browser paints, so it's never visible.
-export function measureUntransformedRect(node: HTMLElement): DOMRect {
+//
+// getBoundingClientRect() is viewport-relative, so `left`/`top` shift by
+// however much the page has scrolled between two measurements even when the
+// element hasn't actually moved in the document. Comparing two such rects
+// straight (the previous FLIP behavior) bakes that scroll delta into the
+// animation — e.g. scroll down, re-trigger a `layout`/`layoutId` change, and
+// the element FLIPs in from the wrong place (or animates when it shouldn't).
+// Adding the current scroll offset converts to document-relative
+// coordinates, which are scroll-invariant, so `diffRects` only ever sees the
+// element's real layout change.
+export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
   const previousTransform = node.style.transform;
   node.style.transform = 'none';
   const rect = node.getBoundingClientRect();
   node.style.transform = previousTransform;
-  return rect;
+  return {
+    left: rect.left + window.scrollX,
+    top: rect.top + window.scrollY,
+    width: rect.width,
+    height: rect.height,
+  };
 }
 
 // True if this element's FLIP pseudo-transform is currently displaced away
@@ -223,8 +249,8 @@ export function readStrandedDisplacement(
 }
 
 export function diffRects(
-  prevRect: DOMRect,
-  nextRect: DOMRect
+  prevRect: MeasuredRect,
+  nextRect: MeasuredRect
 ): FlipDelta | null {
   const deltaX = prevRect.left - nextRect.left;
   const deltaY = prevRect.top - nextRect.top;

@@ -17,7 +17,9 @@
 // with no prior entry to diff against, so it appears to jump instead of
 // animate).
 
-export type LayoutIdEntry = { rect: DOMRect; node: HTMLElement };
+import type { MeasuredRect } from './flip';
+
+export type LayoutIdEntry = { rect: MeasuredRect; node: HTMLElement };
 export type LayoutIdRegistry = Map<string, LayoutIdEntry>;
 
 export const LAYOUT_ID_REGISTRY_KEY = '__REACT_UI_ANIMATE_LAYOUT_ID_REGISTRY__';

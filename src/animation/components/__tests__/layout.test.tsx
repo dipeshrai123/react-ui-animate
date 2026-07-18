@@ -229,6 +229,83 @@ describe('layout animation', () => {
   });
 });
 
+describe('layout animation — scroll invariance', () => {
+  // getBoundingClientRect() is viewport-relative: it shifts by the scroll
+  // offset even when the element hasn't actually moved in the document.
+  // This mock tracks the element's real *document* position and reports the
+  // viewport-relative rect a browser would (subtracting window.scrollY),
+  // reproducing the bug where scrolling the page between two layout-effect
+  // measurements got misread as the element itself moving.
+  let docTop: number;
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    docTop = 100;
+    window.scrollTo = jest.fn();
+    Object.defineProperty(window, 'scrollY', { value: 0, writable: true, configurable: true });
+    jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(
+        () =>
+          ({
+            left: 0,
+            top: docTop - window.scrollY,
+            width: 100,
+            height: 50,
+            right: 100,
+            bottom: docTop - window.scrollY + 50,
+            x: 0,
+            y: docTop - window.scrollY,
+            toJSON() {},
+          }) as DOMRect
+      );
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('does not trigger a FLIP animation when only the page scroll changed, not the element', () => {
+    const { rerender } = render(<animate.div data-testid="box" layout />);
+    const el = screen.getByTestId('box');
+
+    // User scrolls the page — the element's document position (`docTop`) is
+    // untouched, only the viewport-relative rect the browser reports shifts.
+    Object.defineProperty(window, 'scrollY', { value: 400, writable: true, configurable: true });
+    rerender(<animate.div data-testid="box" layout />);
+
+    // Before the fix, this read as a 400px jump and incorrectly FLIPped.
+    expect(el.style.transform).toBe('');
+  });
+
+  it('still animates a real layout change that happens to coincide with a scroll', async () => {
+    const { rerender } = render(<animate.div data-testid="box" layout />);
+    const el = screen.getByTestId('box');
+
+    // The element genuinely moves 60px down in the document *and* the page
+    // scrolls 400px in the same commit — the animation must reflect only
+    // the real 60px document-relative delta, not the scroll offset.
+    docTop = 160;
+    Object.defineProperty(window, 'scrollY', { value: 400, writable: true, configurable: true });
+    rerender(<animate.div data-testid="box" layout />);
+
+    expect(el.style.transform).toBe(
+      'translateX(0px) translateY(-60px) scaleX(1) scaleY(1)'
+    );
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    await waitFor(() => {
+      expect(el.style.transform).toBe(
+        'translateX(0px) translateY(0px) scaleX(1) scaleY(1)'
+      );
+    });
+  });
+});
+
 describe('layout animation — rapid re-triggering', () => {
   // getBoundingClientRect() reflects the currently-applied CSS transform in a
   // real browser. This mock replicates that so the test actually exercises the

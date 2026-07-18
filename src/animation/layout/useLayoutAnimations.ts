@@ -15,6 +15,7 @@ import {
   measureUntransformedRect,
   runFlipAnimation,
   type FlipController,
+  type MeasuredRect,
 } from './flip';
 
 /**
@@ -28,7 +29,7 @@ export function useLayoutAnimations(
   isExitingRef: MutableRefObject<boolean>,
   animateValuesRef: MutableRefObject<Record<string, AnimateValue<Primitive>>>
 ) {
-  const prevRectRef = useRef<DOMRect | null>(null);
+  const prevRectRef = useRef<MeasuredRect | null>(null);
   const hasMeasuredRef = useRef(false);
   const initializedRef = useRef(false);
   const controllersRef = useRef<FlipController[]>([]);
