@@ -84,7 +84,11 @@ describe('Presence', () => {
           <button onClick={() => setItems(['a'])}>Remove B</button>
           <Presence>
             {items.map((item) => (
-              <animate.div key={item} data-testid={`item-${item}`}>
+              <animate.div
+                key={item}
+                data-testid={`item-${item}`}
+                exit={{ opacity: withTiming(0, { duration: 100 }) }}
+              >
                 {item}
               </animate.div>
             ))}
@@ -103,6 +107,71 @@ describe('Presence', () => {
 
     expect(screen.getByTestId('item-a')).toBeInTheDocument();
     expect(screen.getByTestId('item-b')).toBeInTheDocument(); // Still in DOM during exit
+
+    act(() => {
+      jest.advanceTimersByTime(150);
+    });
+    act(() => {
+      jest.runOnlyPendingTimers();
+    });
+
+    expect(screen.queryByTestId('item-b')).not.toBeInTheDocument();
+  });
+
+  it('removes a plain (non-animated) child immediately, with no exit delay', () => {
+    function TestComponent() {
+      const [show, setShow] = useState(true);
+
+      return (
+        <>
+          <button onClick={() => setShow(false)}>Hide</button>
+          <Presence>
+            {show && (
+              <div key="plain" data-testid="plain">
+                Content
+              </div>
+            )}
+          </Presence>
+        </>
+      );
+    }
+
+    render(<TestComponent />);
+    expect(screen.getByTestId('plain')).toBeInTheDocument();
+
+    act(() => {
+      screen.getByText('Hide').click();
+    });
+
+    expect(screen.queryByTestId('plain')).not.toBeInTheDocument();
+  });
+
+  it('removes an animate.div with no exit prop immediately, with no exit delay', () => {
+    function TestComponent() {
+      const [show, setShow] = useState(true);
+
+      return (
+        <>
+          <button onClick={() => setShow(false)}>Hide</button>
+          <Presence>
+            {show && (
+              <animate.div key="noexit" data-testid="noexit">
+                Content
+              </animate.div>
+            )}
+          </Presence>
+        </>
+      );
+    }
+
+    render(<TestComponent />);
+    expect(screen.getByTestId('noexit')).toBeInTheDocument();
+
+    act(() => {
+      screen.getByText('Hide').click();
+    });
+
+    expect(screen.queryByTestId('noexit')).not.toBeInTheDocument();
   });
 
   it('calls onExitComplete when all exits are done', async () => {
@@ -369,6 +438,9 @@ describe('useIsPresent', () => {
       const [show, setShow] = useState(true);
 
       function Child() {
+        // Opt in to holding the DOM node during exit (via usePresence)
+        // so the 'exiting' state is observable before removal.
+        usePresence();
         const isPresent = useIsPresent();
         return <div data-testid="present">{isPresent ? 'present' : 'exiting'}</div>;
       }

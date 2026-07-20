@@ -35,6 +35,7 @@ export interface PresenceContextValue {
   isInitialMount: boolean;
   isExiting: boolean;
   onExitComplete: () => void;
+  registerExit: () => void;
   _forceUpdate?: number;
 }
 
@@ -42,6 +43,11 @@ export const PresenceContext = createContext<PresenceContextValue | null>(null);
 
 export function usePresence(): [boolean, () => void] {
   const context = useContext(PresenceContext);
+
+  useLayoutEffect(() => {
+    context?.registerExit();
+  }, [context]);
+
   if (!context) return [true, () => {}];
   return [!context.isExiting, context.onExitComplete];
 }
@@ -110,6 +116,7 @@ export function Presence({
     () => new Map()
   );
   const exitingCount = useRef(0);
+  const exitRegistryRef = useRef<Set<string | number>>(new Set());
 
   const currentChildren = useMemo(() => {
     const result: Array<{ key: string | number; element: ReactElement }> = [];
@@ -145,6 +152,7 @@ export function Presence({
           // Was exiting and came back before its exit finished re-entering.
           if (state.isExiting) {
             exitingCount.current--;
+            exitRegistryRef.current.delete(key);
           }
           next.set(key, {
             key,
@@ -189,11 +197,24 @@ export function Presence({
       return next;
     });
 
+    exitRegistryRef.current.delete(key);
     exitingCount.current--;
     if (exitingCount.current === 0 && onExitComplete) {
       onExitComplete();
     }
   }, [onExitComplete]);
+
+  const registerExit = useCallback((key: string | number) => {
+    exitRegistryRef.current.add(key);
+  }, []);
+
+  useLayoutEffect(() => {
+    for (const [key, state] of childStates) {
+      if (state.isExiting && !exitRegistryRef.current.has(key)) {
+        handleExitComplete(key);
+      }
+    }
+  });
 
   const renderedChildren = useMemo(() => {
     const result: ReactElement[] = [];
@@ -211,6 +232,7 @@ export function Presence({
         isInitialMount: isInitialMount.current && initial,
         isExiting: state.isExiting,
         onExitComplete: () => handleExitComplete(key),
+        registerExit: () => registerExit(key),
       };
 
       result.push(
@@ -223,7 +245,7 @@ export function Presence({
     }
 
     return result;
-  }, [childStates, initial, mode, handleExitComplete]);
+  }, [childStates, initial, mode, handleExitComplete, registerExit]);
 
   return <>{renderedChildren}</>;
 }

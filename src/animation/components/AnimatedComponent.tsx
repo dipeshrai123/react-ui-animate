@@ -259,11 +259,9 @@ function useExitAnimations(
       return;
     }
 
-    // Gate on the not-exiting -> exiting transition (not just `isExiting`)
-    // so a PresenceContext object identity change alone doesn't re-trigger
-    // (and cancel) an exit animation already in flight.
     if (!prevIsExiting && isExiting) {
       isExitingRef.current = true;
+      presenceContext?.registerExit();
       enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
       enterControllersRef.current = [];
 
