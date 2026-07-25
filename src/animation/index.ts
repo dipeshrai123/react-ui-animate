@@ -32,6 +32,7 @@ export {
 } from './descriptors';
 
 export { useValue } from './hooks/useValue';
+export { useTimeline, type Timeline } from './hooks/useTimeline';
 
 export {
   Presence,

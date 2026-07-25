@@ -19,6 +19,7 @@ export {
   withParallel,
   withCustom,
   useValue,
+  useTimeline,
   Presence,
   PresenceContext,
   usePresence,
@@ -26,6 +27,8 @@ export {
   recipes,
   LayoutGroup,
 } from './animation';
+
+export type { Timeline } from './animation';
 
 export type {
   Primitive,
@@ -76,6 +79,12 @@ export {
   type UseDragResult,
   type DragBounds,
 } from './gestures/hooks/useDrag';
+
+export {
+  Reorder,
+  type ReorderGroupProps,
+  type ReorderItemProps,
+} from './gestures/components/Reorder';
 
 export { Gesture } from './gestures/api/Gesture';
 export { useGesture } from './gestures/hooks/useGesture';
