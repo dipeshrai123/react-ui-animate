@@ -1,8 +1,8 @@
 export {
-  Presence,
-  PresenceContext,
-  usePresence,
-  useIsPresent,
-  type PresenceProps,
-  type PresenceContextValue,
-} from './Presence';
+  Unmount,
+  UnmountContext,
+  useUnmount,
+  useIsUnmounting,
+  type UnmountProps,
+  type UnmountContextValue,
+} from './Unmount';

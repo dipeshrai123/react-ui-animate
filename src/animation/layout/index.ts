@@ -1,21 +1,21 @@
-export { useLayoutAnimations } from './useLayoutAnimations';
-export { useLayoutIdAnimations } from './useLayoutIdAnimations';
-export { LayoutGroup, type LayoutGroupProps } from './LayoutGroup';
+export { useFlipAnimations } from './useFlipAnimations';
+export { useFlipIdAnimations } from './useFlipIdAnimations';
+export { FlipGroup, type FlipGroupProps } from './FlipGroup';
 export {
-  LAYOUT_FLIP_KEYS,
-  LAYOUT_ID_FLIP_KEYS,
+  FLIP_KEYS,
+  FLIP_ID_KEYS,
   diffRects,
   measureUntransformedRect,
   readStrandedDisplacement,
-  resolveLayoutTransition,
+  resolveFlipTransition,
   runFlipAnimation,
   type FlipDelta,
   type FlipKeys,
-  type LayoutOptions,
+  type FlipOptions,
 } from './flip';
 export {
-  LAYOUT_ID_REGISTRY_KEY,
-  layoutIdRegistry,
-  type LayoutIdEntry,
-  type LayoutIdRegistry,
+  FLIP_ID_REGISTRY_KEY,
+  flipIdRegistry,
+  type FlipIdEntry,
+  type FlipIdRegistry,
 } from './registry';

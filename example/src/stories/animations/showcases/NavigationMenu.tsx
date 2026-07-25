@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { animate, withSpring, withTiming, Presence } from 'react-ui-animate';
+import { animate, withSpring, withTiming, Unmount } from 'react-ui-animate';
 import { ExampleLayout } from '../shared';
 
 interface MenuItem {
@@ -119,7 +119,7 @@ const Example: React.FC = () => {
           }}
         >
           <ul style={{ margin: 0, padding: 0 }}>
-            <Presence>
+            <Unmount>
               {menuItems.map((item, index) => (
                 <MenuItemComponent
                   key={item.id}
@@ -129,7 +129,7 @@ const Example: React.FC = () => {
                   index={index}
                 />
               ))}
-            </Presence>
+            </Unmount>
           </ul>
         </animate.nav>
       </div>

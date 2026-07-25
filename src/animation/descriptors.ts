@@ -39,7 +39,7 @@ const TIMING_OPTION_KEYS = new Set([
 //   withSpring({ stiffness: 400 })
 //   withTiming({ duration: 300 })
 // without breaking object targets like withSpring({ x: 10, y: 20 }). This is
-// load-bearing for `layoutOptions` (see `src/animation/layout/flip.ts`),
+// load-bearing for `flipOptions` (see `src/animation/layout/flip.ts`),
 // where a FLIP transition computes its own from/to and the descriptor is
 // only used for its stiffness/damping/duration — there's no real value to
 // pass as a target.

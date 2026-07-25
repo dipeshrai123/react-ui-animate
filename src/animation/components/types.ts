@@ -8,7 +8,7 @@ import type { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
 import type { UseInViewOptions } from '../../shared/hooks';
-import type { LayoutOptions } from '../layout/flip';
+import type { FlipOptions } from '../layout/flip';
 
 export type AnimateValueCompatible =
   | AnimateValue<number>
@@ -49,21 +49,21 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
   | 'style'
   | 'animate'
-  | 'exit'
+  | 'unmount'
   | 'hover'
   | 'press'
   | 'focus'
   | 'view'
   | 'viewOptions'
-  | 'layout'
-  | 'layoutOptions'
-  | 'layoutId'
+  | 'flip'
+  | 'flipOptions'
+  | 'flipId'
 > & {
   style?: AnimateStyle;
   /** Declarative animations to run when the component mounts or updates. */
   animate?: AnimateProp;
-  /** Declarative animations to run when the component exits (inside Presence). */
-  exit?: AnimateProp;
+  /** Declarative animations to run when the component unmounts (inside Unmount). */
+  unmount?: AnimateProp;
   /** Animations or styles to apply when the element is hovered. */
   hover?: AnimateProp;
   /** Animations or styles to apply when the element is pressed (mouse down or touch start). */
@@ -81,30 +81,30 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
    * already applied to the element (via `style`, `animate`, `hover`, `press`,
    * or `view`) instead of overwriting it.
    */
-  layout?: boolean;
+  flip?: boolean;
   /**
-   * Transition used by `layout` / `layoutId`. Same descriptor helpers as
+   * Transition used by `flip` / `flipId`. Same descriptor helpers as
    * `animate` / `hover` / etc., in options-only form (no target — FLIP
    * always settles at identity):
    *
-   *   layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
-   *   layoutOptions={withTiming({ duration: 300 })}
+   *   flipOptions={withSpring({ stiffness: 400, damping: 32 })}
+   *   flipOptions={withTiming({ duration: 300 })}
    *
    * Raw spring option objects are still accepted for backwards compatibility.
    */
-  layoutOptions?: LayoutOptions;
+  flipOptions?: FlipOptions;
   /**
-   * Identifies this element as part of a shared layout transition. When an
-   * element carrying a given `layoutId` unmounts (or moves elsewhere) and a
-   * different element mounts with the same `layoutId`, the new element
+   * Identifies this element as part of a shared flip transition. When an
+   * element carrying a given `flipId` unmounts (or moves elsewhere) and a
+   * different element mounts with the same `flipId`, the new element
    * automatically plays a FLIP-style transform animation from the previous
    * element's last known position/size to its own — useful for tab
    * indicators, expanding cards, and other "morph between elements"
-   * patterns. Uses `layoutOptions` for the transition (spring or timing).
-   * Note: `layoutId`s are tracked in a single global registry, so keep them
+   * patterns. Uses `flipOptions` for the transition (spring or timing).
+   * Note: `flipId`s are tracked in a single global registry, so keep them
    * unique per active transition group.
    */
-  layoutId?: string;
+  flipId?: string;
 };
 
 export function combineRefs<T>(

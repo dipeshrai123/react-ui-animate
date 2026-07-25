@@ -14,8 +14,8 @@ import {
 import { animate, useValue } from '../../animation';
 import {
   measureUntransformedRect,
-  resolveLayoutTransition,
-  type LayoutOptions,
+  resolveFlipTransition,
+  type FlipOptions,
   type MeasuredRect,
 } from '../../animation/layout/flip';
 import { clamp, move } from '../../shared/utils';
@@ -26,7 +26,7 @@ interface ReorderContextValue<T = unknown> {
   values: T[];
   onReorder: (values: T[]) => void;
   axis: 'x' | 'y';
-  transition: LayoutOptions | undefined;
+  transition: FlipOptions | undefined;
   groupKey: object;
   registerElement: (value: T, el: HTMLElement) => void;
   unregisterElement: (value: T) => void;
@@ -170,7 +170,7 @@ export interface ReorderGroupProps<T> {
   values: T[];
   onReorder: (values: T[]) => void;
   axis?: 'x' | 'y';
-  transition?: LayoutOptions;
+  transition?: FlipOptions;
   children?: ReactNode;
   style?: CSSProperties;
   className?: string;
@@ -347,7 +347,7 @@ export function ReorderItem<T>({
   };
 
   const settleTo = (target: number) => ({
-    ...resolveLayoutTransition(transition),
+    ...resolveFlipTransition(transition),
     to: target,
   });
 

@@ -19,17 +19,17 @@ import {
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { PresenceContext } from '../presence/Presence';
+import { UnmountContext } from '../presence/Unmount';
 import { getInitialValue } from './initialValues';
 import {
   applyStateAnimation,
   extractRestingTarget,
   type StateAnimationContext,
 } from './stateAnimations';
-import { setupExitAnimations } from './exitAnimations';
+import { setupUnmountAnimations } from './unmountAnimations';
 import {
-  useLayoutAnimations,
-  useLayoutIdAnimations,
+  useFlipAnimations,
+  useFlipIdAnimations,
 } from '../layout';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
@@ -144,7 +144,7 @@ function useEnterAnimations(
   >,
   controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
-  const presenceContext = useContext(PresenceContext);
+  const unmountContext = useContext(UnmountContext);
   const cleanupRef = useRef<(() => void)[]>([]);
   const hasMountedRef = useRef(false);
   const prevAnimatePropKeyRef = useRef<string>('');
@@ -152,7 +152,7 @@ function useEnterAnimations(
 
   useLayoutEffect(() => {
     const node = nodeRef.current;
-    const isExiting = presenceContext?.isExiting ?? false;
+    const isExiting = unmountContext?.isExiting ?? false;
 
     const justReEntered = wasExitingRef.current && !isExiting;
     wasExitingRef.current = isExiting;
@@ -217,10 +217,10 @@ function useEnterAnimations(
     // state changes; the omitted refs are React refs (stable identity) and
     // don't belong in the dependency array.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [animateProp, presenceContext?.isExiting]);
+  }, [animateProp, unmountContext?.isExiting]);
 }
 
-function useExitAnimations(
+function useUnmountAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
   isExitingRef: React.MutableRefObject<boolean>,
@@ -229,21 +229,21 @@ function useExitAnimations(
   >,
   enterControllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
-  const presenceContext = useContext(PresenceContext);
+  const unmountContext = useContext(UnmountContext);
   const exitControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const exitCleanupRef = useRef<(() => void)[]>([]);
   const onExitCompleteRef = useRef<(() => void) | null>(null);
   const prevIsExitingRef = useRef<boolean>(false);
 
   useLayoutEffect(() => {
-    onExitCompleteRef.current = presenceContext?.onExitComplete ?? null;
+    onExitCompleteRef.current = unmountContext?.onExitComplete ?? null;
   });
 
   // useLayoutEffect (not useEffect) so this runs in sync with useEnterAnimations.
   useLayoutEffect(() => {
-    const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
+    const { unmount: unmountProp, style: currentStyle = {} } = propsRef.current;
     const node = nodeRef.current;
-    const isExiting = presenceContext?.isExiting ?? false;
+    const isExiting = unmountContext?.isExiting ?? false;
     const prevIsExiting = prevIsExitingRef.current;
     prevIsExitingRef.current = isExiting;
 
@@ -258,21 +258,21 @@ function useExitAnimations(
       return;
     }
 
-    if (isExitingRef.current || !exitProp || !node) {
+    if (isExitingRef.current || !unmountProp || !node) {
       return;
     }
 
     if (!prevIsExiting && isExiting) {
       isExitingRef.current = true;
-      presenceContext?.registerExit();
+      unmountContext?.registerExit();
       enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
       enterControllersRef.current = [];
 
       exitCleanupRef.current.forEach((cleanup) => cleanup());
       exitCleanupRef.current = [];
 
-      exitCleanupRef.current = setupExitAnimations({
-        exitProp,
+      exitCleanupRef.current = setupUnmountAnimations({
+        exitProp: unmountProp,
         animateValues: animateValuesRef.current,
         controllers: exitControllersRef.current,
         onExitComplete: () => {
@@ -302,7 +302,7 @@ function useExitAnimations(
     };
     // Omitted refs are React refs (stable identity).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [presenceContext?.isExiting]);
+  }, [unmountContext?.isExiting]);
 }
 
 function useViewAnimations(
@@ -624,7 +624,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     propsRef.current = props;
 
-    useExitAnimations(
+    useUnmountAnimations(
       nodeRef,
       propsRef,
       isExitingRef,
@@ -657,21 +657,21 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
-    useLayoutAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
-    useLayoutIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useFlipAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useFlipIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
     useSyncAnimatedStyles(nodeRef, animateValuesRef);
 
     const {
       animate,
-      exit: _exit,
+      unmount: _unmount,
       hover: _hover,
       press: _press,
       focus: _focus,
       view: _view,
       viewOptions: _viewOptions,
-      layout: _layout,
-      layoutOptions: _layoutOptions,
-      layoutId: _layoutId,
+      flip: _flip,
+      flipOptions: _flipOptions,
+      flipId: _flipId,
       style,
       ...restProps
     } = props;

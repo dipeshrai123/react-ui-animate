@@ -54,27 +54,27 @@ export const transformKeys = [
   'perspective',
 ] as const;
 
-// Internal-only pseudo transform keys reserved for the `layout` prop's own
+// Internal-only pseudo transform keys reserved for the `flip` prop's own
 // translate/scale contribution. They're stored under these distinct object
 // keys (instead of e.g. "translateX") specifically so they never overwrite a
 // same-named transform the consumer is animating via `animate`/`hover`/
 // `press`/`view`/`style` on the same element — both contributions compose as
 // separate CSS transform functions in the final string instead.
-export const LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION = {
-  __layoutTranslateX: 'translateX',
-  __layoutTranslateY: 'translateY',
-  __layoutScaleX: 'scaleX',
-  __layoutScaleY: 'scaleY',
-  // Separate namespace for the `layoutId` shared transition's own FLIP
-  // contribution, so it can never collide with the `layout` prop's pseudo
+export const FLIP_TRANSFORM_KEY_TO_CSS_FUNCTION = {
+  __flipTranslateX: 'translateX',
+  __flipTranslateY: 'translateY',
+  __flipScaleX: 'scaleX',
+  __flipScaleY: 'scaleY',
+  // Separate namespace for the `flipId` shared transition's own FLIP
+  // contribution, so it can never collide with the `flip` prop's pseudo
   // keys above if both happen to be set on the same element.
-  __layoutIdTranslateX: 'translateX',
-  __layoutIdTranslateY: 'translateY',
-  __layoutIdScaleX: 'scaleX',
-  __layoutIdScaleY: 'scaleY',
+  __flipIdTranslateX: 'translateX',
+  __flipIdTranslateY: 'translateY',
+  __flipIdScaleX: 'scaleX',
+  __flipIdScaleY: 'scaleY',
 } as const;
 
-export type LayoutTransformKey = keyof typeof LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION;
+export type FlipTransformKey = keyof typeof FLIP_TRANSFORM_KEY_TO_CSS_FUNCTION;
 
 // Internal function - exported for testing only (not re-exported from main index)
 export function applyStyleProp(el: HTMLElement, key: string, v: any) {
@@ -98,7 +98,7 @@ function defaultUnit(key: string) {
 
 function formatTransformFunction(key: string, raw: any) {
   const cssFunction =
-    (LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION as Record<string, string>)[key] ??
+    (FLIP_TRANSFORM_KEY_TO_CSS_FUNCTION as Record<string, string>)[key] ??
     key;
 
   const cur =
@@ -121,14 +121,14 @@ function formatTransformFunction(key: string, raw: any) {
 export function isTransformKey(key: string) {
   return (
     transformKeys.includes(key as (typeof transformKeys)[number]) ||
-    key in LAYOUT_TRANSFORM_KEY_TO_CSS_FUNCTION
+    key in FLIP_TRANSFORM_KEY_TO_CSS_FUNCTION
   );
 }
 
 // Formats an already-merged style/animateValues object (values may be raw
 // primitives or AnimateValue instances) into a single CSS transform string.
 // Exported so systems that manage their own transform rendering (e.g. the
-// `layout` prop) can compose with whatever else is contributing transforms
+// `flip` prop) can compose with whatever else is contributing transforms
 // to the same element.
 export function formatTransformString(txProps: Record<string, any>): string {
   const transformKeyList = Object.keys(txProps).filter(isTransformKey);

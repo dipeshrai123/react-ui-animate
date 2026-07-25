@@ -93,10 +93,10 @@ export const pressDown: AnimateProp = {
   scale: /*#__PURE__*/ withSpring(0.98, PRESS),
 };
 
-export const exitFade: AnimateProp = { opacity: soft(0) };
-export const exitSlideUp: AnimateProp = { opacity: soft(0), translateY: soft(-20) };
-export const exitSlideDown: AnimateProp = { opacity: soft(0), translateY: soft(20) };
-export const exitScale: AnimateProp = {
+export const unmountFade: AnimateProp = { opacity: soft(0) };
+export const unmountSlideUp: AnimateProp = { opacity: soft(0), translateY: soft(-20) };
+export const unmountSlideDown: AnimateProp = { opacity: soft(0), translateY: soft(20) };
+export const unmountScale: AnimateProp = {
   scale: /*#__PURE__*/ withSpring(0.8, SCALE),
   opacity: soft(0),
 };
@@ -148,8 +148,8 @@ export const recipes = {
   pressScale,
   pressDown,
 
-  exitFade,
-  exitSlideUp,
-  exitSlideDown,
-  exitScale,
+  unmountFade,
+  unmountSlideUp,
+  unmountSlideDown,
+  unmountScale,
 } as const;

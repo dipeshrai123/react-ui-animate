@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   animate,
-  Presence,
+  Unmount,
   withDelay,
   withLoop,
   withSequence,
@@ -46,9 +46,9 @@ const ARTICLES = [
   },
   {
     id: 3,
-    title: 'Presence patterns for list diffing',
+    title: 'Unmount patterns for list diffing',
     excerpt:
-      'Enter and exit animations that keep list updates smooth and predictable.',
+      'Enter and unmount animations that keep list updates smooth and predictable.',
     author: 'Priya Sharma',
     readTime: '5 min',
     tag: 'React',
@@ -481,7 +481,7 @@ function CrossfadeBlock({
 }) {
   return (
     <div style={{ position: 'relative', minHeight }}>
-      <Presence mode="wait">
+      <Unmount mode="wait">
         {loading ? (
           <animate.div
             key="skeleton"
@@ -489,7 +489,7 @@ function CrossfadeBlock({
               opacity: 1,
               scale: 1,
             }}
-            exit={{
+            unmount={{
               opacity: withTiming(0, { duration: 280 }),
               scale: withSpring(0.98, { stiffness: 300, damping: 28 }),
             }}
@@ -511,7 +511,7 @@ function CrossfadeBlock({
             {content}
           </animate.div>
         )}
-      </Presence>
+      </Unmount>
     </div>
   );
 }
@@ -531,7 +531,7 @@ const Example = () => {
   return (
     <ExampleLayout
       title="Skeleton → Content Reveal"
-      description="Shimmer placeholders transition into real content with staggered reveals. Uses withLoop for skeleton shimmer, Presence for crossfade, and withSequence + withDelay for orchestrated content entrance."
+      description="Shimmer placeholders transition into real content with staggered reveals. Uses withLoop for skeleton shimmer, Unmount for crossfade, and withSequence + withDelay for orchestrated content entrance."
       onRestart={reload}
     >
       <div

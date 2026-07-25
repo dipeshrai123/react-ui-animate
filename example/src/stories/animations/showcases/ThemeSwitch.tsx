@@ -3,7 +3,7 @@ import {
   animate,
   AnimateValue,
   Easing,
-  Presence,
+  Unmount,
   useValue,
   withSpring,
   withTiming,
@@ -595,7 +595,7 @@ const Example = () => {
           </div>
         </animate.div>
 
-        <Presence>
+        <Unmount>
           {isDark && (
             <animate.div
               key="dark-badge"
@@ -616,7 +616,7 @@ const Example = () => {
                 opacity: withTiming(1, { duration: 400 }),
                 scale: withSpring(1, { stiffness: 300, damping: 20 }),
               }}
-              exit={{
+              unmount={{
                 opacity: withTiming(0, { duration: 200 }),
                 scale: withSpring(0.8, { stiffness: 400, damping: 25 }),
               }}
@@ -624,7 +624,7 @@ const Example = () => {
               Dark mode active
             </animate.div>
           )}
-        </Presence>
+        </Unmount>
       </animate.div>
 
       <p

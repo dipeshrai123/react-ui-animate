@@ -395,26 +395,26 @@ describe('〈animate> components', () => {
       jest.useRealTimers();
     });
 
-    it('applies exit animation for opacity when not in initial style', async () => {
-      const { Presence } = await import('../../presence/Presence');
+    it('applies unmount animation for opacity when not in initial style', async () => {
+      const { Unmount } = await import('../../presence/Unmount');
       const onExitComplete = jest.fn();
       let show = true;
 
       function TestComponent() {
         return (
-          <Presence onExitComplete={onExitComplete}>
+          <Unmount onExitComplete={onExitComplete}>
             {show && (
               <animate.div
                 key="test"
                 data-testid="exit-test"
-                exit={{
+                unmount={{
                   opacity: withTiming(0, { duration: 100 }),
                 }}
               >
                 Content
               </animate.div>
             )}
-          </Presence>
+          </Unmount>
         );
       }
 
@@ -426,11 +426,11 @@ describe('〈animate> components', () => {
       const initialOpacityNum = initialOpacity ? parseFloat(initialOpacity) : 1;
       expect(initialOpacityNum).toBe(1);
 
-      // Remove element to trigger exit
+      // Remove element to trigger unmount
       show = false;
       rerender(<TestComponent />);
 
-      // Exit animation should start - opacity should animate to 0
+      // Unmount animation should start - opacity should animate to 0
       act(() => {
         jest.advanceTimersByTime(50);
       });
@@ -443,7 +443,7 @@ describe('〈animate> components', () => {
         jest.advanceTimersByTime(100);
       });
 
-      // After exit completes, opacity should be 0
+      // After unmount completes, opacity should be 0
       await waitFor(() => {
         const finalOpacity = parseFloat(el.style.opacity);
         expect(finalOpacity).toBeCloseTo(0, 1);
@@ -953,26 +953,26 @@ describe('〈animate> components', () => {
       }, { timeout: 1000 });
     });
 
-    it('applies string properties like boxShadow in exit state when not in initial style', async () => {
-      const { Presence } = await import('../../presence/Presence');
+    it('applies string properties like boxShadow in unmount state when not in initial style', async () => {
+      const { Unmount } = await import('../../presence/Unmount');
       const onExitComplete = jest.fn();
       let show = true;
 
       function TestComponent() {
         return (
-          <Presence onExitComplete={onExitComplete}>
+          <Unmount onExitComplete={onExitComplete}>
             {show && (
               <animate.div
                 key="test"
                 data-testid="exit-boxshadow"
-                exit={{
+                unmount={{
                   boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 }}
               >
                 Content
               </animate.div>
             )}
-          </Presence>
+          </Unmount>
         );
       }
 
@@ -983,7 +983,7 @@ describe('〈animate> components', () => {
       const initialBoxShadow = el.style.boxShadow;
       expect(initialBoxShadow).toBe('');
 
-      // Remove element to trigger exit
+      // Remove element to trigger unmount
       show = false;
       rerender(<TestComponent />);
 
@@ -991,7 +991,7 @@ describe('〈animate> components', () => {
         jest.advanceTimersByTime(200);
       });
 
-      // After exit animation completes, boxShadow should be applied
+      // After unmount animation completes, boxShadow should be applied
       await waitFor(() => {
         const boxShadow = el.style.boxShadow;
         expect(boxShadow).toContain('rgba(0,0,0,0.5)');

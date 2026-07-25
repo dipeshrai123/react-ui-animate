@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { animate, recipes, Presence } from 'react-ui-animate';
+import { animate, recipes, Unmount } from 'react-ui-animate';
 import { ExampleLayout, Section, ExampleCard } from '../shared';
 
 const Example: React.FC = () => {
@@ -288,7 +288,7 @@ const Example: React.FC = () => {
             </button>
           </div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-            <Presence>
+            <Unmount>
               {mounted && (
                 <animate.div
                   style={{
@@ -299,11 +299,11 @@ const Example: React.FC = () => {
                     opacity: 0,
                   }}
                   animate={recipes.fadeIn}
-                  exit={recipes.exitFade}
+                  unmount={recipes.unmountFade}
                 />
               )}
-            </Presence>
-            <Presence>
+            </Unmount>
+            <Unmount>
               {mounted && (
                 <animate.div
                   style={{
@@ -315,10 +315,10 @@ const Example: React.FC = () => {
                     translateY: 20,
                   }}
                   animate={recipes.slideFadeIn}
-                  exit={recipes.exitSlideUp}
+                  unmount={recipes.unmountSlideUp}
                 />
               )}
-            </Presence>
+            </Unmount>
           </div>
         </ExampleCard>
       </Section>

@@ -35,13 +35,13 @@ export { useValue } from './hooks/useValue';
 export { useTimeline, type Timeline } from './hooks/useTimeline';
 
 export {
-  Presence,
-  PresenceContext,
-  usePresence,
-  useIsPresent,
-  type PresenceProps,
-  type PresenceContextValue,
-} from './presence/Presence';
+  Unmount,
+  UnmountContext,
+  useUnmount,
+  useIsUnmounting,
+  type UnmountProps,
+  type UnmountContextValue,
+} from './presence/Unmount';
 
 export type {
   Primitive,
@@ -72,7 +72,7 @@ export type {
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
 } from './components/types';
-export type { LayoutOptions } from './layout';
-export { LayoutGroup, type LayoutGroupProps } from './layout';
+export type { FlipOptions } from './layout';
+export { FlipGroup, type FlipGroupProps } from './layout';
 
 export { recipes } from './recipes';

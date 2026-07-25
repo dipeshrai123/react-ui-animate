@@ -8,7 +8,7 @@ import {
   withSequence,
   withLoop,
   withDelay,
-  Presence,
+  Unmount,
 } from 'react-ui-animate';
 import { ExampleLayout, Section, ExampleCard } from '../../shared';
 
@@ -264,7 +264,7 @@ const Example: React.FC = () => {
         </ExampleCard>
       </Section>
 
-      <Section title="With Presence" description="useValue works with Presence for exit animations">
+      <Section title="With Unmount" description="useValue works with Unmount for unmount animations">
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
             <button
@@ -282,7 +282,7 @@ const Example: React.FC = () => {
             >
               {mounted ? 'Hide' : 'Show'} Element
             </button>
-            <Presence>
+            <Unmount>
               {mounted && (
                 <animate.div
                   onClick={() => setMounted(false)}
@@ -298,12 +298,12 @@ const Example: React.FC = () => {
                     height: 200,
                     backgroundColor: '#ff6b6b',
                   }}
-                  exit={{
+                  unmount={{
                     opacity: withTiming(0, { duration: 1000 }),
                   }}
                 />
               )}
-            </Presence>
+            </Unmount>
           </div>
         </ExampleCard>
       </Section>

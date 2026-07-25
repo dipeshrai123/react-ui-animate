@@ -1,5 +1,5 @@
 import React from 'react';
-import { animate, withSpring, withTiming, Presence } from 'react-ui-animate';
+import { animate, withSpring, withTiming, Unmount } from 'react-ui-animate';
 import { ExampleLayout } from '../shared';
 
 interface Card {
@@ -140,11 +140,11 @@ const Example: React.FC = () => {
           gap: 24,
         }}
       >
-        <Presence>
+        <Unmount>
           {cards.map((card, index) => (
             <CardComponent key={card.id} card={card} index={index} />
           ))}
-        </Presence>
+        </Unmount>
       </div>
     </ExampleLayout>
   );

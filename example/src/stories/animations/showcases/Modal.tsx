@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Presence, animate, useOutsideClick, withSpring, withTiming } from 'react-ui-animate';
+import { Unmount, animate, useOutsideClick, withSpring, withTiming } from 'react-ui-animate';
 import { ExampleLayout } from '../shared';
 
 const Modal = ({
@@ -28,7 +28,7 @@ const Modal = ({
         backgroundColor: withTiming('rgba(0,0,0,0.2)', { duration: 200 }),
         opacity: withTiming(1, { duration: 200 }),
       }}
-      exit={{
+      unmount={{
         backgroundColor: withTiming('rgba(0,0,0,0)', { duration: 200 }),
         opacity: withTiming(0, { duration: 200 }),
       }}
@@ -48,7 +48,7 @@ const Modal = ({
           scale: withSpring(1, { stiffness: 200, damping: 20 }),
           translateY: withSpring(0, { stiffness: 200, damping: 20 }),
         }}
-        exit={{
+        unmount={{
           scale: withSpring(0.5, { stiffness: 200, damping: 20 }),
           translateY: withSpring(-100, { stiffness: 200, damping: 20 }),
         }}
@@ -107,7 +107,7 @@ const Example = () => {
   return (
     <ExampleLayout
       title="Modal Animation"
-      description="A beautiful modal with smooth enter/exit animations using Presence and animate components. Click outside or close button to dismiss."
+      description="A beautiful modal with smooth enter/unmount animations using Unmount and animate components. Click outside or close button to dismiss."
       onRestart={() => setModalOpen(false)}
       showRestartButton={false}
     >
@@ -136,9 +136,9 @@ const Example = () => {
           Open Modal
         </button>
       </div>
-      <Presence>
+      <Unmount>
         {modalOpen && <Modal key="modal" onClose={() => setModalOpen(false)} />}
-      </Presence>
+      </Unmount>
     </ExampleLayout>
   );
 };

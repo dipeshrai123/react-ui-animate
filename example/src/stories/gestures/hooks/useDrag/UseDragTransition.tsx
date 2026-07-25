@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { animate, useDrag, withSpring, withTiming } from 'react-ui-animate';
-import type { LayoutOptions } from 'react-ui-animate';
+import type { FlipOptions } from 'react-ui-animate';
 
-const PRESETS: Record<string, { label: string; transition: LayoutOptions }> = {
+const PRESETS: Record<string, { label: string; transition: FlipOptions }> = {
   snappy: {
     label: 'Snappy spring (default)',
     transition: withSpring({ stiffness: 158, damping: 20 }),

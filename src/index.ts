@@ -20,12 +20,12 @@ export {
   withCustom,
   useValue,
   useTimeline,
-  Presence,
-  PresenceContext,
-  usePresence,
-  useIsPresent,
+  Unmount,
+  UnmountContext,
+  useUnmount,
+  useIsUnmounting,
   recipes,
-  LayoutGroup,
+  FlipGroup,
 } from './animation';
 
 export type { Timeline } from './animation';
@@ -55,10 +55,10 @@ export type {
   AnimateAttributes,
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
-  LayoutOptions,
-  LayoutGroupProps,
-  PresenceProps,
-  PresenceContextValue,
+  FlipOptions,
+  FlipGroupProps,
+  UnmountProps,
+  UnmountContextValue,
 } from './animation';
 
 export { useOutsideClick, useInView, type UseInViewOptions } from './shared/hooks';

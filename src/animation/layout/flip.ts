@@ -7,7 +7,7 @@ import { buildAnimation } from '../drivers/builder';
 import type { AnimateAttributes } from '../components/types';
 import { isDescriptor } from '../helpers';
 
-// `layout` and `layoutId` each use their own namespace (see apply.ts) so
+// `flip` and `flipId` each use their own namespace (see apply.ts) so
 // they can coexist on the same element without one overwriting the other.
 export type FlipKeys = {
   tx: string;
@@ -23,18 +23,18 @@ export type FlipDelta = {
   scaleY: number;
 };
 
-export const LAYOUT_FLIP_KEYS: FlipKeys = {
-  tx: '__layoutTranslateX',
-  ty: '__layoutTranslateY',
-  sx: '__layoutScaleX',
-  sy: '__layoutScaleY',
+export const FLIP_KEYS: FlipKeys = {
+  tx: '__flipTranslateX',
+  ty: '__flipTranslateY',
+  sx: '__flipScaleX',
+  sy: '__flipScaleY',
 };
 
-export const LAYOUT_ID_FLIP_KEYS: FlipKeys = {
-  tx: '__layoutIdTranslateX',
-  ty: '__layoutIdTranslateY',
-  sx: '__layoutIdScaleX',
-  sy: '__layoutIdScaleY',
+export const FLIP_ID_KEYS: FlipKeys = {
+  tx: '__flipIdTranslateX',
+  ty: '__flipIdTranslateY',
+  sx: '__flipIdScaleX',
+  sy: '__flipIdScaleY',
 };
 
 export type FlipController = { cancel(): void };
@@ -48,55 +48,55 @@ export type FlipAnimationRefs = {
 };
 
 /**
- * Transition config for `layout` / `layoutId`. Prefer the same descriptor
+ * Transition config for `flip` / `flipId`. Prefer the same descriptor
  * helpers used everywhere else in the library — options-only form, since
  * FLIP always settles at identity and there is no target value to declare:
  *
- *   layoutOptions={withSpring({ stiffness: 400, damping: 32 })}
- *   layoutOptions={withTiming({ duration: 300 })}
+ *   flipOptions={withSpring({ stiffness: 400, damping: 32 })}
+ *   flipOptions={withTiming({ duration: 300 })}
  *
  * Raw `SpringOptions` remain supported for backwards compatibility and are
  * treated as an implicit spring.
  */
-export type LayoutOptions = Descriptor | SpringOptions;
+export type FlipOptions = Descriptor | SpringOptions;
 
-const DEFAULT_LAYOUT_SPRING: SpringOptions = {
+const DEFAULT_FLIP_SPRING: SpringOptions = {
   stiffness: 500,
   damping: 40,
   mass: 1,
 };
 
 // Only spring/timing make sense for a FLIP settle-to-identity; anything else
-// falls back to the default layout spring.
-export function resolveLayoutTransition(
-  layoutOptions: LayoutOptions | undefined
+// falls back to the default flip spring.
+export function resolveFlipTransition(
+  flipOptions: FlipOptions | undefined
 ): Descriptor {
-  if (!layoutOptions) {
-    return { type: 'spring', to: 0, options: { ...DEFAULT_LAYOUT_SPRING } };
+  if (!flipOptions) {
+    return { type: 'spring', to: 0, options: { ...DEFAULT_FLIP_SPRING } };
   }
 
-  if (isDescriptor(layoutOptions)) {
-    if (layoutOptions.type === 'spring' || layoutOptions.type === 'timing') {
+  if (isDescriptor(flipOptions)) {
+    if (flipOptions.type === 'spring' || flipOptions.type === 'timing') {
       return {
-        type: layoutOptions.type,
+        type: flipOptions.type,
         to: 0,
-        options: { ...layoutOptions.options },
+        options: { ...flipOptions.options },
       };
     }
 
-    return { type: 'spring', to: 0, options: { ...DEFAULT_LAYOUT_SPRING } };
+    return { type: 'spring', to: 0, options: { ...DEFAULT_FLIP_SPRING } };
   }
 
   return {
     type: 'spring',
     to: 0,
-    options: { ...DEFAULT_LAYOUT_SPRING, ...layoutOptions },
+    options: { ...DEFAULT_FLIP_SPRING, ...flipOptions },
   };
 }
 
 // Shared FLIP (First, Last, Invert, Play) animation used by both the
-// `layout` prop (diffing an element's own rect across renders) and the
-// `layoutId` prop (diffing against a rect recorded by a different element).
+// `flip` prop (diffing an element's own rect across renders) and the
+// `flipId` prop (diffing against a rect recorded by a different element).
 // Jumps to the inverted delta instantly, then animates back to identity
 // via the same `withSpring` / `withTiming` drivers used elsewhere.
 export function runFlipAnimation(
@@ -104,7 +104,7 @@ export function runFlipAnimation(
   delta: FlipDelta,
   keys: FlipKeys,
   refs: FlipAnimationRefs,
-  layoutOptions: LayoutOptions | undefined
+  flipOptions: FlipOptions | undefined
 ) {
   const {
     animateValuesRef,
@@ -159,11 +159,11 @@ export function runFlipAnimation(
     sy.subscribe(render),
   ];
 
-  const transition = resolveLayoutTransition(layoutOptions);
+  const transition = resolveFlipTransition(flipOptions);
 
   // Translate channels settle at 0; scale channels settle at 1. Descriptor
   // `to` (when present) is ignored so options-only forms like
-  // `withTiming({ duration: 300 })` work as layout transitions.
+  // `withTiming({ duration: 300 })` work as flip transitions.
   const controllers = [
     buildAnimation(tx, { ...transition, to: 0 }),
     buildAnimation(ty, { ...transition, to: 0 }),
@@ -188,7 +188,7 @@ export type MeasuredRect = {
 // Measures `node`'s untransformed layout box. getBoundingClientRect()
 // reflects whatever CSS transform is currently applied (ours or the
 // consumer's own), which would corrupt the measurement — e.g. while a
-// previous layout animation is still in flight (rapid re-triggers), or if a
+// previous flip animation is still in flight (rapid re-triggers), or if a
 // static/animated transform is set via `style`/`animate`. Briefly
 // neutralizing the transform happens entirely within useLayoutEffect, before
 // the browser paints, so it's never visible.
@@ -197,7 +197,7 @@ export type MeasuredRect = {
 // however much the page has scrolled between two measurements even when the
 // element hasn't actually moved in the document. Comparing two such rects
 // straight (the previous FLIP behavior) bakes that scroll delta into the
-// animation — e.g. scroll down, re-trigger a `layout`/`layoutId` change, and
+// animation — e.g. scroll down, re-trigger a `flip`/`flipId` change, and
 // the element FLIPs in from the wrong place (or animates when it shouldn't).
 // Adding the current scroll offset converts to document-relative
 // coordinates, which are scroll-invariant, so `diffRects` only ever sees the
@@ -219,7 +219,7 @@ export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
 // from identity (0 translate / 1 scale) with no controller actively driving
 // it back — i.e. a previously started FLIP was interrupted (its controllers
 // canceled) without a replacement being started. Used to recover from React
-// StrictMode double-invoking a `layoutId` element's mount effects: the
+// StrictMode double-invoking a `flipId` element's mount effects: the
 // simulated "unmount" cancels the just-started spring, and without this
 // check the simulated "remount" would see no rect delta (it's comparing
 // against the rect it just registered for itself) and never resume it,

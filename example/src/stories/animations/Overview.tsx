@@ -46,7 +46,7 @@ const Example: React.FC = () => {
       title: 'Modules',
       description: 'Animation modules',
       items: [
-        { name: 'Presence', path: '/animations/modules/Presence/BasicSetup' },
+        { name: 'Unmount', path: '/animations/modules/Unmount/BasicSetup' },
       ],
     },
     {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { animate, Presence, withSpring } from 'react-ui-animate';
+import { animate, Unmount, withSpring } from 'react-ui-animate';
 import { ExampleLayout } from '../shared';
 
 var _uniqueId = 0;
@@ -84,7 +84,7 @@ const Example = () => {
             gap: 12,
           }}
         >
-          <Presence>
+          <Unmount>
             {todos.map(({ id, text }) => (
               <animate.div
                 key={id}
@@ -101,7 +101,7 @@ const Example = () => {
                   height: withSpring(56, { damping: 20 }),
                   scale: withSpring(1, { damping: 20 }),
                 }}
-                exit={{
+                unmount={{
                   opacity: withSpring(0, { damping: 20 }),
                   height: withSpring(0, { damping: 20 }),
                   scale: withSpring(0.8, { damping: 20 }),
@@ -153,7 +153,7 @@ const Example = () => {
                 </button>
               </animate.div>
             ))}
-          </Presence>
+          </Unmount>
         </div>
       </div>
     </ExampleLayout>

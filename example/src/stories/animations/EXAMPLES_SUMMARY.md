@@ -84,12 +84,12 @@ All animation descriptor functions have dedicated examples:
   - ComplexString
 
 ### Modules
-- **Presence** - `animations/modules/Presence/` ✅
+- **Unmount** - `animations/modules/Unmount/` ✅
   - BasicSetup
   - Modal
   - MultipleItems
-  - UsePresence
-  - UseIsPresent
+  - UseUnmount
+  - UseIsUnmounting
 
 ### Recipes
 - **All Recipes** - `animations/showcases/Recipes` ✅
@@ -140,9 +140,9 @@ All existing advanced examples are preserved:
 - ✅ useValue
 
 **Modules:**
-- ✅ Presence
-- ✅ usePresence
-- ✅ useIsPresent
+- ✅ Unmount
+- ✅ useUnmount
+- ✅ useIsUnmounting
 
 **Recipes:**
 - ✅ All 40+ recipes
@@ -204,13 +204,13 @@ animations/
 ├── hooks/
 │   └── useValue/               # useValue examples (existing)
 ├── modules/
-│   └── Presence/               # Presence examples (existing)
+│   └── Unmount/                # Unmount examples (existing)
 ├── state/
 │   └── StateAnimations.tsx     # State animations (existing)
 └── showcases/
     ├── AnimateProp.tsx         # animate component (existing)
     ├── Recipes.tsx             # All recipes (existing)
-    ├── LayoutAnimation/        # FLIP/layoutId showcases
+    ├── FlipAnimation/          # FLIP/flipId showcases
     └── [Advanced Examples]     # Animation-led advanced examples
 
 gestures/

@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Reorder, withSpring, withTiming } from 'react-ui-animate';
-import type { LayoutOptions } from 'react-ui-animate';
+import type { FlipOptions } from 'react-ui-animate';
 
 const INITIAL_ITEMS = ['Design review', 'Write tests', 'Ship the release', 'Update docs'];
 
-const PRESETS: Record<string, { label: string; transition: LayoutOptions }> = {
+const PRESETS: Record<string, { label: string; transition: FlipOptions }> = {
   snappy: {
     label: 'Snappy spring (default)',
     transition: withSpring({ stiffness: 500, damping: 40 }),
@@ -34,7 +34,7 @@ const Example = () => {
         <code>transition</code> on <code>Reorder.Group</code> controls how a
         released item settles and how displaced neighbors spring out of the
         way — same descriptor helpers as <code>animate</code>/
-        <code>layoutOptions</code> elsewhere in the library (
+        <code>flipOptions</code> elsewhere in the library (
         <code>withSpring</code>, <code>withTiming</code>, or a raw spring
         config object).
       </p>

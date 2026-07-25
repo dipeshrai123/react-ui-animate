@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import {
   animate,
-  Presence,
+  Unmount,
   withSpring,
   withTiming,
   withSequence,
@@ -28,7 +28,7 @@ const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
         opacity: withSpring(1, { damping: 14 }),
         scale: withSpring(1, { damping: 14 }),
       }}
-      exit={{
+      unmount={{
         height: withSpring(0, { damping: 14 }),
         opacity: withSpring(0, { damping: 14 }),
         scale: withSpring(0.8, { damping: 14 }),
@@ -126,11 +126,11 @@ const Example = () => {
           zIndex: 1000,
         }}
       >
-        <Presence>
+        <Unmount>
           {toasts.map((t) => (
             <Toast key={t.id} id={t.id} onEnd={removeToast} />
           ))}
-        </Presence>
+        </Unmount>
       </div>
     </ExampleLayout>
   );

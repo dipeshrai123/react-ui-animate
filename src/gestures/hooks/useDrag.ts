@@ -2,7 +2,7 @@ import { RefObject, useRef, useState } from 'react';
 import { useValue, withDecay, withSpring, withParallel, AnimateValue } from '../../animation';
 import type { Controls, Descriptor } from '../../animation/types';
 import { isDescriptor } from '../../animation/helpers';
-import { type LayoutOptions } from '../../animation/layout/flip';
+import { type FlipOptions } from '../../animation/layout/flip';
 import { Gesture, type PanEvent } from '../api/Gesture';
 import { useGesture } from './useGesture';
 import { clamp, rubberClamp, snapTo } from '../../shared/utils';
@@ -58,7 +58,7 @@ export interface UseDragOptions {
    * `SpringOptions`) as `Reorder.Group`'s `transition` prop. Defaults to a
    * spring. Has no effect on the momentum fling itself — see `decay`.
    */
-  transition?: LayoutOptions;
+  transition?: FlipOptions;
   /**
    * Deceleration constant for the momentum fling on release (lower = more
    * friction, stops sooner). Default `0.998`, matching `withDecay`'s own
@@ -79,7 +79,7 @@ export interface UseDragResult {
 }
 
 function resolveReleaseTransition(
-  transition: LayoutOptions | undefined,
+  transition: FlipOptions | undefined,
   target: number
 ): Descriptor {
   if (!transition) return withSpring(target);
@@ -97,7 +97,7 @@ function releaseDescriptor(
   velocity: number,
   bound: { min: number; max: number } | null,
   momentum: boolean,
-  transition: LayoutOptions | undefined,
+  transition: FlipOptions | undefined,
   decay: number | undefined,
   bounce: boolean | number | undefined,
   snapPoints?: number[]

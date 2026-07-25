@@ -9,6 +9,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚨 Breaking Changes
 
+- **`layout`/`layoutId`/`LayoutGroup` renamed to `flip`/`flipId`/`FlipGroup`; `Presence` renamed to `Unmount`**: both names were borrowed near-verbatim from framer-motion's vocabulary (`layout`, `layoutId`, `LayoutGroup`, `AnimatePresence`). This library implements its layout system as an actual FLIP (First, Last, Invert, Play) animation, so the prop/component names now say that directly instead of echoing another library's API surface:
+
+  ```tsx
+  // Before
+  import { animate, LayoutGroup, Presence } from 'react-ui-animate';
+
+  <LayoutGroup>
+    <animate.div layout layoutId="card" layoutOptions={withSpring({ stiffness: 400 })} />
+  </LayoutGroup>;
+
+  <Presence>
+    {open && <animate.div exit={{ opacity: 0 }} />}
+  </Presence>;
+
+  // After
+  import { animate, FlipGroup, Unmount } from 'react-ui-animate';
+
+  <FlipGroup>
+    <animate.div flip flipId="card" flipOptions={withSpring({ stiffness: 400 })} />
+  </FlipGroup>;
+
+  <Unmount>
+    {open && <animate.div unmount={{ opacity: 0 }} />}
+  </Unmount>;
+  ```
+
+  The rest of the surface follows the same two renames:
+
+  | Before | After |
+  |---|---|
+  | `layout` / `layoutOptions` / `layoutId` props | `flip` / `flipOptions` / `flipId` |
+  | `LayoutOptions` type | `FlipOptions` |
+  | `Presence` / `PresenceProps` / `PresenceContext` / `PresenceContextValue` | `Unmount` / `UnmountProps` / `UnmountContext` / `UnmountContextValue` |
+  | `usePresence()` | `useUnmount()` (same return shape: `[isPresent, onExitComplete]`) |
+  | `useIsPresent()` | `useIsUnmounting()` — **polarity is inverted**: `useIsPresent()` returned `true` when *not* exiting, `useIsUnmounting()` returns `true` when it *is* exiting |
+  | `exit` prop on `animate.*` | `unmount` |
+  | `recipes.exitFade` / `exitSlideUp` / `exitSlideDown` / `exitScale` | `recipes.unmountFade` / `unmountSlideUp` / `unmountSlideDown` / `unmountScale` |
+
+  `Unmount` is unrelated to the old `Mount`/`useMount` API removed below — that was a different, already-retired design, not a naming precursor to this one.
+
 - **API cleanup — removed unused/leaked exports, one rename**:
 
   - `isAnimateValue` and `GesturePhase` are no longer exported — both were

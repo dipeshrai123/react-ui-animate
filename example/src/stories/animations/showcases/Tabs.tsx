@@ -9,8 +9,8 @@ function Example() {
 
   return (
     <ExampleLayout
-      title="Shared Layout Transition (layoutId)"
-      description="The indicator is a different element under each tab. Setting the same layoutId on all of them makes it morph smoothly from wherever it last was to the newly active tab — no manual coordinate math required."
+      title="Shared Flip Transition (flipId)"
+      description="The indicator is a different element under each tab. Setting the same flipId on all of them makes it morph smoothly from wherever it last was to the newly active tab — no manual coordinate math required."
       onRestart={() => setActiveTab(TABS[0])}
       showRestartButton={false}
     >
@@ -44,8 +44,8 @@ function Example() {
           >
             {tab === activeTab && (
               <animate.div
-                layoutId="tab-indicator"
-                layoutOptions={withTiming({ duration: 300 })}
+                flipId="tab-indicator"
+                flipOptions={withTiming({ duration: 300 })}
                 style={{
                   position: 'absolute',
                   inset: 0,

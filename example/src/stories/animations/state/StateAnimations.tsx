@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { animate, Presence } from 'react-ui-animate';
+import { animate, Unmount } from 'react-ui-animate';
 import { ExampleLayout, Section, ExampleCard } from '../shared';
 
 const Example: React.FC = () => {
@@ -204,11 +204,11 @@ const Example: React.FC = () => {
       </Section>
 
       <Section 
-        title="Exit State Animation" 
-        description="Exit animations work with string properties without initial styles."
+        title="Unmount State Animation" 
+        description="Unmount animations work with string properties without initial styles."
       >
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <ExampleCard description="Exit: boxShadow animates on exit">
+          <ExampleCard description="Unmount: boxShadow animates on unmount">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
               <button
                 onClick={() => setShowCard(!showCard)}
@@ -224,7 +224,7 @@ const Example: React.FC = () => {
               >
                 {showCard ? 'Remove Card' : 'Show Card'}
               </button>
-              <Presence>
+              <Unmount>
                 {showCard && (
                   <animate.div
                     key="card"
@@ -240,20 +240,20 @@ const Example: React.FC = () => {
                       fontSize: 16,
                       fontWeight: 'bold',
                     }}
-                    exit={{
+                    unmount={{
                       boxShadow: '0 0 0 0 rgba(255, 212, 59, 0)',
                       opacity: 0,
                       scale: 0.8,
                     }}
                   >
-                    Exit Animation
+                    Unmount Animation
                   </animate.div>
                 )}
-              </Presence>
+              </Unmount>
             </div>
           </ExampleCard>
 
-          <ExampleCard description="Exit: opacity without initial style">
+          <ExampleCard description="Unmount: opacity without initial style">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
               <button
                 onClick={() => setShowCard(!showCard)}
@@ -269,7 +269,7 @@ const Example: React.FC = () => {
               >
                 {showCard ? 'Remove' : 'Show'}
               </button>
-              <Presence>
+              <Unmount>
                 {showCard && (
                   <animate.div
                     key="opacity-card"
@@ -285,7 +285,7 @@ const Example: React.FC = () => {
                       fontSize: 16,
                       fontWeight: 'bold',
                     }}
-                    exit={{
+                    unmount={{
                       opacity: 0,
                       translateY: 20,
                     }}
@@ -293,7 +293,7 @@ const Example: React.FC = () => {
                     Fade Out
                   </animate.div>
                 )}
-              </Presence>
+              </Unmount>
             </div>
           </ExampleCard>
         </div>
