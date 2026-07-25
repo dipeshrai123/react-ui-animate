@@ -263,6 +263,81 @@ describe('useDrag', () => {
     expect(onEnd).toHaveBeenCalledTimes(1);
   });
 
+  it('snaps to the nearest point on release, ignoring momentum', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, { snapPoints: { x: [0, 100, 200] }, momentum: true })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 60, 0);
+      firePointer(window, 'pointerup', 60, 0);
+      jest.advanceTimersByTime(1000);
+    });
+
+    // Released closest to 100, not carried further by momentum.
+    expect(result.current.x.current).toBeCloseTo(100, 0);
+  });
+
+  it('projects the snap target ahead using release velocity', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, { snapPoints: { x: [0, 5] } })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      // Lands at 2, closer to 0 by raw distance — but released moving fast
+      // rightward (velocity clamps to the tracker's max, 20), and the
+      // release-velocity projection (`snapTo`'s `value + velocity * 0.2`)
+      // pushes the projected landing point past the midpoint, to 5.
+      firePointer(window, 'pointermove', 2, 0);
+      firePointer(window, 'pointerup', 2, 0);
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.x.current).toBeCloseTo(5, 0);
+  });
+
+  it('only snaps the axis with snap points, leaving the other free', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, { snapPoints: { x: [0, 100] }, momentum: false })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 60, 45);
+      firePointer(window, 'pointerup', 60, 45);
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(result.current.x.current).toBeCloseTo(100, 0);
+    expect(result.current.y.current).toBe(45);
+  });
+
+  it('clamps the snap target to bounds when both are set', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, {
+        snapPoints: { x: [0, 100, 200] },
+        bounds: { left: -Infinity, right: 50 },
+        elastic: false,
+      })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 60, 0);
+      firePointer(window, 'pointerup', 60, 0);
+      jest.advanceTimersByTime(1000);
+    });
+
+    // Nearest snap point (100) is outside the bound, so it clamps to 50.
+    expect(result.current.x.current).toBeCloseTo(50, 0);
+  });
+
   it('exposes controls that can cancel in-flight momentum', () => {
     const ref = { current: el };
     const { result } = renderHook(() => useDrag(ref));

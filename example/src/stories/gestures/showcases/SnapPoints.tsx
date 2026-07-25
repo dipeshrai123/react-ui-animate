@@ -1,12 +1,5 @@
 import { useRef } from 'react';
-import {
-  animate,
-  Gesture,
-  useGesture,
-  useValue,
-  snapTo,
-  withSpring,
-} from 'react-ui-animate';
+import { animate, useDrag } from 'react-ui-animate';
 
 import '../../../index.css';
 
@@ -22,33 +15,10 @@ const SNAP_COORDINATES = [
 ];
 
 function Example() {
-  const [{ x, y }, setXY] = useValue({ x: 0, y: 0 });
-  const offset = useRef({ x: 0, y: 0 });
   const ref = useRef(null);
-
-  useGesture(
-    ref,
-    Gesture.Pan()
-      .onUpdate(({ movement }) => {
-        setXY({
-          x: movement.x + offset.current.x,
-          y: movement.y + offset.current.y,
-        });
-      })
-      .onEnd(({ movement, velocity }) => {
-        offset.current = {
-          x: movement.x + offset.current.x,
-          y: movement.y + offset.current.y,
-        };
-
-        const snapX = snapTo(offset.current.x, velocity.x, [0, 200, 400, 600]);
-        const snapY = snapTo(offset.current.y, velocity.y, [0, 200, 400, 600]);
-
-        setXY(withSpring({ x: snapX, y: snapY }));
-
-        offset.current = { x: snapX, y: snapY };
-      })
-  );
+  const { x, y } = useDrag(ref, {
+    snapPoints: { x: [0, 200, 400, 600], y: [0, 200] },
+  });
 
   return (
     <>

@@ -3,7 +3,7 @@ import { useValue, withDecay, withSpring, withParallel, AnimateValue } from '../
 import type { Controls, Descriptor } from '../../animation/types';
 import { Gesture, type PanEvent } from '../api/Gesture';
 import { useGesture } from './useGesture';
-import { clamp, rubberClamp } from '../../shared/utils';
+import { clamp, rubberClamp, snapTo } from '../../shared/utils';
 
 export interface DragBounds {
   left?: number;
@@ -28,6 +28,15 @@ export interface UseDragOptions {
   elastic?: boolean | number;
   /** Fling on release using the pointer's release velocity. Default `true`. */
   momentum?: boolean;
+  /**
+   * Snap to the nearest of these positions on release (per axis), projected
+   * a little ahead using the release velocity so a fast flick can jump past
+   * the nearest point to the next one — the same feel as a carousel or
+   * sortable grid. Takes priority over `bounds`/`momentum` on release for
+   * whichever axis has points; the other axis (or both, if neither is set)
+   * falls back to the usual bounds-clamp/momentum behavior.
+   */
+  snapPoints?: { x?: number[]; y?: number[] };
   /** Matches `Gesture.Pan()`'s own callback names. */
   onStart?: (e: PanEvent) => void;
   onChange?: (e: PanEvent) => void;
@@ -45,8 +54,15 @@ function releaseDescriptor(
   current: number,
   velocity: number,
   bound: { min: number; max: number } | null,
-  momentum: boolean
+  momentum: boolean,
+  snapPoints?: number[]
 ): Descriptor | null {
+  if (snapPoints && snapPoints.length > 0) {
+    const target = bound
+      ? clamp(snapTo(current, velocity, snapPoints), bound.min, bound.max)
+      : snapTo(current, velocity, snapPoints);
+    return withSpring(target);
+  }
   if (bound && (current < bound.min || current > bound.max)) {
     return withSpring(clamp(current, bound.min, bound.max));
   }
@@ -66,8 +82,9 @@ function isRefObject(
 
 /**
  * Wires up `Gesture.Pan()` with live position tracking, optional bounds
- * (fixed or a container ref), edge rubber-banding, and momentum-on-release.
- * Position persists across drags instead of resetting each time.
+ * (fixed or a container ref), edge rubber-banding, momentum-on-release, and
+ * snap points. Position persists across drags instead of resetting each
+ * time.
  */
 export function useDrag<T extends HTMLElement>(
   ref: RefObject<T>,
@@ -81,6 +98,7 @@ export function useDrag<T extends HTMLElement>(
     bounds,
     elastic = true,
     momentum = true,
+    snapPoints,
     onStart,
     onChange,
     onEnd,
@@ -153,13 +171,15 @@ export function useDrag<T extends HTMLElement>(
         position.x.current,
         e.velocity.x,
         b && { min: b.left, max: b.right },
-        momentum
+        momentum,
+        snapPoints?.x
       );
       const yDesc = releaseDescriptor(
         position.y.current,
         e.velocity.y,
         b && { min: b.top, max: b.bottom },
-        momentum
+        momentum,
+        snapPoints?.y
       );
 
       if (xDesc || yDesc) {
