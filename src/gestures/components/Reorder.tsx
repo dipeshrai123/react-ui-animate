@@ -1,15 +1,17 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
+  type MutableRefObject,
   type ReactNode,
   type RefObject,
 } from 'react';
-import { animate, LayoutGroup, useValue } from '../../animation';
+import { animate, useValue } from '../../animation';
 import {
   measureUntransformedRect,
   resolveLayoutTransition,
@@ -56,25 +58,47 @@ interface DndGroupEntry {
   containerRef: RefObject<HTMLElement>;
 }
 
+interface HoverState {
+  /** Which registered group the pointer is currently over, if any. */
+  groupKey: object | null;
+  /** Where, within that group, the item would land if dropped now. */
+  dropIndex: number | null;
+  /** The group the drag started in — lets a group tell "hovering myself" (no preview needed, same-group swapping already animates it live) apart from "hovering from elsewhere" (needs a preview gap). */
+  sourceGroupKey: object | null;
+}
+
+const NO_HOVER: HoverState = { groupKey: null, dropIndex: null, sourceGroupKey: null };
+
 interface ReorderDndContextValue {
   registerGroup: (key: object, entry: DndGroupEntry) => void;
   unregisterGroup: (key: object) => void;
   getGroup: (key: object) => DndGroupEntry | undefined;
   /** Which registered group's container bounds contain `point`, if any. */
   findGroupAt: (point: { x: number; y: number }) => object | undefined;
-  setHoveredGroupKey: (key: object | null) => void;
-  hoveredGroupKeyRef: RefObject<object | null>;
+  setHover: (state: HoverState) => void;
+  hoverRef: RefObject<HoverState>;
+  /**
+   * Set right before a cross-group drop's `onReorder` calls unmount the
+   * dragged item from its source list — the *actual on-screen* rect
+   * (transform included, i.e. wherever the pointer left it, not its
+   * untransformed flow position) it should visually continue from. The
+   * freshly-mounted instance in the target list consumes this once, on its
+   * first layout effect, to seed a FLIP correction instead of just popping
+   * into place.
+   */
+  pendingTransferRef: MutableRefObject<{ value: unknown; rect: MeasuredRect } | null>;
 }
 
 const ReorderDndContext = createContext<ReorderDndContextValue | null>(null);
 
 // Separate from `ReorderDndContext` on purpose: this one's value changes
-// (on every group boundary crossed) and is read reactively by `Group` for
-// its `data-reorder-drop-active` hook, whereas `ReorderDndContext`'s value
-// is a stable set of functions read imperatively from drag handlers. Only
-// `Group`s subscribe to this one, so a hover change re-renders the (few)
-// groups, not every item in every list.
-const ReorderHoveredGroupContext = createContext<object | null>(null);
+// continuously while something is being dragged across group boundaries and
+// is read *reactively* — by `Group` for its `data-reorder-drop-active` hook,
+// and by every other `Item` in whichever group is currently hovered, so
+// they can preview the gap the drop would open — whereas
+// `ReorderDndContext`'s value is a stable set of functions/refs read
+// imperatively from drag handlers.
+const ReorderHoverContext = createContext<HoverState>(NO_HOVER);
 
 export interface ReorderContextProps {
   children?: ReactNode;
@@ -87,20 +111,20 @@ export interface ReorderContextProps {
  * without a `Reorder.Context` ancestor are unaffected and behave exactly as
  * a standalone `Reorder.Group` always has.
  *
- * A cross-group drop is only committed once (on release, after hit-testing
- * which group's bounds the pointer ended up over) — the item's own
- * component instance is torn down in the source list and a fresh one mounts
- * in the target list, so there's no attempt to keep a single component
- * instance alive across that boundary. `Reorder.Item` gives both instances
- * the same `layoutId` (`String(value)`), so the new one FLIPs in from the
- * old one's last position instead of just popping into place — wrapped in
- * its own `LayoutGroup` so it doesn't collide with unrelated `layoutId`s
- * elsewhere on the page.
+ * The actual array transfer only commits once, on release: moving an item
+ * between groups mid-drag would unmount its component instance (a different
+ * parent's list) partway through the gesture, which tears down the pointer
+ * tracking that's mid-flight and would abort the drag outright. Until then,
+ * every group the pointer passes over previews the gap the drop would open
+ * (its members spring out of the way, the same as a same-group swap does),
+ * so it reads as live reordering even though the underlying arrays don't
+ * change until the pointer is released.
  */
 export function ReorderContextProvider({ children }: ReorderContextProps) {
   const groupsRef = useRef(new Map<object, DndGroupEntry>());
-  const hoveredGroupKeyRef = useRef<object | null>(null);
-  const [hoveredGroupKey, setHoveredGroupKeyState] = useState<object | null>(null);
+  const hoverRef = useRef<HoverState>(NO_HOVER);
+  const pendingTransferRef = useRef<{ value: unknown; rect: MeasuredRect } | null>(null);
+  const [hover, setHoverState] = useState<HoverState>(NO_HOVER);
 
   const dndContextValue = useMemo<ReorderDndContextValue>(
     () => ({
@@ -127,21 +151,27 @@ export function ReorderContextProvider({ children }: ReorderContextProps) {
         }
         return undefined;
       },
-      setHoveredGroupKey: (key) => {
-        if (hoveredGroupKeyRef.current === key) return;
-        hoveredGroupKeyRef.current = key;
-        setHoveredGroupKeyState(key);
+      setHover: (next) => {
+        const prev = hoverRef.current;
+        if (
+          prev.groupKey === next.groupKey &&
+          prev.dropIndex === next.dropIndex &&
+          prev.sourceGroupKey === next.sourceGroupKey
+        ) {
+          return;
+        }
+        hoverRef.current = next;
+        setHoverState(next);
       },
-      hoveredGroupKeyRef,
+      hoverRef,
+      pendingTransferRef,
     }),
     []
   );
 
   return (
     <ReorderDndContext.Provider value={dndContextValue}>
-      <ReorderHoveredGroupContext.Provider value={hoveredGroupKey}>
-        <LayoutGroup>{children}</LayoutGroup>
-      </ReorderHoveredGroupContext.Provider>
+      <ReorderHoverContext.Provider value={hover}>{children}</ReorderHoverContext.Provider>
     </ReorderDndContext.Provider>
   );
 }
@@ -152,6 +182,19 @@ function insertAt<T>(array: T[], index: number, item: T): T[] {
   return next;
 }
 
+/** Where, among `entry`'s current members, `point` falls — used both for the
+ * live preview (every pointermove) and the actual insertion (on release). */
+function computeDropIndex(entry: DndGroupEntry, point: { x: number; y: number }): number {
+  const dropCoord = entry.axis === 'y' ? point.y : point.x;
+  return entry.values.reduce<number>((count, v) => {
+    const el = entry.getElement(v);
+    if (!el) return count;
+    const rect = el.getBoundingClientRect();
+    const center = entry.axis === 'y' ? rect.top + rect.height / 2 : rect.left + rect.width / 2;
+    return center < dropCoord ? count + 1 : count;
+  }, 0);
+}
+
 export interface ReorderGroupProps<T> {
   /** The list backing this group, in display order — owned by the caller. */
   values: T[];
@@ -160,9 +203,10 @@ export interface ReorderGroupProps<T> {
   /** Axis items are stacked (and can be dragged) along. Default `'y'`. */
   axis?: 'x' | 'y';
   /**
-   * Transition used for both the "displaced neighbor springs into its new
-   * slot" animation and the "released item settles into place" animation.
-   * Same descriptor helpers as `animate`/`layoutOptions` elsewhere:
+   * Transition used for the "displaced/previewed neighbor springs out of
+   * the way" animation and the "released item settles into place"
+   * animation. Same descriptor helpers as `animate`/`layoutOptions`
+   * elsewhere:
    *
    *   transition={withSpring({ stiffness: 500, damping: 30 })}
    *   transition={withTiming({ duration: 200 })}
@@ -217,7 +261,7 @@ export function ReorderGroup<T>({
   const groupKey = useRef({}).current;
 
   const dndCtx = useContext(ReorderDndContext);
-  const hoveredGroupKey = useContext(ReorderHoveredGroupContext);
+  const hover = useContext(ReorderHoverContext);
 
   const getElement = (value: T) => elementsRef.current.get(value);
 
@@ -259,9 +303,7 @@ export function ReorderGroup<T>({
         ref={containerRef}
         style={style}
         className={className}
-        data-reorder-drop-active={
-          dndCtx && hoveredGroupKey === groupKey ? 'true' : undefined
-        }
+        data-reorder-drop-active={dndCtx && hover.groupKey === groupKey ? 'true' : undefined}
       >
         {children}
       </div>
@@ -272,15 +314,6 @@ export function ReorderGroup<T>({
 export interface ReorderItemProps<T> {
   /** Identifies this item within the group's `values` array (compared by `===`). */
   value: T;
-  /**
-   * Stable identity used for the cross-group FLIP continuity (see
-   * `Reorder.Context`) — required when `value` isn't already a good FLIP
-   * key itself (an object rather than a string/number id), since the
-   * default falls back to `String(value)`, which collapses every
-   * object-valued item to the same `"[object Object]"` key. Unused outside
-   * `Reorder.Context`.
-   */
-  id?: string | number;
   children?: ReactNode;
   style?: CSSProperties;
   className?: string;
@@ -288,7 +321,6 @@ export interface ReorderItemProps<T> {
 
 export function ReorderItem<T>({
   value,
-  id,
   children,
   style,
   className,
@@ -308,6 +340,7 @@ export function ReorderItem<T>({
     getElement,
   } = ctx;
   const dndCtx = useContext(ReorderDndContext);
+  const hover = useContext(ReorderHoverContext);
 
   const ref = useRef<HTMLDivElement>(null);
   const handleRef = useRef<HTMLElement | null>(null);
@@ -357,6 +390,16 @@ export function ReorderItem<T>({
 
   const prevRectRef = useRef<MeasuredRect | null>(null);
   const hasMeasuredRef = useRef(false);
+  // Set by the FLIP-diff layout effect whenever it applies a real
+  // correction, and consumed by the preview effect right after (layout
+  // effects run before passive ones in the same commit) — a real reorder
+  // landing on this item and the preview clearing at the same time (exactly
+  // what happens the instant a cross-group drop commits) would otherwise
+  // both call `setOffset(settleTo(0))` independently, and the second call
+  // restarts the spring with zero velocity, producing a visible stutter
+  // right at the handoff instead of one continuous motion.
+  const justFlippedRef = useRef(false);
+  const wasPreviewingRef = useRef(false);
 
   useLayoutEffect(() => {
     if (ref.current) registerElement(value, ref.current);
@@ -371,7 +414,8 @@ export function ReorderItem<T>({
   // Distance to the next registered neighbor (falling back to the previous
   // one, or this item's own size if it's the only item) — the real slot
   // pitch, `gap`/margin included, instead of just this item's own box. Only
-  // used to decide *when* a drag has gone far enough to trigger a swap.
+  // used to decide *when* a drag has gone far enough to trigger a swap, and
+  // as the preview-gap size for a cross-group hover.
   const measurePitch = () => {
     if (!ref.current) return 0;
     const rect = ref.current.getBoundingClientRect();
@@ -387,37 +431,99 @@ export function ReorderItem<T>({
     return pitch || ownSize;
   };
 
+  const settleTo = (target: number) => ({ ...resolveLayoutTransition(transition), to: target });
+
   // Runs after every commit (mirrors how the `layout` prop's own FLIP effect
   // is triggered): measure this item's real, untransformed position and
   // diff it against the last measurement. A non-zero delta means a reorder
-  // (this item's own, or a sibling's) just moved it in the DOM. Dragged
-  // items absorb that instantly (folded into `offset` with no animation, so
-  // the pointer-follow never stutters); everyone else springs back to
-  // identity — the classic FLIP "invert, then animate to 0".
+  // (this item's own, a sibling's, or a cross-group drop landing here) just
+  // moved it in the DOM. Dragged items absorb the *primary*-axis delta
+  // instantly (folded into `offset` with no animation, so the pointer-follow
+  // never stutters); everyone else springs both axes back to identity — the
+  // classic FLIP "invert, then animate to 0". A freshly-mounted item that
+  // just arrived via a cross-group drop seeds its "previous" rect from the
+  // real on-screen position it was dropped at (see `pendingTransferRef`)
+  // instead of skipping this first measurement, so it continues smoothly
+  // from wherever the pointer let go rather than popping in.
   useLayoutEffect(() => {
     const node = ref.current;
     if (!node) return;
 
     const nextRect = measureUntransformedRect(node);
-    const prevRect = prevRectRef.current;
-    const shouldCompare = hasMeasuredRef.current;
+
+    let prevRect = prevRectRef.current;
+    let shouldCompare = hasMeasuredRef.current;
+
+    if (!hasMeasuredRef.current && dndCtx) {
+      const pending = dndCtx.pendingTransferRef.current;
+      if (pending && pending.value === value) {
+        prevRect = pending.rect;
+        shouldCompare = true;
+        dndCtx.pendingTransferRef.current = null;
+      }
+    }
+
     hasMeasuredRef.current = true;
     prevRectRef.current = nextRect;
 
     if (!shouldCompare || !prevRect) return;
     if (nextRect.width === 0 || nextRect.height === 0) return;
 
-    const delta = axis === 'y' ? prevRect.top - nextRect.top : prevRect.left - nextRect.left;
-    if (Math.abs(delta) < 0.5) return;
+    const deltaPrimary = axis === 'y' ? prevRect.top - nextRect.top : prevRect.left - nextRect.left;
+    const deltaCross = axis === 'y' ? prevRect.left - nextRect.left : prevRect.top - nextRect.top;
+    if (Math.abs(deltaPrimary) < 0.5 && Math.abs(deltaCross) < 0.5) return;
 
     if (isDraggingRef.current) {
-      correctionRef.current += delta;
+      correctionRef.current += deltaPrimary;
       setOffset(lastMovementRef.current + correctionRef.current);
+      setCrossOffset(deltaCross);
     } else {
-      setOffset(delta);
-      setOffset(resolveLayoutTransition(transition));
+      justFlippedRef.current = true;
+      setOffset(deltaPrimary);
+      setCrossOffset(deltaCross);
+      setOffset(settleTo(0));
+      setCrossOffset(settleTo(0));
     }
   });
+
+  // Cosmetic-only "make room" preview: while a drag *originating in a
+  // different group* is hovering this one, every member at or past the
+  // computed drop index nudges aside by one slot, springing back once the
+  // hover moves on or the drag ends. Doesn't touch `values` — only an
+  // actual drop does that (see the gesture's `onEnd`) — so it can't disturb
+  // the in-flight drag the way a live cross-group array mutation would.
+  useEffect(() => {
+    if (!dndCtx || isDraggingRef.current) return;
+
+    // The FLIP-diff layout effect already handled this same commit's real
+    // position change (a real reorder just landed on this item — exactly
+    // what happens the instant a cross-group drop commits, since the hover
+    // preview clears in that very same commit). Defer to it entirely rather
+    // than also restarting a competing spring here.
+    if (justFlippedRef.current) {
+      justFlippedRef.current = false;
+      wasPreviewingRef.current = false;
+      return;
+    }
+
+    const isPreviewTarget =
+      hover.groupKey === groupKey &&
+      hover.sourceGroupKey !== null &&
+      hover.sourceGroupKey !== groupKey &&
+      hover.dropIndex !== null;
+
+    const myIndex = values.indexOf(value);
+    const shouldMakeRoom = isPreviewTarget && myIndex >= (hover.dropIndex as number);
+
+    if (shouldMakeRoom) {
+      wasPreviewingRef.current = true;
+      setOffset(settleTo(measurePitch()));
+    } else if (wasPreviewingRef.current) {
+      wasPreviewingRef.current = false;
+      setOffset(settleTo(0));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dndCtx, hover.groupKey, hover.dropIndex, hover.sourceGroupKey, groupKey, value, values]);
 
   let gesture = Gesture.Pan().minDistance(4);
   // Cross-group hit-testing needs real movement on *both* axes — an
@@ -447,7 +553,7 @@ export function ReorderItem<T>({
             height: rect.height,
           };
         }
-        dndCtx?.setHoveredGroupKey(groupKey);
+        dndCtx?.setHover({ groupKey, dropIndex: null, sourceGroupKey: groupKey });
       })
       .onUpdate((e) => {
         const movement = axis === 'y' ? e.movement.y : e.movement.x;
@@ -478,14 +584,18 @@ export function ReorderItem<T>({
             x: start.left + start.width / 2 + e.movement.x,
             y: start.top + start.height / 2 + e.movement.y,
           };
-          dndCtx.setHoveredGroupKey(dndCtx.findGroupAt(point) ?? null);
+          const foundKey = dndCtx.findGroupAt(point) ?? null;
+          const foundEntry = foundKey ? dndCtx.getGroup(foundKey) : undefined;
+          const dropIndex = foundEntry ? computeDropIndex(foundEntry, point) : null;
+          dndCtx.setHover({ groupKey: foundKey, dropIndex, sourceGroupKey: groupKey });
         }
       })
       .onEnd((e) => {
         isDraggingRef.current = false;
         setIsDragging(false);
 
-        const targetKey = dndCtx?.hoveredGroupKeyRef.current ?? null;
+        const hoverAtRelease = dndCtx?.hoverRef.current ?? NO_HOVER;
+        const targetKey = hoverAtRelease.groupKey;
 
         if (dndCtx && targetKey && targetKey !== groupKey) {
           const targetEntry = dndCtx.getGroup(targetKey);
@@ -497,33 +607,36 @@ export function ReorderItem<T>({
               x: start.left + start.width / 2 + e.movement.x,
               y: start.top + start.height / 2 + e.movement.y,
             };
-            const dropCoord = targetEntry.axis === 'y' ? point.y : point.x;
+            const dropIndex = computeDropIndex(targetEntry, point);
 
-            const targetIndex = targetEntry.values.reduce<number>((count, v) => {
-              const el = targetEntry.getElement(v);
-              if (!el) return count;
-              const rect = el.getBoundingClientRect();
-              const center =
-                targetEntry.axis === 'y' ? rect.top + rect.height / 2 : rect.left + rect.width / 2;
-              return center < dropCoord ? count + 1 : count;
-            }, 0);
+            if (ref.current) {
+              const rect = ref.current.getBoundingClientRect();
+              dndCtx.pendingTransferRef.current = {
+                value,
+                rect: {
+                  left: rect.left + window.scrollX,
+                  top: rect.top + window.scrollY,
+                  width: rect.width,
+                  height: rect.height,
+                },
+              };
+            }
 
             sourceEntry.onReorder(sourceEntry.values.filter((v) => v !== value));
-            targetEntry.onReorder(insertAt(targetEntry.values, targetIndex, value));
+            targetEntry.onReorder(insertAt(targetEntry.values, dropIndex, value));
           }
         } else {
-          setOffset(resolveLayoutTransition(transition));
+          setOffset(settleTo(0));
         }
 
-        setCrossOffset(resolveLayoutTransition(transition));
-        dndCtx?.setHoveredGroupKey(null);
+        setCrossOffset(settleTo(0));
+        dndCtx?.setHover(NO_HOVER);
       })
   );
 
   return (
     <animate.div
       ref={ref}
-      layoutId={dndCtx ? `reorder-${id ?? String(value)}` : undefined}
       className={className}
       style={{
         position: 'relative',

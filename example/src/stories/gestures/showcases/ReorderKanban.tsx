@@ -111,7 +111,6 @@ const Example = () => {
                     <Reorder.Item
                       key={card.id}
                       value={card}
-                      id={card.id}
                       style={{
                         display: 'flex',
                         alignItems: 'center',

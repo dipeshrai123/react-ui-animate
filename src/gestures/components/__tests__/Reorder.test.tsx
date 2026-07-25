@@ -530,6 +530,173 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
     expect(onReorderB).toHaveBeenLastCalledWith(['b1', 'a1']);
   });
 
+  it('previews a gap in the target group while hovering, without touching its array until drop', () => {
+    const onReorderA = jest.fn();
+    const onReorderB = jest.fn();
+    render(<KanbanTest onReorderA={onReorderA} onReorderB={onReorderB} />);
+
+    const itemA1 = screen.getByText('a1');
+    const itemB1 = screen.getByText('b1');
+
+    act(() => {
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      // Into group B (center x=375) and above b1's center (25 - 20 = 5),
+      // so the computed drop index is 0 — b1 should preview making room.
+      firePointer(window, 'pointermove', 300, -20);
+    });
+
+    // Not committed yet — b's array is untouched while just hovering.
+    expect(onReorderB).not.toHaveBeenCalled();
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    const previewMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    expect(previewMatch).not.toBeNull();
+    // b1 has no neighbor, so the preview shift falls back to its own
+    // measured size (50px, per the mock).
+    expect(Number(previewMatch![1])).toBeCloseTo(50, 0);
+
+    act(() => {
+      firePointer(window, 'pointerup', 300, -20);
+    });
+    // Split from the timer advance above: firing the event and letting fake
+    // timers tick forward inside the same `act()` call doesn't give React a
+    // chance to commit the resulting state update first, so the reset
+    // spring below would never get a tick applied to it.
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(onReorderA).toHaveBeenLastCalledWith(['a2']);
+    expect(onReorderB).toHaveBeenLastCalledWith(['a1', 'b1']);
+
+    // Preview shift is released once the drag ends.
+    const afterMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    expect(afterMatch).not.toBeNull();
+    expect(Number(afterMatch![1])).toBeCloseTo(0, 0);
+  });
+
+  it('clears the preview gap if the pointer leaves the target group without dropping', () => {
+    const onReorderA = jest.fn();
+    const onReorderB = jest.fn();
+    render(<KanbanTest onReorderA={onReorderA} onReorderB={onReorderB} />);
+
+    const itemA1 = screen.getByText('a1');
+    const itemB1 = screen.getByText('b1');
+
+    act(() => {
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 300, -20);
+    });
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(Number(itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/)![1])).toBeCloseTo(
+      50,
+      0
+    );
+
+    act(() => {
+      // Back into group A's own bounds.
+      firePointer(window, 'pointermove', 10, 10);
+    });
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    const clearedMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    expect(clearedMatch).not.toBeNull();
+    expect(Number(clearedMatch![1])).toBeCloseTo(0, 0);
+
+    act(() => {
+      firePointer(window, 'pointerup', 10, 10);
+      jest.advanceTimersByTime(1000);
+    });
+    expect(onReorderB).not.toHaveBeenCalled();
+  });
+
+  it('drops into the middle of a multi-item target group without erroring or losing items', () => {
+    // The single-item target group (`b`, in the other cross-group tests)
+    // can never actually reflow a real neighbor on drop — its item's
+    // position is static regardless of order in that mock, so it can't
+    // exercise a real member being both preview-shifted *and* really
+    // reflowed in the same commit (exactly what happens dropping into the
+    // middle of a multi-item list, which is the collision the
+    // `justFlippedRef` handoff guard exists for). This uses a live,
+    // order-aware mock (position = index * 70) so b2's rect actually moves
+    // when a1 lands between b1 and b2.
+    let orderB = ['b1', 'b2'];
+    (HTMLElement.prototype.getBoundingClientRect as jest.Mock).mockImplementation(
+      function (this: HTMLElement) {
+        if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
+        if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
+        const text = this.textContent ?? '';
+        if (text === 'a1') return rect(0, 0, 150, 50);
+        const top = orderB.indexOf(text) * 70;
+        return rect(250, top, 400, top + 50);
+      }
+    );
+
+    function LiveKanbanTest({ onReorderB }: { onReorderB?: (v: string[]) => void }) {
+      const [a, setA] = useState(['a1']);
+      const [b, setB] = useState(orderB);
+      return (
+        <Reorder.Context>
+          <Reorder.Group className="group-a" values={a} onReorder={setA}>
+            {a.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+          <Reorder.Group
+            className="group-b"
+            values={b}
+            onReorder={(next) => {
+              orderB = next;
+              setB(next);
+              onReorderB?.(next);
+            }}
+          >
+            {b.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+        </Reorder.Context>
+      );
+    }
+
+    const onReorderB = jest.fn();
+    render(<LiveKanbanTest onReorderB={onReorderB} />);
+    const itemA1 = screen.getByText('a1');
+
+    act(() => {
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      // a1 center (75, 25) + (300, 60) = (375, 85) — inside group B,
+      // between b1's center (25) and b2's center (95): drop index 1.
+      firePointer(window, 'pointermove', 300, 60);
+    });
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+
+    act(() => {
+      firePointer(window, 'pointerup', 300, 60);
+    });
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(onReorderB).toHaveBeenLastCalledWith(['b1', 'a1', 'b2']);
+    expect(screen.getByText('a1')).toBeInTheDocument();
+    expect(screen.getByText('b1')).toBeInTheDocument();
+    expect(screen.getByText('b2')).toBeInTheDocument();
+  });
+
   it('leaves both lists untouched when released back inside the origin group', () => {
     const onReorderA = jest.fn();
     const onReorderB = jest.fn();
