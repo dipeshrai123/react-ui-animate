@@ -26,11 +26,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      # No registry-url here: it would pre-write an .npmrc expecting
+      # NODE_AUTH_TOKEN, which @semantic-release/npm would then read
+      # instead of writing its own auth from NPM_TOKEN, and fail with a
+      # blank/invalid token. Let the npm plugin manage registry auth.
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-          registry-url: https://registry.npmjs.org
 
       - run: npm ci
 
