@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { animate, Presence, usePresence, useIsPresent, withTiming } from 'react-ui-animate';
+import {
+  animate,
+  Presence,
+  usePresence,
+  useIsPresent,
+  withTiming,
+} from 'react-ui-animate';
+import { ExampleLayout, Section, ExampleCard } from '../../shared';
 
 const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
   const [isPresent, onExitComplete] = usePresence();
@@ -92,7 +99,14 @@ const AnimatedPanel: React.FC = () => {
       </p>
       <NestedComponent />
       {isPresent && (
-        <div style={{ marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: 4,
+          }}
+        >
           This content only renders when present
         </div>
       )}
@@ -124,60 +138,71 @@ const Example: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      <div>
-        <h3 style={{ margin: '0 0 12px' }}>Notifications with usePresence</h3>
-        <button
-          onClick={addNotification}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#4caf50',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-            marginBottom: 12,
-          }}
-        >
-          Add Notification
-        </button>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <Presence>
-            {notifications.map((notification) => (
-              <div
-                key={notification.id}
-                onClick={() => removeNotification(notification.id)}
-                style={{ cursor: 'pointer' }}
-              >
-                <AnimatedNotification message={notification.message} />
-              </div>
-            ))}
-          </Presence>
-        </div>
-      </div>
+    <ExampleLayout
+      title="usePresence"
+      description={
+        <>
+          Access presence state (and a manual <code>onExitComplete</code>{' '}
+          signal) from inside the exiting component, for cases where the exit
+          needs to wait on more than just its own animation — e.g. an async
+          cleanup step before the component is actually removed.
+        </>
+      }
+      showRestartButton={false}
+    >
+      <Section title="Notifications with usePresence">
+        <ExampleCard>
+          <button
+            onClick={addNotification}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#4caf50',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              marginBottom: 12,
+            }}
+          >
+            Add Notification
+          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <Presence>
+              {notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  onClick={() => removeNotification(notification.id)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <AnimatedNotification message={notification.message} />
+                </div>
+              ))}
+            </Presence>
+          </div>
+        </ExampleCard>
+      </Section>
 
-      <div>
-        <h3 style={{ margin: '0 0 12px' }}>Panel with usePresence</h3>
-        <button
-          onClick={() => setShowPanel((prev) => !prev)}
-          style={{
-            padding: '8px 16px',
-            backgroundColor: '#673ab7',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          {showPanel ? 'Hide Panel' : 'Show Panel'}
-        </button>
-        <Presence>
-          {showPanel && <AnimatedPanel key="panel" />}
-        </Presence>
-      </div>
-    </div>
+      <Section title="Panel with usePresence">
+        <ExampleCard>
+          <button
+            onClick={() => setShowPanel((prev) => !prev)}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: '#673ab7',
+              color: 'white',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              marginBottom: 16,
+            }}
+          >
+            {showPanel ? 'Hide Panel' : 'Show Panel'}
+          </button>
+          <Presence>{showPanel && <AnimatedPanel key="panel" />}</Presence>
+        </ExampleCard>
+      </Section>
+    </ExampleLayout>
   );
 };
 
 export default Example;
-

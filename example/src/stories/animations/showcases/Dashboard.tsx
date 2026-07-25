@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { animate, withSpring, withTiming, useValue } from 'react-ui-animate';
+import { ExampleLayout } from '../shared';
 
 interface Metric {
   id: string;
@@ -164,71 +165,24 @@ const Example: React.FC = () => {
   }, []);
 
   return (
-    <div
-      style={{ padding: 40, backgroundColor: '#f5f5f5', minHeight: '100vh' }}
+    <ExampleLayout
+      title="Dashboard"
+      description="Real-time metrics that count up with a spring whenever they refresh — auto-refreshes every 5s, or use the button below"
+      onRestart={() => setRefreshKey((prev) => prev + 1)}
     >
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 32,
-          }}
-        >
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                marginBottom: 8,
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#1a1a1a',
-              }}
-            >
-              Dashboard
-            </h1>
-            <p style={{ margin: 0, fontSize: 16, color: '#666' }}>
-              Real-time metrics with smooth animations
-            </p>
-          </div>
-          <animate.button
-            onClick={() => setRefreshKey((prev) => prev + 1)}
-            style={{
-              padding: '12px 24px',
-              backgroundColor: '#3399ff',
-              color: 'white',
-              border: 'none',
-              borderRadius: 12,
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: 'pointer',
-              scale: 1,
-            }}
-            hover={{
-              scale: withSpring(1.05, { stiffness: 300, damping: 20 }),
-            }}
-            press={{
-              scale: withSpring(0.95, { stiffness: 400, damping: 25 }),
-            }}
-          >
-            Refresh Data
-          </animate.button>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-            gap: 24,
-          }}
-        >
-          {metrics.map((metric) => (
-            <MetricCard key={metric.id} metric={metric} />
-          ))}
-        </div>
+      <div
+        key={refreshKey}
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+          gap: 24,
+        }}
+      >
+        {metrics.map((metric) => (
+          <MetricCard key={metric.id} metric={metric} />
+        ))}
       </div>
-    </div>
+    </ExampleLayout>
   );
 };
 

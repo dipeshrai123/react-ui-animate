@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
 import { animate, withSpring, withTiming, useInView } from 'react-ui-animate';
+import { ExampleLayout } from '../shared';
 
 interface Product {
   id: number;
@@ -138,37 +139,23 @@ const ProductCard: React.FC<{ product: Product; index: number }> = ({
 
 const Example: React.FC = () => {
   return (
-    <div
-      style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}
+    <ExampleLayout
+      title="Product Showcase"
+      description="Scroll to see products animate into view with smooth spring animations"
+      showRestartButton={false}
     >
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '40px 40px 0' }}>
-        <h1
-          style={{
-            marginBottom: 8,
-            fontSize: 32,
-            fontWeight: 700,
-            color: '#1a1a1a',
-          }}
-        >
-          Product Showcase
-        </h1>
-        <p style={{ marginBottom: 40, fontSize: 16, color: '#666' }}>
-          Scroll to see products animate into view with smooth spring animations
-        </p>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 24,
-          }}
-        >
-          {products.map((product, index) => (
-            <ProductCard key={product.id} product={product} index={index} />
-          ))}
-        </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 24,
+        }}
+      >
+        {products.map((product, index) => (
+          <ProductCard key={product.id} product={product} index={index} />
+        ))}
       </div>
-    </div>
+    </ExampleLayout>
   );
 };
 

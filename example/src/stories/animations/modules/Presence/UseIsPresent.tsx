@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { animate, Presence, useIsPresent, withTiming } from 'react-ui-animate';
+import { ExampleLayout, ExampleCard } from '../../shared';
 
 const AnimatedCard: React.FC = () => {
   const isPresent = useIsPresent();
@@ -29,7 +30,14 @@ const AnimatedCard: React.FC = () => {
         {isPresent ? 'I am present!' : 'I am exiting...'}
       </p>
       {isPresent && (
-        <div style={{ marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.2)', borderRadius: 4 }}>
+        <div
+          style={{
+            marginTop: 12,
+            padding: 8,
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: 4,
+          }}
+        >
           This content only shows when the card is present
         </div>
       )}
@@ -41,28 +49,31 @@ const Example: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
 
   return (
-    <div>
-      <Presence>
-        {isVisible && <AnimatedCard key="card" />}
-      </Presence>
-      
-      <button
-        onClick={() => setIsVisible((prev) => !prev)}
-        style={{
-          marginTop: 16,
-          padding: '10px 20px',
-          backgroundColor: '#3399ff',
-          color: 'white',
-          border: 'none',
-          borderRadius: 6,
-          cursor: 'pointer',
-        }}
-      >
-        {isVisible ? 'Hide Card' : 'Show Card'}
-      </button>
-    </div>
+    <ExampleLayout
+      title="useIsPresent"
+      description="Read presence state from inside the exiting component itself — useful for swapping content (e.g. hiding interactive bits) the moment the exit animation starts, before the component is removed."
+      showRestartButton={false}
+    >
+      <ExampleCard>
+        <Presence>{isVisible && <AnimatedCard key="card" />}</Presence>
+
+        <button
+          onClick={() => setIsVisible((prev) => !prev)}
+          style={{
+            marginTop: 16,
+            padding: '10px 20px',
+            backgroundColor: '#3399ff',
+            color: 'white',
+            border: 'none',
+            borderRadius: 6,
+            cursor: 'pointer',
+          }}
+        >
+          {isVisible ? 'Hide Card' : 'Show Card'}
+        </button>
+      </ExampleCard>
+    </ExampleLayout>
   );
 };
 
 export default Example;
-

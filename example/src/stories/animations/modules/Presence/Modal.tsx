@@ -6,6 +6,7 @@ import {
   withSpring,
   useOutsideClick,
 } from 'react-ui-animate';
+import { ExampleLayout, ExampleCard } from '../../shared';
 
 const Modal: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -77,28 +78,33 @@ const Example: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <>
-      <button
-        onClick={() => setIsOpen(true)}
-        style={{
-          padding: '12px 24px',
-          fontSize: 16,
-          backgroundColor: '#3399ff',
-          color: 'white',
-          border: 'none',
-          borderRadius: 8,
-          cursor: 'pointer',
-        }}
-      >
-        Open Modal
-      </button>
+    <ExampleLayout
+      title="Presence with a Modal"
+      description="The overlay and the dialog each declare their own exit animation, and Presence keeps both mounted until they finish fading/scaling out."
+      showRestartButton={false}
+    >
+      <ExampleCard>
+        <button
+          onClick={() => setIsOpen(true)}
+          style={{
+            padding: '12px 24px',
+            fontSize: 16,
+            backgroundColor: '#3399ff',
+            color: 'white',
+            border: 'none',
+            borderRadius: 8,
+            cursor: 'pointer',
+          }}
+        >
+          Open Modal
+        </button>
 
-      <Presence>
-        {isOpen && <Modal key="modal" onClose={() => setIsOpen(false)} />}
-      </Presence>
-    </>
+        <Presence>
+          {isOpen && <Modal key="modal" onClose={() => setIsOpen(false)} />}
+        </Presence>
+      </ExampleCard>
+    </ExampleLayout>
   );
 };
 
 export default Example;
-

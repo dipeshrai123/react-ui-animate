@@ -1,35 +1,35 @@
 import React, { useState } from 'react';
 import { animate, withTiming, Easing } from 'react-ui-animate';
+import { ExampleLayout, Section, ExampleCard } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 30 }}>withTiming Descriptor</h1>
-      <p style={{ marginBottom: 40, color: '#666' }}>
-        Timing animations provide precise, duration-based motion
-      </p>
+    <ExampleLayout
+      title="withTiming Descriptor"
+      description="Timing animations provide precise, duration-based motion"
+      onRestart={() => setTrigger((prev) => prev + 1)}
+    >
+      <Section title="Basic Timing">
+        <ExampleCard>
+          <animate.div
+            key={trigger}
+            style={{
+              width: 100,
+              height: 100,
+              backgroundColor: '#3399ff',
+              borderRadius: 8,
+              translateX: 0,
+            }}
+            animate={{
+              translateX: withTiming(200, { duration: 500 }),
+            }}
+          />
+        </ExampleCard>
+      </Section>
 
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>Basic Timing</h2>
-        <animate.div
-          key={trigger}
-          style={{
-            width: 100,
-            height: 100,
-            backgroundColor: '#3399ff',
-            borderRadius: 8,
-            translateX: 0,
-          }}
-          animate={{
-            translateX: withTiming(200, { duration: 500 }),
-          }}
-        />
-      </div>
-
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>Different Durations</h2>
+      <Section title="Different Durations">
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`duration-300-${trigger}`}
@@ -74,10 +74,9 @@ const Example: React.FC = () => {
         <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
           Left: 300ms | Middle: 1000ms | Right: 2000ms
         </p>
-      </div>
+      </Section>
 
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>With Easing Functions</h2>
+      <Section title="With Easing Functions">
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`easing-linear-${trigger}`}
@@ -147,48 +146,31 @@ const Example: React.FC = () => {
         <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
           Linear | Ease | Ease In-Out | Bounce
         </p>
-      </div>
+      </Section>
 
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>Multiple Properties</h2>
-        <animate.div
-          key={trigger}
-          style={{
-            width: 100,
-            height: 100,
-            backgroundColor: '#3399ff',
-            borderRadius: 8,
-            opacity: 0,
-            translateX: 0,
-            scale: 0.5,
-          }}
-          animate={{
-            opacity: withTiming(1, { duration: 600 }),
-            translateX: withTiming(200, { duration: 600 }),
-            scale: withTiming(1, { duration: 600 }),
-          }}
-        />
-      </div>
-
-      <div style={{ marginTop: 40 }}>
-        <button
-          onClick={() => setTrigger((prev) => prev + 1)}
-          style={{
-            padding: '12px 24px',
-            fontSize: 16,
-            backgroundColor: '#3399ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Restart Animations
-        </button>
-      </div>
-    </div>
+      <Section title="Multiple Properties">
+        <ExampleCard>
+          <animate.div
+            key={trigger}
+            style={{
+              width: 100,
+              height: 100,
+              backgroundColor: '#3399ff',
+              borderRadius: 8,
+              opacity: 0,
+              translateX: 0,
+              scale: 0.5,
+            }}
+            animate={{
+              opacity: withTiming(1, { duration: 600 }),
+              translateX: withTiming(200, { duration: 600 }),
+              scale: withTiming(1, { duration: 600 }),
+            }}
+          />
+        </ExampleCard>
+      </Section>
+    </ExampleLayout>
   );
 };
 
 export default Example;
-

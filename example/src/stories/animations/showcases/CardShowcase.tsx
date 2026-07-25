@@ -1,5 +1,6 @@
 import React from 'react';
 import { animate, withSpring, withTiming, Presence } from 'react-ui-animate';
+import { ExampleLayout } from '../shared';
 
 interface Card {
   id: number;
@@ -127,40 +128,25 @@ const CardComponent: React.FC<{ card: Card; index: number }> = ({
 
 const Example: React.FC = () => {
   return (
-    <div
-      style={{ padding: 40, backgroundColor: '#f5f5f5', minHeight: '100vh' }}
+    <ExampleLayout
+      title="Feature Showcase"
+      description="Hover over cards to see smooth animations"
+      showRestartButton={false}
     >
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-        <h1
-          style={{
-            marginBottom: 8,
-            fontSize: 32,
-            fontWeight: 700,
-            color: '#1a1a1a',
-          }}
-        >
-          Feature Showcase
-        </h1>
-        <p style={{ marginBottom: 40, fontSize: 16, color: '#666' }}>
-          Hover over cards to see smooth animations
-        </p>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 24,
-            marginBottom: 40,
-          }}
-        >
-          <Presence>
-            {cards.map((card, index) => (
-              <CardComponent key={card.id} card={card} index={index} />
-            ))}
-          </Presence>
-        </div>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 24,
+        }}
+      >
+        <Presence>
+          {cards.map((card, index) => (
+            <CardComponent key={card.id} card={card} index={index} />
+          ))}
+        </Presence>
       </div>
-    </div>
+    </ExampleLayout>
   );
 };
 

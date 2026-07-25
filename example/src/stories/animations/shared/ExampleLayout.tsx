@@ -2,7 +2,7 @@ import React, { ReactNode } from 'react';
 
 interface ExampleLayoutProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
   onRestart?: () => void;
   showRestartButton?: boolean;
@@ -60,7 +60,7 @@ export const ExampleLayout: React.FC<ExampleLayoutProps> = ({
 
 interface SectionProps {
   title: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
 }
 
@@ -82,7 +82,7 @@ export const Section: React.FC<SectionProps> = ({ title, description, children }
 
 interface ExampleCardProps {
   title?: string;
-  description?: string;
+  description?: ReactNode;
   children: ReactNode;
 }
 

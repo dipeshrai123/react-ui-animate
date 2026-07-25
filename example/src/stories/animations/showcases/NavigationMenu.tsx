@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { animate, withSpring, withTiming, Presence } from 'react-ui-animate';
+import { ExampleLayout } from '../shared';
 
 interface MenuItem {
   id: string;
@@ -103,21 +104,12 @@ const Example: React.FC = () => {
   const [activeItem, setActiveItem] = useState('home');
 
   return (
-    <div
-      style={{ padding: 40, backgroundColor: '#f5f5f5', minHeight: '100vh' }}
+    <ExampleLayout
+      title="Navigation Menu"
+      description="Sidebar navigation with hover/press micro-interactions and a spring-driven active indicator"
+      showRestartButton={false}
     >
-      <div style={{ maxWidth: 300, margin: '0 auto' }}>
-        <h1
-          style={{
-            marginBottom: 32,
-            fontSize: 24,
-            fontWeight: 700,
-            color: '#1a1a1a',
-          }}
-        >
-          Navigation Menu
-        </h1>
-
+      <div style={{ maxWidth: 300 }}>
         <animate.nav
           style={{
             backgroundColor: 'white',
@@ -141,7 +133,7 @@ const Example: React.FC = () => {
           </ul>
         </animate.nav>
       </div>
-    </div>
+    </ExampleLayout>
   );
 };
 

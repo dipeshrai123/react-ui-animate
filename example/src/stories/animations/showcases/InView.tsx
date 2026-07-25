@@ -1,5 +1,6 @@
 import React from 'react';
 import { animate, withSpring, withTiming, withDelay, withSequence } from 'react-ui-animate';
+import { ExampleLayout } from '../shared';
 
 interface Feature {
   id: number;
@@ -188,7 +189,11 @@ const TextReveal: React.FC<{ text: string; delay?: number }> = ({
 
 const Example: React.FC = () => {
   return (
-    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
+    <ExampleLayout
+      title="Scroll-Triggered Animations (view prop)"
+      description="Elements animate in via the `view` prop as they enter the viewport — scroll down to see each section play"
+      showRestartButton={false}
+    >
       {/* View with Delay Example Section */}
       <div
         style={{
@@ -402,7 +407,7 @@ const Example: React.FC = () => {
           </animate.button>
         </animate.div>
       </div>
-    </div>
+    </ExampleLayout>
   );
 };
 
