@@ -60,6 +60,23 @@ export interface ParallelOptions {
   parallel?: Record<string, Descriptor> | Descriptor[];
 }
 
+export interface CustomTickContext {
+  /** Milliseconds elapsed since this run started (pauses excluded). */
+  elapsed: number;
+  /** Milliseconds since the previous frame (0 on the first frame). */
+  dt: number;
+  /** The value this run started from. */
+  from: number;
+}
+
+export type CustomTickFn = (ctx: CustomTickContext) => number;
+
+export interface CustomOptions {
+  tick?: CustomTickFn;
+  duration?: number;
+  from?: number;
+}
+
 export interface KeyframeStep {
   to: Primitive;
   duration?: number;
@@ -78,7 +95,8 @@ export type DriverType =
   | 'delay'
   | 'sequence'
   | 'loop'
-  | 'parallel';
+  | 'parallel'
+  | 'custom';
 
 export interface Descriptor {
   type: DriverType;
@@ -94,6 +112,7 @@ export interface Descriptor {
     DelayOptions &
     LoopOptions &
     ParallelOptions &
+    CustomOptions &
     Callbacks;
 }
 

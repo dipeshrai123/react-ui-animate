@@ -7,6 +7,7 @@ import {
   withLoop,
   withDelay,
   withParallel,
+  withCustom,
 } from '../../descriptors';
 import { AnimateValue } from '../../values/AnimateValue';
 
@@ -83,6 +84,30 @@ describe('useValue', () => {
 
       // Spring animation should have started
       expect(value.current).toBeGreaterThan(0);
+    });
+
+    it('animates with withCustom, driven by the supplied tick fn', async () => {
+      const { result } = renderHook(() => useValue(0));
+      const [value, setValue] = result.current;
+
+      act(() => {
+        setValue(
+          withCustom(({ elapsed, from }) => from + elapsed, { duration: 100 })
+        );
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(50);
+      });
+
+      expect(value.current).toBeGreaterThan(0);
+      expect(value.current).toBeLessThan(100);
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      expect(value.current).toBeGreaterThanOrEqual(100);
     });
 
     it('handles withSequence', async () => {

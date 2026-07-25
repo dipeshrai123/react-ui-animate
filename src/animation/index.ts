@@ -28,6 +28,7 @@ export {
   withStagger,
   withKeyframes,
   withParallel,
+  withCustom,
 } from './descriptors';
 
 export { useValue } from './hooks/useValue';
@@ -56,6 +57,9 @@ export type {
   KeyframeStep,
   KeyframeOptions,
   ParallelOptions,
+  CustomOptions,
+  CustomTickFn,
+  CustomTickContext,
   DriverType,
   Descriptor,
   Controls,

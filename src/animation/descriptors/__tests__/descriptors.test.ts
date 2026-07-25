@@ -8,6 +8,7 @@ import {
   withStagger,
   withKeyframes,
   withParallel,
+  withCustom,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -351,6 +352,39 @@ describe('descriptors', () => {
 
       expect(descriptor.options?.onStart).toBe(onStart);
       expect(descriptor.options?.onComplete).toBe(onComplete);
+    });
+  });
+
+  describe('withCustom', () => {
+    it('creates a custom descriptor carrying the tick fn and options', () => {
+      const tick = ({ from }: { from: number }) => from;
+      const onStart = jest.fn();
+      const onChange = jest.fn();
+      const onComplete = jest.fn();
+
+      const descriptor = withCustom(tick, {
+        duration: 500,
+        from: 10,
+        onStart,
+        onChange,
+        onComplete,
+      });
+
+      expect(descriptor.type).toBe('custom');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.tick).toBe(tick);
+      expect(descriptor.options?.duration).toBe(500);
+      expect(descriptor.options?.from).toBe(10);
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onChange).toBe(onChange);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
+    });
+
+    it('defaults duration/from/callbacks to undefined when omitted', () => {
+      const descriptor = withCustom(({ from }) => from);
+
+      expect(descriptor.options?.duration).toBeUndefined();
+      expect(descriptor.options?.from).toBeUndefined();
     });
   });
 

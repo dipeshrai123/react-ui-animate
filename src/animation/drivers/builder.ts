@@ -1,6 +1,7 @@
 import { decay } from './decay';
 import { spring } from './spring';
 import { timing } from './timing';
+import { custom } from './custom';
 import { parallel, sequence, loop, delay } from './compose';
 import { AnimateValue } from '../values/AnimateValue';
 import { filterCallbackOptions } from '../helpers';
@@ -19,6 +20,13 @@ export function buildAnimation(
       return decay(value as AnimateValue<number>, options.velocity ?? 0, options);
     case 'delay':
       return delay(options.delay ?? 0);
+    case 'custom': {
+      if (!options.tick) {
+        console.warn('[buildAnimation] custom missing `tick` function');
+        return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
+      }
+      return custom(value as AnimateValue<number>, options.tick, options);
+    }
     case 'sequence': {
       const animations = options.animations ?? [];
       const controllers = animations.map((step) => buildAnimation(value, step));
@@ -93,6 +101,7 @@ export function buildParallel(
     return (
       step.type === 'decay' ||
       step.type === 'delay' ||
+      step.type === 'custom' ||
       (step.to as Record<string, Primitive>)[key] !== undefined
     );
   });
@@ -101,7 +110,7 @@ export function buildParallel(
     buildAnimation(value, {
       type: step.type,
       to:
-        step.type === 'decay' || step.type === 'delay'
+        step.type === 'decay' || step.type === 'delay' || step.type === 'custom'
           ? (step.to as any)
           : (step.to as Record<string, Primitive>)[key],
       options: filterCallbackOptions(step.options, idx === 0),

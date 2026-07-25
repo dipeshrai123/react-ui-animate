@@ -1,5 +1,6 @@
 import {
   Callbacks,
+  CustomTickFn,
   DecayOptions,
   Descriptor,
   KeyframeOptions,
@@ -214,6 +215,27 @@ export const withKeyframes = (
     onComplete: opts?.onComplete,
   });
 };
+
+// Escape hatch for animation shapes the built-in drivers don't model —
+// custom physics, magnetic snapping, orbital motion, noise-driven motion,
+// etc. `tick` is called every frame with elapsed/dt/from and returns the
+// value for that frame; the driver just pipes that into the AnimateValue.
+// Omit `duration` for an indefinite driver that only stops via
+// `cancel()`/`pause()` (e.g. a continuous loop-until-told-otherwise orbit).
+export const withCustom = (
+  tick: CustomTickFn,
+  opts?: { duration?: number; from?: number } & Callbacks
+): Descriptor => ({
+  type: 'custom',
+  options: {
+    tick,
+    duration: opts?.duration,
+    from: opts?.from,
+    onStart: opts?.onStart,
+    onChange: opts?.onChange,
+    onComplete: opts?.onComplete,
+  },
+});
 
 export const withLoop = (
   animation: Descriptor,
