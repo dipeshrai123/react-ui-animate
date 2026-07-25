@@ -1,6 +1,8 @@
 import { RefObject, useRef, useState } from 'react';
 import { useValue, withDecay, withSpring, withParallel, AnimateValue } from '../../animation';
 import type { Controls, Descriptor } from '../../animation/types';
+import { isDescriptor } from '../../animation/helpers';
+import { type LayoutOptions } from '../../animation/layout/flip';
 import { Gesture, type PanEvent } from '../api/Gesture';
 import { useGesture } from './useGesture';
 import { clamp, rubberClamp, snapTo } from '../../shared/utils';
@@ -37,6 +39,20 @@ export interface UseDragOptions {
    * falls back to the usual bounds-clamp/momentum behavior.
    */
   snapPoints?: { x?: number[]; y?: number[] };
+  /**
+   * Customizes the spring/timing used to settle back within `bounds` or
+   * snap to a `snapPoints` target on release. Accepts the same
+   * `withSpring(...)` / `withTiming(...)` descriptors (or raw
+   * `SpringOptions`) as `Reorder.Group`'s `transition` prop. Defaults to a
+   * spring. Has no effect on the momentum fling itself — see `decay`.
+   */
+  transition?: LayoutOptions;
+  /**
+   * Deceleration constant for the momentum fling on release (lower = more
+   * friction, stops sooner). Default `0.998`, matching `withDecay`'s own
+   * default.
+   */
+  decay?: number;
   /** Matches `Gesture.Pan()`'s own callback names. */
   onStart?: (e: PanEvent) => void;
   onChange?: (e: PanEvent) => void;
@@ -50,25 +66,42 @@ export interface UseDragResult {
   controls: Controls;
 }
 
+function resolveReleaseTransition(
+  transition: LayoutOptions | undefined,
+  target: number
+): Descriptor {
+  if (!transition) return withSpring(target);
+  if (isDescriptor(transition)) {
+    if (transition.type === 'spring' || transition.type === 'timing') {
+      return { ...transition, to: target };
+    }
+    return withSpring(target);
+  }
+  return withSpring(target, transition);
+}
+
 function releaseDescriptor(
   current: number,
   velocity: number,
   bound: { min: number; max: number } | null,
   momentum: boolean,
+  transition: LayoutOptions | undefined,
+  decay: number | undefined,
   snapPoints?: number[]
 ): Descriptor | null {
   if (snapPoints && snapPoints.length > 0) {
     const target = bound
       ? clamp(snapTo(current, velocity, snapPoints), bound.min, bound.max)
       : snapTo(current, velocity, snapPoints);
-    return withSpring(target);
+    return resolveReleaseTransition(transition, target);
   }
   if (bound && (current < bound.min || current > bound.max)) {
-    return withSpring(clamp(current, bound.min, bound.max));
+    return resolveReleaseTransition(transition, clamp(current, bound.min, bound.max));
   }
   if (momentum) {
     return withDecay(velocity, {
       clamp: bound ? [bound.min, bound.max] : undefined,
+      decay,
     });
   }
   return null;
@@ -99,6 +132,8 @@ export function useDrag<T extends HTMLElement>(
     elastic = true,
     momentum = true,
     snapPoints,
+    transition,
+    decay,
     onStart,
     onChange,
     onEnd,
@@ -172,6 +207,8 @@ export function useDrag<T extends HTMLElement>(
         e.velocity.x,
         b && { min: b.left, max: b.right },
         momentum,
+        transition,
+        decay,
         snapPoints?.x
       );
       const yDesc = releaseDescriptor(
@@ -179,6 +216,8 @@ export function useDrag<T extends HTMLElement>(
         e.velocity.y,
         b && { min: b.top, max: b.bottom },
         momentum,
+        transition,
+        decay,
         snapPoints?.y
       );
 

@@ -1,5 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useDrag } from '../useDrag';
+import { withTiming } from '../../../animation';
 
 beforeAll(() => {
   if (!(window as any).PointerEvent) {
@@ -336,6 +337,71 @@ describe('useDrag', () => {
 
     // Nearest snap point (100) is outside the bound, so it clamps to 50.
     expect(result.current.x.current).toBeCloseTo(50, 0);
+  });
+
+  it('settles into bounds via a custom `transition` (timing) instead of the default spring', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, {
+        momentum: false,
+        bounds: { left: -20, right: 20 },
+        transition: withTiming({ duration: 100 }),
+      })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 100, 0);
+      firePointer(window, 'pointerup', 100, 0);
+    });
+
+    // Mid-transition: still unsettled.
+    act(() => {
+      jest.advanceTimersByTime(50);
+    });
+    expect(result.current.x.current).not.toBeCloseTo(20, 0);
+
+    // Past the full duration: settled exactly, not still springing.
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    expect(result.current.x.current).toBeCloseTo(20, 0);
+  });
+
+  it('lets a custom `decay` tune how far the momentum fling travels', () => {
+    const highFriction = { current: document.createElement('div') };
+    document.body.appendChild(highFriction.current);
+    const defaultFriction = { current: document.createElement('div') };
+    document.body.appendChild(defaultFriction.current);
+
+    const { result: lowDecayResult } = renderHook(() =>
+      useDrag(highFriction, { decay: 0.9 })
+    );
+    const { result: defaultDecayResult } = renderHook(() => useDrag(defaultFriction));
+
+    act(() => {
+      firePointer(highFriction.current, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 10, 0);
+      firePointer(window, 'pointermove', 30, 0);
+      firePointer(window, 'pointerup', 30, 0);
+    });
+    act(() => {
+      firePointer(defaultFriction.current, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 10, 0);
+      firePointer(window, 'pointermove', 30, 0);
+      firePointer(window, 'pointerup', 30, 0);
+    });
+
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    // Lower `decay` (more friction) should have coasted a shorter distance
+    // past the release point than the default.
+    expect(lowDecayResult.current.x.current).toBeLessThan(defaultDecayResult.current.x.current);
+
+    highFriction.current.remove();
+    defaultFriction.current.remove();
   });
 
   it('exposes controls that can cancel in-flight momentum', () => {

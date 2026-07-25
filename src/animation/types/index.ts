@@ -35,6 +35,8 @@ export interface DecayOptions {
   velocity?: number;
   clamp?: [number, number];
   elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
+  /** Deceleration constant per frame (lower = more friction, stops sooner). Default 0.998. */
+  decay?: number;
 }
 
 export interface SequenceOptions {
