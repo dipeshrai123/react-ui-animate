@@ -8,7 +8,7 @@ import {
   withSpring,
 } from 'react-ui-animate';
 
-import '../../index.css';
+import '../../../index.css';
 
 const SNAP_COORDINATES = [
   { x: 0, y: 0 },

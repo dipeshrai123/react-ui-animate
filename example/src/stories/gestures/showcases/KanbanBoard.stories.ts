@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './KanbanBoard';
 
 const meta = {
-  title: 'Examples/Kanban Board',
+  title: 'Gestures/Showcases/Kanban Board',
   component: Example,
   parameters: {
     layout: 'fullscreen',

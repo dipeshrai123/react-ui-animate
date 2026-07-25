@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './SkeletonReveal';
 
 const meta = {
-  title: 'Examples/Skeleton Reveal',
+  title: 'Animations/Showcases/Skeleton Reveal',
   component: Example,
   parameters: {
     layout: 'fullscreen',

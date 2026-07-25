@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './PhotoViewer';
 
 const meta = {
-  title: 'Examples/Photo Viewer (Pan + Pinch + Rotate)',
+  title: 'Gestures/Showcases/Photo Viewer (Pan + Pinch + Rotate)',
   component: Example,
 } satisfies Meta<typeof Example>;
 

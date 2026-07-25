@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './InViewRepeat';
 
 const meta = {
-  title: 'Examples/InView Repeat',
+  title: 'Animations/Showcases/InView Repeat',
   component: Example,
 } satisfies Meta<typeof Example>;
 

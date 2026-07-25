@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, withTiming } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 const TABS = ['Overview', 'Features', 'Pricing', 'FAQ'];
 

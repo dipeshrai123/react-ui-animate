@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ScrollLandingPage';
 
 const meta = {
-  title: 'Examples/Scroll Landing Page',
+  title: 'Gestures/Showcases/Scroll Landing Page',
   component: Example,
   parameters: {
     layout: 'fullscreen',

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { animate, useValue, withSpring, withSequence, withTiming, withDelay } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 // Extra 0-9 loops rendered above/below the real digit, so a roll always has
 // headroom to scroll into (even mid-wrap or after a rapid burst of updates).

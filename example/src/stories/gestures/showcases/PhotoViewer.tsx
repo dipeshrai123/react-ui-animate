@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../animations/shared';
+import { ExampleLayout, Section, ExampleCard } from '../../animations/shared';
 
 // Demonstrates the gesture arbitration this session's Tier 2 work landed:
 // one finger pans the photo, two fingers pinch/rotate it — Pan gets

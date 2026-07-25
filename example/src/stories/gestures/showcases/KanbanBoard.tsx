@@ -7,7 +7,7 @@ import {
   useValue,
   withSpring,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 type ColumnId = 'todo' | 'in-progress' | 'done';
 type Priority = 'low' | 'medium' | 'high';

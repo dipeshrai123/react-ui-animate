@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Presence, animate, useOutsideClick, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 const Modal = ({
   onClose,

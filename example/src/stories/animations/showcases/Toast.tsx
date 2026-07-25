@@ -7,7 +7,7 @@ import {
   withSequence,
   withDelay,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
   return (

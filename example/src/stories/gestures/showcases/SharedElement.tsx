@@ -9,7 +9,7 @@ import {
   withSpring,
   withSequence,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 const BOX_SIZE = 200;
 

@@ -1,8 +1,8 @@
 import { MouseEvent, useLayoutEffect, useState } from 'react';
 import { animate, useValue, withTiming } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
-import '../../index.css';
+import '../../../index.css';
 
 const RIPPLE_SIZE = 50;
 

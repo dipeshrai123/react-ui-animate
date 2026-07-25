@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useValue, Gesture, useGesture, animate, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 function Example() {
   const [dragX, setDragX] = useValue(0);

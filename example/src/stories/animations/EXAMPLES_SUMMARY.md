@@ -72,7 +72,7 @@ All animation descriptor functions have dedicated examples:
 ## 📋 Existing Examples (Already Organized)
 
 ### Components
-- **animate** - `examples/AnimateProp` ✅
+- **animate** - `animations/showcases/AnimateProp` ✅
 
 ### Hooks
 - **useValue** - `animations/hooks/useValue/` ✅
@@ -92,10 +92,10 @@ All animation descriptor functions have dedicated examples:
   - UseIsPresent
 
 ### Recipes
-- **All Recipes** - `examples/Recipes` ✅
+- **All Recipes** - `animations/showcases/Recipes` ✅
 
 ### State Animations
-- **State Animations** - `examples/StateAnimations` ✅
+- **State Animations** - `animations/state/StateAnimations` ✅
   - Hover
   - Press
   - Focus
@@ -203,15 +203,25 @@ animations/
 │   └── To.tsx                  # to interpolation
 ├── hooks/
 │   └── useValue/               # useValue examples (existing)
-└── modules/
-    └── Presence/               # Presence examples (existing)
+├── modules/
+│   └── Presence/               # Presence examples (existing)
+├── state/
+│   └── StateAnimations.tsx     # State animations (existing)
+└── showcases/
+    ├── AnimateProp.tsx         # animate component (existing)
+    ├── Recipes.tsx             # All recipes (existing)
+    ├── LayoutAnimation/        # FLIP/layoutId showcases
+    └── [Advanced Examples]     # Animation-led advanced examples
 
-examples/
-├── AnimateProp.tsx             # animate component (existing)
-├── Recipes.tsx                 # All recipes (existing)
-├── StateAnimations.tsx         # State animations (existing)
-└── [Advanced Examples]         # All advanced examples (existing)
+gestures/
+├── api/                        # One story per gesture type
+├── hooks/                      # useDrag, useScrollProgress hooks
+└── showcases/                  # Gesture-led advanced examples
 ```
+
+Advanced examples are split by what drives them: animation-led demos live in
+`animations/showcases/`, gesture-led demos (drag, pan, scroll-linked) live in
+`gestures/showcases/`.
 
 ## 📝 Notes
 

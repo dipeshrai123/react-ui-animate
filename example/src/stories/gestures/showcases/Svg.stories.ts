@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './Svg';
 
 const meta = {
-  title: 'Examples/Svg',
+  title: 'Gestures/Showcases/Svg',
   component: Example,
 } satisfies Meta<typeof Example>;
 

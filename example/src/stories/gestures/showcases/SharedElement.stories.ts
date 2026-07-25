@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './SharedElement';
 
 const meta = {
-  title: 'Examples/SharedElement',
+  title: 'Gestures/Showcases/SharedElement',
   component: Example,
 } satisfies Meta<typeof Example>;
 

@@ -7,7 +7,7 @@ import {
   withStagger,
   withSpring,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 const StaggerItem = ({
   y,

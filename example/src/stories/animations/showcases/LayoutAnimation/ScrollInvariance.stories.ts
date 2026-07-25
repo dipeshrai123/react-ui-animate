@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ScrollInvariance';
 
 const meta = {
-  title: 'Examples/Layout Animation/Scroll Invariance',
+  title: 'Animations/Showcases/Layout Animation/Scroll Invariance',
   component: Example,
 } satisfies Meta<typeof Example>;
 

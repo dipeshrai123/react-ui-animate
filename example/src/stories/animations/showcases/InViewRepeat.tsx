@@ -1,5 +1,5 @@
 import { withSpring, withTiming, animate } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 // Scroll target uses different drivers for enter vs. exit so the fix is
 // obvious: `withTiming` in, `withTiming` out (not always spring).

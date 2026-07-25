@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './LayoutGroupExample';
 
 const meta = {
-  title: 'Examples/Layout Animation/LayoutGroup',
+  title: 'Animations/Showcases/Layout Animation/LayoutGroup',
   component: Example,
 } satisfies Meta<typeof Example>;
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { animate, Presence, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout } from '../../shared';
 
 type Category = 'design' | 'engineering' | 'marketing';
 

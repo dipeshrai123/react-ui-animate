@@ -5,7 +5,7 @@ import {
   withLoop,
   withSequence,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 const Example = () => {
   const [translateX, setTranslateX] = useValue(0);

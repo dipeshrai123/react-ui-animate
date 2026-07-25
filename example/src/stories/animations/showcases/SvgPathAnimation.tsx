@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, useValue, withTiming } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../animations/shared';
+import { ExampleLayout, Section, ExampleCard } from '../shared';
 
 const RADIUS = 70;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;

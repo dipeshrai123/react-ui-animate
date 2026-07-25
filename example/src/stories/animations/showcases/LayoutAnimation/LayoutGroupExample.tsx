@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, LayoutGroup } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../animations/shared';
+import { ExampleLayout, Section, ExampleCard } from '../../shared';
 
 const TABS = ['One', 'Two', 'Three'];
 

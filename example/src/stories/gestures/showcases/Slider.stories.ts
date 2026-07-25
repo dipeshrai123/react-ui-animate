@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './Slider';
 
 const meta = {
-  title: 'Examples/Slider',
+  title: 'Gestures/Showcases/Slider',
   component: Example,
 } satisfies Meta<typeof Example>;
 

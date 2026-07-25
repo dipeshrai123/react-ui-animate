@@ -8,7 +8,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../shared';
 
 const NAV_ITEMS = [
   { icon: '📊', label: 'Overview' },

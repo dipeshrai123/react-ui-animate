@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 const START = { x: 60, y: 110 };
 

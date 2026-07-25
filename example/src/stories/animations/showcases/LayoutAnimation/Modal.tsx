@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, Presence, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout } from '../../shared';
 
 interface Card {
   id: number;

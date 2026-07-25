@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ThemeSwitch';
 
 const meta = {
-  title: 'Examples/Theme Switch',
+  title: 'Animations/Showcases/Theme Switch',
   component: Example,
   parameters: {
     layout: 'fullscreen',

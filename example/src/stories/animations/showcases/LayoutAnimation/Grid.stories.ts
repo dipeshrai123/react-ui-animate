@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './Grid';
 
 const meta = {
-  title: 'Examples/Layout Animation/Filter & Shuffle Grid',
+  title: 'Animations/Showcases/Layout Animation/Filter & Shuffle Grid',
   component: Example,
 } satisfies Meta<typeof Example>;
 

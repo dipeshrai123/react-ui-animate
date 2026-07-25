@@ -8,7 +8,7 @@ import {
   withSpring,
   interpolate,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../animations/shared';
+import { ExampleLayout } from '../../animations/shared';
 
 export default function Example() {
   const ref = useRef(null);

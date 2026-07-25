@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { animate } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout } from '../../shared';
 
 interface Player {
   id: number;
