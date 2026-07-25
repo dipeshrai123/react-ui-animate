@@ -4,7 +4,11 @@ import '@testing-library/jest-dom';
 import { Reorder } from '../Reorder';
 import { withTiming } from '../../../animation';
 
-function HandleList({ onReorderSpy }: { onReorderSpy?: (v: string[]) => void }) {
+function HandleList({
+  onReorderSpy,
+}: {
+  onReorderSpy?: (v: string[]) => void;
+}) {
   const [values, setValues] = useState(['a', 'b', 'c']);
   return (
     <Reorder.Group
@@ -42,7 +46,12 @@ beforeAll(() => {
   HTMLElement.prototype.releasePointerCapture = jest.fn();
 });
 
-function firePointer(target: HTMLElement | Window, type: string, x: number, y: number) {
+function firePointer(
+  target: HTMLElement | Window,
+  type: string,
+  x: number,
+  y: number
+) {
   target.dispatchEvent(
     new (window as any).PointerEvent(type, {
       clientX: x,
@@ -102,24 +111,19 @@ describe('Reorder', () => {
   });
 
   it('tracks the pointer 1:1 when no real reflow delta is measured', () => {
-    // With `getBoundingClientRect` mocked to a fixed rect (no simulated
-    // reflow), the post-commit FLIP measurement sees no delta, so `offset`
-    // should equal raw pointer movement exactly — no predicted/guessed
-    // slot-shift baked in. Regression guard for the jump this component
-    // used to have: predicting the shift synchronously inside the drag
-    // handler, ahead of React's actual (async) commit, instead of
-    // measuring the real DOM delta after it lands.
     render(<List />);
     const itemA = screen.getByText('a');
 
-    expect(itemA).toHaveAttribute('style', expect.stringContaining('translateY'));
+    expect(itemA).toHaveAttribute(
+      'style',
+      expect.stringContaining('translateY')
+    );
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
       firePointer(window, 'pointermove', 0, 75);
     });
 
-    // `offset` tracks the pointer 1:1 — no slot-shift subtracted out.
     expect(itemA.style.transform).toContain('translateY(75px)');
 
     act(() => {
@@ -129,28 +133,24 @@ describe('Reorder', () => {
   });
 
   it('folds a real measured reflow delta into the dragged item instantly, but springs it for displaced neighbors', () => {
-    // Rects reflect each item's *current* position in a live `order` array
-    // (updated alongside the app's own state on every `onReorder`) so the
-    // post-commit FLIP measurement sees an actual, real position change —
-    // not the static mock the other tests use.
     let order = ['a', 'b', 'c'];
-    (HTMLElement.prototype.getBoundingClientRect as jest.Mock).mockImplementation(
-      function (this: HTMLElement) {
-        const text = this.textContent ?? '';
-        const top = order.indexOf(text) * 70;
-        return {
-          top,
-          left: 0,
-          right: 0,
-          bottom: top + 50,
-          width: 100,
-          height: 50,
-          x: 0,
-          y: top,
-          toJSON() {},
-        } as DOMRect;
-      }
-    );
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = order.indexOf(text) * 70;
+      return {
+        top,
+        left: 0,
+        right: 0,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
 
     function LiveOrderList() {
       const [values, setValues] = useState(order);
@@ -178,27 +178,20 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
-      // Past the 70px pitch's half threshold (35) — triggers the a/b swap.
       firePointer(window, 'pointermove', 0, 80);
     });
 
-    // 'a' (dragged) reflowed from top 0 to top 70 (+70) when the swap
-    // committed; that's folded into `offset` instantly, so the transform
-    // reflects `movement(80) + correction(-70) = 10`, not a raw 80 (which
-    // would mean the reflow wasn't compensated) and not 80 unchanged forever
-    // (which would mean the correction never ran).
     expect(itemA.style.transform).toContain('translateY(10px)');
 
-    // 'b' (displaced, not dragged) reflowed the other way (top 70 -> 0, a
-    // -(-70) = +70 inversion) and should still be settling via spring — not
-    // yet at its final resting value of 0.
     expect(itemB.style.transform).not.toContain('translateY(0px)');
     const bBeforeSettle = itemB.style.transform;
 
     act(() => {
       jest.advanceTimersByTime(1000);
     });
-    const settledMatch = itemB.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    const settledMatch = itemB.style.transform.match(
+      /translateY\(([-\d.]+)px\)/
+    );
     expect(settledMatch).not.toBeNull();
     expect(Number(settledMatch![1])).toBeCloseTo(0, 1);
     expect(itemB.style.transform).not.toBe(bBeforeSettle);
@@ -237,14 +230,11 @@ describe('Reorder', () => {
       firePointer(window, 'pointerup', 0, 20);
     });
 
-    // Mid-transition (50ms into a 100ms linear timing): still unsettled.
     act(() => {
       jest.advanceTimersByTime(50);
     });
     expect(itemA.style.transform).not.toContain('translateY(0px)');
 
-    // Past the full 100ms duration: settled at 0 (timing, unlike a spring,
-    // reaches its target and stops there instead of continuing to oscillate).
     act(() => {
       jest.advanceTimersByTime(200);
     });
@@ -323,8 +313,6 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
-      // Item height is 50; dragging past 1.5 slots (75px) should move 'a'
-      // two slots down (round(75/50) = round(1.5) = 2).
       firePointer(window, 'pointermove', 0, 75);
     });
 
@@ -344,7 +332,6 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
-      // 20px is well under half the 50px slot — rounds back to index 0.
       firePointer(window, 'pointermove', 0, 20);
       firePointer(window, 'pointerup', 0, 20);
       jest.advanceTimersByTime(1000);
@@ -354,27 +341,24 @@ describe('Reorder', () => {
   });
 
   it('accounts for gaps between items, not just their own size', () => {
-    // Items are 50px tall with a 20px gap between them (a 70px pitch), like
-    // a flex list with `gap: 20`. Positions below assume 'a','b','c' start
-    // stacked at y = 0, 70, 140 respectively.
     const rectsByText: Record<string, number> = { a: 0, b: 70, c: 140 };
-    (HTMLElement.prototype.getBoundingClientRect as jest.Mock).mockImplementation(
-      function (this: HTMLElement) {
-        const text = this.textContent ?? '';
-        const top = rectsByText[text] ?? 0;
-        return {
-          top,
-          left: 0,
-          right: 0,
-          bottom: top + 50,
-          width: 100,
-          height: 50,
-          x: 0,
-          y: top,
-          toJSON() {},
-        } as DOMRect;
-      }
-    );
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = rectsByText[text] ?? 0;
+      return {
+        top,
+        left: 0,
+        right: 0,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
 
     const onReorderSpy = jest.fn();
     render(<List onReorderSpy={onReorderSpy} />);
@@ -383,15 +367,11 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
-      // Past half the item's own size (25) but under half the real 70px
-      // pitch (35) — a measurement that only looked at the item's own
-      // height would swap here; the gap-aware pitch shouldn't yet.
       firePointer(window, 'pointermove', 0, 30);
     });
     expect(onReorderSpy).not.toHaveBeenCalled();
 
     act(() => {
-      // Past half the real pitch (35) now.
       firePointer(window, 'pointermove', 0, 40);
     });
     expect(onReorderSpy).toHaveBeenCalledWith(['b', 'a', 'c']);
@@ -415,7 +395,6 @@ describe('Reorder', () => {
     expect(onReorderSpy).toHaveBeenLastCalledWith(['b', 'c', 'a']);
 
     act(() => {
-      // Drag back up past the first swap's threshold.
       firePointer(window, 'pointermove', 0, 0);
     });
     expect(onReorderSpy).toHaveBeenLastCalledWith(['a', 'b', 'c']);
@@ -487,8 +466,6 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
 
   beforeEach(() => {
     jest.useFakeTimers();
-    // Group A spans x:[0,200], group B spans x:[250,450]; items are 150x50
-    // boxes positioned per a small lookup, keyed by class or text content.
     const itemPositions: Record<string, [number, number]> = {
       a1: [0, 0],
       a2: [0, 60],
@@ -518,9 +495,6 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
 
     act(() => {
       firePointer(itemA1, 'pointerdown', 0, 0);
-      // a1 starts centered at (75, 25); +300/+20 lands its center at
-      // (375, 45) — inside group B's bounds (x:[250,450]), below b1's
-      // center (25), so it should insert after b1.
       firePointer(window, 'pointermove', 300, 20);
       firePointer(window, 'pointerup', 300, 20);
       jest.advanceTimersByTime(1000);
@@ -540,31 +514,24 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
 
     act(() => {
       firePointer(itemA1, 'pointerdown', 0, 0);
-      // Into group B (center x=375) and above b1's center (25 - 20 = 5),
-      // so the computed drop index is 0 — b1 should preview making room.
       firePointer(window, 'pointermove', 300, -20);
     });
 
-    // Not committed yet — b's array is untouched while just hovering.
     expect(onReorderB).not.toHaveBeenCalled();
 
     act(() => {
       jest.advanceTimersByTime(1000);
     });
 
-    const previewMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    const previewMatch = itemB1.style.transform.match(
+      /translateY\(([-\d.]+)px\)/
+    );
     expect(previewMatch).not.toBeNull();
-    // b1 has no neighbor, so the preview shift falls back to its own
-    // measured size (50px, per the mock).
     expect(Number(previewMatch![1])).toBeCloseTo(50, 0);
 
     act(() => {
       firePointer(window, 'pointerup', 300, -20);
     });
-    // Split from the timer advance above: firing the event and letting fake
-    // timers tick forward inside the same `act()` call doesn't give React a
-    // chance to commit the resulting state update first, so the reset
-    // spring below would never get a tick applied to it.
     act(() => {
       jest.advanceTimersByTime(1000);
     });
@@ -572,8 +539,9 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
     expect(onReorderA).toHaveBeenLastCalledWith(['a2']);
     expect(onReorderB).toHaveBeenLastCalledWith(['a1', 'b1']);
 
-    // Preview shift is released once the drag ends.
-    const afterMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    const afterMatch = itemB1.style.transform.match(
+      /translateY\(([-\d.]+)px\)/
+    );
     expect(afterMatch).not.toBeNull();
     expect(Number(afterMatch![1])).toBeCloseTo(0, 0);
   });
@@ -593,20 +561,20 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
     act(() => {
       jest.advanceTimersByTime(1000);
     });
-    expect(Number(itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/)![1])).toBeCloseTo(
-      50,
-      0
-    );
+    expect(
+      Number(itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/)![1])
+    ).toBeCloseTo(50, 0);
 
     act(() => {
-      // Back into group A's own bounds.
       firePointer(window, 'pointermove', 10, 10);
     });
     act(() => {
       jest.advanceTimersByTime(1000);
     });
 
-    const clearedMatch = itemB1.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    const clearedMatch = itemB1.style.transform.match(
+      /translateY\(([-\d.]+)px\)/
+    );
     expect(clearedMatch).not.toBeNull();
     expect(Number(clearedMatch![1])).toBeCloseTo(0, 0);
 
@@ -618,28 +586,23 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
   });
 
   it('drops into the middle of a multi-item target group without erroring or losing items', () => {
-    // The single-item target group (`b`, in the other cross-group tests)
-    // can never actually reflow a real neighbor on drop — its item's
-    // position is static regardless of order in that mock, so it can't
-    // exercise a real member being both preview-shifted *and* really
-    // reflowed in the same commit (exactly what happens dropping into the
-    // middle of a multi-item list, which is the collision the
-    // `justFlippedRef` handoff guard exists for). This uses a live,
-    // order-aware mock (position = index * 70) so b2's rect actually moves
-    // when a1 lands between b1 and b2.
     let orderB = ['b1', 'b2'];
-    (HTMLElement.prototype.getBoundingClientRect as jest.Mock).mockImplementation(
-      function (this: HTMLElement) {
-        if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
-        if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
-        const text = this.textContent ?? '';
-        if (text === 'a1') return rect(0, 0, 150, 50);
-        const top = orderB.indexOf(text) * 70;
-        return rect(250, top, 400, top + 50);
-      }
-    );
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
+      if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
+      const text = this.textContent ?? '';
+      if (text === 'a1') return rect(0, 0, 150, 50);
+      const top = orderB.indexOf(text) * 70;
+      return rect(250, top, 400, top + 50);
+    });
 
-    function LiveKanbanTest({ onReorderB }: { onReorderB?: (v: string[]) => void }) {
+    function LiveKanbanTest({
+      onReorderB,
+    }: {
+      onReorderB?: (v: string[]) => void;
+    }) {
       const [a, setA] = useState(['a1']);
       const [b, setB] = useState(orderB);
       return (
@@ -676,8 +639,6 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
 
     act(() => {
       firePointer(itemA1, 'pointerdown', 0, 0);
-      // a1 center (75, 25) + (300, 60) = (375, 85) — inside group B,
-      // between b1's center (25) and b2's center (95): drop index 1.
       firePointer(window, 'pointermove', 300, 60);
     });
     act(() => {
@@ -706,7 +667,6 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
 
     act(() => {
       firePointer(itemA1, 'pointerdown', 0, 0);
-      // Small move, well within group A's own bounds.
       firePointer(window, 'pointermove', 10, 10);
       firePointer(window, 'pointerup', 10, 10);
       jest.advanceTimersByTime(1000);
@@ -732,8 +692,6 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
     render(<StandaloneList />);
     const itemX = screen.getByText('x');
 
-    // No error thrown reaching for a null dnd context, and normal
-    // same-group behavior still works.
     act(() => {
       firePointer(itemX, 'pointerdown', 0, 0);
       firePointer(window, 'pointermove', 0, 1000);
