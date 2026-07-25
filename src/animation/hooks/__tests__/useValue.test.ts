@@ -5,7 +5,6 @@ import {
   withSpring,
   withSequence,
   withLoop,
-  withDelay,
   withParallel,
   withCustom,
 } from '../../descriptors';

@@ -9,6 +9,8 @@ export function useOutsideClick(
 
   useEffect(() => {
     cbRef.current = callback;
+    // `deps` is caller-supplied and can't be statically analyzed here.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callback, ...deps]);
 
   useEffect(() => {

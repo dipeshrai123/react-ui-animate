@@ -213,7 +213,10 @@ function useEnterAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-    // Removed 'style' from dependencies to prevent re-triggering on parent state changes
+    // Removed 'style' from dependencies to prevent re-triggering on parent
+    // state changes; the omitted refs are React refs (stable identity) and
+    // don't belong in the dependency array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animateProp, presenceContext?.isExiting]);
 }
 
@@ -297,6 +300,8 @@ function useExitAnimations(
         exitCleanupRef.current = [];
       }
     };
+    // Omitted refs are React refs (stable identity).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [presenceContext?.isExiting]);
 }
 
@@ -353,6 +358,8 @@ function useViewAnimations(
     }
 
     hasInitializedRef.current = true;
+    // Omitted refs are React refs (stable identity).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view]);
 
   const applyViewAnimationWrapper = (isActive: boolean) => {
@@ -391,6 +398,9 @@ function useViewAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
+    // `applyViewAnimationWrapper` is recreated every render but only closes
+    // over `view`/`isActive`, both already covered by this dependency list.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isInView, view]);
 
   useEffect(() => {
@@ -578,11 +588,16 @@ function useStateAnimations(
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
     };
+    // Deps are serialized (structural) values by design, so the effect only
+    // reruns on real content changes rather than new object identities.
+    // `applyStateAnimationWrapper`/`nodeRef` are stable across renders.
+    /* eslint-disable react-hooks/exhaustive-deps */
   }, [
     serializeAnimateProp(hover),
     serializeAnimateProp(press),
     serializeAnimateProp(focus),
   ]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     return () => {
@@ -648,15 +663,15 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     const {
       animate,
-      exit,
-      hover,
-      press,
-      focus,
-      view,
-      viewOptions,
-      layout,
-      layoutOptions,
-      layoutId,
+      exit: _exit,
+      hover: _hover,
+      press: _press,
+      focus: _focus,
+      view: _view,
+      viewOptions: _viewOptions,
+      layout: _layout,
+      layoutOptions: _layoutOptions,
+      layoutId: _layoutId,
       style,
       ...restProps
     } = props;

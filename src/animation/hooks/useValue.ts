@@ -39,6 +39,8 @@ export function useValue<T extends Base>(
     }
 
     return new AnimateValue(initial);
+    // `initial` is read-once, same contract as useState's initial value.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) as ValueReturn<T>;
 
   // Stable across the component's lifetime, like useState's setter — `set`
@@ -50,7 +52,7 @@ export function useValue<T extends Base>(
   // do), restarting whatever that effect was driving.
   const set = useCallback(
     (to: Base | Descriptor | AnimateValue<Primitive>) => {
-      let ctrl: Controls | null = null;
+      let ctrl: Controls | null;
 
       if (Array.isArray(initial)) {
         ctrl = handleArray(
@@ -71,8 +73,8 @@ export function useValue<T extends Base>(
 
       controllerRef.current = ctrl;
       if (ctrl) ctrl.start();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 

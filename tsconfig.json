@@ -3,7 +3,7 @@
     "outDir": "dist",
     "module": "esnext",
     "target": "es2020",
-    "lib": ["es2020", "dom"],
+    "lib": ["es2020", "es2022.error", "dom"],
     "downlevelIteration": false,
     "sourceMap": false,
     "allowJs": false,

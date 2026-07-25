@@ -13,15 +13,15 @@
  * by Gaëtan Renaudeau 2014 - 2015 – MIT License
  */
 
-var NEWTON_ITERATIONS = 4;
-var NEWTON_MIN_SLOPE = 0.001;
-var SUBDIVISION_PRECISION = 0.0000001;
-var SUBDIVISION_MAX_ITERATIONS = 10;
+const NEWTON_ITERATIONS = 4;
+const NEWTON_MIN_SLOPE = 0.001;
+const SUBDIVISION_PRECISION = 0.0000001;
+const SUBDIVISION_MAX_ITERATIONS = 10;
 
-var kSplineTableSize = 11;
-var kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
+const kSplineTableSize = 11;
+const kSampleStepSize = 1.0 / (kSplineTableSize - 1.0);
 
-var float32ArraySupported = typeof Float32Array === "function";
+const float32ArraySupported = typeof Float32Array === "function";
 
 function A(aA1: number, aA2: number) {
   return 1.0 - 3.0 * aA2 + 3.0 * aA1;
@@ -48,7 +48,7 @@ function binarySubdivide(
   mX1: number,
   mX2: number
 ) {
-  var currentX,
+  let currentX,
     currentT,
     i = 0;
   do {
@@ -72,12 +72,12 @@ function newtonRaphsonIterate(
   mX1: number,
   mX2: number
 ) {
-  for (var i = 0; i < NEWTON_ITERATIONS; ++i) {
-    var currentSlope = getSlope(aGuessT, mX1, mX2);
+  for (let i = 0; i < NEWTON_ITERATIONS; ++i) {
+    const currentSlope = getSlope(aGuessT, mX1, mX2);
     if (currentSlope === 0.0) {
       return aGuessT;
     }
-    var currentX = calcBezier(aGuessT, mX1, mX2) - aX;
+    const currentX = calcBezier(aGuessT, mX1, mX2) - aX;
     aGuessT -= currentX / currentSlope;
   }
   return aGuessT;
@@ -96,17 +96,17 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
     return LinearEasing;
   }
 
-  var sampleValues = float32ArraySupported
+  const sampleValues = float32ArraySupported
     ? new Float32Array(kSplineTableSize)
     : new Array(kSplineTableSize);
-  for (var i = 0; i < kSplineTableSize; ++i) {
+  for (let i = 0; i < kSplineTableSize; ++i) {
     sampleValues[i] = calcBezier(i * kSampleStepSize, mX1, mX2);
   }
 
   function getTForX(aX: number) {
-    var intervalStart = 0.0;
-    var currentSample = 1;
-    var lastSample = kSplineTableSize - 1;
+    let intervalStart = 0.0;
+    let currentSample = 1;
+    const lastSample = kSplineTableSize - 1;
 
     for (
       ;
@@ -117,12 +117,12 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
     }
     --currentSample;
 
-    var dist =
+    const dist =
       (aX - sampleValues[currentSample]) /
       (sampleValues[currentSample + 1] - sampleValues[currentSample]);
-    var guessForT = intervalStart + dist * kSampleStepSize;
+    const guessForT = intervalStart + dist * kSampleStepSize;
 
-    var initialSlope = getSlope(guessForT, mX1, mX2);
+    const initialSlope = getSlope(guessForT, mX1, mX2);
     if (initialSlope >= NEWTON_MIN_SLOPE) {
       return newtonRaphsonIterate(aX, guessForT, mX1, mX2);
     } else if (initialSlope === 0.0) {
@@ -204,7 +204,7 @@ export class Easing {
    *   http://tiny.cc/elastic_b_3 (bounciness = 3)
    */
   static elastic(bounciness: number = 1): (t: number) => number {
-    var p = bounciness * Math.PI;
+    const p = bounciness * Math.PI;
     return (t) =>
       1 - Math.pow(Math.cos((t * Math.PI) / 2), 3) * Math.cos(t * p);
   }
@@ -268,5 +268,5 @@ export class Easing {
   }
 }
 
-var ease = /*#__PURE__*/ Easing.bezier(0.42, 0, 1, 1);
+const ease = /*#__PURE__*/ Easing.bezier(0.42, 0, 1, 1);
 

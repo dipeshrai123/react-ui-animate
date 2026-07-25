@@ -1,5 +1,4 @@
 import { renderHook } from '@testing-library/react';
-import { useRef } from 'react';
 import { useOutsideClick } from '../useOutsideClick';
 
 describe('useOutsideClick', () => {

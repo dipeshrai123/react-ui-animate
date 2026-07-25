@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main, next]
+  push:
+    branches-ignore: [main, next]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npx tsc --noEmit
+
+      - run: npm test -- --ci
+
+      - run: npm run build

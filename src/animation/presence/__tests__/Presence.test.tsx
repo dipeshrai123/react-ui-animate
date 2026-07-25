@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Presence, usePresence, useIsPresent } from '../Presence';
 import { animate, withTiming } from '../../index';
@@ -318,7 +318,6 @@ describe('Presence', () => {
     }
 
     render(<TestComponent />);
-    const child = screen.getByTestId('child');
 
     act(() => {
       screen.getByText('Hide').click();

@@ -43,7 +43,8 @@ function withInterpolation(
       return controller;
     } catch (err: any) {
       throw new Error(
-        `[spring] Cannot animate from "${value.current}" to "${target}": ${err.message}`
+        `[spring] Cannot animate from "${value.current}" to "${target}": ${err.message}`,
+        { cause: err }
       );
     }
   }

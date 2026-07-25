@@ -43,7 +43,8 @@ function withInterpolation(
       return controller;
     } catch (err: any) {
       throw new Error(
-        `[timing] Cannot animate from "${value.current}" to "${target}": ${err.message}`
+        `[timing] Cannot animate from "${value.current}" to "${target}": ${err.message}`,
+        { cause: err }
       );
     }
   }

@@ -102,7 +102,10 @@ export function parseCssColor(c: string): [number, number, number, number] {
   if (RGB_RE.test(color)) {
     const percentage = color.includes('%');
     const nums = [...color.matchAll(numberRE)].map((m) => +m[0]);
-    let [r, g, b, a = 1] = nums;
+    const [r0, g0, b0, a = 1] = nums;
+    let r = r0;
+    let g = g0;
+    let b = b0;
 
     if (percentage) {
       r = Math.round((r / 100) * 255);

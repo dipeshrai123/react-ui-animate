@@ -1,5 +1,4 @@
 import { renderHook, waitFor, act } from '@testing-library/react';
-import { useRef } from 'react';
 import { useInView } from '../useInView';
 
 // Mock IntersectionObserver

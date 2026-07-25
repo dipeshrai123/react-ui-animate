@@ -5,7 +5,7 @@ export function filterCallbackOptions(
   attach: boolean
 ) {
   if (attach) return options;
-  const { onStart, onChange, onComplete, ...rest } = options;
+  const { onStart: _onStart, onChange: _onChange, onComplete: _onComplete, ...rest } = options;
   return rest;
 }
 

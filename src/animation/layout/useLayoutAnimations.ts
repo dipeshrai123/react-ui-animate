@@ -75,9 +75,14 @@ export function useLayoutAnimations(
   });
 
   useEffect(() => {
+    // Intentionally read `.current` at cleanup time (true unmount, since
+    // deps is []): controllers/unsubs accumulate after mount, so capturing
+    // them at effect-setup time would miss everything added later.
+    /* eslint-disable react-hooks/exhaustive-deps */
     return () => {
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
       unsubsRef.current.forEach((unsub) => unsub());
     };
+    /* eslint-enable react-hooks/exhaustive-deps */
   }, []);
 }
