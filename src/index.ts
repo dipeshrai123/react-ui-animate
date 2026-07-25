@@ -84,6 +84,8 @@ export {
   Reorder,
   type ReorderGroupProps,
   type ReorderItemProps,
+  type ReorderHandleProps,
+  type ReorderContextProps,
 } from './gestures/components/Reorder';
 
 export { Gesture } from './gestures/api/Gesture';

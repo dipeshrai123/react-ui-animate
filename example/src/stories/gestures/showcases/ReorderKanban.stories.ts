@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import Example from './ReorderList';
+import Example from './ReorderKanban';
 
 const meta = {
-  title: 'Gestures/Showcases/Reorder/Basic',
+  title: 'Gestures/Showcases/Reorder/Kanban (Cross-List)',
   component: Example,
 } satisfies Meta<typeof Example>;
 

@@ -1,0 +1,144 @@
+import { useState } from 'react';
+import { Reorder } from 'react-ui-animate';
+
+interface Card {
+  id: string;
+  title: string;
+}
+
+type Columns = Record<'todo' | 'inProgress' | 'done', Card[]>;
+
+const INITIAL_COLUMNS: Columns = {
+  todo: [
+    { id: 'c1', title: 'Design onboarding flow' },
+    { id: 'c2', title: 'Write API docs' },
+  ],
+  inProgress: [
+    { id: 'c3', title: 'Fix reorder z-index bug' },
+    { id: 'c4', title: 'Add drag handles' },
+  ],
+  done: [{ id: 'c5', title: 'Ship useScrollReveal' }],
+};
+
+const COLUMN_META: Record<keyof Columns, { title: string; color: string }> = {
+  todo: { title: 'To Do', color: '#9ca3af' },
+  inProgress: { title: 'In Progress', color: '#3399ff' },
+  done: { title: 'Done', color: '#22c55e' },
+};
+
+const GripIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+    {[4, 8, 12].map((y) =>
+      [5, 11].map((x) => (
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={1.3} fill="#9ca3af" />
+      ))
+    )}
+  </svg>
+);
+
+/**
+ * A Kanban board: three independent `Reorder.Group`s (one per column) all
+ * nested in a single `Reorder.Context`, which is what lets a card be
+ * dragged out of one column's array and dropped into a different column's
+ * array — plain `Reorder.Group` on its own only reorders within one list.
+ */
+const Example = () => {
+  const [columns, setColumns] = useState(INITIAL_COLUMNS);
+
+  return (
+    <div style={{ padding: 40 }}>
+      <h1 style={{ marginBottom: 10 }}>Kanban board</h1>
+      <p style={{ marginBottom: 30, color: '#666', maxWidth: 560 }}>
+        Drag a card by its grip icon — within a column to reorder it, or into
+        a different column to move it there. Powered by{' '}
+        <code>Reorder.Context</code> wrapping three <code>Reorder.Group</code>
+        s, one per column.
+      </p>
+
+      <Reorder.Context>
+        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+          {(Object.keys(columns) as Array<keyof Columns>).map((key) => {
+            const { title, color } = COLUMN_META[key];
+            return (
+              <div
+                key={key}
+                style={{
+                  flex: 1,
+                  minWidth: 220,
+                  backgroundColor: '#f8fafc',
+                  borderRadius: 12,
+                  padding: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 12,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: '#374151',
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  <span
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 4,
+                      backgroundColor: color,
+                    }}
+                  />
+                  {title}
+                  <span style={{ color: '#9ca3af', fontWeight: 500 }}>
+                    {columns[key].length}
+                  </span>
+                </div>
+
+                <Reorder.Group
+                  values={columns[key]}
+                  onReorder={(next) => setColumns((prev) => ({ ...prev, [key]: next }))}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                    minHeight: 60,
+                  }}
+                >
+                  {columns[key].map((card) => (
+                    <Reorder.Item
+                      key={card.id}
+                      value={card}
+                      id={card.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        fontSize: 13,
+                        color: '#1f2937',
+                      }}
+                    >
+                      <Reorder.Handle style={{ display: 'flex' }}>
+                        <GripIcon />
+                      </Reorder.Handle>
+                      {card.title}
+                    </Reorder.Item>
+                  ))}
+                </Reorder.Group>
+              </div>
+            );
+          })}
+        </div>
+      </Reorder.Context>
+    </div>
+  );
+};
+
+export default Example;

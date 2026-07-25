@@ -2,6 +2,30 @@ import { useState } from 'react';
 import { render, screen, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { Reorder } from '../Reorder';
+import { withTiming } from '../../../animation';
+
+function HandleList({ onReorderSpy }: { onReorderSpy?: (v: string[]) => void }) {
+  const [values, setValues] = useState(['a', 'b', 'c']);
+  return (
+    <Reorder.Group
+      values={values}
+      axis="y"
+      onReorder={(next) => {
+        setValues(next);
+        onReorderSpy?.(next);
+      }}
+    >
+      {values.map((v) => (
+        <Reorder.Item key={v} value={v}>
+          <Reorder.Handle>
+            <span data-testid={`handle-${v}`}>::</span>
+          </Reorder.Handle>
+          <span>{v}</span>
+        </Reorder.Item>
+      ))}
+    </Reorder.Group>
+  );
+}
 
 beforeAll(() => {
   if (!(window as any).PointerEvent) {
@@ -185,6 +209,112 @@ describe('Reorder', () => {
     });
   });
 
+  it('respects a custom `transition` for the release settle', () => {
+    function TimingList() {
+      const [values, setValues] = useState(['a', 'b', 'c']);
+      return (
+        <Reorder.Group
+          values={values}
+          axis="y"
+          onReorder={setValues}
+          transition={withTiming({ duration: 100 })}
+        >
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<TimingList />);
+    const itemA = screen.getByText('a');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 20);
+      firePointer(window, 'pointerup', 0, 20);
+    });
+
+    // Mid-transition (50ms into a 100ms linear timing): still unsettled.
+    act(() => {
+      jest.advanceTimersByTime(50);
+    });
+    expect(itemA.style.transform).not.toContain('translateY(0px)');
+
+    // Past the full 100ms duration: settled at 0 (timing, unlike a spring,
+    // reaches its target and stops there instead of continuing to oscillate).
+    act(() => {
+      jest.advanceTimersByTime(200);
+    });
+    const settled = itemA.style.transform.match(/translateY\(([-\d.]+)px\)/);
+    expect(settled).not.toBeNull();
+    expect(Number(settled![1])).toBeCloseTo(0, 1);
+  });
+
+  it('raises the dragged item above its neighbors and restores it on release', () => {
+    render(<List />);
+    const itemA = screen.getByText('a');
+
+    expect(itemA.style.zIndex).not.toBe('1');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 20);
+    });
+    expect(itemA.style.zIndex).toBe('1');
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 20);
+      jest.advanceTimersByTime(1000);
+    });
+    expect(itemA.style.zIndex).not.toBe('1');
+  });
+
+  it('blocks text selection on the item and its handle', () => {
+    render(<HandleList />);
+    const itemA = screen.getByText('a').closest('div')!;
+    const handleA = screen.getByTestId('handle-a').closest('div')!;
+
+    expect(itemA.style.userSelect).toBe('none');
+    expect(handleA.style.userSelect).toBe('none');
+  });
+
+  it('with Reorder.Handle, ignores drags started on the item body', () => {
+    const onReorderSpy = jest.fn();
+    render(<HandleList onReorderSpy={onReorderSpy} />);
+
+    const itemABody = screen.getByText('a');
+
+    act(() => {
+      firePointer(itemABody, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 75);
+      firePointer(window, 'pointerup', 0, 75);
+    });
+
+    expect(onReorderSpy).not.toHaveBeenCalled();
+  });
+
+  it('with Reorder.Handle, starts the drag from the handle', () => {
+    const onReorderSpy = jest.fn();
+    render(<HandleList onReorderSpy={onReorderSpy} />);
+
+    const handleA = screen.getByTestId('handle-a');
+
+    act(() => {
+      firePointer(handleA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 75);
+    });
+
+    expect(onReorderSpy).toHaveBeenCalledWith(['b', 'c', 'a']);
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 75);
+      jest.advanceTimersByTime(1000);
+    });
+  });
+
   it('reorders when dragged past a full item slot', () => {
     const onReorderSpy = jest.fn();
     render(<List onReorderSpy={onReorderSpy} />);
@@ -294,5 +424,156 @@ describe('Reorder', () => {
       firePointer(window, 'pointerup', 0, 0);
       jest.advanceTimersByTime(1000);
     });
+  });
+});
+
+describe('Reorder.Context (cross-list drag-and-drop)', () => {
+  function rect(left: number, top: number, right: number, bottom: number) {
+    return {
+      left,
+      top,
+      right,
+      bottom,
+      width: right - left,
+      height: bottom - top,
+      x: left,
+      y: top,
+      toJSON() {},
+    } as DOMRect;
+  }
+
+  function KanbanTest({
+    onReorderA,
+    onReorderB,
+  }: {
+    onReorderA?: (v: string[]) => void;
+    onReorderB?: (v: string[]) => void;
+  }) {
+    const [a, setA] = useState(['a1', 'a2']);
+    const [b, setB] = useState(['b1']);
+    return (
+      <Reorder.Context>
+        <Reorder.Group
+          className="group-a"
+          values={a}
+          onReorder={(next) => {
+            setA(next);
+            onReorderA?.(next);
+          }}
+        >
+          {a.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+        <Reorder.Group
+          className="group-b"
+          values={b}
+          onReorder={(next) => {
+            setB(next);
+            onReorderB?.(next);
+          }}
+        >
+          {b.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      </Reorder.Context>
+    );
+  }
+
+  beforeEach(() => {
+    jest.useFakeTimers();
+    // Group A spans x:[0,200], group B spans x:[250,450]; items are 150x50
+    // boxes positioned per a small lookup, keyed by class or text content.
+    const itemPositions: Record<string, [number, number]> = {
+      a1: [0, 0],
+      a2: [0, 60],
+      b1: [250, 0],
+    };
+    jest
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
+        if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
+        const [left, top] = itemPositions[this.textContent ?? ''] ?? [0, 0];
+        return rect(left, top, left + 150, top + 50);
+      });
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.restoreAllMocks();
+  });
+
+  it('transfers an item from one group to another when dropped inside its bounds', () => {
+    const onReorderA = jest.fn();
+    const onReorderB = jest.fn();
+    render(<KanbanTest onReorderA={onReorderA} onReorderB={onReorderB} />);
+
+    const itemA1 = screen.getByText('a1');
+
+    act(() => {
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      // a1 starts centered at (75, 25); +300/+20 lands its center at
+      // (375, 45) — inside group B's bounds (x:[250,450]), below b1's
+      // center (25), so it should insert after b1.
+      firePointer(window, 'pointermove', 300, 20);
+      firePointer(window, 'pointerup', 300, 20);
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(onReorderA).toHaveBeenLastCalledWith(['a2']);
+    expect(onReorderB).toHaveBeenLastCalledWith(['b1', 'a1']);
+  });
+
+  it('leaves both lists untouched when released back inside the origin group', () => {
+    const onReorderA = jest.fn();
+    const onReorderB = jest.fn();
+    render(<KanbanTest onReorderA={onReorderA} onReorderB={onReorderB} />);
+
+    const itemA1 = screen.getByText('a1');
+
+    act(() => {
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      // Small move, well within group A's own bounds.
+      firePointer(window, 'pointermove', 10, 10);
+      firePointer(window, 'pointerup', 10, 10);
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(onReorderB).not.toHaveBeenCalled();
+  });
+
+  it('standalone Reorder.Group (no Reorder.Context) is unaffected by cross-group logic', () => {
+    function StandaloneList() {
+      const [values, setValues] = useState(['x', 'y', 'z']);
+      return (
+        <Reorder.Group values={values} onReorder={setValues}>
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<StandaloneList />);
+    const itemX = screen.getByText('x');
+
+    // No error thrown reaching for a null dnd context, and normal
+    // same-group behavior still works.
+    act(() => {
+      firePointer(itemX, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 1000);
+      firePointer(window, 'pointerup', 0, 1000);
+      jest.advanceTimersByTime(1000);
+    });
+
+    expect(screen.getByText('x')).toBeInTheDocument();
   });
 });
