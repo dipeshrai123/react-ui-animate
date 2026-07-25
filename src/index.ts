@@ -66,6 +66,11 @@ export {
 } from './gestures/hooks/useScrollProgress';
 
 export {
+  useScrollReveal,
+  type UseScrollRevealOptions,
+} from './gestures/hooks/useScrollReveal';
+
+export {
   useDrag,
   type UseDragOptions,
   type UseDragResult,

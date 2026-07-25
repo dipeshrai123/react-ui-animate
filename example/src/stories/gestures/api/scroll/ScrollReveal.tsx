@@ -1,91 +1,21 @@
 import { useRef } from 'react';
-import {
-  animate,
-  Gesture,
-  useGesture,
-  useValue,
-  withSpring,
-  withTiming,
-} from 'react-ui-animate';
+import { animate, useScrollReveal, type AnimateValue } from 'react-ui-animate';
 
-const Example = () => {
-  const section1Ref = useRef<HTMLDivElement>(null);
-  const section2Ref = useRef<HTMLDivElement>(null);
-  const section3Ref = useRef<HTMLDivElement>(null);
+const Section = ({
+  title,
+  description,
+  emoji,
+  transform,
+}: {
+  title: string;
+  description: string;
+  emoji: string;
+  transform: (progress: AnimateValue<number>) => Record<string, any>;
+}) => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { progress } = useScrollReveal(sectionRef);
 
-  const [section1Opacity, setSection1Opacity] = useValue(0);
-  const [section1Y, setSection1Y] = useValue(50);
-  const [section2Opacity, setSection2Opacity] = useValue(0);
-  const [section2Scale, setSection2Scale] = useValue(0.8);
-  const [section3Opacity, setSection3Opacity] = useValue(0);
-  const [section3Rotate, setSection3Rotate] = useValue(-10);
-
-  useGesture(
-    window,
-    Gesture.Scroll().onChange(() => {
-    if (section1Ref.current) {
-      const rect = section1Ref.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const progress = Math.max(
-        0,
-        Math.min(1, (viewportHeight - rect.top) / viewportHeight)
-      );
-
-      setSection1Opacity(withTiming(progress, { duration: 300 }));
-      setSection1Y(
-        withSpring(50 * (1 - progress), { stiffness: 200, damping: 20 })
-      );
-    }
-
-    if (section2Ref.current) {
-      const rect = section2Ref.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const progress = Math.max(
-        0,
-        Math.min(1, (viewportHeight - rect.top) / viewportHeight)
-      );
-
-      setSection2Opacity(withTiming(progress, { duration: 300 }));
-      setSection2Scale(
-        withSpring(0.8 + progress * 0.2, { stiffness: 200, damping: 20 })
-      );
-    }
-
-    if (section3Ref.current) {
-      const rect = section3Ref.current.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-      const progress = Math.max(
-        0,
-        Math.min(1, (viewportHeight - rect.top) / viewportHeight)
-      );
-
-      setSection3Opacity(withTiming(progress, { duration: 300 }));
-      setSection3Rotate(
-        withSpring(-10 + progress * 10, { stiffness: 200, damping: 20 })
-      );
-    }
-    })
-  );
-
-  const Section = ({
-    sectionRef,
-    title,
-    description,
-    emoji,
-    opacity,
-    translateY,
-    scale,
-    rotate,
-  }: {
-    sectionRef: React.RefObject<HTMLDivElement>;
-    title: string;
-    description: string;
-    emoji: string;
-    opacity: any;
-    translateY?: any;
-    scale?: any;
-    rotate?: any;
-  }) => (
+  return (
     <animate.div
       ref={sectionRef}
       style={{
@@ -95,63 +25,49 @@ const Example = () => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 40,
-        opacity,
-        translateY,
-        scale,
-        rotate,
+        opacity: progress.to([0, 1], [0, 1]),
+        ...transform(progress),
       }}
     >
       <div style={{ fontSize: 64, marginBottom: 24 }}>{emoji}</div>
-      <h2
-        style={{
-          fontSize: 48,
-          fontWeight: 700,
-          marginBottom: 16,
-          color: '#333',
-        }}
-      >
+      <h2 style={{ fontSize: 48, fontWeight: 700, marginBottom: 16, color: '#333' }}>
         {title}
       </h2>
-      <p
-        style={{
-          fontSize: 18,
-          color: '#666',
-          maxWidth: 600,
-          textAlign: 'center',
-        }}
-      >
+      <p style={{ fontSize: 18, color: '#666', maxWidth: 600, textAlign: 'center' }}>
         {description}
       </p>
     </animate.div>
   );
+};
 
+const Example = () => {
   return (
     <div style={{ backgroundColor: '#f8f9fa' }}>
       <Section
-        sectionRef={section1Ref}
         title="Fade In"
-        description="This section fades in and slides up as you scroll"
+        description="This section fades in and slides up as you scroll — driven entirely by useScrollReveal, no manual gesture wiring."
         emoji="✨"
-        opacity={section1Opacity}
-        translateY={section1Y}
+        transform={(progress) => ({
+          translateY: progress.to([0, 1], [50, 0]),
+        })}
       />
 
       <Section
-        sectionRef={section2Ref}
         title="Scale In"
-        description="This section scales in as it enters the viewport"
+        description="This section scales in as it enters the viewport."
         emoji="🎯"
-        opacity={section2Opacity}
-        scale={section2Scale}
+        transform={(progress) => ({
+          scale: progress.to([0, 1], [0.8, 1]),
+        })}
       />
 
       <Section
-        sectionRef={section3Ref}
         title="Rotate In"
-        description="This section rotates into view with a smooth animation"
+        description="This section rotates into view with a smooth animation."
         emoji="🌀"
-        opacity={section3Opacity}
-        rotate={section3Rotate}
+        transform={(progress) => ({
+          rotate: progress.to([0, 1], [-10, 0]),
+        })}
       />
     </div>
   );
