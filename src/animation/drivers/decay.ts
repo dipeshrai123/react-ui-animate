@@ -7,6 +7,7 @@ interface DecayOptions extends AnimateHooks {
   decay?: number;
   clamp?: [number, number];
   elastic?: boolean | number;
+  bounce?: boolean | number;
   onChange?(value: number): void;
 }
 
@@ -21,6 +22,7 @@ class DecayController implements AnimateController {
   private pausedAt = 0;
   private clampBounds?: [number, number];
   private elasticConstant?: number;
+  private bounceRestitution?: number;
 
   constructor(
     private value: AnimateValue<number>,
@@ -33,6 +35,11 @@ class DecayController implements AnimateController {
       this.elasticConstant = 0.15;
     } else if (typeof hooks.elastic === 'number') {
       this.elasticConstant = hooks.elastic;
+    }
+    if (hooks.bounce === true) {
+      this.bounceRestitution = 0.5;
+    } else if (typeof hooks.bounce === 'number') {
+      this.bounceRestitution = hooks.bounce;
     }
   }
 
@@ -68,14 +75,32 @@ class DecayController implements AnimateController {
 
     const elapsed = now - this.startTime;
     const k = 1 - this.deceleration;
-    const currentVelocity = this.velocity * Math.exp(-k * elapsed);
+    let currentVelocity = this.velocity * Math.exp(-k * elapsed);
 
     this.position =
       this.from + (this.velocity / k) * (1 - Math.exp(-k * elapsed));
 
     if (this.clampBounds) {
       const [min, max] = this.clampBounds;
-      if (this.elasticConstant !== undefined) {
+
+      if (this.bounceRestitution !== undefined) {
+        // Frame-level collision: once the (uninterrupted-decay) trajectory
+        // would cross a bound while still heading into it, pin the position
+        // at the bound and start a fresh decay "segment" from there with
+        // velocity reflected and scaled by the restitution factor — the
+        // exponential decay formula above is only valid for one continuous,
+        // uninterrupted run, so a bounce has to restart it rather than try
+        // to bend the curve mid-formula.
+        if (this.position < min && currentVelocity < 0) {
+          this.position = this.from = min;
+          this.velocity = currentVelocity = -currentVelocity * this.bounceRestitution;
+          this.startTime = now;
+        } else if (this.position > max && currentVelocity > 0) {
+          this.position = this.from = max;
+          this.velocity = currentVelocity = -currentVelocity * this.bounceRestitution;
+          this.startTime = now;
+        }
+      } else if (this.elasticConstant !== undefined) {
         this.position = rubberClamp(
           this.position,
           min,

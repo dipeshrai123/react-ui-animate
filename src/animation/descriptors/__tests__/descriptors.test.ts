@@ -144,6 +144,7 @@ describe('descriptors', () => {
         clamp: [0, 100],
         elastic: true,
         decay: 0.9,
+        bounce: 0.6,
         onStart,
         onChange,
         onComplete,
@@ -154,6 +155,7 @@ describe('descriptors', () => {
       expect(descriptor.options?.clamp).toEqual([0, 100]);
       expect(descriptor.options?.elastic).toBe(true);
       expect(descriptor.options?.decay).toBe(0.9);
+      expect(descriptor.options?.bounce).toBe(0.6);
       expect(descriptor.options?.onStart).toBe(onStart);
       expect(descriptor.options?.onChange).toBe(onChange);
       expect(descriptor.options?.onComplete).toBe(onComplete);

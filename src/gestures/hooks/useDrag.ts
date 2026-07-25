@@ -24,12 +24,24 @@ export interface UseDragOptions {
   /**
    * Rubber-band past `bounds` while dragging instead of hard-stopping at the
    * edge. `true` uses the default elastic constant (0.15); a number sets a
-   * custom one; `false` hard-clamps. Momentum on release always hard-stops
-   * at `bounds` regardless of this setting. Default `true`.
+   * custom one; `false` hard-clamps. Only affects the *live* drag — see
+   * `bounce` for the momentum fling on release, which hard-stops at
+   * `bounds` unless `bounce` is set. Default `true`.
    */
   elastic?: boolean | number;
   /** Fling on release using the pointer's release velocity. Default `true`. */
   momentum?: boolean;
+  /**
+   * Reflects the momentum fling off `bounds` instead of hard-stopping —
+   * a real bounce (velocity reverses and dampens on impact, then keeps
+   * decaying), not just a cushion like `elastic`. `true` uses a default
+   * restitution of 0.5 (loses half its speed each bounce); a number sets a
+   * custom restitution (0 = absorbs on contact, 1 = perfectly elastic).
+   * Only affects the momentum fling — has no effect while still dragging,
+   * or on a release that's `transition`-corrected back into bounds.
+   * Default `false` (hard stop).
+   */
+  bounce?: boolean | number;
   /**
    * Snap to the nearest of these positions on release (per axis), projected
    * a little ahead using the release velocity so a fast flick can jump past
@@ -87,6 +99,7 @@ function releaseDescriptor(
   momentum: boolean,
   transition: LayoutOptions | undefined,
   decay: number | undefined,
+  bounce: boolean | number | undefined,
   snapPoints?: number[]
 ): Descriptor | null {
   if (snapPoints && snapPoints.length > 0) {
@@ -102,6 +115,7 @@ function releaseDescriptor(
     return withDecay(velocity, {
       clamp: bound ? [bound.min, bound.max] : undefined,
       decay,
+      bounce,
     });
   }
   return null;
@@ -134,6 +148,7 @@ export function useDrag<T extends HTMLElement>(
     snapPoints,
     transition,
     decay,
+    bounce,
     onStart,
     onChange,
     onEnd,
@@ -209,6 +224,7 @@ export function useDrag<T extends HTMLElement>(
         momentum,
         transition,
         decay,
+        bounce,
         snapPoints?.x
       );
       const yDesc = releaseDescriptor(
@@ -218,6 +234,7 @@ export function useDrag<T extends HTMLElement>(
         momentum,
         transition,
         decay,
+        bounce,
         snapPoints?.y
       );
 

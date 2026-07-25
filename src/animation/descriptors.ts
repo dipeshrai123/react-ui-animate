@@ -143,6 +143,7 @@ export const withDecay = (
     clamp: opts?.clamp,
     elastic: opts?.elastic,
     decay: opts?.decay,
+    bounce: opts?.bounce,
     onStart: opts?.onStart,
     onChange: opts?.onChange,
     onComplete: opts?.onComplete,

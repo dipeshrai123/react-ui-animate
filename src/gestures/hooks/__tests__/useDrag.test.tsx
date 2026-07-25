@@ -184,6 +184,43 @@ describe('useDrag', () => {
     });
   });
 
+  it('bounces off bounds during a momentum fling when `bounce` is set, instead of sticking', () => {
+    const ref = { current: el };
+    const { result } = renderHook(() =>
+      useDrag(ref, {
+        bounds: { left: 0, right: 20 },
+        elastic: false,
+        momentum: true,
+        decay: 0.995,
+        bounce: 0.6,
+      })
+    );
+
+    act(() => {
+      firePointer(el, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 5, 0);
+      firePointer(window, 'pointermove', 15, 0);
+      firePointer(window, 'pointerup', 15, 0);
+    });
+
+    let touchedBound = false;
+    let movedAwayAfterTouch = false;
+
+    act(() => {
+      for (let i = 0; i < 200; i++) {
+        jest.advanceTimersByTime(16);
+        const x = result.current.x.current;
+        expect(x).toBeLessThanOrEqual(20);
+        expect(x).toBeGreaterThanOrEqual(0);
+        if (x === 20 || x === 0) touchedBound = true;
+        else if (touchedBound) movedAwayAfterTouch = true;
+      }
+    });
+
+    expect(touchedBound).toBe(true);
+    expect(movedAwayAfterTouch).toBe(true);
+  });
+
   it('applies momentum via decay after release', () => {
     const ref = { current: el };
     const { result } = renderHook(() => useDrag(ref));
