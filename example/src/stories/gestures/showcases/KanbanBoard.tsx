@@ -1,4 +1,4 @@
-import { createRef, useMemo, useRef, useState } from 'react';
+import { createRef, useRef, useState } from 'react';
 import {
   animate,
   clamp,
@@ -199,6 +199,7 @@ const Example = () => {
   const [columns, setColumns] = useState<ColumnState>(INITIAL_COLUMN_STATE);
   const [hoverColumn, setHoverColumn] = useState<ColumnId | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
   const refs = useRef(CARDS.map(() => createRef<HTMLDivElement>())).current;
 
@@ -220,6 +221,7 @@ const Example = () => {
     setColumns(INITIAL_COLUMN_STATE);
     setHoverColumn(null);
     setIsDragging(false);
+    setDraggedIndex(null);
     dragOriginRef.current = null;
     const layout = computeLayout(INITIAL_COLUMN_STATE);
     setPosX(layout.xs);
@@ -240,6 +242,7 @@ const Example = () => {
         }
 
         setIsDragging(true);
+        setDraggedIndex(i);
         const origin = dragOriginRef.current;
 
         const target = findDropTarget(
@@ -298,6 +301,7 @@ const Example = () => {
         setColumns(nextState);
         setHoverColumn(null);
         setIsDragging(false);
+        setDraggedIndex(null);
 
         const layout = computeLayout(nextState);
         setPosX(withSpring(layout.xs, { stiffness: 400, damping: 30 }));
@@ -308,17 +312,14 @@ const Example = () => {
       })
   );
 
-  const shadows = useMemo(
-    () =>
-      scale.map((s) =>
-        s.to((v) =>
-          v > 1
-            ? '0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(99,102,241,0.2)'
-            : '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)'
-        )
-      ),
-    [scale]
-  );
+  // Driven by `draggedIndex` (discrete UI state) rather than `scale` — the
+  // drop spring is underdamped and overshoots past 1 a couple of times
+  // before settling, so thresholding on the live scale value made the
+  // shadow flicker between elevated/resting on every oscillation.
+  const liftedShadow =
+    '0 20px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(99,102,241,0.2)';
+  const restingShadow =
+    '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04)';
 
   const boardHeight =
     COL_HEADER +
@@ -451,7 +452,8 @@ const Example = () => {
                   scale: scale[i],
                   rotate: rotate[i],
                   zIndex: zIndex[i],
-                  boxShadow: shadows[i],
+                  boxShadow: i === draggedIndex ? liftedShadow : restingShadow,
+                  transition: 'box-shadow 0.2s ease',
                   border: '1px solid #e2e8f0',
                   display: 'flex',
                   flexDirection: 'column',
