@@ -2,13 +2,6 @@ import { GesturePhase } from '../engine/phases';
 import type { GestureRecognizer, RecognizerContext } from '../engine/GestureRecognizer';
 import type { BaseGestureConfig, GestureHandlers, HoverEvent } from '../api/Gesture';
 
-/**
- * Boolean hover-state recognizer, no press required. Fires `onStart`
- * (hovering: true) on pointer entry, `onChange` (hovering: true) on every
- * subsequent move while over the target, `onEnd`/`onFinalize`
- * (hovering: false) on `pointerleave`. Unlike `MoveRecognizer`, tracks no
- * movement/velocity/startPos — purely enter/leave + current offset.
- */
 export class HoverRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 

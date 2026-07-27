@@ -1,13 +1,6 @@
 import type { GesturePhase } from '../../engine/phases';
 import type { GestureDescriptor, GestureHandlers } from './types';
 
-// Both stream from the same pointer pair (`onStart` once 2 fingers are down
-// and moving enough to cross `threshold`, `onChange` per tick, `onEnd`/
-// `onFinalize` once either pointer lifts) and can be registered together on
-// the same ref to read both scale and rotation from one gesture — they
-// don't compete with each other for activation, since they're not
-// alternate interpretations of the same input, just different measurements
-// of it.
 export interface PinchEvent {
   phase: GesturePhase;
   /** Current pointer-pair distance / distance when the gesture began. */

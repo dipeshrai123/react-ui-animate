@@ -1,10 +1,5 @@
 import type { BaseGestureConfig, GestureDescriptor, GestureHandlers } from './types';
 
-// Continuous, non-phase-gated gestures — pointer movement with no press
-// required, wheel, and scroll. No recognition gate (no minDistance/POSSIBLE
-// state): they stream `onChange` while active and fire `onEnd` when the
-// stream settles (pointerleave, or a debounce window after the last
-// wheel/scroll event).
 export interface MoveEvent {
   movement: { x: number; y: number };
   offset: { x: number; y: number };
@@ -29,9 +24,6 @@ export interface ScrollEvent {
   cancel?: () => void;
 }
 
-// Deliberately leaner than MoveEvent (no movement/velocity tracking; use
-// Gesture.Move() if you need that while hovering). onStart = enter, onEnd =
-// leave, onChange fires on every move while over the target.
 export interface HoverEvent {
   hovering: boolean;
   offset: { x: number; y: number };

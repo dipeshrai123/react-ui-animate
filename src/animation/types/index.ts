@@ -34,16 +34,9 @@ export interface TimingOptions {
 export interface DecayOptions {
   velocity?: number;
   clamp?: [number, number];
-  elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
-  /** Deceleration constant per frame (lower = more friction, stops sooner). Default 0.998. */
+  elastic?: boolean | number;
   decay?: number;
-  /**
-   * Reflects velocity off `clamp`'s bounds instead of stopping or resisting
-   * at them — a real bounce. `true` uses a default restitution of 0.5
-   * (loses half its speed each bounce); a number sets a custom restitution
-   * (0 = absorbs on contact, no bounce; 1 = perfectly elastic, no energy
-   * loss). Takes priority over `elastic` when both are set.
-   */
+  /** Reflects velocity off `clamp`'s bounds instead of stopping — takes priority over `elastic`. */
   bounce?: boolean | number;
 }
 
@@ -71,11 +64,9 @@ export interface ParallelOptions {
 }
 
 export interface CustomTickContext {
-  /** Milliseconds elapsed since this run started (pauses excluded). */
+  /** Excludes pauses. */
   elapsed: number;
-  /** Milliseconds since the previous frame (0 on the first frame). */
   dt: number;
-  /** The value this run started from. */
   from: number;
 }
 

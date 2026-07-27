@@ -53,12 +53,14 @@ interface HoverState {
   groupKey: object | null;
   dropIndex: number | null;
   sourceGroupKey: object | null;
+  sourceValue: unknown;
 }
 
 const NO_HOVER: HoverState = {
   groupKey: null,
   dropIndex: null,
   sourceGroupKey: null,
+  sourceValue: null,
 };
 
 interface ReorderDndContextValue {
@@ -114,14 +116,40 @@ export function ReorderContextProvider({ children }: ReorderContextProps) {
             return key;
           }
         }
-        return undefined;
+
+        // Fallback: match by cross-axis band + nearest distance, since a short/empty column's rect won't cover drops past its last item.
+        let closestKey: object | undefined;
+        let closestDistance = Infinity;
+        for (const [key, entry] of groupsRef.current) {
+          const el = entry.containerRef.current;
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+
+          const inCrossAxis =
+            entry.axis === 'y'
+              ? point.x >= rect.left && point.x <= rect.right
+              : point.y >= rect.top && point.y <= rect.bottom;
+          if (!inCrossAxis) continue;
+
+          const distance =
+            entry.axis === 'y'
+              ? Math.max(rect.top - point.y, point.y - rect.bottom, 0)
+              : Math.max(rect.left - point.x, point.x - rect.right, 0);
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestKey = key;
+          }
+        }
+        return closestKey;
       },
       setHover: (next) => {
         const prev = hoverRef.current;
         if (
           prev.groupKey === next.groupKey &&
           prev.dropIndex === next.dropIndex &&
-          prev.sourceGroupKey === next.sourceGroupKey
+          prev.sourceGroupKey === next.sourceGroupKey &&
+          prev.sourceValue === next.sourceValue
         ) {
           return;
         }
@@ -295,7 +323,19 @@ export function ReorderItem<T>({
     []
   );
 
-  const [isDragging, setIsDragging] = useState(false);
+  // zIndex tier: 0 normal, 1 settling, 2 actively dragged.
+  const [zPriority, setZPriority] = useState<0 | 1 | 2>(0);
+  const elevationCountRef = useRef(0);
+
+  const raiseElevation = () => {
+    elevationCountRef.current += 1;
+    setZPriority((p) => (p < 1 ? 1 : p));
+  };
+
+  const releaseElevation = () => {
+    elevationCountRef.current = Math.max(0, elevationCountRef.current - 1);
+    if (elevationCountRef.current === 0) setZPriority(0);
+  };
 
   const isDraggingRef = useRef(false);
   const lastMovementRef = useRef(0);
@@ -346,10 +386,16 @@ export function ReorderItem<T>({
     return pitch || ownSize;
   };
 
-  const settleTo = (target: number) => ({
-    ...resolveFlipTransition(transition),
-    to: target,
-  });
+  // zIndex stays raised until the settle spring's onComplete, not reset eagerly.
+  const settleTo = (target: number) => {
+    const base = resolveFlipTransition(transition);
+    raiseElevation();
+    return {
+      ...base,
+      to: target,
+      options: { ...base.options, onComplete: releaseElevation },
+    };
+  };
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -390,9 +436,18 @@ export function ReorderItem<T>({
       setOffset(lastMovementRef.current + correctionRef.current);
       setCrossOffset(deltaCross);
     } else {
+      // shiftBy preserves velocity — cancel+restart zeroed it and caused a settle-hitch on every swap.
       justFlippedRef.current = true;
-      setOffset(deltaPrimary + (offset.current as number));
-      setCrossOffset(deltaCross + (crossOffset.current as number));
+      if (offset.getAnimationController()?.shiftBy) {
+        offset.shiftBy(deltaPrimary);
+      } else {
+        setOffset((offset.current as number) + deltaPrimary);
+      }
+      if (crossOffset.getAnimationController()?.shiftBy) {
+        crossOffset.shiftBy(deltaCross);
+      } else {
+        setCrossOffset((crossOffset.current as number) + deltaCross);
+      }
       setOffset(settleTo(0));
       setCrossOffset(settleTo(0));
     }
@@ -417,9 +472,22 @@ export function ReorderItem<T>({
     const shouldMakeRoom =
       isPreviewTarget && myIndex >= (hover.dropIndex as number);
 
+    const isSourceOfActiveDrag =
+      hover.sourceGroupKey === groupKey &&
+      hover.groupKey !== groupKey &&
+      hover.sourceValue !== null;
+    const dragOriginIndex = isSourceOfActiveDrag
+      ? values.indexOf(hover.sourceValue as T)
+      : -1;
+    const shouldCloseGap =
+      isSourceOfActiveDrag && dragOriginIndex !== -1 && myIndex > dragOriginIndex;
+
     if (shouldMakeRoom) {
       wasPreviewingRef.current = true;
       setOffset(settleTo(measurePitch()));
+    } else if (shouldCloseGap) {
+      wasPreviewingRef.current = true;
+      setOffset(settleTo(-measurePitch()));
     } else if (wasPreviewingRef.current) {
       wasPreviewingRef.current = false;
       setOffset(settleTo(0));
@@ -430,6 +498,7 @@ export function ReorderItem<T>({
     hover.groupKey,
     hover.dropIndex,
     hover.sourceGroupKey,
+    hover.sourceValue,
     groupKey,
     value,
     values,
@@ -443,7 +512,7 @@ export function ReorderItem<T>({
     gesture
       .onStart(() => {
         isDraggingRef.current = true;
-        setIsDragging(true);
+        setZPriority(2);
         lastMovementRef.current = 0;
         correctionRef.current = 0;
         originIndexRef.current = values.indexOf(value);
@@ -462,30 +531,15 @@ export function ReorderItem<T>({
           groupKey,
           dropIndex: null,
           sourceGroupKey: groupKey,
+          sourceValue: value,
         });
       })
       .onUpdate((e) => {
         const movement = axis === 'y' ? e.movement.y : e.movement.x;
         const cross = axis === 'y' ? e.movement.x : e.movement.y;
         lastMovementRef.current = movement;
-        const size = sizeRef.current || 1;
 
-        const proposedIndex = clamp(
-          Math.round(originIndexRef.current + movement / size),
-          0,
-          values.length - 1
-        );
-
-        if (proposedIndex !== lastIndexRef.current) {
-          const currentIndex = values.indexOf(value);
-          if (currentIndex !== -1) {
-            onReorder(move(values, currentIndex, proposedIndex));
-          }
-          lastIndexRef.current = proposedIndex;
-        }
-
-        setOffset(movement + correctionRef.current);
-        setCrossOffset(cross);
+        let notInSourceGroup = false;
 
         if (dndCtx) {
           const start = dragStartRectRef.current;
@@ -502,12 +556,34 @@ export function ReorderItem<T>({
             groupKey: foundKey,
             dropIndex,
             sourceGroupKey: groupKey,
+            sourceValue: value,
           });
+          notInSourceGroup = foundKey !== groupKey;
         }
+
+        if (!notInSourceGroup) {
+          const size = sizeRef.current || 1;
+          const proposedIndex = clamp(
+            Math.round(originIndexRef.current + movement / size),
+            0,
+            values.length - 1
+          );
+
+          if (proposedIndex !== lastIndexRef.current) {
+            const currentIndex = values.indexOf(value);
+            if (currentIndex !== -1) {
+              onReorder(move(values, currentIndex, proposedIndex));
+            }
+            lastIndexRef.current = proposedIndex;
+          }
+        }
+
+        setOffset(movement + correctionRef.current);
+        setCrossOffset(cross);
       })
       .onEnd((e) => {
         isDraggingRef.current = false;
-        setIsDragging(false);
+        setZPriority((p) => (p > 1 ? 1 : p));
 
         const hoverAtRelease = dndCtx?.hoverRef.current ?? NO_HOVER;
         const targetKey = hoverAtRelease.groupKey;
@@ -564,7 +640,7 @@ export function ReorderItem<T>({
         userSelect: 'none',
         WebkitUserSelect: 'none',
         ...style,
-        zIndex: isDragging ? 1 : style?.zIndex,
+        zIndex: zPriority > 0 ? zPriority : style?.zIndex,
         ...(axis === 'y'
           ? { translateY: offset, translateX: crossOffset }
           : { translateX: offset, translateY: crossOffset }),

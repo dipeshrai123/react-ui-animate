@@ -103,9 +103,6 @@ function applyStylesToNode(
   ];
 }
 
-// Re-applies tracked animated styles after every commit, so React clearing a
-// key newly excluded from `filteredStyle` (once hover/press/view promotes it
-// into `animateValuesRef`) gets immediately undone.
 function useSyncAnimatedStyles(
   nodeRef: React.RefObject<HTMLElement>,
   animateValuesRef: React.MutableRefObject<
@@ -163,7 +160,6 @@ function useEnterAnimations(
     const currentKey = serializeAnimateProp(animateProp);
     const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
 
-    // isFirstMount only refers to the literal first mount of this component instance
     const isFirstMount = !hasMountedRef.current;
     const shouldRestart = isFirstMount || valuesChanged || justReEntered;
 
@@ -196,8 +192,6 @@ function useEnterAnimations(
       }
     }
 
-    // Always re-sync subscriptions to handle StrictMode or prop updates
-    // without restarting the animation timeline
     cleanupRef.current.forEach((cleanup) => cleanup());
     cleanupRef.current = applyStylesToNode(
       node,
@@ -213,10 +207,7 @@ function useEnterAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-    // Removed 'style' from dependencies to prevent re-triggering on parent
-    // state changes; the omitted refs are React refs (stable identity) and
-    // don't belong in the dependency array.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- style omitted intentionally; refs are stable
   }, [animateProp, unmountContext?.isExiting]);
 }
 
@@ -276,8 +267,7 @@ function useUnmountAnimations(
         animateValues: animateValuesRef.current,
         controllers: exitControllersRef.current,
         onExitComplete: () => {
-          // Guard against a child that got re-added mid-exit and is no
-          // longer exiting by the time this fires.
+          // Guards against a child re-added mid-exit before this fires.
           if (isExitingRef.current && onExitCompleteRef.current) {
             exitCleanupRef.current.forEach((cleanup) => cleanup());
             exitCleanupRef.current = [];
@@ -291,8 +281,6 @@ function useUnmountAnimations(
     }
 
     return () => {
-      // Only tear down if actually exiting — this also runs on every
-      // non-exiting re-render, where there's nothing to clean up.
       if (isExitingRef.current) {
         exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
         exitControllersRef.current = [];
@@ -300,8 +288,7 @@ function useUnmountAnimations(
         exitCleanupRef.current = [];
       }
     };
-    // Omitted refs are React refs (stable identity).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable
   }, [unmountContext?.isExiting]);
 }
 
@@ -320,8 +307,7 @@ function useViewAnimations(
   const isInView = useInView(nodeRef, viewOptions || {});
   const hasInitializedRef = useRef(false);
 
-  // Applies initial values (e.g. opacity: 0) to the DOM immediately, before
-  // any animation runs, so the element never flashes with default styles.
+  // Applies initial values before any animation runs to avoid a flash of default styles.
   useLayoutEffect(() => {
     if (!view) return;
 
@@ -358,8 +344,7 @@ function useViewAnimations(
     }
 
     hasInitializedRef.current = true;
-    // Omitted refs are React refs (stable identity).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable
   }, [view]);
 
   const applyViewAnimationWrapper = (isActive: boolean) => {
@@ -398,9 +383,7 @@ function useViewAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-    // `applyViewAnimationWrapper` is recreated every render but only closes
-    // over `view`/`isActive`, both already covered by this dependency list.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- wrapper only closes over view/isActive
   }, [isInView, view]);
 
   useEffect(() => {
@@ -449,9 +432,6 @@ function useStateAnimations(
     const computedStyle = window.getComputedStyle(node);
     const { style = {}, animate: animateProp, view: viewProp } = propsRef.current;
 
-    // The real destination for each key, as declared by `animate`/`view` —
-    // used to revert to the true target instead of wherever a hover/press/
-    // focus interaction happened to interrupt an in-flight reveal.
     const restingTargets: Record<string, Primitive> = {};
     for (const key of Object.keys(stateProp)) {
       const viewRecord = viewProp as Record<string, Descriptor | Primitive> | undefined;
@@ -506,7 +486,6 @@ function useStateAnimations(
       if (!stateRef.current.isTapped) return;
       stateRef.current.isTapped = false;
       applyStateAnimationWrapper(pressRef.current, false);
-      // Re-apply hover if still active
       if (stateRef.current.isHovered && hoverRef.current) {
         applyStateAnimationWrapper(hoverRef.current, true);
       }
@@ -516,7 +495,6 @@ function useStateAnimations(
       if (stateRef.current.isTapped) {
         stateRef.current.isTapped = false;
         applyStateAnimationWrapper(pressRef.current, false);
-        // Re-apply hover if still active
         if (stateRef.current.isHovered && hoverRef.current) {
           applyStateAnimationWrapper(hoverRef.current, true);
         }
@@ -554,7 +532,6 @@ function useStateAnimations(
       node.addEventListener('blur', handleBlur);
     }
 
-    // Re-apply active state animations after effect re-runs (e.g. config change)
     if (stateRef.current.isHovered && hoverRef.current) {
       applyStateAnimationWrapper(hoverRef.current, true);
     }
@@ -588,10 +565,7 @@ function useStateAnimations(
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
     };
-    // Deps are serialized (structural) values by design, so the effect only
-    // reruns on real content changes rather than new object identities.
-    // `applyStateAnimationWrapper`/`nodeRef` are stable across renders.
-    /* eslint-disable react-hooks/exhaustive-deps */
+    /* eslint-disable react-hooks/exhaustive-deps -- deps are serialized structural values by design */
   }, [
     serializeAnimateProp(hover),
     serializeAnimateProp(press),
@@ -676,23 +650,14 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       ...restProps
     } = props;
 
-    // Filter style object to prevent conflicts between CSS and JS animations
     const filteredStyle: Record<string, any> = {};
     const animatedKeys = new Set([
       ...Object.keys(animateValuesRef.current),
       ...(animate ? Object.keys(animate) : []),
     ]);
 
-    // AnimateValues bound directly via `style` (e.g. `style={{ opacity }}`
-    // from `useValue`) are otherwise only ever pushed to the DOM
-    // imperatively, from a `useLayoutEffect` in useSyncAnimatedStyles /
-    // useEnterAnimations. That effect never runs during SSR and — more
-    // importantly — never runs before the *first* client paint on a
-    // server-rendered page, since that paint happens as soon as the static
-    // HTML arrives, well before hydration executes any effects. Rendering
-    // `.current` here too means the resting/initial value is already
-    // correct in that first paint, instead of the un-animated default
-    // flashing until hydration catches up.
+    // Rendering `.current` here (not just imperatively via effect) avoids a flash of the
+    // un-animated default on first paint of server-rendered pages, before hydration runs.
     const transformStyleProps: Record<string, any> = {};
 
     if (style) {
@@ -716,11 +681,8 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       filteredStyle.transform = formatTransformString(transformStyleProps);
     }
 
-    // Non-style attributes (SVG positional attrs like `cx`/`x1`/`d`, etc.)
-    // driven by an AnimateValue are set imperatively by `applyAttrs` in the
-    // layout effect above, before paint. Passing the AnimateValue itself
-    // here would have React try to render it as the raw attribute value on
-    // this declarative pass, which fails (e.g. `cx="[object Object]"`).
+    // AnimateValue-driven attrs are set imperatively by applyAttrs; passing them here
+    // would have React render the raw object (e.g. cx="[object Object]").
     const filteredRestProps: Record<string, any> = {};
     for (const [key, value] of Object.entries(restProps)) {
       if (value instanceof AnimateValue) continue;

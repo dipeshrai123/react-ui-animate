@@ -5,9 +5,7 @@ import type { RotateEvent, RotateGestureConfig, GestureHandlers } from '../api/G
 
 const DEFAULT_THRESHOLD = 2; // degrees
 
-// Normalizes a frame-to-frame angle delta into (-180, 180] so accumulating
-// it across the atan2 wrap boundary (e.g. 179deg -> -179deg between two
-// consecutive frames) reads as a small +2deg step, not a bogus -358deg jump.
+// Wraps into (-180, 180] so crossing the atan2 boundary reads as a small step, not a ~360deg jump.
 function normalizeDelta(delta: number): number {
   let d = delta % 360;
   if (d > 180) d -= 360;
@@ -15,19 +13,6 @@ function normalizeDelta(delta: number): number {
   return d;
 }
 
-/**
- * Two-pointer rotation. Same dispatch/hand-off model as `PinchRecognizer`
- * (see its doc comment) — tracks the same pointer pair, reports cumulative
- * rotation in degrees rather than scale.
- *
- *   UNDETERMINED --(2nd pointer down)--> POSSIBLE
- *   POSSIBLE --(move, |rotation| < threshold)--> POSSIBLE       [no emit]
- *   POSSIBLE --(move, |rotation| >= threshold)--> BEGAN -> ACTIVE  [onStart, onChange]
- *   ACTIVE --(move)--> ACTIVE                                   [onChange]
- *   ACTIVE --(either pointer up)--> END                         [onEnd, onFinalize]
- *   POSSIBLE --(either pointer up)--> FAILED                    [onFinalize only]
- *   * --(pointercancel)--> CANCELLED                            [onFinalize]
- */
 export class RotateRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 

@@ -165,11 +165,8 @@ class LoopController implements AnimateController {
   private current!: AnimateController;
   private currentOriginalComplete?: () => void;
   private effectiveIterations = 0;
-  // True for the duration of a `runIteration()` call. A controller that
-  // completes synchronously inside its own `start()` (e.g. a driver skipping
-  // straight to the end state under reduced motion) would otherwise trigger
-  // `handleIterationComplete` -> `runIteration()` recursively on the same
-  // call stack, overflowing it for large/Infinity iteration counts.
+  // Guards against unbounded recursive runIteration() calls when a controller completes
+  // synchronously inside its own start() (e.g. reduced motion).
   private isRunningIteration = false;
 
   constructor(
@@ -178,13 +175,8 @@ class LoopController implements AnimateController {
     private hooks: AnimateHooks = {}
   ) {}
 
-  // A stable reference passed to `setOnComplete` every iteration, instead of
-  // a fresh closure per call. The factory can return the same controller
-  // instance across iterations (a plain, non-yoyo loop reuses one), and that
-  // instance's `hooks.onComplete` is exactly what this sets — a fresh
-  // closure each time would wrap the *previous* iteration's wrapper instead
-  // of the true original, growing an ever-deeper call chain that eventually
-  // overflows the stack once enough iterations have run.
+  // Stable reference reused across iterations — a fresh closure each time would wrap the
+  // previous iteration's wrapper and eventually overflow the stack.
   private handleCurrentComplete = () => {
     this.currentOriginalComplete?.();
     this.handleIterationComplete();
@@ -224,11 +216,7 @@ class LoopController implements AnimateController {
     this.isCancelled = false;
     this.isPaused = false;
     this.count = 0;
-    // Reduced motion makes every iteration resolve synchronously/instantly,
-    // so an unbounded loop (`iterations: Infinity`) would otherwise spin
-    // forever doing no visible work. Run just one iteration in that case,
-    // matching how a single spring/timing/decay skips straight to its end
-    // state instead of animating.
+    // Caps Infinity iterations to 1 under reduced motion, or it would spin forever doing no visible work.
     this.effectiveIterations = isReducedMotionEnabled()
       ? Math.min(this.iterations, 1)
       : this.iterations;

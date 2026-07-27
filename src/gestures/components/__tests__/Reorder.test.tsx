@@ -247,13 +247,13 @@ describe('Reorder', () => {
     render(<List />);
     const itemA = screen.getByText('a');
 
-    expect(itemA.style.zIndex).not.toBe('1');
+    expect(itemA.style.zIndex).not.toBe('2');
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
       firePointer(window, 'pointermove', 0, 20);
     });
-    expect(itemA.style.zIndex).toBe('1');
+    expect(itemA.style.zIndex).toBe('2');
 
     act(() => {
       firePointer(window, 'pointerup', 0, 20);
@@ -378,6 +378,141 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(window, 'pointerup', 0, 40);
+      jest.advanceTimersByTime(1000);
+    });
+  });
+
+  it('keeps the dragged item elevated (zIndex) until its post-drop settle animation completes', () => {
+    let order = ['a', 'b', 'c', 'd', 'e'];
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = order.indexOf(text) * 70;
+      return {
+        top,
+        left: 0,
+        right: 100,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
+
+    function LiveOrderList() {
+      const [values, setValues] = useState(order);
+      return (
+        <Reorder.Group
+          values={values}
+          axis="y"
+          onReorder={(next) => {
+            order = next;
+            setValues(next);
+          }}
+        >
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<LiveOrderList />);
+    const itemA = screen.getByText('a');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 150);
+    });
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 150);
+    });
+
+    // Right after drop the item is still visually mid-flight back to its
+    // resting slot (translateY isn't 0 yet) — zIndex must still be elevated
+    // here, or it can render underneath a neighbor it's sliding past.
+    act(() => {
+      jest.advanceTimersByTime(16);
+    });
+    expect(itemA.style.transform).not.toContain('translateY(0px)');
+    expect(itemA.style.zIndex).toBe('1');
+
+    // Once the settle spring actually finishes, zIndex releases.
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(itemA.style.zIndex).not.toBe('1');
+  });
+
+  it('gives a freshly started drag a higher zIndex than an item still settling from a previous drop', () => {
+    let order = ['a', 'b', 'c', 'd', 'e'];
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = order.indexOf(text) * 70;
+      return {
+        top,
+        left: 0,
+        right: 100,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
+
+    function LiveOrderList() {
+      const [values, setValues] = useState(order);
+      return (
+        <Reorder.Group
+          values={values}
+          axis="y"
+          onReorder={(next) => {
+            order = next;
+            setValues(next);
+          }}
+        >
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<LiveOrderList />);
+    const itemA = screen.getByText('a');
+    const itemE = screen.getByText('e');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 90);
+    });
+    act(() => {
+      firePointer(window, 'pointerup', 0, 90);
+    });
+
+    // Grab a different item before 'a's settle spring has finished.
+    act(() => {
+      firePointer(itemE, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 10);
+    });
+
+    expect(itemA.style.zIndex).toBe('1');
+    expect(itemE.style.zIndex).toBe('2');
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 10);
       jest.advanceTimersByTime(1000);
     });
   });
@@ -583,6 +718,87 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
       jest.advanceTimersByTime(1000);
     });
     expect(onReorderB).not.toHaveBeenCalled();
+  });
+
+  it('does not keep reordering the source group once the pointer has moved into another group', () => {
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
+      if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
+      const itemPositions: Record<string, [number, number]> = {
+        a1: [0, 0],
+        a2: [0, 60],
+        a3: [0, 120],
+        b1: [250, 0],
+      };
+      const [left, top] = itemPositions[this.textContent ?? ''] ?? [0, 0];
+      return rect(left, top, left + 150, top + 50);
+    });
+
+    function ThreeItemKanbanTest({
+      onReorderA,
+    }: {
+      onReorderA?: (v: string[]) => void;
+    }) {
+      const [a, setA] = useState(['a1', 'a2', 'a3']);
+      const [b, setB] = useState(['b1']);
+      return (
+        <Reorder.Context>
+          <Reorder.Group
+            className="group-a"
+            values={a}
+            onReorder={(next) => {
+              setA(next);
+              onReorderA?.(next);
+            }}
+          >
+            {a.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+          <Reorder.Group className="group-b" values={b} onReorder={setB}>
+            {b.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+        </Reorder.Context>
+      );
+    }
+
+    const onReorderA = jest.fn();
+    render(<ThreeItemKanbanTest onReorderA={onReorderA} />);
+
+    const itemA1 = screen.getByText('a1');
+
+    act(() => {
+      // Drag a1 out of group A and into group B (hover only, no drop yet).
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 300, -20);
+    });
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    onReorderA.mockClear();
+
+    act(() => {
+      // Keep moving while still hovering group B — before the fix this
+      // reordered group A's array (a1 past a2/a3) even though a1 had
+      // already visually left it.
+      firePointer(window, 'pointermove', 300, 100);
+    });
+
+    expect(onReorderA).not.toHaveBeenCalled();
+
+    act(() => {
+      firePointer(window, 'pointerup', 300, 100);
+      jest.advanceTimersByTime(1000);
+    });
   });
 
   it('drops into the middle of a multi-item target group without erroring or losing items', () => {

@@ -5,7 +5,6 @@ export const DEFAULT_VELOCITY_LIMIT = 20;
 export interface KinematicSample {
   x: number;
   y: number;
-  /** Typically `event.timeStamp` or `Date.now()`. */
   t: number;
 }
 
@@ -18,7 +17,6 @@ export function createKinematicState(sample: KinematicSample): KinematicState {
   return { prev: sample, velocity: { x: 0, y: 0 } };
 }
 
-// Shared velocity math (dx/dt/1000, clamped) used by every recognizer.
 export function updateKinematics(
   state: KinematicState,
   sample: KinematicSample,
@@ -37,9 +35,6 @@ export function updateKinematics(
   };
 }
 
-// Total displacement since a gesture's starting point, optionally locked to
-// a single axis. Shared by DragGesture/MoveGesture; Wheel/Scroll movement is
-// a per-event delta instead and doesn't use this.
 export function computeMovement(
   start: { x: number; y: number },
   current: { x: number; y: number },

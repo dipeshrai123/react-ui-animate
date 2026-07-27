@@ -16,8 +16,6 @@ type ValueReturn<T> = T extends Primitive
 
 type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
-// The tuple return here is a grandfathered exception, not the pattern to
-// copy — new hooks should return an object (see CONTRIBUTING.md).
 export function useValue<T extends Base>(
   initial: T
 ): [
@@ -39,17 +37,11 @@ export function useValue<T extends Base>(
     }
 
     return new AnimateValue(initial);
-    // `initial` is read-once, same contract as useState's initial value.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial is read-once, like useState
   }, []) as ValueReturn<T>;
 
-  // Stable across the component's lifetime, like useState's setter — `set`
-  // only closes over `initial` (read-once, same contract as useState's
-  // initial value) and the memoized `value`/`controllerRef`, so an empty
-  // dep array is correct, not just expedient. Without this, a fresh `set`
-  // identity on every render will spuriously re-run any effect that lists
-  // it as a dependency (the idiomatic, exhaustive-deps-compliant thing to
-  // do), restarting whatever that effect was driving.
+  // Stable identity like useState's setter — a fresh one each render would spuriously
+  // re-run any effect that lists `set` as a dependency.
   const set = useCallback(
     (to: Base | Descriptor | AnimateValue<Primitive>) => {
       let ctrl: Controls | null;
@@ -96,8 +88,6 @@ function handlePrimitive(
   value: AnimateValue<Primitive>,
   to: Primitive | Descriptor | AnimateValue<Primitive>
 ) {
-  // `setValue(otherAnimatedValue)` — snap-follow another AnimateValue with
-  // no easing, mirroring its updates as they happen.
   if (isAnimateValue(to)) {
     return followValue(value, to);
   }
@@ -106,17 +96,11 @@ function handlePrimitive(
     return handleDescriptor(value, to);
   }
 
-  // Guaranteed Primitive by elimination — isAnimateValue/isDescriptor above
-  // ruled out the other two union members, but that's a runtime fact the
-  // compiler can't derive from an `any`-typed instanceof guard.
   value.set(to as Primitive);
   return null;
 }
 
 function handleDescriptor(value: AnimateValue<Primitive>, descriptor: Descriptor) {
-  // `setValue(withSpring(otherAnimatedValue))` / `withTiming(...)` — re-run
-  // the driver toward the source's latest value every time it changes,
-  // instead of animating to a single fixed target.
   if (isAnimateValue(descriptor.to)) {
     return followValue(value, descriptor.to, descriptor);
   }
@@ -130,13 +114,6 @@ function handleDescriptor(value: AnimateValue<Primitive>, descriptor: Descriptor
   return buildAnimation(value, descriptor);
 }
 
-// Drives `value` off of `source` for as long as the returned controls are
-// active: every time `source` changes, either snap `value` to it directly
-// (no `descriptor`) or restart the described animation (spring/timing, ...)
-// toward the new target. Springs/timings inherit velocity/progress from
-// their own previous run (see SpringController/TimingController), so
-// re-triggering on each change reads as a smooth, continuous follow rather
-// than a series of separate animations.
 function followValue(
   value: AnimateValue<Primitive>,
   source: AnimateValue<Primitive>,

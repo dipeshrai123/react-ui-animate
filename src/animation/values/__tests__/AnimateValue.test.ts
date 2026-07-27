@@ -49,6 +49,39 @@ describe('AnimateValue', () => {
     expect(seen).toEqual([5, 7]); // no further notifications
   });
 
+  it('shiftBy moves the value without canceling a shiftable controller', () => {
+    const value = new AnimateValue(10);
+    const seen: number[] = [];
+    value.subscribe((v) => seen.push(v));
+
+    const controller: AnimateController = {
+      start() {},
+      pause() {},
+      resume() {},
+      cancel() {},
+      reset() {},
+      shiftBy(delta: number) {
+        value._internalSet((value.current as number) + delta);
+      },
+    };
+    value.setAnimationController(controller);
+
+    value.shiftBy(5);
+    expect(value.current).toBe(15);
+    expect(value.getAnimationController()).toBe(controller);
+    expect(seen).toEqual([10, 15]);
+  });
+
+  it('shiftBy without a controller updates the value and notifies', () => {
+    const value = new AnimateValue(3);
+    const seen: number[] = [];
+    value.subscribe((v) => seen.push(v));
+
+    value.shiftBy(-2);
+    expect(value.current).toBe(1);
+    expect(seen).toEqual([3, 1]);
+  });
+
   it('reset() brings value back to the original initial and notifies', () => {
     const value = new AnimateValue(3);
     const seen: number[] = [];

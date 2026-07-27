@@ -24,9 +24,6 @@ interface UpdatableRecognizer extends GestureRecognizer {
   updateHandlers?(handlers: any): void;
 }
 
-// 'pointer' is press-gated (requires pointerdown); 'hover' is the same
-// pointermove event but ungated, so it needs its own listener on the target
-// instead of window; 'wheel'/'scroll' are separate native event types.
 type ListenerGroup = 'pointer' | 'hover' | 'wheel' | 'scroll';
 
 const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
@@ -40,8 +37,6 @@ const GROUP_BY_TYPE: Record<GestureType, ListenerGroup> = {
   rotate: 'pointer',
 };
 
-// Pinch/Rotate share the 'pointer' native listeners with Pan/Swipe but see
-// every tracked pointer once 2+ are down, instead of one primary pointer.
 const MULTI_POINTER_TYPES = new Set<GestureType>(['pinch', 'rotate']);
 
 interface Registration {
@@ -74,13 +69,7 @@ function createRecognizer(descriptor: GestureDescriptor<any, any>): UpdatableRec
   }
 }
 
-/**
- * One instance per DOM node/window (see `registry.ts`). Owns the native
- * listeners for every event category any registered recognizer needs —
- * attached lazily per category, removed once the last one leaves — and
- * fans events out to the matching recognizers, so N gestures of any mix on
- * one element share listeners per category instead of each attaching its own.
- */
+// One instance per DOM node/window (see `registry.ts`); shares native listeners per event category across all recognizers registered on it.
 export class ElementGestureTracker {
   private registrations = new Map<symbol, Registration>();
   private groupCounts: Record<ListenerGroup, number> = {
@@ -91,31 +80,18 @@ export class ElementGestureTracker {
   };
   private attachedGroups = new Set<ListenerGroup>();
 
-  // `activePointers` tracks every currently-down pointer; `primaryPointerId`
-  // is the one single-pointer recognizers (Pan/Swipe) react to — set on the
-  // first pointerdown of a stream and left as-is if it lifts before the
-  // others (no promotion; the stream fully resets only once all pointers
-  // are up).
   private activePointers = new Map<number, { x: number; y: number }>();
+  // `primaryPointerId` is fixed for the whole pointer stream — never promoted if it lifts before other pointers.
   private primaryPointerId: number | null = null;
   private pointerKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
-  // Arbitration claim for the 'pointer' group's single-pointer recognizers,
-  // scoped by gesture *kind* — two independent Pan registrations must both
-  // keep firing (not a conflict), but Pan and Swipe genuinely interpreting
-  // the same drag should not both fire. First kind to call
-  // `requestActivation()` in a stream wins; other kinds are denied until
-  // the next pointerdown sequence resets it. Pinch/Rotate don't use this.
+  // First gesture kind (e.g. 'pan') to call requestActivation() per pointer stream wins; other kinds are denied until reset.
   private activeOwnerType: GestureType | null = null;
 
-  // Ungated hover stream state (Move).
   private hoverKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
 
-  // Wheel stream state — accumulator exists purely to derive velocity
-  // (recognizer-visible `offset` is tracked independently, recognizer-side).
   private wheelAccum = { x: 0, y: 0 };
   private wheelKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
 
-  // Scroll stream state.
   private scrollKinematics: KinematicState = createKinematicState({ x: 0, y: 0, t: 0 });
 
   private readonly pointerDownHandler = this.onPointerDownNative.bind(this);
@@ -221,8 +197,6 @@ export class ElementGestureTracker {
       target: this.target,
       kinematics,
       pointers: this.activePointers,
-      // No composition/arbitration for these groups — only the 'pointer'
-      // group's single-pointer recognizers arbitrate (see makeContext).
       requestActivation: () => true,
       yieldTo: () => {},
     };
@@ -266,8 +240,6 @@ export class ElementGestureTracker {
     });
   }
 
-  // ---- press-gated pointer stream (Pan, Swipe, Pinch, Rotate) ----
-
   private onPointerDownNative(e: Event): void {
     const pe = e as PointerEvent;
     if (pe.button !== 0) return;
@@ -284,11 +256,7 @@ export class ElementGestureTracker {
     }
 
     if (this.activePointers.size === 2) {
-      // A second concurrent pointer joins mid-stream: hand off from any
-      // active/possible single-pointer recognizer (Pan/Swipe) to the
-      // multi-pointer ones (Pinch/Rotate), reusing each single-pointer
-      // recognizer's existing onPointerCancel handling for the hand-off —
-      // no recognizer-side code needed for this.
+      // 2nd pointer joins mid-stream: cancel single-pointer recognizers to hand off to Pinch/Rotate.
       this.dispatchSinglePointer((r, ctx) => r.onPointerCancel?.(pe, ctx));
     }
 
@@ -357,8 +325,6 @@ export class ElementGestureTracker {
     }
   }
 
-  // ---- ungated hover stream (Move) ----
-
   private onHoverMoveNative(e: Event): void {
     const pe = e as PointerEvent;
 
@@ -376,8 +342,6 @@ export class ElementGestureTracker {
     this.dispatch('hover', this.hoverKinematics, (r, ctx) => r.onHoverEnd?.(pe, ctx));
   }
 
-  // ---- wheel ----
-
   private onWheelNative(e: Event): void {
     const we = e as globalThis.WheelEvent;
     we.preventDefault();
@@ -391,8 +355,6 @@ export class ElementGestureTracker {
 
     this.dispatch('wheel', this.wheelKinematics, (r, ctx) => r.onWheel?.(we, ctx));
   }
-
-  // ---- scroll ----
 
   private onScrollNative(e: Event): void {
     const target = this.target;

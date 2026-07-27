@@ -19,8 +19,6 @@ export function parseBoxShadow(
   return null;
 }
 
-// e.g. "0 4px 12px rgba(0,0,0,0.3)" -> "0 0px 0px rgba(0,0,0,0)", preserving
-// each value's exact unit (including "no unit" for the first value).
 export function createZeroValueFromTarget(target: string): string {
   const parsed = parseBoxShadow(target);
   if (parsed) {

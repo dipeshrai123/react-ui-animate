@@ -1,8 +1,5 @@
 import type { BaseGestureConfig, GestureDescriptor } from './types';
 
-// A fling/flick: fast, short, directional pan resolved once at release —
-// not a stream, so no phase/onChange/onFinalize. A release that doesn't
-// clear the distance+velocity thresholds simply fires nothing.
 export interface SwipeEvent {
   direction: 'up' | 'down' | 'left' | 'right';
   movement: { x: number; y: number };

@@ -84,13 +84,8 @@ class DecayController implements AnimateController {
       const [min, max] = this.clampBounds;
 
       if (this.bounceRestitution !== undefined) {
-        // Frame-level collision: once the (uninterrupted-decay) trajectory
-        // would cross a bound while still heading into it, pin the position
-        // at the bound and start a fresh decay "segment" from there with
-        // velocity reflected and scaled by the restitution factor — the
-        // exponential decay formula above is only valid for one continuous,
-        // uninterrupted run, so a bounce has to restart it rather than try
-        // to bend the curve mid-formula.
+        // Restarts a fresh decay segment at the bound with reflected velocity — the
+        // exponential formula above is only valid for one continuous run.
         if (this.position < min && currentVelocity < 0) {
           this.position = this.from = min;
           this.velocity = currentVelocity = -currentVelocity * this.bounceRestitution;

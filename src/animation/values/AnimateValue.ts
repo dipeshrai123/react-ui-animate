@@ -29,13 +29,25 @@ export class AnimateValue<T = number> {
     this._internalSet(value);
   }
 
-  /**
-   * @internal only use internally
-   */
+  /** @internal */
   _internalSet(value: T): void {
     if (value === this._current) return;
     this._current = value;
     for (const sub of this.subscribers) sub(value);
+  }
+
+  // Preserves velocity/progress by shifting the active controller's sample point too, if it supports shiftBy.
+  shiftBy(delta: number): void {
+    if (typeof this._current !== 'number' || delta === 0) return;
+
+    if (this.controller?.shiftBy) {
+      this.controller.shiftBy(delta);
+      return;
+    }
+
+    const next = (this._current as number) + delta;
+    this._current = next as T;
+    for (const sub of this.subscribers) sub(this._current);
   }
 
   subscribe(fn: Subscriber<T>): () => void {

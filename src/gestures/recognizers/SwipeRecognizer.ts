@@ -7,18 +7,6 @@ import type { SwipeEvent, SwipeGestureConfig, SwipeHandlers } from '../api/Gestu
 const DEFAULT_VELOCITY_THRESHOLD = 0.5; // px/ms
 const DEFAULT_DISTANCE_THRESHOLD = 30; // px
 
-/**
- * Fling/flick recognizer. Unlike Pan, has no streaming ACTIVE phase — it
- * resolves once, at release, by checking the dominant-axis distance and
- * velocity against thresholds. Fires `onSwipe` only on a qualifying
- * release; a slow/short release fires nothing.
- *
- *   UNDETERMINED --(pointerdown)--> POSSIBLE         [capture pointer]
- *   POSSIBLE --(move)--> POSSIBLE                     [track movement, no emit]
- *   POSSIBLE --(pointerup, qualifies)--> END           [onSwipe]
- *   POSSIBLE --(pointerup, doesn't qualify)--> FAILED  [no callback]
- *   * --(pointercancel)--> CANCELLED                   [no callback]
- */
 export class SwipeRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 
@@ -48,10 +36,7 @@ export class SwipeRecognizer implements GestureRecognizer {
     this.movement = { x: 0, y: 0 };
     this.phase = GesturePhase.POSSIBLE;
 
-    // Captured immediately (unlike Pan's lazy capture) — a swipe has no
-    // mid-stream "threshold crossed" moment to capture at, and letting the
-    // browser scroll/select during the flick itself would distort the very
-    // gesture being measured.
+    // Captured immediately (unlike Pan's lazy capture) — no mid-stream threshold moment to defer to.
     if (this.target) {
       this.target.setPointerCapture(e.pointerId);
       this.captured = true;
@@ -108,10 +93,6 @@ export class SwipeRecognizer implements GestureRecognizer {
       if (this.target) suppressNextClick(this.target);
       this.handlers.onSwipe?.(this.buildEvent(e, ctx, direction));
     } else {
-      // Distance/velocity qualified but another recognizer (e.g. a Pan that
-      // already crossed its own minDistance) claimed this stream first —
-      // stay quiet instead of firing a second, contradictory callback for
-      // what the user already interpreted as a drag.
       this.phase = GesturePhase.FAILED;
     }
 

@@ -4,17 +4,6 @@ import { computeMovement } from '../engine/PointerTracker';
 import { suppressNextClick } from '../engine/suppressSyntheticClick';
 import type { BaseGestureConfig, GestureHandlers, PanEvent } from '../api/Gesture';
 
-/**
- * Pan/drag recognizer. State diagram:
- *
- *   UNDETERMINED --(pointerdown)--> POSSIBLE
- *   POSSIBLE --(move, dist < minDistance)--> POSSIBLE          [no emit]
- *   POSSIBLE --(move, dist >= minDistance)--> BEGAN -> ACTIVE  [onStart, then onChange]
- *   ACTIVE --(move)--> ACTIVE                                  [onChange]
- *   ACTIVE --(pointerup)--> END                                [onEnd, onFinalize]
- *   POSSIBLE --(pointerup, dist < minDistance)--> FAILED        [onFinalize only]
- *   * --(pointercancel)--> CANCELLED                            [onFinalize]
- */
 export class PanRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 
@@ -69,10 +58,7 @@ export class PanRecognizer implements GestureRecognizer {
         return;
       }
 
-      // Capture the pointer and block the browser's default handling (text
-      // selection, native drag-image, touch scrolling) once this is
-      // recognized as a real drag — not on every pointerdown, so a plain
-      // click still lets text selection/native behavior work normally.
+      // Capture only once recognized as a drag, not on pointerdown, so plain clicks still allow text selection.
       if (this.target) {
         this.target.setPointerCapture(e.pointerId);
         this.captured = true;
@@ -95,12 +81,7 @@ export class PanRecognizer implements GestureRecognizer {
     }
 
     if (this.phase === GesturePhase.ACTIVE) {
-      // Arm click suppression here, not at threshold-cross: the browser's
-      // synthetic click fires right after pointerup, but a drag can run for
-      // any length of time before that — arming earlier and relying on
-      // suppressNextClick's macrotask fallback cleanup meant the fallback
-      // could (and for any real-length drag, would) remove the suppressor
-      // long before the click ever arrived.
+      // Arm at pointerup, not threshold-cross — arming earlier lets the macrotask fallback clear it before a real-length drag's click arrives.
       if (this.target) suppressNextClick(this.target);
 
       this.phase = GesturePhase.END;

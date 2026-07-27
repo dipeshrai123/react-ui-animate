@@ -13,10 +13,6 @@ export interface PanEvent {
   cancel: () => void;
 }
 
-// Mutates and returns `this` per chained call rather than cloning — matches
-// how these are built fresh per render, e.g.
-// `useGesture(ref, Gesture.Pan().onUpdate(fn))`. Not safe to cache/reuse
-// across renders once further mutated.
 export class PanGestureBuilder implements GestureDescriptor<PanEvent> {
   readonly type = 'pan' as const;
   config: BaseGestureConfig = {};

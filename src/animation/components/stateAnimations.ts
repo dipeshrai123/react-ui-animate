@@ -17,21 +17,10 @@ export interface StateAnimationContext {
   initialValues: InitialValuesMap;
   stateControllers: ControllersList;
   cleanup: CleanupList;
-  /**
-   * The real destination each key is meant to settle at, as declared by
-   * `animate`/`view` (unwrapping `withSequence`/`withDelay`). Preferred over
-   * `initialValues` when reverting, since a hover/press/focus interaction can
-   * interrupt an in-flight `animate`/`view` transition before it reaches its
-   * target — reverting to a merely *captured* value would snap back to
-   * wherever the interruption left it, not where it was actually headed.
-   */
+  /** Preferred over `initialValues` when reverting — avoids snapping back to wherever a hover/press/focus interruption left an in-flight animate/view transition. */
   restingTargets?: Record<string, Primitive>;
 }
 
-// Unwraps a descriptor (including `withSequence`/`withDelay` chains) to find
-// the final numeric/string destination it's headed towards. Returns
-// `undefined` for open-ended animations (e.g. `withLoop`) that have no
-// settled target to speak of.
 export function extractRestingTarget(
   descriptor: Descriptor | Primitive | undefined
 ): Primitive | undefined {
@@ -106,22 +95,13 @@ export function applyStateAnimation(
         updateStyle(initial);
       }
     } else {
-      // Capture the revert target fresh on every activation rather than only
-      // once: the value right before a hover/press/focus starts is always
-      // the correct "resting" baseline, and an `animate`/`view` transition
-      // can move that baseline well after mount (e.g. translateY settling
-      // from 40 -> 0) — caching it only once would lock in a stale value.
+      // Captured fresh on every activation, not just once, since animate/view can move the baseline after mount.
       if (isActive) {
         initialValues[key] = value.current;
       } else if (!(key in initialValues)) {
-        // Deactivating without ever having activated (shouldn't normally
-        // happen) — fall back to resolving from static style.
         initialValues[key] = getInitialValue(key, style, node, computedStyle);
       }
 
-      // AnimateValues created in useLayoutEffect (e.g. by the `view` prop)
-      // need their subscriptions (re)established here too, or they'd never
-      // reach the DOM.
       if (isTransformKey(key)) {
         const render = createTransformRenderer(node, animateValues);
         newSubscriptions.push(value.subscribe(render));
@@ -159,15 +139,10 @@ export function applyStateAnimation(
         controller.start();
       }
     } else {
-      // Revert to the real settled target if `animate`/`view` declares one
-      // for this key (see `restingTargets` doc above); otherwise fall back
-      // to the captured value.
       const initialValue = restingTargets?.[key] ?? initialValues[key];
 
-      // Reuse the driver type/options the developer configured for this key
-      // (spring/timing/decay) rather than always springing back — otherwise
-      // a `withTiming` entry/exit would enter with the declared timing but
-      // always exit with a default spring.
+      // Reuses the configured driver type instead of always springing back, or a
+      // withTiming entry/exit would always exit with a default spring.
       const revertDescriptor: Descriptor =
         !isPrimitive &&
         (valueOrDescriptor.type === 'spring' ||

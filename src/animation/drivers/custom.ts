@@ -3,22 +3,16 @@ import type { AnimateController, AnimateHooks } from './AnimateController';
 import { isReducedMotionEnabled } from '../utils/reducedMotion';
 
 export interface CustomTickContext {
-  /** Milliseconds elapsed since this run started (pauses excluded). */
+  /** Excludes pauses. */
   elapsed: number;
-  /** Milliseconds since the previous frame (0 on the first frame). */
   dt: number;
-  /** The value this run started from. */
   from: number;
 }
 
 export type CustomTickFn = (ctx: CustomTickContext) => number;
 
 export interface CustomOptions extends AnimateHooks {
-  /**
-   * Optional run length in ms. When set, the driver stops ticking and fires
-   * `onComplete` once `elapsed >= duration`. Omit for an indefinite driver
-   * (e.g. a continuous orbit) that only stops via `cancel()`/`pause()`.
-   */
+  /** Omit for an indefinite driver that only stops via cancel()/pause(). */
   duration?: number;
   from?: number;
   onChange?(value: number): void;
@@ -95,8 +89,7 @@ class CustomController implements AnimateController {
   resume() {
     if (this.isCancelled || !this.isPaused) return;
 
-    // Shift startTime forward by the pause gap so `elapsed` excludes it,
-    // matching TimingController/DecayController's pause semantics.
+    // Shifts startTime by the pause gap so elapsed excludes it.
     const now = performance.now();
     this.startTime += now - this.lastTime;
     this.lastTime = now;

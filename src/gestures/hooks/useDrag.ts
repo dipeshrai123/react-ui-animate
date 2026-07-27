@@ -18,54 +18,20 @@ export interface UseDragOptions {
   enabled?: boolean;
   axis?: 'x' | 'y';
   minDistance?: number;
-  /** Starting position. Only read on mount, like `useValue`'s initial value. */
   initial?: { x?: number; y?: number };
   bounds?: DragBounds | RefObject<HTMLElement>;
-  /**
-   * Rubber-band past `bounds` while dragging instead of hard-stopping at the
-   * edge. `true` uses the default elastic constant (0.15); a number sets a
-   * custom one; `false` hard-clamps. Only affects the *live* drag — see
-   * `bounce` for the momentum fling on release, which hard-stops at
-   * `bounds` unless `bounce` is set. Default `true`.
-   */
+  /** Rubber-band past `bounds` while dragging. `true` = elastic 0.15, number = custom, `false` = hard-clamp. Default `true`. */
   elastic?: boolean | number;
-  /** Fling on release using the pointer's release velocity. Default `true`. */
+  /** Fling on release using release velocity. Default `true`. */
   momentum?: boolean;
-  /**
-   * Reflects the momentum fling off `bounds` instead of hard-stopping —
-   * a real bounce (velocity reverses and dampens on impact, then keeps
-   * decaying), not just a cushion like `elastic`. `true` uses a default
-   * restitution of 0.5 (loses half its speed each bounce); a number sets a
-   * custom restitution (0 = absorbs on contact, 1 = perfectly elastic).
-   * Only affects the momentum fling — has no effect while still dragging,
-   * or on a release that's `transition`-corrected back into bounds.
-   * Default `false` (hard stop).
-   */
+  /** Bounce off `bounds` on momentum fling instead of hard-stopping. `true` = restitution 0.5, number = custom (0-1). Default `false`. */
   bounce?: boolean | number;
-  /**
-   * Snap to the nearest of these positions on release (per axis), projected
-   * a little ahead using the release velocity so a fast flick can jump past
-   * the nearest point to the next one — the same feel as a carousel or
-   * sortable grid. Takes priority over `bounds`/`momentum` on release for
-   * whichever axis has points; the other axis (or both, if neither is set)
-   * falls back to the usual bounds-clamp/momentum behavior.
-   */
+  /** Snap to nearest position (per axis) on release, projected ahead by velocity. Takes priority over `bounds`/`momentum` per axis. */
   snapPoints?: { x?: number[]; y?: number[] };
-  /**
-   * Customizes the spring/timing used to settle back within `bounds` or
-   * snap to a `snapPoints` target on release. Accepts the same
-   * `withSpring(...)` / `withTiming(...)` descriptors (or raw
-   * `SpringOptions`) as `Reorder.Group`'s `transition` prop. Defaults to a
-   * spring. Has no effect on the momentum fling itself — see `decay`.
-   */
+  /** Spring/timing used to settle into `bounds`/`snapPoints` on release. Defaults to a spring. No effect on the momentum fling — see `decay`. */
   transition?: FlipOptions;
-  /**
-   * Deceleration constant for the momentum fling on release (lower = more
-   * friction, stops sooner). Default `0.998`, matching `withDecay`'s own
-   * default.
-   */
+  /** Deceleration constant for momentum fling (lower = more friction). Default `0.998`. */
   decay?: number;
-  /** Matches `Gesture.Pan()`'s own callback names. */
   onStart?: (e: PanEvent) => void;
   onChange?: (e: PanEvent) => void;
   onEnd?: (e: PanEvent) => void;
@@ -127,12 +93,6 @@ function isRefObject(
   return 'current' in value;
 }
 
-/**
- * Wires up `Gesture.Pan()` with live position tracking, optional bounds
- * (fixed or a container ref), edge rubber-banding, momentum-on-release, and
- * snap points. Position persists across drags instead of resetting each
- * time.
- */
 export function useDrag<T extends HTMLElement>(
   ref: RefObject<T>,
   options: UseDragOptions = {}
