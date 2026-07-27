@@ -60,4 +60,40 @@ describe('spring', () => {
     value.reset();
     expect(value.current).toBe(0);
   });
+
+  it('shiftBy preserves velocity across a layout correction + retarget', () => {
+    const value = new AnimateValue(80);
+    const onComplete = jest.fn();
+
+    const first = spring(value, 0, {
+      stiffness: 500,
+      damping: 40,
+      onComplete,
+    });
+    first.start();
+
+    jest.advanceTimersByTime(32);
+    const mid = value.current as number;
+    expect(mid).toBeGreaterThan(0);
+    expect(mid).toBeLessThan(80);
+
+    // Simulate Reorder FLIP: layout jumped by -80 while the spring was mid-flight.
+    first.shiftBy?.(-80);
+    expect(value.current).toBeCloseTo(mid - 80, 5);
+
+    const second = spring(value, 0, { stiffness: 500, damping: 40, onComplete });
+    second.start();
+
+    // Continuity: the retargeted spring must not flash back to the pre-shift
+    // sample (the old cancel+restart path would zero velocity and could
+    // briefly publish a stale inherited position).
+    expect(value.current).toBeCloseTo(mid - 80, 5);
+
+    for (let t = 0; t < 3000; t += 16) {
+      jest.advanceTimersByTime(16);
+      if (onComplete.mock.calls.length >= 1 && value.current === 0) break;
+    }
+
+    expect(value.current).toBeCloseTo(0, 2);
+  });
 });

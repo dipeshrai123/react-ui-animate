@@ -86,9 +86,12 @@ class SpringController implements AnimateController {
       this.startTime = Date.now();
     } else {
       // Otherwise, try to inherit from previous controller for smooth chaining
+      // (e.g. SortableList / Reorder retargeting mid-flight). Skip cancelled
+      // controllers — their position can lag `value.current` by a frame and
+      // would flash the element back to a stale coordinate.
       const previous = this.value.getAnimationController();
 
-      if (previous instanceof SpringController) {
+      if (previous instanceof SpringController && !previous.isCancelled) {
         this.position = previous.position;
         this.velocity = previous.velocity;
         this.startTime = previous.startTime;
@@ -115,6 +118,19 @@ class SpringController implements AnimateController {
     }
 
     this.frameId = requestAnimationFrame(this.animate);
+  }
+
+  /**
+   * FLIP layout correction: move the spring's sample point by `delta` so the
+   * visual stays put when the element's layout box jumps underneath it,
+   * without zeroing velocity (which is what caused 1-frame settle hitches
+   * when Reorder cancelled and restarted the spring on every swap).
+   */
+  shiftBy(delta: number) {
+    if (delta === 0) return;
+    this.position += delta;
+    this.startPosition += delta;
+    this.value._internalSet(this.value.current + delta);
   }
 
   private animate = () => {
@@ -159,28 +175,28 @@ class SpringController implements AnimateController {
       criticallyDampedEnvelope *
       (v0 * (t * omega0 - 1) + t * x0 * omega0 * omega0);
 
+    const nextPosition =
+      zeta < 1 ? underDampedPosition : criticallyDampedPosition;
+    const nextVelocity =
+      zeta < 1 ? underDampedVelocity : criticallyDampedVelocity;
+
+    // Settle against the *upcoming* sample so we never publish an overshoot
+    // frame and then snap back to the target on the next tick — that 1-frame
+    // flash is exactly the vertical glitch Reorder showed near settle.
+    const isVelocity = Math.abs(nextVelocity) < this.restSpeed;
+    const isDisplacement =
+      this.stiffness === 0 ||
+      Math.abs(this.target - nextPosition) < this.restDisplacement;
+
+    const isSettled = isVelocity && isDisplacement;
+
+    this.position = isSettled ? this.target : nextPosition;
+    this.velocity = isSettled ? 0 : nextVelocity;
+
     this.value._internalSet(this.position);
     this.hooks.onChange?.(this.position);
 
-    const isVelocity = Math.abs(this.velocity) < this.restSpeed;
-    const isDisplacement =
-      this.stiffness === 0 ||
-      Math.abs(this.target - this.position) < this.restDisplacement;
-
-    if (zeta < 1) {
-      this.position = underDampedPosition;
-      this.velocity = underDampedVelocity;
-    } else {
-      this.position = criticallyDampedPosition;
-      this.velocity = criticallyDampedVelocity;
-    }
-
-    if (isVelocity && isDisplacement) {
-      this.velocity = 0;
-      this.position = this.target;
-
-      this.value._internalSet(this.position);
-      this.hooks.onChange?.(this.position);
+    if (isSettled) {
       this.hooks.onComplete?.();
       return;
     }

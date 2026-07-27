@@ -38,6 +38,25 @@ export class AnimateValue<T = number> {
     for (const sub of this.subscribers) sub(value);
   }
 
+  /**
+   * Shift a numeric value by `delta` without canceling an in-flight animation.
+   * If the active controller supports `shiftBy` (springs/timings), its internal
+   * sample point moves with the value so velocity/progress is preserved — the
+   * same continuity model SortableList gets from retargeting `withSpring`.
+   */
+  shiftBy(delta: number): void {
+    if (typeof this._current !== 'number' || delta === 0) return;
+
+    if (this.controller?.shiftBy) {
+      this.controller.shiftBy(delta);
+      return;
+    }
+
+    const next = (this._current as number) + delta;
+    this._current = next as T;
+    for (const sub of this.subscribers) sub(this._current);
+  }
+
   subscribe(fn: Subscriber<T>): () => void {
     this.subscribers.add(fn);
     fn(this._current);

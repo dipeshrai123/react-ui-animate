@@ -295,7 +295,19 @@ export function ReorderItem<T>({
     []
   );
 
-  const [isDragging, setIsDragging] = useState(false);
+  // zIndex tier: 0 normal, 1 settling, 2 actively dragged.
+  const [zPriority, setZPriority] = useState<0 | 1 | 2>(0);
+  const elevationCountRef = useRef(0);
+
+  const raiseElevation = () => {
+    elevationCountRef.current += 1;
+    setZPriority((p) => (p < 1 ? 1 : p));
+  };
+
+  const releaseElevation = () => {
+    elevationCountRef.current = Math.max(0, elevationCountRef.current - 1);
+    if (elevationCountRef.current === 0) setZPriority(0);
+  };
 
   const isDraggingRef = useRef(false);
   const lastMovementRef = useRef(0);
@@ -346,10 +358,18 @@ export function ReorderItem<T>({
     return pitch || ownSize;
   };
 
-  const settleTo = (target: number) => ({
-    ...resolveFlipTransition(transition),
-    to: target,
-  });
+  // Raises zIndex for the duration of the settle spring, releasing it only
+  // when the spring completes — keeps a settling item stacked above idle
+  // neighbors instead of racing zIndex reset against the animation.
+  const settleTo = (target: number) => {
+    const base = resolveFlipTransition(transition);
+    raiseElevation();
+    return {
+      ...base,
+      to: target,
+      options: { ...base.options, onComplete: releaseElevation },
+    };
+  };
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -390,9 +410,20 @@ export function ReorderItem<T>({
       setOffset(lastMovementRef.current + correctionRef.current);
       setCrossOffset(deltaCross);
     } else {
+      // Shift the in-flight spring (preserves velocity) instead of
+      // cancel+restart, which zeroed velocity on every swap and caused a
+      // 1-frame hitch near settle.
       justFlippedRef.current = true;
-      setOffset(deltaPrimary + (offset.current as number));
-      setCrossOffset(deltaCross + (crossOffset.current as number));
+      if (offset.getAnimationController()?.shiftBy) {
+        offset.shiftBy(deltaPrimary);
+      } else {
+        setOffset((offset.current as number) + deltaPrimary);
+      }
+      if (crossOffset.getAnimationController()?.shiftBy) {
+        crossOffset.shiftBy(deltaCross);
+      } else {
+        setCrossOffset((crossOffset.current as number) + deltaCross);
+      }
       setOffset(settleTo(0));
       setCrossOffset(settleTo(0));
     }
@@ -443,7 +474,7 @@ export function ReorderItem<T>({
     gesture
       .onStart(() => {
         isDraggingRef.current = true;
-        setIsDragging(true);
+        setZPriority(2);
         lastMovementRef.current = 0;
         correctionRef.current = 0;
         originIndexRef.current = values.indexOf(value);
@@ -507,7 +538,9 @@ export function ReorderItem<T>({
       })
       .onEnd((e) => {
         isDraggingRef.current = false;
-        setIsDragging(false);
+        // Step down from dragging (2) to settling (1); settleTo() below
+        // holds it at 1 until the release spring completes.
+        setZPriority((p) => (p > 1 ? 1 : p));
 
         const hoverAtRelease = dndCtx?.hoverRef.current ?? NO_HOVER;
         const targetKey = hoverAtRelease.groupKey;
@@ -564,7 +597,7 @@ export function ReorderItem<T>({
         userSelect: 'none',
         WebkitUserSelect: 'none',
         ...style,
-        zIndex: isDragging ? 1 : style?.zIndex,
+        zIndex: zPriority > 0 ? zPriority : style?.zIndex,
         ...(axis === 'y'
           ? { translateY: offset, translateX: crossOffset }
           : { translateX: offset, translateY: crossOffset }),

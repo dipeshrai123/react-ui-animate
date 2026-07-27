@@ -247,13 +247,13 @@ describe('Reorder', () => {
     render(<List />);
     const itemA = screen.getByText('a');
 
-    expect(itemA.style.zIndex).not.toBe('1');
+    expect(itemA.style.zIndex).not.toBe('2');
 
     act(() => {
       firePointer(itemA, 'pointerdown', 0, 0);
       firePointer(window, 'pointermove', 0, 20);
     });
-    expect(itemA.style.zIndex).toBe('1');
+    expect(itemA.style.zIndex).toBe('2');
 
     act(() => {
       firePointer(window, 'pointerup', 0, 20);
@@ -378,6 +378,141 @@ describe('Reorder', () => {
 
     act(() => {
       firePointer(window, 'pointerup', 0, 40);
+      jest.advanceTimersByTime(1000);
+    });
+  });
+
+  it('keeps the dragged item elevated (zIndex) until its post-drop settle animation completes', () => {
+    let order = ['a', 'b', 'c', 'd', 'e'];
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = order.indexOf(text) * 70;
+      return {
+        top,
+        left: 0,
+        right: 100,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
+
+    function LiveOrderList() {
+      const [values, setValues] = useState(order);
+      return (
+        <Reorder.Group
+          values={values}
+          axis="y"
+          onReorder={(next) => {
+            order = next;
+            setValues(next);
+          }}
+        >
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<LiveOrderList />);
+    const itemA = screen.getByText('a');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 150);
+    });
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 150);
+    });
+
+    // Right after drop the item is still visually mid-flight back to its
+    // resting slot (translateY isn't 0 yet) — zIndex must still be elevated
+    // here, or it can render underneath a neighbor it's sliding past.
+    act(() => {
+      jest.advanceTimersByTime(16);
+    });
+    expect(itemA.style.transform).not.toContain('translateY(0px)');
+    expect(itemA.style.zIndex).toBe('1');
+
+    // Once the settle spring actually finishes, zIndex releases.
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+    expect(itemA.style.zIndex).not.toBe('1');
+  });
+
+  it('gives a freshly started drag a higher zIndex than an item still settling from a previous drop', () => {
+    let order = ['a', 'b', 'c', 'd', 'e'];
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      const text = this.textContent ?? '';
+      const top = order.indexOf(text) * 70;
+      return {
+        top,
+        left: 0,
+        right: 100,
+        bottom: top + 50,
+        width: 100,
+        height: 50,
+        x: 0,
+        y: top,
+        toJSON() {},
+      } as DOMRect;
+    });
+
+    function LiveOrderList() {
+      const [values, setValues] = useState(order);
+      return (
+        <Reorder.Group
+          values={values}
+          axis="y"
+          onReorder={(next) => {
+            order = next;
+            setValues(next);
+          }}
+        >
+          {values.map((v) => (
+            <Reorder.Item key={v} value={v}>
+              {v}
+            </Reorder.Item>
+          ))}
+        </Reorder.Group>
+      );
+    }
+
+    render(<LiveOrderList />);
+    const itemA = screen.getByText('a');
+    const itemE = screen.getByText('e');
+
+    act(() => {
+      firePointer(itemA, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 90);
+    });
+    act(() => {
+      firePointer(window, 'pointerup', 0, 90);
+    });
+
+    // Grab a different item before 'a's settle spring has finished.
+    act(() => {
+      firePointer(itemE, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 0, 10);
+    });
+
+    expect(itemA.style.zIndex).toBe('1');
+    expect(itemE.style.zIndex).toBe('2');
+
+    act(() => {
+      firePointer(window, 'pointerup', 0, 10);
       jest.advanceTimersByTime(1000);
     });
   });
