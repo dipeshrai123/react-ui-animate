@@ -13,7 +13,13 @@ const Section = ({
   transform: (progress: AnimateValue<number>) => Record<string, any>;
 }) => {
   const sectionRef = useRef<HTMLDivElement>(null);
-  const { progress } = useScrollReveal(sectionRef);
+  // Complete the reveal as soon as the section fully fills the viewport
+  // (its top reaching the viewport's top), rather than the default full
+  // enter-to-exit transit — otherwise a 100vh section is only ~halfway
+  // animated by the time it's fully visible.
+  const { progress } = useScrollReveal(sectionRef, {
+    offset: ['start end', 'start start'],
+  });
 
   return (
     <animate.div
