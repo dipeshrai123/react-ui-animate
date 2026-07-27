@@ -5,11 +5,7 @@ export interface AnimateController {
   cancel(): void;
   reset(): void;
   setOnComplete?(fn: () => void): void;
-  /**
-   * Shift the driver's internal position by `delta` without canceling
-   * (used by FLIP layout corrections so an in-flight spring keeps its
-   * velocity while the element's layout slot moves underneath it).
-   */
+  /** Shifts position without canceling — used by FLIP corrections to preserve velocity. */
   shiftBy?(delta: number): void;
 }
 

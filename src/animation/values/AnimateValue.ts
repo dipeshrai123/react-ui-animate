@@ -29,21 +29,14 @@ export class AnimateValue<T = number> {
     this._internalSet(value);
   }
 
-  /**
-   * @internal only use internally
-   */
+  /** @internal */
   _internalSet(value: T): void {
     if (value === this._current) return;
     this._current = value;
     for (const sub of this.subscribers) sub(value);
   }
 
-  /**
-   * Shift a numeric value by `delta` without canceling an in-flight animation.
-   * If the active controller supports `shiftBy` (springs/timings), its internal
-   * sample point moves with the value so velocity/progress is preserved — the
-   * same continuity model SortableList gets from retargeting `withSpring`.
-   */
+  // Preserves velocity/progress by shifting the active controller's sample point too, if it supports shiftBy.
   shiftBy(delta: number): void {
     if (typeof this._current !== 'number' || delta === 0) return;
 

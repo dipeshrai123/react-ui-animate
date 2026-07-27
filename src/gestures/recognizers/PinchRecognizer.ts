@@ -5,20 +5,6 @@ import type { PinchEvent, PinchGestureConfig, GestureHandlers } from '../api/Ges
 
 const DEFAULT_THRESHOLD = 0.02; // |scale - 1|
 
-/**
- * Two-pointer pinch/zoom. Dispatched by `ElementGestureTracker` once 2+
- * pointers are down (see its `dispatchMultiPointer`) — a second pointer
- * joining a single-pointer gesture (Pan/Swipe) hands off to this via the
- * tracker forcing those recognizers to cancel, not via any code here.
- *
- *   UNDETERMINED --(2nd pointer down)--> POSSIBLE
- *   POSSIBLE --(move, |scale-1| < threshold)--> POSSIBLE      [no emit]
- *   POSSIBLE --(move, |scale-1| >= threshold)--> BEGAN -> ACTIVE  [onStart, onChange]
- *   ACTIVE --(move)--> ACTIVE                                  [onChange]
- *   ACTIVE --(either pointer up)--> END                        [onEnd, onFinalize]
- *   POSSIBLE --(either pointer up)--> FAILED                   [onFinalize only]
- *   * --(pointercancel)--> CANCELLED                           [onFinalize]
- */
 export class PinchRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 

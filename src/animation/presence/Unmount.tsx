@@ -14,13 +14,12 @@ import {
 } from 'react';
 
 export interface UnmountProps {
-  /** Children to animate. Each direct child should have a unique `key` prop. */
+  /** Each direct child must have a unique `key`. */
   children?: ReactNode;
 
-  /** When true, the initial render skips the enter animation. @default true */
+  /** @default true */
   initial?: boolean;
 
-  /** Called once all exiting nodes have finished animating out. */
   onExitComplete?: () => void;
 
   /**
@@ -63,8 +62,6 @@ interface ChildState {
   isExiting: boolean;
 }
 
-// `exitingState` forces a re-render once `isExiting` flips, so this subtree
-// re-reads the (now exiting) UnmountContext instead of staying stale.
 function UnmountChild({
   children,
   isExiting,
@@ -88,23 +85,6 @@ function UnmountChild({
   return children;
 }
 
-/**
- * Unmount enables exit animations when children are removed from the tree.
- *
- * @example
- * ```tsx
- * <Unmount>
- *   {isVisible && (
- *     <animate.div
- *       key="modal"
- *       style={{ opacity: 0 }}
- *       animate={{ opacity: withTiming(1) }}
- *       unmount={{ opacity: withTiming(0) }}
- *     />
- *   )}
- * </Unmount>
- * ```
- */
 export function Unmount({
   children,
   initial = true,
@@ -143,13 +123,8 @@ export function Unmount({
         currentChildren.map(({ key, element }) => [key, element])
       );
 
-      // Two passes: first carry forward everything from `prev` (updating
-      // elements that still exist, marking the rest as exiting), then append
-      // any brand-new keys — so existing children keep their render order
-      // and new ones land at the end.
       for (const [key, state] of prev) {
         if (currentChildrenMap.has(key)) {
-          // Was exiting and came back before its exit finished re-entering.
           if (state.isExiting) {
             exitingCount.current--;
             exitRegistryRef.current.delete(key);
@@ -219,7 +194,6 @@ export function Unmount({
   const renderedChildren = useMemo(() => {
     const result: ReactElement[] = [];
 
-    // In 'wait' mode, entering children stay unrendered until nothing is exiting.
     const hasExiting = Array.from(childStates.values()).some((s) => s.isExiting);
     const shouldWait = mode === 'wait' && hasExiting;
 

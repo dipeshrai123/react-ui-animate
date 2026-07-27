@@ -54,20 +54,13 @@ export const transformKeys = [
   'perspective',
 ] as const;
 
-// Internal-only pseudo transform keys reserved for the `flip` prop's own
-// translate/scale contribution. They're stored under these distinct object
-// keys (instead of e.g. "translateX") specifically so they never overwrite a
-// same-named transform the consumer is animating via `animate`/`hover`/
-// `press`/`view`/`style` on the same element — both contributions compose as
-// separate CSS transform functions in the final string instead.
+// Namespaced pseudo-keys so `flip`/`flipId` transforms never overwrite a same-named
+// transform the consumer animates via animate/hover/press/view/style; they compose instead.
 export const FLIP_TRANSFORM_KEY_TO_CSS_FUNCTION = {
   __flipTranslateX: 'translateX',
   __flipTranslateY: 'translateY',
   __flipScaleX: 'scaleX',
   __flipScaleY: 'scaleY',
-  // Separate namespace for the `flipId` shared transition's own FLIP
-  // contribution, so it can never collide with the `flip` prop's pseudo
-  // keys above if both happen to be set on the same element.
   __flipIdTranslateX: 'translateX',
   __flipIdTranslateY: 'translateY',
   __flipIdScaleX: 'scaleX',
@@ -125,11 +118,6 @@ export function isTransformKey(key: string) {
   );
 }
 
-// Formats an already-merged style/animateValues object (values may be raw
-// primitives or AnimateValue instances) into a single CSS transform string.
-// Exported so systems that manage their own transform rendering (e.g. the
-// `flip` prop) can compose with whatever else is contributing transforms
-// to the same element.
 export function formatTransformString(txProps: Record<string, any>): string {
   const transformKeyList = Object.keys(txProps).filter(isTransformKey);
   if (transformKeyList.length > 0) {
@@ -196,14 +184,7 @@ function applyStyles(
   return subscriptions;
 }
 
-// JSX uses camelCase for these SVG presentation attributes (matching their
-// CSS property names), but the real XML attribute is hyphenated —
-// `node.setAttribute('strokeDashoffset', ...)` silently sets an attribute
-// SVG doesn't recognize and has no visual effect. React's own JSX renderer
-// maps these correctly, but `applyAttrs` calls `setAttribute` directly, so
-// it needs to do the same translation itself. Attributes not in this map
-// (geometry attrs like `cx`/`d`, or SVG attributes that are genuinely
-// camelCase like `viewBox`/`preserveAspectRatio`) pass through unchanged.
+// setAttribute needs hyphenated SVG attribute names; passing camelCase silently no-ops.
 const SVG_ATTRIBUTE_NAME_MAP: Record<string, string> = {
   alignmentBaseline: 'alignment-baseline',
   baselineShift: 'baseline-shift',

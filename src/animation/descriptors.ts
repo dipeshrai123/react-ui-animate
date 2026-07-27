@@ -34,15 +34,8 @@ const TIMING_OPTION_KEYS = new Set([
   'onComplete',
 ]);
 
-// True when `value` is a plain options bag (every key is a known option),
-// including `{}`. Used to support the target-less overload:
-//   withSpring({ stiffness: 400 })
-//   withTiming({ duration: 300 })
-// without breaking object targets like withSpring({ x: 10, y: 20 }). This is
-// load-bearing for `flipOptions` (see `src/animation/layout/flip.ts`),
-// where a FLIP transition computes its own from/to and the descriptor is
-// only used for its stiffness/damping/duration — there's no real value to
-// pass as a target.
+// Distinguishes withSpring({stiffness:400}) (options-only, no target) from withSpring({x:10,y:20})
+// (object target) — load-bearing for flipOptions, which has no target value to pass.
 function isOptionsOnly(
   value: unknown,
   optionKeys: Set<string>
@@ -167,11 +160,6 @@ export const withSequence = (
   },
 });
 
-// Wraps `descriptor` with a delay proportional to `index`, so animating a
-// list of items with increasing `index` makes them start one after another
-// instead of all at once. `each` is the delay step between consecutive
-// items (default 50ms); `delay` is a base delay applied before staggering
-// starts (default 0).
 export const withStagger = (
   index: number,
   descriptor: Descriptor,
@@ -186,12 +174,7 @@ export const withStagger = (
   return withSequence([withDelay(totalDelay), descriptor]);
 };
 
-// Animates through a list of intermediate values in one call, e.g.
-// `withKeyframes([0, 100, 50, 100])`. Each stop gets an equal share of the
-// total `duration` (default 300ms) unless a step provides its own
-// `{ to, duration, easing }`. Built on top of `withTiming` + `withSequence`,
-// so it inherits their `from`-chaining behavior — each stop starts from
-// wherever the previous one left off.
+// Each stop starts from wherever the previous one left off (from-chaining via withSequence).
 export const withKeyframes = (
   steps: Array<Primitive | KeyframeStep>,
   opts?: KeyframeOptions & Callbacks
@@ -218,12 +201,7 @@ export const withKeyframes = (
   });
 };
 
-// Escape hatch for animation shapes the built-in drivers don't model —
-// custom physics, magnetic snapping, orbital motion, noise-driven motion,
-// etc. `tick` is called every frame with elapsed/dt/from and returns the
-// value for that frame; the driver just pipes that into the AnimateValue.
-// Omit `duration` for an indefinite driver that only stops via
-// `cancel()`/`pause()` (e.g. a continuous loop-until-told-otherwise orbit).
+// Omit `duration` for an indefinite driver that only stops via cancel()/pause().
 export const withCustom = (
   tick: CustomTickFn,
   opts?: { duration?: number; from?: number } & Callbacks
@@ -254,10 +232,7 @@ export const withLoop = (
   },
 });
 
-// Runs a different descriptor per key of an object/array `useValue`
-// concurrently, e.g. `withParallel({ x: withSpring(100), y: withTiming(50) })`.
-// A plain descriptor already animates every key at once, but shares one
-// driver/options across all of them; use this when keys need different ones.
+// Unlike a plain descriptor (one driver/options shared across all keys), this lets each key use a different one.
 export const withParallel = (
   animations: Record<string, Descriptor> | Descriptor[],
   opts?: Omit<Callbacks, 'onChange'>

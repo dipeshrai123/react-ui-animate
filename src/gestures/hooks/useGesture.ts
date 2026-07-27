@@ -8,10 +8,6 @@ interface ActiveRegistration {
   unregister(): void;
 }
 
-// Every gesture type (Pan/Move/Wheel/Scroll) is registered against the
-// shared per-element/window `ElementGestureTracker` the same way — there is
-// no per-type special-casing here, which is what makes gestures composable:
-// two `useGesture` calls on the same node always end up on one tracker.
 function registerGesture(
   target: HTMLElement | Window,
   descriptor: GestureDescriptor<any, any>
@@ -25,9 +21,6 @@ function registerGesture(
   };
 }
 
-// Generic over the handlers shape so gesture kinds with a non-standard
-// handlers object (e.g. Swipe's `{ onSwipe }`) still get `index` merged in
-// array mode, not just the start/change/update/end/finalize stream.
 function withIndex(handlers: Record<string, unknown>, index: number): Record<string, unknown> {
   const result: Record<string, unknown> = {};
   for (const key in handlers) {
@@ -37,17 +30,6 @@ function withIndex(handlers: Record<string, unknown>, index: number): Record<str
   return result;
 }
 
-/**
- * Attaches a `Gesture.Pan()/Move()/Wheel()/Scroll()` descriptor to an
- * element, `window`, or an array of elements (each getting its own
- * registration, with `index` merged into every emitted event).
- *
- * `config` is pushed live into the engine whenever it changes — editing it
- * after mount actually takes effect. `handlers` are always kept live too, at
- * effectively zero cost (a plain field replacement, no DOM re-attachment).
- * Array mode diffs registrations by ref *identity*, not array length, so
- * reordering/adding/removing refs doesn't tear down unrelated registrations.
- */
 export function useGesture<T extends HTMLElement>(
   ref: RefObject<T>,
   gesture: GestureDescriptor<any, any>
@@ -71,7 +53,6 @@ export function useGesture(
     return { ...base, handlers: withIndex(base.handlers as Record<string, unknown>, index) };
   };
 
-  // Register on mount, unregister on unmount - single ref/window mode.
   useEffect(() => {
     if (Array.isArray(target)) return;
 
@@ -89,7 +70,6 @@ export function useGesture(
     }
   });
 
-  // Unregister on unmount — single ref/window mode.
   useEffect(() => {
     if (Array.isArray(target)) return;
     return () => {
@@ -100,7 +80,6 @@ export function useGesture(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Keep config/handlers live — single ref/window mode.
   useEffect(() => {
     if (Array.isArray(target)) return;
     const reg = singleRegistrationRef.current;
@@ -110,8 +89,6 @@ export function useGesture(
     reg.updateHandlers(d.handlers);
   });
 
-  // Array mode: diff by ref identity every render (registers new refs,
-  // syncs config/handlers on existing ones, unregisters removed ones).
   useEffect(() => {
     if (!Array.isArray(target)) return;
 
@@ -141,7 +118,6 @@ export function useGesture(
     });
   });
 
-  // Array mode: full teardown on unmount only.
   useEffect(() => {
     if (!Array.isArray(target)) return;
     const map = arrayRegistrationsRef.current;

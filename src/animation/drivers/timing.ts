@@ -76,13 +76,11 @@ class TimingController implements AnimateController {
   }
 
   start() {
-    // If explicit 'from' is provided, always use it (for loops, sequences, etc.)
     if (this.explicitFrom !== undefined) {
       this.fromValue = this.position = this.explicitFrom;
       this.value._internalSet(this.explicitFrom);
       this.startTime = performance.now();
     } else {
-      // Otherwise, try to inherit from previous controller for smooth chaining
       const previous = this.value.getAnimationController();
 
       if (

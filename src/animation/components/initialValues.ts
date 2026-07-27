@@ -11,9 +11,6 @@ export function getStaticStyleValue(style: any, key: string): Primitive | null {
 
   if (typeof value === 'number') return value;
   if (typeof value === 'string') {
-    // Must check for complex CSS values (spaces, functions, colors, gradients)
-    // before attempting to parse as a number, or e.g. "0 0 0 rgba(0,0,0,0)"
-    // would get mangled.
     const complexValuePatterns = [
       /\s/,
       /rgba?\(/,
@@ -67,8 +64,6 @@ export function isNumericProperty(key: string): boolean {
   return false;
 }
 
-// Resolves in priority order: explicit style prop -> inline style -> computed
-// style -> a sensible per-property default.
 export function getInitialValue(
   key: string,
   style: any,
@@ -108,7 +103,6 @@ export function getInitialValue(
       return isNaN(num) ? getDefaultInitialValue(key) : num;
     }
 
-    // 'none' -> '' so a property can animate from "no value" to a value.
     if (trimmed === 'none') {
       const stringProperties = [
         'boxShadow', 'textShadow', 'background', 'backgroundImage',

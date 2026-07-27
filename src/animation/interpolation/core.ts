@@ -136,9 +136,7 @@ export function interpolateString(fromStr: string, toStr: string, p: number): st
     return fromStr || '';
   }
 
-  // Animating to/from an empty string fades through a zero-value version
-  // first (e.g. a box-shadow shrinks to zero-size) rather than switching
-  // abruptly at the threshold.
+  // Fades through a zero-value version rather than switching abruptly at the threshold.
   if (!toStr || toStr.trim() === '') {
     const zeroTo = createZeroValueFromTarget(fromStr);
     if (zeroTo) {
@@ -217,9 +215,7 @@ export function interpolateString(fromStr: string, toStr: string, p: number): st
     return keyword ? `${keyword} ${rest}` : rest;
   }
 
-  // box-shadow/text-shadow can be 3-value (offsetX offsetY blur color) or
-  // 4-value (...+ spread) — normalize both sides to the max value count
-  // (padding a missing spread with 0) before interpolating value-by-value.
+  // Normalizes 3-value/4-value (spread) shadows to the max count before interpolating.
   const fromShadow = parseBoxShadow(fromStr);
   const toShadow = parseBoxShadow(toStr);
   if (fromShadow && toShadow) {
@@ -265,8 +261,7 @@ export function interpolateString(fromStr: string, toStr: string, p: number): st
         ? (normalizedFrom.keyword || normalizedTo.keyword)
         : (normalizedTo.keyword || normalizedFrom.keyword);
 
-      // Only include a 4th (spread) value if either original side actually
-      // had one — don't leak the zero-padding added above into the output.
+      // Don't leak the zero-padding added above into the output.
       const shouldIncludeSpread = maxValues === 4;
       const valuesToOutput = shouldIncludeSpread
         ? interpolatedValues

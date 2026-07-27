@@ -78,17 +78,14 @@ class SpringController implements AnimateController {
   }
 
   start() {
-    // If explicit 'from' is provided, always use it (for loops, sequences, etc.)
     if (this.explicitFrom !== undefined) {
       this.position = this.startPosition = this.explicitFrom;
       this.value._internalSet(this.explicitFrom);
       this.velocity = 0;
       this.startTime = Date.now();
     } else {
-      // Otherwise, try to inherit from previous controller for smooth chaining
-      // (e.g. SortableList / Reorder retargeting mid-flight). Skip cancelled
-      // controllers — their position can lag `value.current` by a frame and
-      // would flash the element back to a stale coordinate.
+      // Skip cancelled controllers when inheriting — their position can lag value.current
+      // by a frame and flash the element back to a stale coordinate.
       const previous = this.value.getAnimationController();
 
       if (previous instanceof SpringController && !previous.isCancelled) {
@@ -120,12 +117,8 @@ class SpringController implements AnimateController {
     this.frameId = requestAnimationFrame(this.animate);
   }
 
-  /**
-   * FLIP layout correction: move the spring's sample point by `delta` so the
-   * visual stays put when the element's layout box jumps underneath it,
-   * without zeroing velocity (which is what caused 1-frame settle hitches
-   * when Reorder cancelled and restarted the spring on every swap).
-   */
+  // Never zero velocity here — that caused 1-frame settle hitches when Reorder
+  // cancelled/restarted the spring on every swap.
   shiftBy(delta: number) {
     if (delta === 0) return;
     this.position += delta;
@@ -180,9 +173,8 @@ class SpringController implements AnimateController {
     const nextVelocity =
       zeta < 1 ? underDampedVelocity : criticallyDampedVelocity;
 
-    // Settle against the *upcoming* sample so we never publish an overshoot
-    // frame and then snap back to the target on the next tick — that 1-frame
-    // flash is exactly the vertical glitch Reorder showed near settle.
+    // Settles against the upcoming sample, not the current one — publishing an overshoot
+    // frame then snapping back was the vertical glitch Reorder showed near settle.
     const isVelocity = Math.abs(nextVelocity) < this.restSpeed;
     const isDisplacement =
       this.stiffness === 0 ||

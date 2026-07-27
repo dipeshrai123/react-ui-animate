@@ -3,14 +3,7 @@ import type { GestureRecognizer, RecognizerContext } from '../engine/GestureReco
 import { computeMovement } from '../engine/PointerTracker';
 import type { BaseGestureConfig, GestureHandlers, MoveEvent } from '../api/Gesture';
 
-/**
- * Continuous pointer tracking, no press required. Fires `onChange` (with
- * `onStart` on the first move of a hover "session") while the pointer moves
- * over the target, `onEnd`/`onFinalize` on `pointerleave`.
- *
- * `movement` is measured from the position of the very first move this
- * recognizer instance ever saw, even across multiple enter/leave cycles.
- */
+// `startPos` is set once and persists across enter/leave cycles — movement is never reset to the current position.
 export class MoveRecognizer implements GestureRecognizer {
   phase: GesturePhase = GesturePhase.UNDETERMINED;
 
@@ -57,7 +50,6 @@ export class MoveRecognizer implements GestureRecognizer {
   }
 
   reset(): void {
-    // Only the recognition phase resets — `startPos` intentionally persists (see class doc).
     this.phase = GesturePhase.UNDETERMINED;
   }
 

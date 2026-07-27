@@ -1,4 +1,3 @@
-// Discriminated by `type` so the engine can pattern-match without instanceof.
 export type GestureType =
   | 'pan'
   | 'move'
@@ -26,9 +25,6 @@ export interface BaseGestureConfig {
   axis?: 'x' | 'y';
 }
 
-// `E` is inferred per gesture kind (e.g. `PanEvent` for `'pan'`). `H` lets a
-// gesture kind use a narrower handlers shape (e.g. Swipe's single terminal
-// `onSwipe`) instead of the default start/change/end/finalize stream.
 export interface GestureDescriptor<E = unknown, H = GestureHandlers<E>> {
   readonly type: GestureType;
   readonly config: BaseGestureConfig;

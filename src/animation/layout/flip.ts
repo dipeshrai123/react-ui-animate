@@ -7,8 +7,6 @@ import { buildAnimation } from '../drivers/builder';
 import type { AnimateAttributes } from '../components/types';
 import { isDescriptor } from '../helpers';
 
-// `flip` and `flipId` each use their own namespace (see apply.ts) so
-// they can coexist on the same element without one overwriting the other.
 export type FlipKeys = {
   tx: string;
   ty: string;
@@ -47,17 +45,6 @@ export type FlipAnimationRefs = {
   initializedRef: MutableRefObject<boolean>;
 };
 
-/**
- * Transition config for `flip` / `flipId`. Prefer the same descriptor
- * helpers used everywhere else in the library — options-only form, since
- * FLIP always settles at identity and there is no target value to declare:
- *
- *   flipOptions={withSpring({ stiffness: 400, damping: 32 })}
- *   flipOptions={withTiming({ duration: 300 })}
- *
- * Raw `SpringOptions` remain supported for backwards compatibility and are
- * treated as an implicit spring.
- */
 export type FlipOptions = Descriptor | SpringOptions;
 
 const DEFAULT_FLIP_SPRING: SpringOptions = {
@@ -66,8 +53,6 @@ const DEFAULT_FLIP_SPRING: SpringOptions = {
   mass: 1,
 };
 
-// Only spring/timing make sense for a FLIP settle-to-identity; anything else
-// falls back to the default flip spring.
 export function resolveFlipTransition(
   flipOptions: FlipOptions | undefined
 ): Descriptor {
@@ -94,11 +79,6 @@ export function resolveFlipTransition(
   };
 }
 
-// Shared FLIP (First, Last, Invert, Play) animation used by both the
-// `flip` prop (diffing an element's own rect across renders) and the
-// `flipId` prop (diffing against a rect recorded by a different element).
-// Jumps to the inverted delta instantly, then animates back to identity
-// via the same `withSpring` / `withTiming` drivers used elsewhere.
 export function runFlipAnimation(
   node: HTMLElement,
   delta: FlipDelta,
@@ -140,9 +120,6 @@ export function runFlipAnimation(
 
   node.style.transformOrigin = 'top left';
 
-  // Compose with whatever else is contributing to this element's transform
-  // (static `style` values, and any `animate`/`hover`/`press`/`view`-driven
-  // AnimateValues already sitting in animateValuesRef) rather than replacing it.
   const render = () => {
     const { style } = propsRef.current;
     node.style.transform = formatTransformString({
@@ -161,9 +138,6 @@ export function runFlipAnimation(
 
   const transition = resolveFlipTransition(flipOptions);
 
-  // Translate channels settle at 0; scale channels settle at 1. Descriptor
-  // `to` (when present) is ignored so options-only forms like
-  // `withTiming({ duration: 300 })` work as flip transitions.
   const controllers = [
     buildAnimation(tx, { ...transition, to: 0 }),
     buildAnimation(ty, { ...transition, to: 0 }),
@@ -174,10 +148,6 @@ export function runFlipAnimation(
   controllers.forEach((ctrl) => ctrl.start());
 }
 
-// Just the fields FLIP actually diffs — plain object rather than a real
-// DOMRect so `measureUntransformedRect` can report document-relative
-// coordinates (see below) without fighting DOMRect's read-only, viewport-
-// relative fields.
 export type MeasuredRect = {
   left: number;
   top: number;
@@ -185,23 +155,9 @@ export type MeasuredRect = {
   height: number;
 };
 
-// Measures `node`'s untransformed layout box. getBoundingClientRect()
-// reflects whatever CSS transform is currently applied (ours or the
-// consumer's own), which would corrupt the measurement — e.g. while a
-// previous flip animation is still in flight (rapid re-triggers), or if a
-// static/animated transform is set via `style`/`animate`. Briefly
-// neutralizing the transform happens entirely within useLayoutEffect, before
-// the browser paints, so it's never visible.
-//
-// getBoundingClientRect() is viewport-relative, so `left`/`top` shift by
-// however much the page has scrolled between two measurements even when the
-// element hasn't actually moved in the document. Comparing two such rects
-// straight (the previous FLIP behavior) bakes that scroll delta into the
-// animation — e.g. scroll down, re-trigger a `flip`/`flipId` change, and
-// the element FLIPs in from the wrong place (or animates when it shouldn't).
-// Adding the current scroll offset converts to document-relative
-// coordinates, which are scroll-invariant, so `diffRects` only ever sees the
-// element's real layout change.
+// Neutralize transform before measuring (getBoundingClientRect reflects it) and add
+// scroll offset for document-relative coords — omitting either reintroduces the FLIP
+// mismeasure-on-scroll/rapid-retrigger bug.
 export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
   const previousTransform = node.style.transform;
   node.style.transform = 'none';
@@ -215,15 +171,9 @@ export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
   };
 }
 
-// True if this element's FLIP pseudo-transform is currently displaced away
-// from identity (0 translate / 1 scale) with no controller actively driving
-// it back — i.e. a previously started FLIP was interrupted (its controllers
-// canceled) without a replacement being started. Used to recover from React
-// StrictMode double-invoking a `flipId` element's mount effects: the
-// simulated "unmount" cancels the just-started spring, and without this
-// check the simulated "remount" would see no rect delta (it's comparing
-// against the rect it just registered for itself) and never resume it,
-// leaving the transform stuck at its initial inverted value.
+// Detects an interrupted FLIP left off-identity with no controller driving it back;
+// needed to recover from StrictMode's double-invoked mount effects, or the transform
+// sticks at its inverted value.
 export function readStrandedDisplacement(
   animateValues: Record<string, AnimateValue<Primitive>>,
   keys: FlipKeys,

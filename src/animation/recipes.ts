@@ -1,9 +1,6 @@
 import { withSpring } from './descriptors';
 import type { AnimateProp } from './components/types';
 
-// Shared spring configs, reused across recipes below (deduped so the
-// minifier can collapse repeated `{ stiffness, damping }` literals into a
-// single shared reference instead of ~40 structurally-identical copies).
 const SOFT = { stiffness: 100, damping: 15 };
 const SCALE = { stiffness: 200, damping: 20 };
 const BOUNCE = { stiffness: 300, damping: 10 };

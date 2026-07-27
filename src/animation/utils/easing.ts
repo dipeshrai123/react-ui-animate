@@ -139,7 +139,6 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
   }
 
   return function BezierEasing(x: number) {
-    // Because JavaScript number are imprecise, we should guarantee the extremes are right.
     if (x === 0 || x === 1) {
       return x;
     }
@@ -147,11 +146,6 @@ function bezier(mX1: number, mY1: number, mX2: number, mY2: number) {
   };
 }
 
-/**
- * This class implements common easing functions. The math is pretty obscure,
- * but this cool website has nice visual illustrations of what they represent:
- * http://xaedes.de/dev/transitions/
- */
 export class Easing {
   static step0(n: number) {
     return n > 0 ? 1 : 0;
@@ -193,16 +187,6 @@ export class Easing {
     return Math.pow(2, 10 * (t - 1));
   }
 
-  /**
-   * A simple elastic interaction, similar to a spring.  Default bounciness
-   * is 1, which overshoots a little bit once.  0 bounciness doesn't overshoot
-   * at all, and bounciness of N > 1 will overshoot about N times.
-   *
-   * Wolfram Plots:
-   *
-   *   http://tiny.cc/elastic_b_1 (default bounciness = 1)
-   *   http://tiny.cc/elastic_b_3 (bounciness = 3)
-   */
   static elastic(bounciness: number = 1): (t: number) => number {
     const p = bounciness * Math.PI;
     return (t) =>
@@ -248,16 +232,10 @@ export class Easing {
     return easing;
   }
 
-  /**
-   * Runs an easing function backwards.
-   */
   static out(easing: (t: number) => number): (t: number) => number {
     return (t) => 1 - easing(1 - t);
   }
 
-  /**
-   * Makes any easing function symmetrical.
-   */
   static inOut(easing: (t: number) => number): (t: number) => number {
     return (t) => {
       if (t < 0.5) {

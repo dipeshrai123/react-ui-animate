@@ -18,11 +18,6 @@ import {
   type MeasuredRect,
 } from './flip';
 
-/**
- * Animates an element's own layout changes across renders (`flip` prop).
- * Measures the untransformed rect each commit; when it differs from the
- * previous measurement, runs a FLIP spring back to identity.
- */
 export function useFlipAnimations(
   nodeRef: RefObject<HTMLElement | null>,
   propsRef: MutableRefObject<AnimateAttributes<HTMLElement>>,
@@ -52,7 +47,6 @@ export function useFlipAnimations(
     hasMeasuredRef.current = true;
     prevRectRef.current = nextRect;
 
-    // Skip the first measurement (mount) and degenerate (hidden) rects
     if (!shouldCompare || !prevRect) return;
     if (nextRect.width === 0 || nextRect.height === 0) return;
 
@@ -75,10 +69,7 @@ export function useFlipAnimations(
   });
 
   useEffect(() => {
-    // Intentionally read `.current` at cleanup time (true unmount, since
-    // deps is []): controllers/unsubs accumulate after mount, so capturing
-    // them at effect-setup time would miss everything added later.
-    /* eslint-disable react-hooks/exhaustive-deps */
+    /* eslint-disable react-hooks/exhaustive-deps -- reads .current at true-unmount cleanup by design */
     return () => {
       controllersRef.current.forEach((ctrl) => ctrl.cancel());
       unsubsRef.current.forEach((unsub) => unsub());

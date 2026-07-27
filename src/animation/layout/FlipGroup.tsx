@@ -6,11 +6,7 @@ export interface FlipGroupProps {
   children?: ReactNode;
 }
 
-// Scopes `flipId` shared-element transitions to this subtree instead of
-// the shared global registry (`src/animation/layout/registry.ts`) — two
-// `FlipGroup`s using the same `flipId` string transition independently
-// instead of cross-transitioning with each other. Elements outside any
-// `FlipGroup` are unaffected and keep using the global registry.
+// Scopes flipId transitions to this subtree — two FlipGroups with the same flipId don't cross-transition.
 export function FlipGroup({ children }: FlipGroupProps) {
   const registryRef = useRef<FlipIdRegistry | null>(null);
   if (!registryRef.current) {

@@ -42,8 +42,6 @@ export function setupUnmountAnimations(
     }
   }
 
-  // Re-apply the full merged style (including the unmount-only AnimateValues
-  // just created above) so every value is actually subscribed to the DOM.
   const mergedStyle: Record<string, any> = { ...style };
   for (const key of Object.keys(animateValues)) {
     mergedStyle[key] = animateValues[key];

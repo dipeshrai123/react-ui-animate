@@ -117,14 +117,7 @@ export function ReorderContextProvider({ children }: ReorderContextProps) {
           }
         }
 
-        // A group's registered container is only as big as its own items
-        // (it doesn't necessarily fill the visual column/row it lives in),
-        // so dropping past the last item — or into a short/empty column —
-        // lands just outside every exact rect. Fall back to matching by
-        // cross-axis band (e.g. still within the column's x-range for a
-        // vertical list), picking whichever candidate is nearest along the
-        // primary axis, instead of finding nothing and letting the drag
-        // fall through to "no group".
+        // Fallback: match by cross-axis band + nearest distance, since a short/empty column's rect won't cover drops past its last item.
         let closestKey: object | undefined;
         let closestDistance = Infinity;
         for (const [key, entry] of groupsRef.current) {
@@ -393,9 +386,7 @@ export function ReorderItem<T>({
     return pitch || ownSize;
   };
 
-  // Raises zIndex for the duration of the settle spring, releasing it only
-  // when the spring completes — keeps a settling item stacked above idle
-  // neighbors instead of racing zIndex reset against the animation.
+  // zIndex stays raised until the settle spring's onComplete, not reset eagerly.
   const settleTo = (target: number) => {
     const base = resolveFlipTransition(transition);
     raiseElevation();
@@ -445,9 +436,7 @@ export function ReorderItem<T>({
       setOffset(lastMovementRef.current + correctionRef.current);
       setCrossOffset(deltaCross);
     } else {
-      // Shift the in-flight spring (preserves velocity) instead of
-      // cancel+restart, which zeroed velocity on every swap and caused a
-      // 1-frame hitch near settle.
+      // shiftBy preserves velocity — cancel+restart zeroed it and caused a settle-hitch on every swap.
       justFlippedRef.current = true;
       if (offset.getAnimationController()?.shiftBy) {
         offset.shiftBy(deltaPrimary);
@@ -483,10 +472,6 @@ export function ReorderItem<T>({
     const shouldMakeRoom =
       isPreviewTarget && myIndex >= (hover.dropIndex as number);
 
-    // Symmetric case: this item's own group is where the drag *started*,
-    // and the dragged item is currently elsewhere (a different group, or a
-    // dead zone outside any group) — preview the source column already
-    // closed around the gap it left, instead of only reflowing at drop.
     const isSourceOfActiveDrag =
       hover.sourceGroupKey === groupKey &&
       hover.groupKey !== groupKey &&
@@ -554,12 +539,6 @@ export function ReorderItem<T>({
         const cross = axis === 'y' ? e.movement.x : e.movement.y;
         lastMovementRef.current = movement;
 
-        // Not just "found a different group" — a dead zone with no group
-        // at all (e.g. below a short column's actual content box, which is
-        // sized to its cards rather than the full visual column) must also
-        // count as "not confidently back in source", or the pointer drifting
-        // through it re-enables the intra-source reorder below and reshuffles
-        // a column the item has already left.
         let notInSourceGroup = false;
 
         if (dndCtx) {
@@ -582,11 +561,6 @@ export function ReorderItem<T>({
           notInSourceGroup = foundKey !== groupKey;
         }
 
-        // Once the pointer is no longer confidently over the source group,
-        // its position elsewhere is tracked by the hover preview (see the
-        // `shouldMakeRoom` effect below) — reordering the source array here
-        // as well would keep reshuffling a column the item has already
-        // visually left.
         if (!notInSourceGroup) {
           const size = sizeRef.current || 1;
           const proposedIndex = clamp(
@@ -609,8 +583,6 @@ export function ReorderItem<T>({
       })
       .onEnd((e) => {
         isDraggingRef.current = false;
-        // Step down from dragging (2) to settling (1); settleTo() below
-        // holds it at 1 until the release spring completes.
         setZPriority((p) => (p > 1 ? 1 : p));
 
         const hoverAtRelease = dndCtx?.hoverRef.current ?? NO_HOVER;
