@@ -53,12 +53,14 @@ interface HoverState {
   groupKey: object | null;
   dropIndex: number | null;
   sourceGroupKey: object | null;
+  sourceValue: unknown;
 }
 
 const NO_HOVER: HoverState = {
   groupKey: null,
   dropIndex: null,
   sourceGroupKey: null,
+  sourceValue: null,
 };
 
 interface ReorderDndContextValue {
@@ -114,14 +116,47 @@ export function ReorderContextProvider({ children }: ReorderContextProps) {
             return key;
           }
         }
-        return undefined;
+
+        // A group's registered container is only as big as its own items
+        // (it doesn't necessarily fill the visual column/row it lives in),
+        // so dropping past the last item — or into a short/empty column —
+        // lands just outside every exact rect. Fall back to matching by
+        // cross-axis band (e.g. still within the column's x-range for a
+        // vertical list), picking whichever candidate is nearest along the
+        // primary axis, instead of finding nothing and letting the drag
+        // fall through to "no group".
+        let closestKey: object | undefined;
+        let closestDistance = Infinity;
+        for (const [key, entry] of groupsRef.current) {
+          const el = entry.containerRef.current;
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+
+          const inCrossAxis =
+            entry.axis === 'y'
+              ? point.x >= rect.left && point.x <= rect.right
+              : point.y >= rect.top && point.y <= rect.bottom;
+          if (!inCrossAxis) continue;
+
+          const distance =
+            entry.axis === 'y'
+              ? Math.max(rect.top - point.y, point.y - rect.bottom, 0)
+              : Math.max(rect.left - point.x, point.x - rect.right, 0);
+
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestKey = key;
+          }
+        }
+        return closestKey;
       },
       setHover: (next) => {
         const prev = hoverRef.current;
         if (
           prev.groupKey === next.groupKey &&
           prev.dropIndex === next.dropIndex &&
-          prev.sourceGroupKey === next.sourceGroupKey
+          prev.sourceGroupKey === next.sourceGroupKey &&
+          prev.sourceValue === next.sourceValue
         ) {
           return;
         }
@@ -448,9 +483,26 @@ export function ReorderItem<T>({
     const shouldMakeRoom =
       isPreviewTarget && myIndex >= (hover.dropIndex as number);
 
+    // Symmetric case: this item's own group is where the drag *started*,
+    // and the dragged item is currently elsewhere (a different group, or a
+    // dead zone outside any group) — preview the source column already
+    // closed around the gap it left, instead of only reflowing at drop.
+    const isSourceOfActiveDrag =
+      hover.sourceGroupKey === groupKey &&
+      hover.groupKey !== groupKey &&
+      hover.sourceValue !== null;
+    const dragOriginIndex = isSourceOfActiveDrag
+      ? values.indexOf(hover.sourceValue as T)
+      : -1;
+    const shouldCloseGap =
+      isSourceOfActiveDrag && dragOriginIndex !== -1 && myIndex > dragOriginIndex;
+
     if (shouldMakeRoom) {
       wasPreviewingRef.current = true;
       setOffset(settleTo(measurePitch()));
+    } else if (shouldCloseGap) {
+      wasPreviewingRef.current = true;
+      setOffset(settleTo(-measurePitch()));
     } else if (wasPreviewingRef.current) {
       wasPreviewingRef.current = false;
       setOffset(settleTo(0));
@@ -461,6 +513,7 @@ export function ReorderItem<T>({
     hover.groupKey,
     hover.dropIndex,
     hover.sourceGroupKey,
+    hover.sourceValue,
     groupKey,
     value,
     values,
@@ -493,30 +546,21 @@ export function ReorderItem<T>({
           groupKey,
           dropIndex: null,
           sourceGroupKey: groupKey,
+          sourceValue: value,
         });
       })
       .onUpdate((e) => {
         const movement = axis === 'y' ? e.movement.y : e.movement.x;
         const cross = axis === 'y' ? e.movement.x : e.movement.y;
         lastMovementRef.current = movement;
-        const size = sizeRef.current || 1;
 
-        const proposedIndex = clamp(
-          Math.round(originIndexRef.current + movement / size),
-          0,
-          values.length - 1
-        );
-
-        if (proposedIndex !== lastIndexRef.current) {
-          const currentIndex = values.indexOf(value);
-          if (currentIndex !== -1) {
-            onReorder(move(values, currentIndex, proposedIndex));
-          }
-          lastIndexRef.current = proposedIndex;
-        }
-
-        setOffset(movement + correctionRef.current);
-        setCrossOffset(cross);
+        // Not just "found a different group" — a dead zone with no group
+        // at all (e.g. below a short column's actual content box, which is
+        // sized to its cards rather than the full visual column) must also
+        // count as "not confidently back in source", or the pointer drifting
+        // through it re-enables the intra-source reorder below and reshuffles
+        // a column the item has already left.
+        let notInSourceGroup = false;
 
         if (dndCtx) {
           const start = dragStartRectRef.current;
@@ -533,8 +577,35 @@ export function ReorderItem<T>({
             groupKey: foundKey,
             dropIndex,
             sourceGroupKey: groupKey,
+            sourceValue: value,
           });
+          notInSourceGroup = foundKey !== groupKey;
         }
+
+        // Once the pointer is no longer confidently over the source group,
+        // its position elsewhere is tracked by the hover preview (see the
+        // `shouldMakeRoom` effect below) — reordering the source array here
+        // as well would keep reshuffling a column the item has already
+        // visually left.
+        if (!notInSourceGroup) {
+          const size = sizeRef.current || 1;
+          const proposedIndex = clamp(
+            Math.round(originIndexRef.current + movement / size),
+            0,
+            values.length - 1
+          );
+
+          if (proposedIndex !== lastIndexRef.current) {
+            const currentIndex = values.indexOf(value);
+            if (currentIndex !== -1) {
+              onReorder(move(values, currentIndex, proposedIndex));
+            }
+            lastIndexRef.current = proposedIndex;
+          }
+        }
+
+        setOffset(movement + correctionRef.current);
+        setCrossOffset(cross);
       })
       .onEnd((e) => {
         isDraggingRef.current = false;

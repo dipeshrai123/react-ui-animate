@@ -720,6 +720,87 @@ describe('Reorder.Context (cross-list drag-and-drop)', () => {
     expect(onReorderB).not.toHaveBeenCalled();
   });
 
+  it('does not keep reordering the source group once the pointer has moved into another group', () => {
+    (
+      HTMLElement.prototype.getBoundingClientRect as jest.Mock
+    ).mockImplementation(function (this: HTMLElement) {
+      if (this.classList.contains('group-a')) return rect(0, 0, 200, 400);
+      if (this.classList.contains('group-b')) return rect(250, 0, 450, 400);
+      const itemPositions: Record<string, [number, number]> = {
+        a1: [0, 0],
+        a2: [0, 60],
+        a3: [0, 120],
+        b1: [250, 0],
+      };
+      const [left, top] = itemPositions[this.textContent ?? ''] ?? [0, 0];
+      return rect(left, top, left + 150, top + 50);
+    });
+
+    function ThreeItemKanbanTest({
+      onReorderA,
+    }: {
+      onReorderA?: (v: string[]) => void;
+    }) {
+      const [a, setA] = useState(['a1', 'a2', 'a3']);
+      const [b, setB] = useState(['b1']);
+      return (
+        <Reorder.Context>
+          <Reorder.Group
+            className="group-a"
+            values={a}
+            onReorder={(next) => {
+              setA(next);
+              onReorderA?.(next);
+            }}
+          >
+            {a.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+          <Reorder.Group className="group-b" values={b} onReorder={setB}>
+            {b.map((v) => (
+              <Reorder.Item key={v} value={v}>
+                {v}
+              </Reorder.Item>
+            ))}
+          </Reorder.Group>
+        </Reorder.Context>
+      );
+    }
+
+    const onReorderA = jest.fn();
+    render(<ThreeItemKanbanTest onReorderA={onReorderA} />);
+
+    const itemA1 = screen.getByText('a1');
+
+    act(() => {
+      // Drag a1 out of group A and into group B (hover only, no drop yet).
+      firePointer(itemA1, 'pointerdown', 0, 0);
+      firePointer(window, 'pointermove', 300, -20);
+    });
+    act(() => {
+      jest.advanceTimersByTime(1000);
+    });
+
+    onReorderA.mockClear();
+
+    act(() => {
+      // Keep moving while still hovering group B — before the fix this
+      // reordered group A's array (a1 past a2/a3) even though a1 had
+      // already visually left it.
+      firePointer(window, 'pointermove', 300, 100);
+    });
+
+    expect(onReorderA).not.toHaveBeenCalled();
+
+    act(() => {
+      firePointer(window, 'pointerup', 300, 100);
+      jest.advanceTimersByTime(1000);
+    });
+  });
+
   it('drops into the middle of a multi-item target group without erroring or losing items', () => {
     let orderB = ['b1', 'b2'];
     (
