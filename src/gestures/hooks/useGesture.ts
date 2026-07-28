@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import { useEffect, useLayoutEffect, useRef, type RefObject } from 'react';
 import { getOrCreateTracker } from '../engine/registry';
 import type { BaseGestureConfig, GestureDescriptor } from '../api/Gesture';
 
@@ -80,7 +80,7 @@ export function useGesture(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (Array.isArray(target)) return;
     const reg = singleRegistrationRef.current;
     if (!reg) return;
@@ -89,7 +89,7 @@ export function useGesture(
     reg.updateHandlers(d.handlers);
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!Array.isArray(target)) return;
 
     const map = arrayRegistrationsRef.current;

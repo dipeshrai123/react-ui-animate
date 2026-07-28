@@ -117,7 +117,6 @@ export function ReorderContextProvider({ children }: ReorderContextProps) {
           }
         }
 
-        // Fallback: match by cross-axis band + nearest distance, since a short/empty column's rect won't cover drops past its last item.
         let closestKey: object | undefined;
         let closestDistance = Infinity;
         for (const [key, entry] of groupsRef.current) {
@@ -258,7 +257,7 @@ export function ReorderGroup<T>({
     <ReorderContext.Provider value={contextValue as ReorderContextValue}>
       <div
         ref={containerRef}
-        style={style}
+        style={{ position: 'relative', ...style }}
         className={className}
         data-reorder-drop-active={
           dndCtx && hover.groupKey === groupKey ? 'true' : undefined
@@ -323,18 +322,19 @@ export function ReorderItem<T>({
     []
   );
 
-  // zIndex tier: 0 normal, 1 settling, 2 actively dragged.
   const [zPriority, setZPriority] = useState<0 | 1 | 2>(0);
-  const elevationCountRef = useRef(0);
+  const settlingAxesRef = useRef({ offset: false, cross: false });
 
-  const raiseElevation = () => {
-    elevationCountRef.current += 1;
+  const raiseElevation = (axis: 'offset' | 'cross') => {
+    settlingAxesRef.current[axis] = true;
     setZPriority((p) => (p < 1 ? 1 : p));
   };
 
-  const releaseElevation = () => {
-    elevationCountRef.current = Math.max(0, elevationCountRef.current - 1);
-    if (elevationCountRef.current === 0) setZPriority(0);
+  const releaseElevation = (axis: 'offset' | 'cross') => {
+    settlingAxesRef.current[axis] = false;
+    if (!settlingAxesRef.current.offset && !settlingAxesRef.current.cross) {
+      setZPriority((p) => (p > 1 ? p : 0));
+    }
   };
 
   const isDraggingRef = useRef(false);
@@ -386,15 +386,30 @@ export function ReorderItem<T>({
     return pitch || ownSize;
   };
 
-  // zIndex stays raised until the settle spring's onComplete, not reset eagerly.
-  const settleTo = (target: number) => {
+  const settleTo = (target: number, axis: 'offset' | 'cross') => {
     const base = resolveFlipTransition(transition);
-    raiseElevation();
+    raiseElevation(axis);
     return {
       ...base,
       to: target,
-      options: { ...base.options, onComplete: releaseElevation },
+      options: { ...base.options, onComplete: () => releaseElevation(axis) },
     };
+  };
+
+  const applyShiftAndSettle = (deltaPrimary: number, deltaCross: number) => {
+    justFlippedRef.current = true;
+    if (offset.getAnimationController()?.shiftBy) {
+      offset.shiftBy(deltaPrimary);
+    } else {
+      setOffset((offset.current as number) + deltaPrimary);
+    }
+    if (crossOffset.getAnimationController()?.shiftBy) {
+      crossOffset.shiftBy(deltaCross);
+    } else {
+      setCrossOffset((crossOffset.current as number) + deltaCross);
+    }
+    setOffset(settleTo(0, 'offset'));
+    setCrossOffset(settleTo(0, 'cross'));
   };
 
   useLayoutEffect(() => {
@@ -436,20 +451,7 @@ export function ReorderItem<T>({
       setOffset(lastMovementRef.current + correctionRef.current);
       setCrossOffset(deltaCross);
     } else {
-      // shiftBy preserves velocity — cancel+restart zeroed it and caused a settle-hitch on every swap.
-      justFlippedRef.current = true;
-      if (offset.getAnimationController()?.shiftBy) {
-        offset.shiftBy(deltaPrimary);
-      } else {
-        setOffset((offset.current as number) + deltaPrimary);
-      }
-      if (crossOffset.getAnimationController()?.shiftBy) {
-        crossOffset.shiftBy(deltaCross);
-      } else {
-        setCrossOffset((crossOffset.current as number) + deltaCross);
-      }
-      setOffset(settleTo(0));
-      setCrossOffset(settleTo(0));
+      applyShiftAndSettle(deltaPrimary, deltaCross);
     }
   });
 
@@ -484,13 +486,13 @@ export function ReorderItem<T>({
 
     if (shouldMakeRoom) {
       wasPreviewingRef.current = true;
-      setOffset(settleTo(measurePitch()));
+      setOffset(settleTo(measurePitch(), 'offset'));
     } else if (shouldCloseGap) {
       wasPreviewingRef.current = true;
-      setOffset(settleTo(-measurePitch()));
+      setOffset(settleTo(-measurePitch(), 'offset'));
     } else if (wasPreviewingRef.current) {
       wasPreviewingRef.current = false;
-      setOffset(settleTo(0));
+      setOffset(settleTo(0, 'offset'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -621,10 +623,10 @@ export function ReorderItem<T>({
             );
           }
         } else {
-          setOffset(settleTo(0));
+          setOffset(settleTo(0, 'offset'));
         }
 
-        setCrossOffset(settleTo(0));
+        setCrossOffset(settleTo(0, 'cross'));
         dndCtx?.setHover(NO_HOVER);
       })
   );
