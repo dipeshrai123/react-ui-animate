@@ -12,10 +12,10 @@ interface DecayOptions extends AnimateHooks {
 }
 
 class DecayController implements AnimateController {
-  private startTime: number;
-  private from: number;
-  private frameId: number;
-  private position: number;
+  private startTime!: number;
+  private from!: number;
+  private frameId!: number;
+  private position!: number;
   private readonly restSpeed = 0.01;
   private isPaused = false;
   private isCancelled = false;

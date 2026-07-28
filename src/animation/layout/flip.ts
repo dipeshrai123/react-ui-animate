@@ -96,10 +96,10 @@ export function runFlipAnimation(
   const animateValues = animateValuesRef.current;
 
   if (!initializedRef.current) {
-    animateValues[keys.tx] = new AnimateValue(0);
-    animateValues[keys.ty] = new AnimateValue(0);
-    animateValues[keys.sx] = new AnimateValue(1);
-    animateValues[keys.sy] = new AnimateValue(1);
+    animateValues[keys.tx] = new AnimateValue<Primitive>(0);
+    animateValues[keys.ty] = new AnimateValue<Primitive>(0);
+    animateValues[keys.sx] = new AnimateValue<Primitive>(1);
+    animateValues[keys.sy] = new AnimateValue<Primitive>(1);
     initializedRef.current = true;
   }
 

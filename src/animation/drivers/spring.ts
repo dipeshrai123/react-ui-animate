@@ -57,9 +57,9 @@ function withInterpolation(
 class SpringController implements AnimateController {
   private velocity = 0;
   private frameId!: number;
-  private startTime: number;
-  private position: number;
-  private startPosition: number;
+  private startTime!: number;
+  private position!: number;
+  private startPosition!: number;
   private readonly restDisplacement = 0.001;
   private readonly restSpeed = 0.001;
   private isPaused = false;

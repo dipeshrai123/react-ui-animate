@@ -55,10 +55,10 @@ function withInterpolation(
 }
 
 class TimingController implements AnimateController {
-  private startTime: number;
-  private frameId: number;
-  private fromValue: number;
-  private position: number;
+  private startTime!: number;
+  private frameId!: number;
+  private fromValue!: number;
+  private position!: number;
   private isPaused = false;
   private isCancelled = false;
   private pausedAt: number | null = null;
