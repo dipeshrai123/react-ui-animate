@@ -11,7 +11,7 @@ describe('resolveFlipTransition', () => {
     expect(resolveFlipTransition(undefined)).toEqual({
       type: 'spring',
       to: 0,
-      options: { stiffness: 500, damping: 40, mass: 1 },
+      options: { stiffness: 500, damping: 50, mass: 1 },
     });
   });
 

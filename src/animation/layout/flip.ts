@@ -49,7 +49,7 @@ export type FlipOptions = Descriptor | SpringOptions;
 
 const DEFAULT_FLIP_SPRING: SpringOptions = {
   stiffness: 500,
-  damping: 40,
+  damping: 50,
   mass: 1,
 };
 
