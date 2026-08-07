@@ -56,6 +56,11 @@ export class ContinuousGestureBuilder<E> implements GestureDescriptor<E> {
     return this;
   }
 
+  onFinalize(fn: (e: E) => void): this {
+    this.handlers = { ...this.handlers, onFinalize: fn };
+    return this;
+  }
+
   enabled(v: boolean): this {
     this.config = { ...this.config, enabled: v };
     return this;

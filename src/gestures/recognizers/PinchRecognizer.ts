@@ -111,6 +111,9 @@ export class PinchRecognizer implements GestureRecognizer {
       target: this.target as HTMLElement,
       cancel: () => {
         this.phase = GesturePhase.CANCELLED;
+        const evt = this.buildEvent(e, pair);
+        this.handlers.onEnd?.(evt);
+        this.handlers.onFinalize?.(evt);
         this.reset();
       },
     };

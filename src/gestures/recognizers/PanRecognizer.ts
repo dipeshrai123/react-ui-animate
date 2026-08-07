@@ -126,7 +126,14 @@ export class PanRecognizer implements GestureRecognizer {
       event: e,
       target: this.target as HTMLElement,
       cancel: () => {
+        if (this.captured && this.target) {
+          this.target.releasePointerCapture(e.pointerId);
+          this.captured = false;
+        }
         this.phase = GesturePhase.CANCELLED;
+        const evt = this.buildEvent(e, ctx);
+        this.handlers.onEnd?.(evt);
+        this.handlers.onFinalize?.(evt);
         this.reset();
       },
     };
