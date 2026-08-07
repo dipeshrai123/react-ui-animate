@@ -15,10 +15,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withDelay Descriptor"
       description="Delay animations in sequences — use withDelay inside withSequence to add pauses between animations"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Basic Delay in Sequence" description="Waits 500ms, then fades in">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -42,7 +43,7 @@ const Example: React.FC = () => {
         title="Multiple Delays in Sequence"
         description="Moves right, delays, moves further, delays, returns"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -69,7 +70,7 @@ const Example: React.FC = () => {
         title="Delay Between Different Animation Types"
         description="Spring animation, then delay, then timing/spring back"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -130,7 +131,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Long Delay" description="Waits 1 second before moving">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

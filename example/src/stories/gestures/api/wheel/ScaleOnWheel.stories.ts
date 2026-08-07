@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ScaleOnWheel';
 
 const meta = {
-  title: 'Gestures/Wheel/Scale on Wheel',
+  title: 'Gestures/API/Wheel/Scale on Wheel',
   component: Example,
   parameters: {
     layout: 'fullscreen',

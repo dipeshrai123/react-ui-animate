@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Reorder } from 'react-ui-animate';
+import { theme } from '../../animations/shared';
 
 interface Card {
   id: string;
@@ -22,7 +23,7 @@ const INITIAL_COLUMNS: Columns = {
 
 const COLUMN_META: Record<keyof Columns, { title: string; color: string }> = {
   todo: { title: 'To Do', color: '#9ca3af' },
-  inProgress: { title: 'In Progress', color: '#3399ff' },
+  inProgress: { title: 'In Progress', color: theme.color.accent },
   done: { title: 'Done', color: '#22c55e' },
 };
 
@@ -30,7 +31,7 @@ const GripIcon = () => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
     {[4, 8, 12].map((y) =>
       [5, 11].map((x) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r={1.3} fill="#9ca3af" />
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={1.3} fill={theme.color.textFaint} />
       ))
     )}
   </svg>
@@ -46,9 +47,9 @@ const Example = () => {
   const [columns, setColumns] = useState(INITIAL_COLUMNS);
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 10 }}>Kanban board</h1>
-      <p style={{ marginBottom: 30, color: '#666', maxWidth: 560 }}>
+    <div style={{ padding: 40, fontFamily: theme.font.sans, color: theme.color.text }}>
+      <h1 style={{ marginBottom: 10, fontSize: 26, fontWeight: 700 }}>Kanban board</h1>
+      <p style={{ marginBottom: 30, color: theme.color.textMuted, maxWidth: 560, lineHeight: 1.6 }}>
         Drag a card by its grip icon — within a column to reorder it, or into
         a different column to move it there. Powered by{' '}
         <code>Reorder.Context</code> wrapping three <code>Reorder.Group</code>
@@ -56,7 +57,17 @@ const Example = () => {
       </p>
 
       <Reorder.Context>
-        <div style={{ display: 'flex', gap: 20, alignItems: 'flex-start' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: 20,
+            alignItems: 'flex-start',
+            padding: 20,
+            backgroundColor: theme.color.surface,
+            border: `1px solid ${theme.color.border}`,
+            borderRadius: theme.radius.lg,
+          }}
+        >
           {(Object.keys(columns) as Array<keyof Columns>).map((key) => {
             const { title, color } = COLUMN_META[key];
             return (
@@ -65,7 +76,7 @@ const Example = () => {
                 style={{
                   flex: 1,
                   minWidth: 220,
-                  backgroundColor: '#f8fafc',
+                  backgroundColor: theme.color.surfaceRaised,
                   borderRadius: 12,
                   padding: 12,
                 }}
@@ -78,7 +89,7 @@ const Example = () => {
                     marginBottom: 12,
                     fontSize: 13,
                     fontWeight: 700,
-                    color: '#374151',
+                    color: theme.color.textMuted,
                     textTransform: 'uppercase',
                     letterSpacing: 0.4,
                   }}
@@ -92,7 +103,7 @@ const Example = () => {
                     }}
                   />
                   {title}
-                  <span style={{ color: '#9ca3af', fontWeight: 500 }}>
+                  <span style={{ color: theme.color.textFaint, fontWeight: 500 }}>
                     {columns[key].length}
                   </span>
                 </div>
@@ -117,11 +128,10 @@ const Example = () => {
                         gap: 8,
                         padding: '10px 12px',
                         borderRadius: 8,
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                        backgroundColor: theme.color.surface,
+                        border: `1px solid ${theme.color.border}`,
                         fontSize: 13,
-                        color: '#1f2937',
+                        color: theme.color.text,
                       }}
                     >
                       <Reorder.Handle style={{ display: 'flex' }}>

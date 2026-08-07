@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ZoomOnWheel';
 
 const meta = {
-  title: 'Gestures/Wheel/Zoom on Wheel',
+  title: 'Gestures/API/Wheel/Zoom on Wheel',
   component: Example,
   parameters: {
     layout: 'fullscreen',

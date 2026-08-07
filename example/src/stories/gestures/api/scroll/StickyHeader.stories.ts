@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './StickyHeader';
 
 const meta = {
-  title: 'Gestures/Scroll/Sticky Header',
+  title: 'Gestures/API/Scroll/Sticky Header',
   component: Example,
   parameters: {
     layout: 'fullscreen',

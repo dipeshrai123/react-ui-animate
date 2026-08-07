@@ -22,6 +22,7 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="Utility"
       title="Easing Functions"
       description="Different easing functions for custom animation curves"
       onRestart={() => setTrigger((prev) => prev + 1)}

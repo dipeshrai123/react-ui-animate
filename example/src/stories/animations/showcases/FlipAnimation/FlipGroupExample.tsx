@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, FlipGroup } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, theme } from '../../shared';
 
 const TABS = ['One', 'Two', 'Three'];
 
@@ -9,7 +9,7 @@ function TabRow({ groupLabel }: { groupLabel: string }) {
 
   return (
     <div>
-      <p style={{ margin: '0 0 8px', fontSize: 12, color: '#999' }}>
+      <p style={{ margin: '0 0 8px', fontSize: 12, color: theme.color.textFaint }}>
         {groupLabel}
       </p>
       <div
@@ -18,7 +18,7 @@ function TabRow({ groupLabel }: { groupLabel: string }) {
           display: 'inline-flex',
           gap: 4,
           padding: 4,
-          backgroundColor: '#f0f0f0',
+          backgroundColor: theme.color.surfaceRaised,
           borderRadius: 10,
         }}
       >
@@ -33,7 +33,7 @@ function TabRow({ groupLabel }: { groupLabel: string }) {
               border: 'none',
               background: 'transparent',
               cursor: 'pointer',
-              color: active === index ? 'white' : '#333',
+              color: active === index ? '#0a0a0d' : theme.color.textMuted,
               zIndex: 1,
             }}
           >
@@ -43,7 +43,7 @@ function TabRow({ groupLabel }: { groupLabel: string }) {
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  backgroundColor: '#3399ff',
+                  backgroundColor: theme.color.accent,
                   borderRadius: 7,
                   zIndex: -1,
                 }}

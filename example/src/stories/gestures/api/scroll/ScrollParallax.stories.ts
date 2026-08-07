@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ScrollParallax';
 
 const meta = {
-  title: 'Gestures/Scroll/Scroll Parallax',
+  title: 'Gestures/API/Scroll/Scroll Parallax',
   component: Example,
   parameters: {
     layout: 'fullscreen',

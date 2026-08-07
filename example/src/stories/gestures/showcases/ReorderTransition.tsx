@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Reorder, withSpring, withTiming } from 'react-ui-animate';
 import type { FlipOptions } from 'react-ui-animate';
+import { theme } from '../../animations/shared';
 
 const INITIAL_ITEMS = ['Design review', 'Write tests', 'Ship the release', 'Update docs'];
 
@@ -28,15 +29,17 @@ const Example = () => {
   const [preset, setPreset] = useState<keyof typeof PRESETS>('snappy');
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 10 }}>Reorder — custom transition</h1>
-      <p style={{ marginBottom: 20, color: '#666', maxWidth: 520 }}>
+    <div style={{ padding: 40, fontFamily: theme.font.sans, color: theme.color.text }}>
+      <h1 style={{ marginBottom: 10, fontSize: 26, fontWeight: 700 }}>
+        Reorder — custom transition
+      </h1>
+      <p style={{ marginBottom: 20, color: theme.color.textMuted, maxWidth: 520, lineHeight: 1.6 }}>
         <code>transition</code> on <code>Reorder.Group</code> controls how a
         released item settles and how displaced neighbors spring out of the
         way — same descriptor helpers as <code>animate</code>/
         <code>flipOptions</code> elsewhere in the library (
         <code>withSpring</code>, <code>withTiming</code>, or a raw spring
-        config object).
+        config object). Try a preset, then drag an item.
       </p>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
@@ -47,9 +50,9 @@ const Example = () => {
             style={{
               padding: '8px 14px',
               borderRadius: 8,
-              border: '2px solid #3399ff',
-              backgroundColor: preset === key ? '#3399ff' : 'white',
-              color: preset === key ? 'white' : '#3399ff',
+              border: `1px solid ${theme.color.accent}`,
+              backgroundColor: preset === key ? theme.color.accent : 'transparent',
+              color: preset === key ? '#0a0a0d' : theme.color.accent,
               fontSize: 13,
               fontWeight: 600,
               cursor: 'pointer',
@@ -78,12 +81,11 @@ const Example = () => {
             style={{
               padding: '16px 20px',
               borderRadius: 10,
-              backgroundColor: '#f0f9ff',
-              border: '2px solid #3399ff',
+              backgroundColor: theme.color.accentSoft,
+              border: `1px solid ${theme.color.accent}`,
               fontSize: 15,
               fontWeight: 500,
-              color: '#1a1a1a',
-              boxShadow: '0 2px 8px rgba(51, 153, 255, 0.15)',
+              color: theme.color.text,
             }}
           >
             {item}

@@ -9,10 +9,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withSequence Descriptor"
       description="Run animations one after another in sequence"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Basic Sequence" description="Moves right, then further right, then back">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -34,7 +35,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Mixed Animation Types">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -60,7 +61,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Complex Sequence">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -90,7 +91,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="With Callbacks" description="Check the console for callbacks">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

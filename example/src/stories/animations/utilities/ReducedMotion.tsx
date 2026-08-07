@@ -7,7 +7,7 @@ import {
   setReducedMotion,
   isReducedMotionEnabled,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -21,6 +21,7 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="Utility"
       title="Reduced Motion"
       description="timing, spring, and decay (and everything built on them) check the OS-level prefers-reduced-motion setting and, when enabled, resolve straight to the animation's end state instead of animating. Use setReducedMotion to override the media query, and isReducedMotionEnabled to read the current effective value."
       onRestart={() => setTrigger((prev) => prev + 1)}
@@ -30,51 +31,30 @@ const Example: React.FC = () => {
         description="Force reduced motion on or off, or fall back to the OS setting"
       >
         <ExampleCard>
-          <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            <button
+          <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
+            <Button
+              variant={override === 'os' ? 'primary' : 'secondary'}
+              accent="#3399ff"
               onClick={() => applyOverride('os')}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: override === 'os' ? '#3399ff' : '#e0e0e0',
-                color: override === 'os' ? 'white' : '#333',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-              }}
             >
               Follow OS setting
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={override === 'on' ? 'primary' : 'secondary'}
+              accent="#ff6b6b"
               onClick={() => applyOverride('on')}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: override === 'on' ? '#ff6b6b' : '#e0e0e0',
-                color: override === 'on' ? 'white' : '#333',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-              }}
             >
               Force reduced motion ON
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={override === 'off' ? 'primary' : 'secondary'}
+              accent="#51cf66"
               onClick={() => applyOverride('off')}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: override === 'off' ? '#51cf66' : '#e0e0e0',
-                color: override === 'off' ? 'white' : '#333',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-              }}
             >
               Force reduced motion OFF
-            </button>
+            </Button>
           </div>
-          <p style={{ marginBottom: 20, fontSize: 14, color: '#666' }}>
+          <p style={{ marginBottom: 20, fontSize: 14, color: '#9a9aa4' }}>
             <code>isReducedMotionEnabled()</code> currently returns{' '}
             <strong>{String(isReducedMotionEnabled())}</strong>
           </p>
@@ -90,22 +70,15 @@ const Example: React.FC = () => {
             }}
           />
           <div style={{ marginTop: 20 }}>
-            <button
+            <Button
+              variant="primary"
+              accent="#845ef7"
               onClick={() => setX(withSpring(x.current === 0 ? 250 : 0))}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#845ef7',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-              }}
             >
               Toggle with withSpring
-            </button>
+            </Button>
           </div>
-          <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+          <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
             When reduced motion is on, the box jumps straight to its target
             position instead of animating
           </p>
@@ -130,7 +103,7 @@ const Example: React.FC = () => {
               translateX: withTiming(200, { duration: 600 }),
             }}
           />
-          <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+          <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
             Force reduced motion ON above, then hit "Restart Animations" —
             the box jumps to 200px immediately instead of sliding
           </p>

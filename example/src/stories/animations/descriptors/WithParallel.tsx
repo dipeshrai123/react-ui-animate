@@ -7,7 +7,7 @@ import {
   withTiming,
   withDecay,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -26,6 +26,7 @@ const Example: React.FC = () => {
           property springs while another tweens.
         </>
       }
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section
@@ -47,9 +48,9 @@ const Example: React.FC = () => {
               position: 'relative',
               width: 400,
               height: 200,
-              border: '2px solid #ddd',
+              border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 8,
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#131317',
             }}
           >
             <animate.div
@@ -92,9 +93,9 @@ const Example: React.FC = () => {
               position: 'relative',
               width: 400,
               height: 200,
-              border: '2px solid #ddd',
+              border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 8,
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#131317',
               marginBottom: 20,
             }}
           >
@@ -112,7 +113,9 @@ const Example: React.FC = () => {
               }}
             />
           </div>
-          <button
+          <Button
+            variant="primary"
+            accent="#845ef7"
             onClick={() =>
               setPos(
                 withParallel({
@@ -121,18 +124,9 @@ const Example: React.FC = () => {
                 })
               )
             }
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              backgroundColor: '#845ef7',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-            }}
           >
             Spring x, Decay y — in parallel
-          </button>
+          </Button>
         </ExampleCard>
       </Section>
     </ExampleLayout>

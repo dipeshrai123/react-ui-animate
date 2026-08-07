@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { makeAnimated, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, theme } from '../shared';
 
 // Create custom animated components
 const AnimatedButton = makeAnimated('button');
@@ -13,21 +13,23 @@ const Example: React.FC = () => {
   return (
     <ExampleLayout
       title="makeAnimated"
-      description="Create custom animated components from any HTML element"
+      tag="Component"
+      description="Turn any HTML tag — button, section, span, or your own component — into an animatable one with a single factory call."
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
-      <Section title="Animated Button">
-        <ExampleCard>
+      <Section title="Animated Button" description="Buttons stay fully interactive while animating.">
+        <ExampleCard align="center">
           <AnimatedButton
             key={trigger}
             onClick={() => setTrigger((prev) => prev + 1)}
             style={{
               padding: '12px 24px',
-              fontSize: 16,
-              backgroundColor: '#3399ff',
-              color: 'white',
+              fontSize: 15,
+              fontWeight: 600,
+              backgroundColor: theme.color.accent,
+              color: '#0a0a0d',
               border: 'none',
-              borderRadius: 8,
+              borderRadius: theme.radius.sm,
               cursor: 'pointer',
               scale: 1,
             }}
@@ -44,13 +46,15 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Animated Section">
-        <ExampleCard>
+        <ExampleCard align="center">
           <AnimatedSection
             key={trigger}
             style={{
               padding: 20,
-              backgroundColor: '#f0f0f0',
-              borderRadius: 8,
+              backgroundColor: theme.color.surfaceRaised,
+              border: `1px solid ${theme.color.border}`,
+              borderRadius: theme.radius.sm,
+              color: theme.color.text,
               opacity: 0,
               translateY: 20,
             }}
@@ -65,7 +69,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Animated Span">
-        <ExampleCard>
+        <ExampleCard align="center">
           <AnimatedSpan
             key={trigger}
             style={{
@@ -85,7 +89,11 @@ const Example: React.FC = () => {
         </ExampleCard>
       </Section>
 
-      <Section title="Multiple Custom Components">
+      <Section
+        title="Multiple Custom Components"
+        description="Every instance created by makeAnimated animates independently."
+      >
+        <ExampleCard>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <AnimatedButton
             key={`btn1-${trigger}`}
@@ -139,6 +147,7 @@ const Example: React.FC = () => {
             Button 3
           </AnimatedButton>
         </div>
+        </ExampleCard>
       </Section>
     </ExampleLayout>
   );

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './TextRevealWordByWord';
 
 const meta = {
-  title: 'Animations/Showcases/TextRevealWordByWord',
+  title: 'Animations/Showcases/Text Reveal Word By Word',
   component: Example,
 } satisfies Meta<typeof Example>;
 

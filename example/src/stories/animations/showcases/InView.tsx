@@ -41,10 +41,7 @@ const features: Feature[] = [
   },
 ];
 
-const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
-  feature,
-  index,
-}) => {
+const FeatureCard: React.FC<{ feature: Feature }> = ({ feature }) => {
   return (
     <animate.div
       style={{
@@ -112,10 +109,9 @@ const FeatureCard: React.FC<{ feature: Feature; index: number }> = ({
   );
 };
 
-const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
+const StatCard: React.FC<{ value: number; label: string }> = ({
   value,
   label,
-  delay = 0,
 }) => {
   return (
     <animate.div
@@ -162,10 +158,7 @@ const StatCard: React.FC<{ value: number; label: string; delay?: number }> = ({
   );
 };
 
-const TextReveal: React.FC<{ text: string; delay?: number }> = ({
-  text,
-  delay = 0,
-}) => {
+const TextReveal: React.FC<{ text: string }> = ({ text }) => {
   return (
     <animate.h2
       style={{
@@ -301,8 +294,8 @@ const Example: React.FC = () => {
             marginBottom: 80,
           }}
         >
-          {features.map((feature, index) => (
-            <FeatureCard key={feature.id} feature={feature} index={index} />
+          {features.map((feature) => (
+            <FeatureCard key={feature.id} feature={feature} />
           ))}
         </div>
       </div>

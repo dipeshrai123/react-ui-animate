@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout, theme } from '../../animations/shared';
 
 const START = { x: 60, y: 110 };
 
@@ -80,9 +80,9 @@ function Example() {
           position: 'relative',
           width: '100%',
           height: 260,
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
           overflow: 'hidden',
         }}
       >

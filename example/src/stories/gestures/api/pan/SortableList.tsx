@@ -78,13 +78,13 @@ const Example = () => {
         width: '100%',
         minHeight: '100vh',
         padding: 40,
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#0a0a0d',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
       }}
     >
-      <h1 style={{ marginBottom: 32, fontSize: 32, fontWeight: 700, color: '#333' }}>
+      <h1 style={{ marginBottom: 32, fontSize: 32, fontWeight: 700, color: '#f4f4f6' }}>
         Sortable Task List
       </h1>
       <div
@@ -104,7 +104,7 @@ const Example = () => {
               left: 0,
               right: 0,
               top: 0,
-              backgroundColor: 'white',
+              backgroundColor: '#16161c',
               borderRadius: 12,
               padding: 20,
               boxShadow: shadows[i],
@@ -121,7 +121,7 @@ const Example = () => {
                   width: 24,
                   height: 24,
                   borderRadius: 6,
-                  border: '2px solid #ddd',
+                  border: '2px solid #333338',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -133,7 +133,7 @@ const Example = () => {
               <span
                 style={{
                   fontSize: 16,
-                  color: task.completed ? '#999' : '#333',
+                  color: task.completed ? '#6c6c76' : '#f4f4f6',
                   textDecoration: task.completed ? 'line-through' : 'none',
                   flex: 1,
                 }}
@@ -147,7 +147,7 @@ const Example = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: '#999',
+                  color: '#6c6c76',
                   cursor: 'grab',
                 }}
               >
@@ -157,7 +157,7 @@ const Example = () => {
           </animate.div>
         ))}
       </div>
-      <p style={{ marginTop: 24, color: '#666', fontSize: 14 }}>
+      <p style={{ marginTop: 24, color: '#9a9aa4', fontSize: 14 }}>
         Drag items up or down to reorder them
       </p>
     </div>

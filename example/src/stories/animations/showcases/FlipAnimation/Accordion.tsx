@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate } from 'react-ui-animate';
-import { ExampleLayout } from '../../shared';
+import { ExampleLayout, theme } from '../../shared';
 
 interface FAQItem {
   id: number;
@@ -68,8 +68,8 @@ const Example = () => {
               flip
               style={{
                 borderRadius: 12,
-                border: `2px solid ${isOpen ? '#3399ff' : '#e5e7eb'}`,
-                backgroundColor: isOpen ? '#f0f9ff' : '#fff',
+                border: `1px solid ${isOpen ? theme.color.accent : theme.color.border}`,
+                backgroundColor: isOpen ? theme.color.accentSoft : theme.color.surface,
                 overflow: 'hidden',
               }}
             >
@@ -88,7 +88,7 @@ const Example = () => {
                   gap: 16,
                   fontSize: 15,
                   fontWeight: 600,
-                  color: '#1a1a1a',
+                  color: theme.color.text,
                 }}
               >
                 {item.question}
@@ -98,8 +98,8 @@ const Example = () => {
                     width: 22,
                     height: 22,
                     borderRadius: '50%',
-                    backgroundColor: isOpen ? '#3399ff' : '#f1f5f9',
-                    color: isOpen ? '#fff' : '#666',
+                    backgroundColor: isOpen ? theme.color.accent : theme.color.surfaceRaised,
+                    color: isOpen ? '#0a0a0d' : theme.color.textMuted,
                     fontSize: 16,
                     lineHeight: '22px',
                     textAlign: 'center',
@@ -115,7 +115,7 @@ const Example = () => {
                   style={{
                     padding: '0 20px 18px',
                     fontSize: 14,
-                    color: '#555',
+                    color: theme.color.textMuted,
                     lineHeight: 1.6,
                   }}
                 >

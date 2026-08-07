@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { animate, useValue, animateTo, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button, theme } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -29,6 +29,7 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="Utility"
       title="animateTo Utility"
       description="Wraps a descriptor's onComplete callback in a Promise, so animations on different AnimateValues can be sequenced with ordinary async/await instead of only within a single withSequence chain. The same primitive is useful in tests: await animateTo(...) instead of hand-rolling jest.advanceTimersByTime plus manual assertions."
       onRestart={() => setTrigger((prev) => prev + 1)}
@@ -43,9 +44,9 @@ const Example: React.FC = () => {
               position: 'relative',
               width: 400,
               height: 140,
-              border: '2px solid #ddd',
+              border: '1px solid rgba(255,255,255,0.12)',
               borderRadius: 8,
-              backgroundColor: '#f5f5f5',
+              backgroundColor: '#131317',
               marginBottom: 20,
             }}
           >
@@ -65,30 +66,20 @@ const Example: React.FC = () => {
               }}
             />
           </div>
-          <button
-            onClick={runSequence}
-            disabled={running}
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              backgroundColor: running ? '#aac9ec' : '#3399ff',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: running ? 'default' : 'pointer',
-            }}
-          >
+          <Button variant="primary" disabled={running} onClick={runSequence} style={{ opacity: running ? 0.6 : 1 }}>
             {running ? 'Running…' : 'Run Sequence'}
-          </button>
+          </Button>
           <pre
             style={{
               marginTop: 16,
               fontSize: 12,
-              color: '#666',
-              backgroundColor: '#fafafa',
+              color: theme.color.textMuted,
+              backgroundColor: theme.color.surfaceRaised,
+              border: `1px solid ${theme.color.border}`,
               padding: 12,
-              borderRadius: 6,
+              borderRadius: theme.radius.sm,
               overflowX: 'auto',
+              fontFamily: theme.font.mono,
             }}
           >
 {`await animateTo(setX, withSpring(200));

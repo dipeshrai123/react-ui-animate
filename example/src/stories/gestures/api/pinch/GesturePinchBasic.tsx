@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../../animations/shared';
+import { ExampleLayout, theme } from '../../../animations/shared';
 
 function Example() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -27,6 +27,7 @@ function Example() {
 
   return (
     <ExampleLayout
+      tag="Pinch"
       title="Gesture.Pinch()"
       description="Two-finger pinch/zoom. scale is the pointer-pair distance divided by the distance when the gesture began — multiply it onto whatever scale the box already had (rather than assigning it directly) so repeated pinches compound instead of resetting each time."
       onRestart={() => setScale(withSpring(1))}
@@ -38,9 +39,9 @@ function Example() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
           touchAction: 'none',
         }}
       >
@@ -65,7 +66,7 @@ function Example() {
           Pinch me
         </animate.div>
       </div>
-      <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+      <p style={{ marginTop: 10, fontSize: 12, color: theme.color.textFaint }}>
         Needs a touch-capable device/emulator — pinch is two-pointer and
         can't be simulated with a single mouse cursor.
       </p>

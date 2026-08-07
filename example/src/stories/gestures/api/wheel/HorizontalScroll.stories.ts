@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './HorizontalScroll';
 
 const meta = {
-  title: 'Gestures/Wheel/Horizontal Scroll',
+  title: 'Gestures/API/Wheel/Horizontal Scroll',
   component: Example,
   parameters: {
     layout: 'fullscreen',

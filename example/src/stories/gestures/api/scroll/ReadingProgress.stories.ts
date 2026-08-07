@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './ReadingProgress';
 
 const meta = {
-  title: 'Gestures/Scroll/Reading Progress',
+  title: 'Gestures/API/Scroll/Reading Progress',
   component: Example,
   parameters: {
     layout: 'fullscreen',

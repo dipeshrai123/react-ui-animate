@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../../animations/shared';
+import { ExampleLayout, theme } from '../../../animations/shared';
 
 function Example() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -28,6 +28,7 @@ function Example() {
 
   return (
     <ExampleLayout
+      tag="Pan"
       title="Gesture.Pan()"
       description="The new composable gesture primitive: useGesture(ref, Gesture.Pan().onStart(...).onUpdate(...).onEnd(...)) driving useValue/withSpring directly, instead of useDrag's down-conditional callback shape. A plain click doesn't trigger onStart at all — the gesture only activates past minDistance."
       onRestart={() => {
@@ -43,9 +44,9 @@ function Example() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
         }}
       >
         <animate.div

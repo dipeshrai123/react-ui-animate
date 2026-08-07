@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Reorder } from 'react-ui-animate';
+import { theme } from '../../animations/shared';
 
 const List = ({
   title,
@@ -14,7 +15,7 @@ const List = ({
 
   return (
     <div style={{ flex: 1, minWidth: 220 }}>
-      <h3 style={{ marginBottom: 12, fontSize: 15, color: '#374151' }}>{title}</h3>
+      <h3 style={{ marginBottom: 12, fontSize: 15, color: theme.color.textMuted }}>{title}</h3>
       <Reorder.Group
         values={items}
         onReorder={setItems}
@@ -27,11 +28,11 @@ const List = ({
             style={{
               padding: '10px 14px',
               borderRadius: 8,
-              backgroundColor: '#fff',
-              border: `2px solid ${color}`,
+              backgroundColor: theme.color.surface,
+              border: `1px solid ${color}`,
               fontSize: 14,
               fontWeight: 500,
-              color: '#1a1a1a',
+              color: theme.color.text,
             }}
           >
             {item}
@@ -51,9 +52,11 @@ const List = ({
  */
 const Example = () => {
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 10 }}>Multiple independent lists</h1>
-      <p style={{ marginBottom: 30, color: '#666', maxWidth: 560 }}>
+    <div style={{ padding: 40, fontFamily: theme.font.sans, color: theme.color.text }}>
+      <h1 style={{ marginBottom: 10, fontSize: 26, fontWeight: 700 }}>
+        Multiple independent lists
+      </h1>
+      <p style={{ marginBottom: 30, color: theme.color.textMuted, maxWidth: 560, lineHeight: 1.6 }}>
         Three separate <code>Reorder.Group</code>s on one page, each with its
         own state. Reordering one never affects the others.
       </p>
@@ -66,7 +69,7 @@ const Example = () => {
         />
         <List
           title="In progress"
-          color="#3399ff"
+          color={theme.color.accent}
           initialItems={['Fix reorder z-index bug', 'Add drag handles']}
         />
         <List

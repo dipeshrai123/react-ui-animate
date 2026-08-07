@@ -68,7 +68,7 @@ const Example = () => {
   });
 
   return (
-    <div style={{ backgroundColor: '#f8f9fa', minHeight: '200vh' }}>
+    <div style={{ backgroundColor: '#0a0a0d', minHeight: '200vh' }}>
       <ProgressBar scrollYProgress={scrollYProgress} />
 
       <div
@@ -80,7 +80,7 @@ const Example = () => {
             fontSize: 48,
             fontWeight: 700,
             marginBottom: 24,
-            color: '#333',
+            color: '#f4f4f6',
           }}
         >
           Reading Progress
@@ -88,7 +88,7 @@ const Example = () => {
         <p
           style={{
             fontSize: 18,
-            color: '#666',
+            color: '#9a9aa4',
             lineHeight: 1.8,
             marginBottom: 32,
           }}
@@ -105,12 +105,12 @@ const Example = () => {
                 fontSize: 32,
                 fontWeight: 600,
                 marginBottom: 16,
-                color: '#333',
+                color: '#f4f4f6',
               }}
             >
               Section {i + 1}
             </h2>
-            <p style={{ fontSize: 16, color: '#666', lineHeight: 1.8 }}>
+            <p style={{ fontSize: 16, color: '#9a9aa4', lineHeight: 1.8 }}>
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
               eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
               enim ad minim veniam, quis nostrud exercitation ullamco laboris

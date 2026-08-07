@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './DraggableCard';
 
 const meta = {
-  title: 'Gestures/Pan/Draggable Card',
+  title: 'Gestures/API/Pan/Draggable Card',
   component: Example,
   parameters: {
     layout: 'fullscreen',

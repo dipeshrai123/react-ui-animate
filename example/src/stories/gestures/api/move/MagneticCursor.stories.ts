@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './MagneticCursor';
 
 const meta = {
-  title: 'Gestures/Move/Magnetic Cursor',
+  title: 'Gestures/API/Move/Magnetic Cursor',
   component: Example,
   parameters: {
     layout: 'fullscreen',

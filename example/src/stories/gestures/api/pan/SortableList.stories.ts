@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './SortableList';
 
 const meta = {
-  title: 'Gestures/Pan/Sortable List',
+  title: 'Gestures/API/Pan/Sortable List',
   component: Example,
   parameters: {
     layout: 'fullscreen',

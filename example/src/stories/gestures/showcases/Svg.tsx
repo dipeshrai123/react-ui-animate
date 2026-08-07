@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useValue, Gesture, useGesture, animate, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout, theme } from '../../animations/shared';
 
 function Example() {
   const [dragX, setDragX] = useValue(0);
@@ -36,9 +36,9 @@ function Example() {
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
         <svg
           style={{
-            border: '2px solid #3399ff',
-            borderRadius: 12,
-            backgroundColor: '#f0f9ff',
+            border: `1px solid ${theme.color.border}`,
+            borderRadius: theme.radius.md,
+            backgroundColor: theme.color.surface,
           }}
           width={300}
           height={200}

@@ -35,7 +35,7 @@ const Example = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#0a0a0d',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -45,9 +45,9 @@ const Example = () => {
         style={{
           width: 300,
           height: 200,
-          backgroundColor: 'white',
+          backgroundColor: '#16161c',
           borderRadius: 20,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
           cursor: 'grab',
           display: 'flex',
           flexDirection: 'column',
@@ -61,14 +61,14 @@ const Example = () => {
         }}
       >
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎴</div>
-        <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#333' }}>
+        <h3 style={{ margin: 0, fontSize: 20, fontWeight: 600, color: '#f4f4f6' }}>
           Drag Me!
         </h3>
         <p
           style={{
             margin: '8px 0 0',
             fontSize: 14,
-            color: '#666',
+            color: '#9a9aa4',
             textAlign: 'center',
           }}
         >

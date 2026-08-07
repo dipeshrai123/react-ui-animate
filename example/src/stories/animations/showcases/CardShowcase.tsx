@@ -41,10 +41,7 @@ const cards: Card[] = [
   },
 ];
 
-const CardComponent: React.FC<{ card: Card; index: number }> = ({
-  card,
-  index,
-}) => {
+const CardComponent: React.FC<{ card: Card }> = ({ card }) => {
   return (
     <animate.div
       style={{
@@ -141,8 +138,8 @@ const Example: React.FC = () => {
         }}
       >
         <Unmount>
-          {cards.map((card, index) => (
-            <CardComponent key={card.id} card={card} index={index} />
+          {cards.map((card) => (
+            <CardComponent key={card.id} card={card} />
           ))}
         </Unmount>
       </div>

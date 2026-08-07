@@ -36,10 +36,10 @@ const Section = ({
       }}
     >
       <div style={{ fontSize: 64, marginBottom: 24 }}>{emoji}</div>
-      <h2 style={{ fontSize: 48, fontWeight: 700, marginBottom: 16, color: '#333' }}>
+      <h2 style={{ fontSize: 48, fontWeight: 700, marginBottom: 16, color: '#f4f4f6' }}>
         {title}
       </h2>
-      <p style={{ fontSize: 18, color: '#666', maxWidth: 600, textAlign: 'center' }}>
+      <p style={{ fontSize: 18, color: '#9a9aa4', maxWidth: 600, textAlign: 'center' }}>
         {description}
       </p>
     </animate.div>
@@ -48,7 +48,7 @@ const Section = ({
 
 const Example = () => {
   return (
-    <div style={{ backgroundColor: '#f8f9fa' }}>
+    <div style={{ backgroundColor: '#0a0a0d' }}>
       <Section
         title="Fade In"
         description="This section fades in and slides up as you scroll — driven entirely by useScrollReveal, no manual gesture wiring."

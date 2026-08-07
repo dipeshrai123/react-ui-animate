@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { animate, Unmount, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../shared';
+import { ExampleLayout, Button, theme } from '../../shared';
 
 type Category = 'design' | 'engineering' | 'marketing';
 
@@ -76,9 +76,12 @@ const Example = () => {
               padding: '10px 20px',
               borderRadius: 8,
               border:
-                filter === value ? '2px solid #3399ff' : '2px solid #e0e0e0',
-              backgroundColor: filter === value ? '#f0f9ff' : '#fff',
-              color: filter === value ? '#3399ff' : '#444',
+                filter === value
+                  ? `1px solid ${theme.color.accent}`
+                  : `1px solid ${theme.color.border}`,
+              backgroundColor:
+                filter === value ? theme.color.accentSoft : theme.color.surface,
+              color: filter === value ? theme.color.accent : theme.color.textMuted,
               fontSize: 14,
               fontWeight: 600,
               cursor: 'pointer',
@@ -89,22 +92,13 @@ const Example = () => {
           </button>
         ))}
 
-        <button
+        <Button
+          variant="primary"
+          style={{ marginLeft: 'auto' }}
           onClick={() => setOrder((prev) => shuffle(prev))}
-          style={{
-            marginLeft: 'auto',
-            padding: '10px 20px',
-            borderRadius: 8,
-            border: 'none',
-            backgroundColor: '#1a1a1a',
-            color: '#fff',
-            fontSize: 14,
-            fontWeight: 600,
-            cursor: 'pointer',
-          }}
         >
           Shuffle
-        </button>
+        </Button>
       </div>
 
       <Unmount>
@@ -124,9 +118,9 @@ const Example = () => {
                 width: 180,
                 padding: 20,
                 borderRadius: 12,
-                backgroundColor: '#fafafa',
-                border: `2px solid ${member.color}`,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                backgroundColor: theme.color.surface,
+                border: `1px solid ${member.color}55`,
+                boxShadow: `0 8px 24px ${member.color}1a`,
               }}
               animate={{
                 opacity: withSpring(1, { damping: 20 }),
@@ -153,10 +147,10 @@ const Example = () => {
               >
                 {member.name[0]}
               </div>
-              <div style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>
+              <div style={{ fontSize: 16, fontWeight: 600, color: theme.color.text }}>
                 {member.name}
               </div>
-              <div style={{ fontSize: 13, color: '#666', marginTop: 4 }}>
+              <div style={{ fontSize: 13, color: theme.color.textFaint, marginTop: 4 }}>
                 {member.role}
               </div>
             </animate.div>

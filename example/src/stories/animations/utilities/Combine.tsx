@@ -6,7 +6,7 @@ import {
   withSpring,
   withTiming,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -21,6 +21,7 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="Utility"
       title="combine Utility"
       description="Combine multiple AnimateValues into a single computed value. The combined value automatically updates when any input value changes."
       onRestart={() => setTrigger((prev) => prev + 1)}
@@ -36,9 +37,9 @@ const Example: React.FC = () => {
                 position: 'relative',
                 width: 400,
                 height: 300,
-                border: '2px solid #ddd',
+                border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: 8,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 marginBottom: 20,
               }}
             >
@@ -56,53 +57,23 @@ const Example: React.FC = () => {
                 }}
               />
             </div>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setX(withSpring(100))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
+            <ButtonRow>
+              <Button variant="primary" accent="#3399ff" onClick={() => setX(withSpring(100))}>
                 Move X to 100
-              </button>
-              <button
-                onClick={() => setY(withSpring(100))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
+              </Button>
+              <Button variant="primary" accent="#51cf66" onClick={() => setY(withSpring(100))}>
                 Move Y to 100
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="secondary"
                 onClick={() => {
                   setX(withSpring(0));
                   setY(withSpring(0));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Reset
-              </button>
-            </div>
+              </Button>
+            </ButtonRow>
           </div>
         </ExampleCard>
       </Section>
@@ -113,53 +84,39 @@ const Example: React.FC = () => {
       >
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ marginBottom: 10, fontSize: 14, color: '#666' }}>
+            <p style={{ marginBottom: 10, fontSize: 14, color: '#9a9aa4' }}>
               Combined transform value: <code>{position.current}</code>
             </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button
+            <ButtonRow>
+              <Button
+                variant="primary"
+                accent="#845ef7"
                 onClick={() => {
                   setX(withSpring(150));
                   setY(withSpring(150));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#845ef7',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Move to (150, 150)
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
+                accent="#ffd43b"
                 onClick={() => {
                   setX(withTiming(200, { duration: 1000 }));
                   setY(withTiming(100, { duration: 1000 }));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ffd43b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Timing to (200, 100)
-              </button>
-            </div>
+              </Button>
+            </ButtonRow>
             <div
               style={{
                 position: 'relative',
                 width: 400,
                 height: 300,
-                border: '2px solid #ddd',
+                border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: 8,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 marginTop: 20,
               }}
             >
@@ -187,37 +144,30 @@ const Example: React.FC = () => {
       >
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
-            <p style={{ marginBottom: 10, fontSize: 14, color: '#666' }}>
+            <p style={{ marginBottom: 10, fontSize: 14, color: '#9a9aa4' }}>
               The combine function can perform any calculation on the input
               values
             </p>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <button
+            <ButtonRow>
+              <Button
+                variant="primary"
+                accent="#20c997"
                 onClick={() => {
                   setX(withSpring(100));
                   setY(withSpring(50));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#20c997',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Animate Both
-              </button>
-            </div>
+              </Button>
+            </ButtonRow>
             <div
               style={{
                 position: 'relative',
                 width: 400,
                 height: 300,
-                border: '2px solid #ddd',
+                border: '1px solid rgba(255,255,255,0.12)',
                 borderRadius: 8,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 marginTop: 20,
               }}
             >

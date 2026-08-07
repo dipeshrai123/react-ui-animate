@@ -22,9 +22,9 @@ const ScaleDisplay = ({ scale }: { scale: AnimateValue<number> }) => {
     <div
       style={{
         fontSize: 14,
-        color: '#999',
+        color: '#9a9aa4',
         padding: '8px 16px',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#16161c',
         borderRadius: 8,
       }}
     >
@@ -73,7 +73,7 @@ const Example = () => {
         style={{
           width: 400,
           height: 400,
-          backgroundColor: 'white',
+          backgroundColor: '#16161c',
           borderRadius: 24,
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           display: 'flex',
@@ -91,7 +91,7 @@ const Example = () => {
             fontSize: 32,
             fontWeight: 700,
             marginBottom: 16,
-            color: '#333',
+            color: '#f4f4f6',
           }}
         >
           Zoom Me!
@@ -99,7 +99,7 @@ const Example = () => {
         <p
           style={{
             fontSize: 16,
-            color: '#666',
+            color: '#9a9aa4',
             textAlign: 'center',
             marginBottom: 24,
           }}

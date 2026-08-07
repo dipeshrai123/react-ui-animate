@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './DraggableMinimizablePlayer';
 
 const meta = {
-  title: 'Gestures/Pan/Draggable Minimizable Player',
+  title: 'Gestures/API/Pan/Draggable Minimizable Player',
   component: Example,
 } satisfies Meta<typeof Example>;
 

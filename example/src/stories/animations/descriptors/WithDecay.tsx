@@ -9,10 +9,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withDecay Descriptor"
       description="Decay animations simulate momentum-based motion that gradually slows down"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Basic Decay" description="Velocity: 1 — gentle momentum that gradually slows down">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -30,6 +31,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Different Velocities">
+        <ExampleCard>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`velocity-0.5-${trigger}`}
@@ -71,13 +73,14 @@ const Example: React.FC = () => {
             }}
           />
         </div>
-        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+        <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
           Left: Low velocity (0.5) | Middle: Medium (1) | Right: High (2)
         </p>
+        </ExampleCard>
       </Section>
 
       <Section title="With Hard Clamp" description="Animation stops abruptly at boundaries (0-400px)">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -100,7 +103,7 @@ const Example: React.FC = () => {
         title="With Elastic Clamp"
         description="Animation bounces back elastically at boundaries (0-400px)"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -124,7 +127,7 @@ const Example: React.FC = () => {
         title="With Custom Elastic Constant"
         description="More elastic bounce with a custom constant (0.3)"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -145,7 +148,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Vertical Decay" description="Decay works in any direction">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { animate } from 'react-ui-animate';
-import { ExampleLayout } from '../../shared';
+import { ExampleLayout, theme } from '../../shared';
 
 interface Player {
   id: number;
@@ -24,8 +24,8 @@ function sortByScore(players: Player[]) {
 
 const arrowButtonStyle: CSSProperties = {
   border: 'none',
-  background: '#f3f4f6',
-  color: '#555',
+  background: theme.color.surfaceRaised,
+  color: theme.color.textMuted,
   borderRadius: 4,
   width: 22,
   height: 18,
@@ -61,9 +61,9 @@ const Example = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#aaa',
+          color: theme.color.textFaint,
           fontSize: 15,
-          border: '2px dashed #e5e7eb',
+          border: `2px dashed ${theme.color.border}`,
           borderRadius: 12,
           marginBottom: 40,
         }}
@@ -90,9 +90,9 @@ const Example = () => {
               gap: 14,
               padding: '14px 18px',
               borderRadius: 10,
-              backgroundColor: '#fff',
-              border: '2px solid #f0f0f0',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+              backgroundColor: theme.color.surface,
+              border: `1px solid ${theme.color.border}`,
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
             }}
           >
             <div
@@ -100,7 +100,7 @@ const Example = () => {
                 width: 28,
                 fontSize: 15,
                 fontWeight: 700,
-                color: '#94a3b8',
+                color: theme.color.textFaint,
               }}
             >
               #{index + 1}
@@ -121,14 +121,14 @@ const Example = () => {
             >
               {player.name[0]}
             </div>
-            <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#1a1a1a' }}>
+            <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: theme.color.text }}>
               {player.name}
             </div>
             <div
               style={{
                 fontSize: 15,
                 fontWeight: 700,
-                color: '#1a1a1a',
+                color: theme.color.text,
                 width: 40,
                 textAlign: 'right',
               }}

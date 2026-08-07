@@ -6,7 +6,7 @@ import {
   useIsUnmounting,
   withTiming,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button } from '../../shared';
 
 const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
   const [isPresent, onExitComplete] = useUnmount();
@@ -31,7 +31,7 @@ const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
         backgroundColor: '#4caf50',
         color: 'white',
         borderRadius: 8,
-        boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
         opacity: 0,
         translateX: 300,
       }}
@@ -57,14 +57,10 @@ const AnimatedNotification: React.FC<{ message: string }> = ({ message }) => {
 const NestedComponent: React.FC = () => {
   const isUnmounting = useIsUnmounting();
 
-  useEffect(() => {
-    console.log('Unmount state changed:', isUnmounting);
-  }, [isUnmounting]);
-
   return (
     <div style={{ padding: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
       <p style={{ margin: 0, fontSize: 12 }}>
-        Nested component - Present: {isUnmounting ? 'No' : 'Yes'}
+        Nested component — present: {isUnmounting ? 'No' : 'Yes'}
       </p>
     </div>
   );
@@ -93,20 +89,13 @@ const AnimatedPanel: React.FC = () => {
         scale: withTiming(0.9, { duration: 200 }),
       }}
     >
-      <h3 style={{ margin: '0 0 12px' }}>Animated Panel</h3>
+      <h3 style={{ margin: '0 0 12px' }}>Animated panel</h3>
       <p style={{ margin: '0 0 12px', fontSize: 14 }}>
         This panel uses useUnmount to access unmount state.
       </p>
       <NestedComponent />
       {isPresent && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 8,
-            background: 'rgba(255,255,255,0.1)',
-            borderRadius: 4,
-          }}
-        >
+        <div style={{ marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.1)', borderRadius: 4 }}>
           This content only renders when present
         </div>
       )}
@@ -139,33 +128,24 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="MODULE"
       title="useUnmount"
       description={
         <>
-          Access unmount state (and a manual <code>onExitComplete</code>{' '}
-          signal) from inside the exiting component, for cases where the
-          unmount needs to wait on more than just its own animation — e.g. an
-          async cleanup step before the component is actually removed.
+          Access unmount state — and a manual <code>onExitComplete</code> signal — from inside the
+          exiting component, for cases where the unmount needs to wait on more than just its own
+          animation, like an async cleanup step before removal.
         </>
       }
       showRestartButton={false}
     >
       <Section title="Notifications with useUnmount">
         <ExampleCard>
-          <button
-            onClick={addNotification}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#4caf50',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              marginBottom: 12,
-            }}
-          >
-            Add Notification
-          </button>
+          <div style={{ marginBottom: 12 }}>
+            <Button accent="#4caf50" onClick={addNotification}>
+              Add notification
+            </Button>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <Unmount>
               {notifications.map((notification) => (
@@ -184,20 +164,11 @@ const Example: React.FC = () => {
 
       <Section title="Panel with useUnmount">
         <ExampleCard>
-          <button
-            onClick={() => setShowPanel((prev) => !prev)}
-            style={{
-              padding: '8px 16px',
-              backgroundColor: '#673ab7',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-              marginBottom: 16,
-            }}
-          >
-            {showPanel ? 'Hide Panel' : 'Show Panel'}
-          </button>
+          <div style={{ marginBottom: 16 }}>
+            <Button accent="#673ab7" onClick={() => setShowPanel((prev) => !prev)}>
+              {showPanel ? 'Hide panel' : 'Show panel'}
+            </Button>
+          </div>
           <Unmount>{showPanel && <AnimatedPanel key="panel" />}</Unmount>
         </ExampleCard>
       </Section>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { animate, Unmount, withTiming, withSpring } from 'react-ui-animate';
-import { ExampleLayout, ExampleCard } from '../../shared';
+import { ExampleLayout, ExampleCard, Button } from '../../shared';
 
 interface Item {
   id: number;
@@ -25,26 +25,18 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
-      title="Unmount with a List"
+      tag="MODULE"
+      title="Unmount with a list"
       description="Each list item gets its own unmount animation when removed, so items animate out individually instead of the list just snapping to its new length."
       showRestartButton={false}
     >
       <ExampleCard>
         <div style={{ width: 300 }}>
-          <button
-            onClick={addItem}
-            style={{
-              marginBottom: 16,
-              padding: '10px 20px',
-              backgroundColor: '#3399ff',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-            }}
-          >
-            Add Item
-          </button>
+          <div style={{ marginBottom: 16 }}>
+            <Button variant="primary" onClick={addItem}>
+              Add item
+            </Button>
+          </div>
 
           <Unmount>
             {items.map((item) => (

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { animate, Unmount, withSpring } from 'react-ui-animate';
 import { ExampleLayout } from '../shared';
 
-var _uniqueId = 0;
+let _uniqueId = 0;
 
 const Example = () => {
   const [text, setText] = useState('');

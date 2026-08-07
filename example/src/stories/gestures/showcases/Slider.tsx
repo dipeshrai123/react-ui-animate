@@ -8,7 +8,7 @@ import {
   withSpring,
   interpolate,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout, theme } from '../../animations/shared';
 
 export default function Example() {
   const ref = useRef(null);
@@ -85,7 +85,8 @@ export default function Example() {
               width: 60,
               height: 60,
               borderRadius: '50%',
-              border: '5px solid #b55ae6',
+              border: `5px solid ${theme.color.accent}`,
+              backgroundColor: theme.color.surfaceRaised,
               position: 'absolute',
               left: balloonLeft,
               translateX: -20,
@@ -97,7 +98,8 @@ export default function Example() {
               scale: isDown,
               opacity: isDown,
               rotate: velocity.to([-2, 2], [30, -30]),
-              color: '#666',
+              color: theme.color.text,
+              fontWeight: 600,
             }}
           />
 
@@ -108,8 +110,8 @@ export default function Example() {
                 width: 20,
                 height: 20,
                 borderRadius: '50%',
-                border: '5px solid #3399ff',
-                backgroundColor: '#fff',
+                border: `5px solid ${theme.color.accent}`,
+                backgroundColor: theme.color.text,
                 cursor: 'grab',
                 position: 'absolute',
                 top: 0,
@@ -123,7 +125,7 @@ export default function Example() {
               style={{
                 width: 200,
                 height: 4,
-                backgroundColor: '#e1e1e1',
+                backgroundColor: theme.color.border,
                 position: 'absolute',
                 bottom: 8,
                 left: 0,

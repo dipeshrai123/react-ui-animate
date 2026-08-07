@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './GesturePinchBasic';
 
 const meta = {
-  title: 'Gestures/Pinch/Basic',
+  title: 'Gestures/API/Pinch/Basic',
   component: Example,
 } satisfies Meta<typeof Example>;
 

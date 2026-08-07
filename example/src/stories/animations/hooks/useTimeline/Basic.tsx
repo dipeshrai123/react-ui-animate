@@ -1,4 +1,5 @@
 import { animate, useTimeline, useValue, withSpring, withTiming } from 'react-ui-animate';
+import { ExampleLayout, ExampleCard, Button } from '../../shared';
 
 const STEPS = [
   { label: 'Auth', color: '#3399ff' },
@@ -41,54 +42,48 @@ const Example = () => {
   ];
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 10 }}>useTimeline</h1>
-      <p style={{ marginBottom: 30, color: '#666', maxWidth: 560 }}>
-        Orchestrates three independently-owned `useValue` pairs — one per
-        step — on a shared millisecond schedule, the way{' '}
-        <code>withSequence</code> orchestrates values within a single{' '}
-        <code>useValue</code> call.
-      </p>
-
-      <button
-        onClick={play}
-        style={{
-          marginBottom: 30,
-          padding: '10px 20px',
-          borderRadius: 8,
-          border: 'none',
-          backgroundColor: '#1a1a1a',
-          color: 'white',
-          fontWeight: 600,
-          cursor: 'pointer',
-        }}
-      >
-        Play
-      </button>
-
-      <div style={{ display: 'flex', gap: 16 }}>
-        {STEPS.map((step, i) => (
-          <animate.div
-            key={step.label}
-            style={{
-              width: 140,
-              height: 100,
-              borderRadius: 12,
-              backgroundColor: step.color,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              fontWeight: 600,
-              opacity: boxes[i].opacity,
-              scale: boxes[i].scale,
-            }}
-          >
-            {step.label}
-          </animate.div>
-        ))}
-      </div>
-    </div>
+    <ExampleLayout
+      tag="HOOK"
+      title="useTimeline"
+      description={
+        <>
+          Orchestrates independently-owned <code>useValue</code> pairs — one per step — on a
+          shared millisecond schedule, the way <code>withSequence</code> orchestrates values
+          within a single call.
+        </>
+      }
+      showRestartButton={false}
+    >
+      <ExampleCard>
+        <div style={{ marginBottom: 24 }}>
+          <Button variant="primary" onClick={play}>
+            Play sequence
+          </Button>
+        </div>
+        <div style={{ display: 'flex', gap: 16 }}>
+          {STEPS.map((step, i) => (
+            <animate.div
+              key={step.label}
+              style={{
+                width: 140,
+                height: 100,
+                borderRadius: 12,
+                backgroundColor: step.color,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontWeight: 600,
+                opacity: boxes[i].opacity,
+                scale: boxes[i].scale,
+              }}
+            >
+              {step.label}
+            </animate.div>
+          ))}
+        </div>
+      </ExampleCard>
+    </ExampleLayout>
   );
 };
 

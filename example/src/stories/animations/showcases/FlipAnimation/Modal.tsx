@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { animate, Unmount, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout } from '../../shared';
+import { ExampleLayout, theme } from '../../shared';
 
 interface Card {
   id: number;
@@ -99,8 +99,8 @@ const Example = () => {
                       bottom: 24,
                       zIndex: 100,
                       borderRadius: 20,
-                      backgroundColor: '#fff',
-                      boxShadow: '0 30px 60px rgba(0,0,0,0.3)',
+                      backgroundColor: theme.color.surfaceRaised,
+                      boxShadow: '0 30px 60px rgba(0,0,0,0.5)',
                       padding: 40,
                       cursor: 'default',
                       overflow: 'auto'
@@ -108,11 +108,11 @@ const Example = () => {
                   : {
                       position: 'relative',
                       borderRadius: 16,
-                      backgroundColor: '#fff',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.08)',
+                      backgroundColor: theme.color.surface,
+                      boxShadow: `0 8px 24px ${card.color}1a`,
                       padding: 24,
                       cursor: 'pointer',
-                      border: `2px solid ${card.color}20`,
+                      border: `1px solid ${card.color}40`,
                     }
               }
             >
@@ -131,8 +131,8 @@ const Example = () => {
                       height: 36,
                       borderRadius: '50%',
                       border: 'none',
-                      backgroundColor: '#f1f5f9',
-                      color: '#444',
+                      backgroundColor: theme.color.surfaceRaised,
+                      color: theme.color.textMuted,
                       fontSize: 16,
                       cursor: 'pointer',
                     }}
@@ -154,14 +154,14 @@ const Example = () => {
                   >
                     {card.icon}
                   </div>
-                  <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: '#1a1a1a' }}>
+                  <h2 style={{ margin: 0, fontSize: 26, fontWeight: 700, color: theme.color.text }}>
                     {card.title}
                   </h2>
                   <p
                     style={{
                       marginTop: 14,
                       fontSize: 16,
-                      color: '#555',
+                      color: theme.color.textMuted,
                       lineHeight: 1.7,
                       maxWidth: 520,
                     }}
@@ -186,10 +186,10 @@ const Example = () => {
                   >
                     {card.icon}
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: '#1a1a1a' }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: theme.color.text }}>
                     {card.title}
                   </div>
-                  <div style={{ marginTop: 6, fontSize: 13, color: '#888' }}>
+                  <div style={{ marginTop: 6, fontSize: 13, color: theme.color.textFaint }}>
                     Tap to expand
                   </div>
                 </>

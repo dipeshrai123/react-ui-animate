@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../animations/shared';
+import { ExampleLayout, Section, ExampleCard, theme } from '../../animations/shared';
 
 // Demonstrates the gesture arbitration this session's Tier 2 work landed:
 // one finger pans the photo, two fingers pinch/rotate it — Pan gets
@@ -82,7 +82,7 @@ function Example() {
               width: '100%',
               height: 360,
               overflow: 'hidden',
-              border: '2px solid #e0e0e0',
+              border: `2px solid ${theme.color.border}`,
               borderRadius: 12,
               backgroundColor: '#1a1a1a',
               touchAction: 'none',
@@ -118,7 +118,7 @@ function Example() {
           </div>
         </ExampleCard>
       </Section>
-      <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+      <p style={{ marginTop: 10, fontSize: 12, color: theme.color.textFaint }}>
         Pinch/rotate need a touch-capable device/emulator — single-mouse
         input can only exercise the Pan half of this example.
       </p>

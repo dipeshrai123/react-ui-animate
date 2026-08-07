@@ -7,7 +7,7 @@ import {
   withStagger,
   withSpring,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout, theme } from '../../animations/shared';
 
 const StaggerItem = ({
   y,
@@ -28,15 +28,14 @@ const StaggerItem = ({
     <animate.span
       style={{
         display: 'inline-block',
-        border: '2px solid #3399ff',
-        backgroundColor: '#f0f9ff',
+        border: `1px solid ${theme.color.accent}`,
+        backgroundColor: theme.color.accentSoft,
         padding: '16px 20px',
-        borderRadius: 8,
+        borderRadius: theme.radius.sm,
         translateY: top,
         fontSize: 32,
         fontWeight: 600,
-        color: '#1a1a1a',
-        boxShadow: '0 2px 8px rgba(51, 153, 255, 0.2)',
+        color: theme.color.text,
         marginRight: 8,
       }}
     >

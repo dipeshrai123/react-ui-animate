@@ -9,10 +9,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withLoop Descriptor"
       description="Loop animations a specified number of times or infinitely"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Finite Loop (3 times)" description="Rotates 3 times then stops">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -38,7 +39,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Infinite Loop" description="Continuously rotates">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -56,7 +57,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Spring Loop" description="Pulses 5 times with spring animation">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -80,7 +81,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Complex Loop">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -116,7 +117,7 @@ const Example: React.FC = () => {
           </>
         }
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -136,7 +137,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="With Callbacks" description="Check the console for callbacks">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

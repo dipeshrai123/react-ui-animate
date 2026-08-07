@@ -25,10 +25,7 @@ const products: Product[] = [
   { id: 6, name: 'Monitor', price: 399, image: '🖥️', color: '#20c997' },
 ];
 
-const ProductCard: React.FC<{ product: Product; index: number }> = ({
-  product,
-  index,
-}) => {
+const ProductCard: React.FC<{ product: Product }> = ({ product }) => {
   const ref = useRef<HTMLDivElement>(null);
   const inView = useInView(ref, { threshold: 0.2 });
 
@@ -151,8 +148,8 @@ const Example: React.FC = () => {
           gap: 24,
         }}
       >
-        {products.map((product, index) => (
-          <ProductCard key={product.id} product={product} index={index} />
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
         ))}
       </div>
     </ExampleLayout>

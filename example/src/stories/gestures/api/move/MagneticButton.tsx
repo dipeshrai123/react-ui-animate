@@ -93,7 +93,7 @@ const Example = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f8f9fa',
+        backgroundColor: '#0a0a0d',
         position: 'relative',
       }}
     >
@@ -131,7 +131,7 @@ const Example = () => {
           left: '50%',
           transform: 'translateX(-50%)',
           textAlign: 'center',
-          color: '#666',
+          color: '#9a9aa4',
         }}
       >
         <p style={{ margin: 0, fontSize: 14 }}>

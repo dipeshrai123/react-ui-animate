@@ -8,219 +8,87 @@ import {
   withSequence,
   withDelay,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../../shared';
 
 const Example: React.FC = () => {
   const [x, setX, controls] = useValue(0);
 
   return (
     <ExampleLayout
-      title="useValue Hook - Animation Controls"
-      description="The useValue hook returns a third value: controls object with pause() and resume() methods for controlling running animations"
+      tag="HOOK"
+      title="useValue — animation controls"
+      description="useValue returns a third value alongside [value, setValue]: a controls object exposing pause() and resume() for any animation currently running."
       showRestartButton={false}
     >
-      <Section
-        title="Basic Controls"
-        description="Pause and resume running animations"
-      >
+      <Section title="Basic controls" description="Pause and resume a running animation mid-flight.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                flexWrap: 'wrap',
-                marginBottom: 20,
-              }}
-            >
-              <button
-                onClick={() => setX(withTiming(200, { duration: 5000 }))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Start Long Animation (5s)
-              </button>
-              <button
-                onClick={() => setX(withSpring(300))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Start Spring Animation
-              </button>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                flexWrap: 'wrap',
-                marginBottom: 20,
-              }}
-            >
-              <button
-                onClick={() => controls.pause()}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                PAUSE
-              </button>
-              <button
-                onClick={() => controls.resume()}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                RESUME
-              </button>
-              <button
-                onClick={() => setX(0)}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#999',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Reset to 0
-              </button>
-            </div>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#3399ff',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
+          <ButtonRow>
+            <Button variant="primary" onClick={() => setX(withTiming(200, { duration: 5000 }))}>
+              Start long animation (5s)
+            </Button>
+            <Button accent="#51cf66" onClick={() => setX(withSpring(300))}>
+              Start spring animation
+            </Button>
+          </ButtonRow>
+          <ButtonRow>
+            <Button accent="#ff6b6b" onClick={() => controls.pause()}>
+              Pause
+            </Button>
+            <Button accent="#51cf66" onClick={() => controls.resume()}>
+              Resume
+            </Button>
+            <Button variant="ghost" onClick={() => setX(0)}>
+              Reset to 0
+            </Button>
+          </ButtonRow>
+          <animate.div
+            style={{
+              width: 100,
+              height: 100,
+              backgroundColor: '#3399ff',
+              borderRadius: 8,
+              translateX: x,
+            }}
+          />
         </ExampleCard>
       </Section>
 
-      <Section
-        title="Controls with Sequence"
-        description="Pause/resume works with complex animations"
-      >
+      <Section title="Controls with a sequence" description="Pause/resume works even mid-way through a chained withSequence animation.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                flexWrap: 'wrap',
-                marginBottom: 20,
-              }}
+          <ButtonRow>
+            <Button
+              accent="#845ef7"
+              onClick={() =>
+                setX(
+                  withSequence([
+                    withSpring(100),
+                    withDelay(2000),
+                    withTiming(200),
+                    withDecay(1),
+                  ])
+                )
+              }
             >
-              <button
-                onClick={() =>
-                  setX(
-                    withSequence(
-                      [
-                        withSpring(100),
-                        withDelay(2000),
-                        withTiming(200),
-                        withDecay(1),
-                      ],
-                      {
-                        onStart() {
-                          console.log('Sequence started');
-                        },
-                        onComplete() {
-                          console.log('Sequence completed');
-                        },
-                      }
-                    )
-                  )
-                }
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#845ef7',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Start Sequence
-              </button>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                flexWrap: 'wrap',
-                marginBottom: 20,
-              }}
-            >
-              <button
-                onClick={() => controls.pause()}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                PAUSE
-              </button>
-              <button
-                onClick={() => controls.resume()}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                RESUME
-              </button>
-            </div>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#845ef7',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
+              Start sequence
+            </Button>
+          </ButtonRow>
+          <ButtonRow>
+            <Button accent="#ff6b6b" onClick={() => controls.pause()}>
+              Pause
+            </Button>
+            <Button accent="#51cf66" onClick={() => controls.resume()}>
+              Resume
+            </Button>
+          </ButtonRow>
+          <animate.div
+            style={{
+              width: 100,
+              height: 100,
+              backgroundColor: '#845ef7',
+              borderRadius: 8,
+              translateX: x,
+            }}
+          />
         </ExampleCard>
       </Section>
     </ExampleLayout>

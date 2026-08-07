@@ -9,10 +9,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withTiming Descriptor"
       description="Timing animations provide precise, duration-based motion"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Basic Timing">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -30,6 +31,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Different Durations">
+        <ExampleCard>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`duration-300-${trigger}`}
@@ -71,12 +73,14 @@ const Example: React.FC = () => {
             }}
           />
         </div>
-        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+        <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
           Left: 300ms | Middle: 1000ms | Right: 2000ms
         </p>
+        </ExampleCard>
       </Section>
 
       <Section title="With Easing Functions">
+        <ExampleCard>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`easing-linear-${trigger}`}
@@ -143,13 +147,14 @@ const Example: React.FC = () => {
             }}
           />
         </div>
-        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+        <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
           Linear | Ease | Ease In-Out | Bounce
         </p>
+        </ExampleCard>
       </Section>
 
       <Section title="Multiple Properties">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

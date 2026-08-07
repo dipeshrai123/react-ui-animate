@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { animate, useValue, withKeyframes, Easing } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -16,13 +16,14 @@ const Example: React.FC = () => {
           <code>withTiming</code> steps.
         </>
       }
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section
         title="Basic Keyframes"
         description="Each stop gets an equal share of the total duration (900ms / 4 steps)"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -48,7 +49,7 @@ const Example: React.FC = () => {
           </>
         }
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -71,7 +72,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="With Callbacks" description="Check the console for callbacks">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -93,7 +94,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Driven by a Value">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             style={{
               width: 100,
@@ -104,22 +105,15 @@ const Example: React.FC = () => {
               marginBottom: 20,
             }}
           />
-          <button
+          <Button
+            variant="primary"
+            accent="#ffd43b"
             onClick={() =>
               setX(withKeyframes([0, 250, 120, 250, 0], { duration: 1200 }))
             }
-            style={{
-              padding: '8px 16px',
-              fontSize: 14,
-              backgroundColor: '#ffd43b',
-              color: 'white',
-              border: 'none',
-              borderRadius: 6,
-              cursor: 'pointer',
-            }}
           >
             Run Keyframes on x
-          </button>
+          </Button>
         </ExampleCard>
       </Section>
     </ExampleLayout>

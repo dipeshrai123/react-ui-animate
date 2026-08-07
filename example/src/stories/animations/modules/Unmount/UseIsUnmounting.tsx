@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { animate, Unmount, useIsUnmounting, withTiming } from 'react-ui-animate';
-import { ExampleLayout, ExampleCard } from '../../shared';
+import { ExampleLayout, ExampleCard, Button } from '../../shared';
 
 const AnimatedCard: React.FC = () => {
   const isUnmounting = useIsUnmounting();
@@ -8,7 +8,7 @@ const AnimatedCard: React.FC = () => {
   return (
     <animate.div
       style={{
-        width: 200,
+        width: 220,
         padding: 20,
         backgroundColor: '#3399ff',
         borderRadius: 8,
@@ -25,19 +25,12 @@ const AnimatedCard: React.FC = () => {
         translateY: withTiming(-20, { duration: 200 }),
       }}
     >
-      <h3 style={{ margin: '0 0 12px' }}>Card Title</h3>
+      <h3 style={{ margin: '0 0 12px' }}>Card title</h3>
       <p style={{ margin: 0, fontSize: 14 }}>
         {isUnmounting ? 'I am exiting...' : 'I am present!'}
       </p>
       {!isUnmounting && (
-        <div
-          style={{
-            marginTop: 12,
-            padding: 8,
-            background: 'rgba(255,255,255,0.2)',
-            borderRadius: 4,
-          }}
-        >
+        <div style={{ marginTop: 12, padding: 8, background: 'rgba(255,255,255,0.2)', borderRadius: 4 }}>
           This content only shows when the card is present
         </div>
       )}
@@ -50,27 +43,19 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
+      tag="MODULE"
       title="useIsUnmounting"
-      description="Read unmount state from inside the exiting component itself — useful for swapping content (e.g. hiding interactive bits) the moment the unmount animation starts, before the component is removed."
+      description="Read unmount state from inside the exiting component itself — useful for swapping content, like hiding interactive bits, the moment the unmount animation starts."
       showRestartButton={false}
     >
       <ExampleCard>
-        <Unmount>{isVisible && <AnimatedCard key="card" />}</Unmount>
+        <div style={{ marginBottom: 16 }}>
+          <Unmount>{isVisible && <AnimatedCard key="card" />}</Unmount>
+        </div>
 
-        <button
-          onClick={() => setIsVisible((prev) => !prev)}
-          style={{
-            marginTop: 16,
-            padding: '10px 20px',
-            backgroundColor: '#3399ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: 6,
-            cursor: 'pointer',
-          }}
-        >
-          {isVisible ? 'Hide Card' : 'Show Card'}
-        </button>
+        <Button variant="primary" onClick={() => setIsVisible((prev) => !prev)}>
+          {isVisible ? 'Hide card' : 'Show card'}
+        </Button>
       </ExampleCard>
     </ExampleLayout>
   );

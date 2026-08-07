@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './HoverTooltip';
 
 const meta = {
-  title: 'Gestures/Hover/Tooltip',
+  title: 'Gestures/API/Hover/Tooltip',
   component: Example,
 } satisfies Meta<typeof Example>;
 

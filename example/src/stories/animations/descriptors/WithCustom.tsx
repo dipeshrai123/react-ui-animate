@@ -26,13 +26,14 @@ const Example: React.FC = () => {
           driver.
         </>
       }
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section
         title="Basic Custom Tick"
         description="Manually integrates position from `elapsed` — equivalent to a linear withTiming, but expressed as a raw function"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -56,7 +57,7 @@ const Example: React.FC = () => {
         title="Custom Easing Curve (Bounce)"
         description="A one-off easing curve that isn't in Easing — no need to register it anywhere, just write the math"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -88,7 +89,7 @@ const Example: React.FC = () => {
         title="Composed with withSequence + withSpring"
         description="Decaying shake (custom) for 400ms, then a spring settle to 200px"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -146,7 +147,7 @@ const OrbitExample: React.FC<{ trigger: number }> = ({ trigger }) => {
           style={{
             width: 200,
             height: 200,
-            border: '1px dashed #ccc',
+            border: '1px dashed rgba(255,255,255,0.2)',
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',

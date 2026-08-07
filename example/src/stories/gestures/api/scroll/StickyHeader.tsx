@@ -28,15 +28,15 @@ const Example = () => {
   );
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5' }}>
+    <div style={{ backgroundColor: '#0a0a0d' }}>
       <animate.div
         ref={headerRef}
         style={{
           position: 'sticky',
           top: 0,
           width: '100%',
-          backgroundColor: 'white',
-          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          backgroundColor: '#16161c',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.4)',
           zIndex: 1000,
           display: 'flex',
           alignItems: 'center',
@@ -46,7 +46,7 @@ const Example = () => {
           opacity: headerOpacity,
         }}
       >
-        <div style={{ fontSize: 24, fontWeight: 700, color: '#333' }}>Logo</div>
+        <div style={{ fontSize: 24, fontWeight: 700, color: '#f4f4f6' }}>Logo</div>
         <nav style={{ display: 'flex', gap: 32 }}>
           {['Home', 'About', 'Services', 'Contact'].map((item) => (
             <button
@@ -55,14 +55,14 @@ const Example = () => {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#666',
+                color: '#9a9aa4',
                 fontSize: 16,
                 fontWeight: 500,
                 cursor: 'pointer',
                 transition: 'color 0.2s',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = '#333')}
-              onMouseLeave={(e) => (e.currentTarget.style.color = '#666')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#f4f4f6')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#9a9aa4')}
             >
               {item}
             </button>
@@ -89,7 +89,7 @@ const Example = () => {
               fontSize: 64,
               fontWeight: 700,
               marginBottom: 24,
-              color: '#333',
+              color: '#f4f4f6',
             }}
           >
             Scroll Down
@@ -97,7 +97,7 @@ const Example = () => {
           <p
             style={{
               fontSize: 20,
-              color: '#666',
+              color: '#9a9aa4',
               lineHeight: 1.6,
               marginBottom: 40,
             }}
@@ -113,9 +113,9 @@ const Example = () => {
               style={{
                 padding: 40,
                 marginBottom: 24,
-                backgroundColor: 'white',
+                backgroundColor: '#16161c',
                 borderRadius: 12,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
               }}
             >
               <h2
@@ -123,12 +123,12 @@ const Example = () => {
                   fontSize: 32,
                   fontWeight: 600,
                   marginBottom: 16,
-                  color: '#333',
+                  color: '#f4f4f6',
                 }}
               >
                 Section {i + 1}
               </h2>
-              <p style={{ fontSize: 16, color: '#666', lineHeight: 1.6 }}>
+              <p style={{ fontSize: 16, color: '#9a9aa4', lineHeight: 1.6 }}>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
                 eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
                 enim ad minim veniam, quis nostrud exercitation ullamco laboris.

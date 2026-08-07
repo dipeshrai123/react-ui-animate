@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { animate, Gesture, useGesture, useValue } from 'react-ui-animate';
-import { ExampleLayout } from '../../../animations/shared';
+import { ExampleLayout, theme } from '../../../animations/shared';
 
 function Example() {
   const areaRef = useRef<HTMLDivElement>(null);
@@ -21,6 +21,7 @@ function Example() {
 
   return (
     <ExampleLayout
+      tag="Hover"
       title="Gesture.Hover() — Tooltip"
       description="Uses HoverEvent's offset (position relative to the target) and hovering flag to drive a tooltip that follows the pointer and hides on leave."
       onRestart={() => setVisible(false)}
@@ -31,14 +32,14 @@ function Example() {
           width: '100%',
           height: 320,
           position: 'relative',
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
           overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#999',
+          color: theme.color.textFaint,
         }}
       >
         Move your pointer over this area
@@ -49,8 +50,8 @@ function Example() {
               pointerEvents: 'none',
               left: tooltipX.to((v) => v + 16),
               top: tooltipY.to((v) => v + 16),
-              backgroundColor: '#1a1a1a',
-              color: 'white',
+              backgroundColor: theme.color.surfaceRaised,
+              color: theme.color.text,
               padding: '6px 10px',
               borderRadius: 6,
               fontSize: 12,

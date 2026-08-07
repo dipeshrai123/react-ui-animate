@@ -69,7 +69,7 @@ const Toast = ({ id, onEnd }: { id: number; onEnd: (id: number) => void }) => {
   );
 };
 
-var uniqueId = 0;
+let uniqueId = 0;
 
 const Example = () => {
   const [toasts, setToasts] = useState<{ id: number }[]>([]);

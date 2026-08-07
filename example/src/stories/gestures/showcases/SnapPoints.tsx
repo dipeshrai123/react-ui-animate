@@ -1,7 +1,6 @@
 import { useRef } from 'react';
 import { animate, useDrag } from 'react-ui-animate';
-
-import '../../../index.css';
+import { theme } from '../../animations/shared';
 
 const SNAP_COORDINATES = [
   { x: 0, y: 0 },
@@ -21,18 +20,36 @@ function Example() {
   });
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', backgroundColor: theme.color.bg }}>
+      <div
+        style={{
+          position: 'fixed',
+          top: 24,
+          left: 24,
+          fontFamily: theme.font.sans,
+          color: theme.color.textMuted,
+          fontSize: 14,
+          maxWidth: 360,
+          lineHeight: 1.6,
+        }}
+      >
+        <div style={{ color: theme.color.text, fontWeight: 700, fontSize: 18, marginBottom: 6 }}>
+          Snap points
+        </div>
+        Drag the box — it snaps to the nearest dashed cell on release via{' '}
+        <code>useDrag</code>'s <code>snapPoints</code> option.
+      </div>
+
       <animate.div
         ref={ref}
         style={{
-          backgroundColor: '#3399ff',
+          backgroundColor: theme.color.accent,
           width: 200,
           height: 200,
           position: 'fixed',
           left: x,
           top: y,
-          boxShadow: '0px 4px 6px rgba(0,0,0,0.2)',
-          borderRadius: 10,
+          borderRadius: theme.radius.md,
           cursor: 'grab',
         }}
       />
@@ -46,13 +63,13 @@ function Example() {
             top: coord.y,
             width: 200,
             height: 200,
-            border: '1px dashed #ff0000',
-            borderRadius: 10,
+            border: `1px dashed ${theme.color.borderStrong}`,
+            borderRadius: theme.radius.md,
             zIndex: -1,
           }}
         />
       ))}
-    </>
+    </div>
   );
 }
 

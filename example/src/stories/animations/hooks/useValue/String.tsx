@@ -1,77 +1,34 @@
 import React from 'react';
 import { animate, useValue, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../../shared';
 
 const Example: React.FC = () => {
   const [bg, setBg] = useValue('teal');
 
   return (
     <ExampleLayout
-      title="useValue Hook - String Values"
-      description="useValue can animate string values like colors. The library interpolates between color values automatically."
+      tag="HOOK"
+      title="useValue — string values"
+      description="useValue interpolates color strings directly — no separate color-animation API needed."
       showRestartButton={false}
     >
-      <Section title="Color Animation" description="Animate between color strings">
-        <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button
-                onClick={() => setBg(withSpring('blue'))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Spring to Blue
-              </button>
-              <button
-                onClick={() => setBg(withSpring('purple'))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#845ef7',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Spring to Purple
-              </button>
-              <button
-                onClick={() => setBg(withTiming('red', { duration: 2000 }))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Timing to Red (2s)
-              </button>
-              <button
-                onClick={() => setBg('teal')}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#20c997',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Immediate to Teal
-              </button>
-            </div>
+      <Section title="Color animation" description="Animate between named or hex color strings.">
+        <ExampleCard align="center">
+          <div>
+            <ButtonRow>
+              <Button variant="primary" onClick={() => setBg(withSpring('blue'))}>
+                Spring to blue
+              </Button>
+              <Button accent="#845ef7" onClick={() => setBg(withSpring('purple'))}>
+                Spring to purple
+              </Button>
+              <Button accent="#ff6b6b" onClick={() => setBg(withTiming('red', { duration: 2000 }))}>
+                Timing to red (2s)
+              </Button>
+              <Button variant="ghost" onClick={() => setBg('teal')}>
+                Immediate to teal
+              </Button>
+            </ButtonRow>
             <animate.div
               style={{
                 width: 200,

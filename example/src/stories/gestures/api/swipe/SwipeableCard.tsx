@@ -35,7 +35,7 @@ const Example = () => {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#f0f0f0',
+        backgroundColor: '#0a0a0d',
         position: 'relative',
         overflow: 'hidden',
         gap: 16,
@@ -46,9 +46,9 @@ const Example = () => {
         style={{
           width: 260,
           height: 340,
-          backgroundColor: 'white',
+          backgroundColor: '#16161c',
           borderRadius: 20,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+          boxShadow: '0 10px 40px rgba(0,0,0,0.5)',
           cursor: 'grab',
           display: 'flex',
           alignItems: 'center',
@@ -60,7 +60,7 @@ const Example = () => {
       >
         {CARDS[index]}
       </animate.div>
-      <p style={{ color: '#666', fontSize: 14 }}>Swipe left or right to see the next card</p>
+      <p style={{ color: '#9a9aa4', fontSize: 14 }}>Swipe left or right to see the next card</p>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../../animations/shared';
+import { ExampleLayout, theme } from '../../../animations/shared';
 
 function Example() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -26,6 +26,7 @@ function Example() {
 
   return (
     <ExampleLayout
+      tag="Rotate"
       title="Gesture.Rotate()"
       description="Two-finger rotation. rotation is cumulative degrees from when the gesture began — like Pinch's scale, add it onto the box's existing rotation (not assign directly) so repeated rotations accumulate instead of resetting."
       onRestart={() => setRotate(withSpring(0))}
@@ -37,9 +38,9 @@ function Example() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
           touchAction: 'none',
         }}
       >
@@ -64,7 +65,7 @@ function Example() {
           Rotate me
         </animate.div>
       </div>
-      <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+      <p style={{ marginTop: 10, fontSize: 12, color: theme.color.textFaint }}>
         Needs a touch-capable device/emulator — rotate is two-pointer and
         can't be simulated with a single mouse cursor.
       </p>

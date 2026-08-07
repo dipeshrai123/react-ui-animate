@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './MagneticButton';
 
 const meta = {
-  title: 'Gestures/Move/Magnetic Button',
+  title: 'Gestures/API/Move/Magnetic Button',
   component: Example,
   parameters: {
     layout: 'fullscreen',

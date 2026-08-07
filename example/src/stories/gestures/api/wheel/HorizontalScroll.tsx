@@ -78,7 +78,7 @@ const Example = () => {
       style={{
         width: '100%',
         height: '100vh',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: '#0a0a0d',
         overflow: 'hidden',
         position: 'relative',
       }}

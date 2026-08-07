@@ -199,7 +199,7 @@ const Example: React.FC = () => {
             playKey={playKey}
             variant="slide"
             text="Animate every word into view, one at a time."
-            style={{ fontSize: 40, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3 }}
+            style={{ fontSize: 40, fontWeight: 700, color: '#f4f4f6', lineHeight: 1.3 }}
           />
         </ExampleCard>
       </Section>
@@ -228,7 +228,7 @@ const Example: React.FC = () => {
             key={playKey}
             playKey={playKey}
             text="This is what fluid feels like."
-            style={{ fontSize: 44, fontWeight: 700, color: '#1a1a1a', lineHeight: 1.3 }}
+            style={{ fontSize: 44, fontWeight: 700, color: '#f4f4f6', lineHeight: 1.3 }}
           />
         </ExampleCard>
       </Section>

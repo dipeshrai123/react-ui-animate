@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { animate, Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
-import { ExampleLayout } from '../../../animations/shared';
+import { ExampleLayout, theme } from '../../../animations/shared';
 
 function Example() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -15,6 +15,7 @@ function Example() {
 
   return (
     <ExampleLayout
+      tag="Hover"
       title="Gesture.Hover()"
       description="A boolean pointer-over-target primitive, no press required: onStart fires on entry, onChange fires on every move while hovering, onEnd fires on leave. Unlike Gesture.Move(), it doesn't track movement/velocity — for that, use Move directly."
       onRestart={() => setScale(1)}
@@ -26,9 +27,9 @@ function Example() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          border: '2px solid #e0e0e0',
-          borderRadius: 12,
-          backgroundColor: '#fafafa',
+          border: `1px solid ${theme.color.border}`,
+          borderRadius: theme.radius.md,
+          backgroundColor: theme.color.surface,
         }}
       >
         <animate.div

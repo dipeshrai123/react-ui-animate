@@ -9,10 +9,11 @@ const Example: React.FC = () => {
     <ExampleLayout
       title="withSpring Descriptor"
       description="Spring animations provide natural, physics-based motion with configurable stiffness and damping"
+      tag="Descriptor"
       onRestart={() => setTrigger((prev) => prev + 1)}
     >
       <Section title="Basic Spring">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -33,6 +34,7 @@ const Example: React.FC = () => {
         title="Custom Stiffness & Damping"
         description="Different spring configurations create different feels"
       >
+        <ExampleCard>
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <animate.div
             key={`low-${trigger}`}
@@ -74,14 +76,15 @@ const Example: React.FC = () => {
             }}
           />
         </div>
-        <p style={{ marginTop: 10, fontSize: 12, color: '#999' }}>
+        <p style={{ marginTop: 10, fontSize: 12, color: '#6c6c76' }}>
           Left: Low stiffness (bouncy) | Middle: Medium | Right: High stiffness
           (stiff)
         </p>
+        </ExampleCard>
       </Section>
 
       <Section title="Multiple Properties">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -106,7 +109,7 @@ const Example: React.FC = () => {
         title="With Mass"
         description="Mass affects the inertia of the spring animation"
       >
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

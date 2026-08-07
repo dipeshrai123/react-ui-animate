@@ -9,7 +9,7 @@ import {
   withSpring,
   withSequence,
 } from 'react-ui-animate';
-import { ExampleLayout } from '../../animations/shared';
+import { ExampleLayout, theme } from '../../animations/shared';
 
 const BOX_SIZE = 200;
 
@@ -114,7 +114,7 @@ function Example() {
           const imageStyle =
             activeIndex === index
               ? {
-                  backgroundColor: 'white',
+                  backgroundColor: theme.color.surface,
                 }
               : {
                   backgroundImage: `url(${image})`,
@@ -127,10 +127,10 @@ function Example() {
               key={index}
               style={{
                 height: BOX_SIZE,
-                backgroundColor: '#e1e1e1',
+                backgroundColor: theme.color.surface,
                 cursor: 'pointer',
-                borderRadius: 12,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                borderRadius: theme.radius.md,
+                border: `1px solid ${theme.color.border}`,
                 transition: 'transform 0.2s',
                 ...imageStyle,
               }}

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { animate, Unmount } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button } from '../shared';
 
 const Example: React.FC = () => {
   const [showCard, setShowCard] = useState(true);
 
   return (
     <ExampleLayout
+      tag="State"
       title="State Animations"
-      description="Animations triggered by user interactions and viewport visibility. Demonstrates how properties like boxShadow, background, and filters work without initial styles."
+      description="Interaction and viewport states — hover, press, focus, view, and unmount — animate any property, even ones with no initial style set."
       showRestartButton={false}
     >
       <Section title="Basic State Animations" description="Hover, press, and focus states with numeric properties">
@@ -51,7 +52,7 @@ const Example: React.FC = () => {
               style={{
                 padding: '12px 16px',
                 fontSize: 16,
-                border: '2px solid #ccc',
+                border: '2px solid rgba(255,255,255,0.16)',
                 borderRadius: 8,
                 outline: 'none',
                 width: 200,
@@ -121,7 +122,7 @@ const Example: React.FC = () => {
               placeholder="Focus me..."
               style={{
                 padding: '12px 16px',
-                border: '2px solid #ddd',
+                border: '2px solid rgba(255,255,255,0.16)',
                 borderRadius: 8,
                 fontSize: 16,
                 outline: 'none',
@@ -142,7 +143,7 @@ const Example: React.FC = () => {
       >
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <ExampleCard description="View: boxShadow animates when element enters viewport">
-            <div style={{ height: 200, overflow: 'auto', border: '1px solid #ddd', padding: 20, borderRadius: 8 }}>
+            <div style={{ height: 200, overflow: 'auto', border: '1px solid rgba(255,255,255,0.08)', padding: 20, borderRadius: 8 }}>
               <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <animate.div
                   style={{
@@ -172,7 +173,7 @@ const Example: React.FC = () => {
           </ExampleCard>
 
           <ExampleCard description="View: Multiple properties without initial styles">
-            <div style={{ height: 200, overflow: 'auto', border: '1px solid #ddd', padding: 20, borderRadius: 8 }}>
+            <div style={{ height: 200, overflow: 'auto', border: '1px solid rgba(255,255,255,0.08)', padding: 20, borderRadius: 8 }}>
               <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <animate.div
                   style={{
@@ -210,20 +211,9 @@ const Example: React.FC = () => {
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
           <ExampleCard description="Unmount: boxShadow animates on unmount">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-              <button
-                onClick={() => setShowCard(!showCard)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                }}
-              >
+              <Button variant="primary" accent="#ff6b6b" onClick={() => setShowCard(!showCard)}>
                 {showCard ? 'Remove Card' : 'Show Card'}
-              </button>
+              </Button>
               <Unmount>
                 {showCard && (
                   <animate.div
@@ -255,20 +245,9 @@ const Example: React.FC = () => {
 
           <ExampleCard description="Unmount: opacity without initial style">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignItems: 'center' }}>
-              <button
-                onClick={() => setShowCard(!showCard)}
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                  fontSize: 14,
-                }}
-              >
+              <Button variant="primary" accent="#51cf66" onClick={() => setShowCard(!showCard)}>
                 {showCard ? 'Remove' : 'Show'}
-              </button>
+              </Button>
               <Unmount>
                 {showCard && (
                   <animate.div
@@ -436,7 +415,7 @@ const Example: React.FC = () => {
           </ExampleCard>
 
           <ExampleCard description="View: opacity, scale, boxShadow, and filter without initial styles">
-            <div style={{ height: 200, overflow: 'auto', border: '1px solid #ddd', padding: 20, borderRadius: 8 }}>
+            <div style={{ height: 200, overflow: 'auto', border: '1px solid rgba(255,255,255,0.08)', padding: 20, borderRadius: 8 }}>
               <div style={{ height: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <animate.div
                   style={{
@@ -508,7 +487,7 @@ const Example: React.FC = () => {
               style={{
                 padding: '12px 16px',
                 fontSize: 16,
-                border: '2px solid #ccc',
+                border: '2px solid rgba(255,255,255,0.16)',
                 borderRadius: 8,
                 outline: 'none',
                 width: 200,

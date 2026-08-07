@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Reorder } from 'react-ui-animate';
+import { theme } from '../../animations/shared';
 
 interface Track {
   id: string;
@@ -20,7 +21,7 @@ const GripIcon = () => (
   <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
     {[4, 8, 12].map((y) =>
       [5, 11].map((x) => (
-        <circle key={`${x}-${y}`} cx={x} cy={y} r={1.3} fill="#9ca3af" />
+        <circle key={`${x}-${y}`} cx={x} cy={y} r={1.3} fill={theme.color.textFaint} />
       ))
     )}
   </svg>
@@ -49,9 +50,9 @@ const Example = () => {
   const [playingId, setPlayingId] = useState<string | null>(null);
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 10 }}>Playlist</h1>
-      <p style={{ marginBottom: 30, color: '#666', maxWidth: 500 }}>
+    <div style={{ padding: 40, fontFamily: theme.font.sans, color: theme.color.text }}>
+      <h1 style={{ marginBottom: 10, fontSize: 26, fontWeight: 700 }}>Playlist</h1>
+      <p style={{ marginBottom: 30, color: theme.color.textMuted, maxWidth: 500, lineHeight: 1.6 }}>
         Drag the grip icon to reorder tracks. Play/pause is a normal button —
         clicking it never starts a drag.
       </p>
@@ -65,7 +66,7 @@ const Example = () => {
           maxWidth: 460,
           borderRadius: 12,
           overflow: 'hidden',
-          border: '1px solid #e5e7eb',
+          border: `1px solid ${theme.color.border}`,
         }}
       >
         {tracks.map((track) => {
@@ -79,8 +80,8 @@ const Example = () => {
                 alignItems: 'center',
                 gap: 12,
                 padding: '10px 14px',
-                backgroundColor: playing ? '#f0f9ff' : '#fff',
-                borderBottom: '1px solid #f1f5f9',
+                backgroundColor: playing ? theme.color.accentSoft : theme.color.surface,
+                borderBottom: `1px solid ${theme.color.border}`,
               }}
             >
               <Reorder.Handle style={{ display: 'flex', padding: 4 }}>
@@ -94,7 +95,7 @@ const Example = () => {
                   height: 32,
                   borderRadius: '50%',
                   border: 'none',
-                  backgroundColor: playing ? '#3399ff' : '#1a1a1a',
+                  backgroundColor: playing ? theme.color.accent : theme.color.surfaceRaised,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -110,7 +111,7 @@ const Example = () => {
                   style={{
                     fontSize: 14,
                     fontWeight: 600,
-                    color: '#1a1a1a',
+                    color: theme.color.text,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -118,10 +119,16 @@ const Example = () => {
                 >
                   {track.title}
                 </div>
-                <div style={{ fontSize: 12, color: '#6b7280' }}>{track.artist}</div>
+                <div style={{ fontSize: 12, color: theme.color.textMuted }}>{track.artist}</div>
               </div>
 
-              <span style={{ fontSize: 12, color: '#9ca3af', fontVariantNumeric: 'tabular-nums' }}>
+              <span
+                style={{
+                  fontSize: 12,
+                  color: theme.color.textFaint,
+                  fontVariantNumeric: 'tabular-nums',
+                }}
+              >
                 {track.duration}
               </span>
             </Reorder.Item>

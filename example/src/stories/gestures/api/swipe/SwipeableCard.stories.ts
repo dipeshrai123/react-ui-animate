@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import Example from './SwipeableCard';
 
 const meta = {
-  title: 'Gestures/Swipe/Swipeable Card',
+  title: 'Gestures/API/Swipe/Swipeable Card',
   component: Example,
   parameters: {
     layout: 'fullscreen',
