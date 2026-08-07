@@ -1,124 +1,77 @@
 # Release Guide
 
-## Version Determination
+Releases are fully automated with [semantic-release](https://semantic-release.gitbook.io/).
+You should never need to hand-edit `package.json`'s version, hand-write the
+changelog, or run `npm publish` yourself. Merge to `main` or `next` and CI
+does the rest.
 
-Since we're using **semantic-release**, version numbers are automatically determined based on commit messages following the [Conventional Commits](https://www.conventionalcommits.org/) specification:
+## How it works
 
-- **BREAKING CHANGE** or `!` in commit message → **Major version** (e.g., 5.2.0 → 6.0.0)
-- `feat:` → **Minor version** (e.g., 5.2.0 → 5.3.0)
-- `fix:` → **Patch version** (e.g., 5.2.0 → 5.2.1)
+- **`main`** → published to the npm `latest` dist-tag, stable releases (e.g. `5.4.0`).
+- **`next`** → published to the npm `next` dist-tag, prereleases (e.g. `5.5.0-next.1`).
 
-## Current Changes Analysis
+On every push to either branch, `.github/workflows/release.yml`:
 
-Based on the commits since v5.2.0, we have:
+1. Installs, lints, type-checks, tests, and builds.
+2. Runs `semantic-release`, which:
+   - Analyzes commits since the last release on that branch using
+     [Conventional Commits](https://www.conventionalcommits.org/).
+   - Computes the next version: `fix:` → patch, `feat:` → minor, `!` or a
+     `BREAKING CHANGE:` footer → major.
+   - Publishes to npm on the correct dist-tag, with
+     [provenance](https://docs.npmjs.com/generating-provenance-statements).
+   - Pushes the release tag (`vX.Y.Z`) and creates a GitHub Release with
+     generated notes.
 
-### Breaking Changes
-- `AnimatePresence` → `Presence` (renamed)
-- `inView` → `view` (prop renamed)
-- `useMount` hook removed
+If nobody made a `feat:`/`fix:`/breaking commit since the last release,
+semantic-release simply does nothing — pushing docs-only or chore commits
+does not trigger a release.
 
-### New Features
-- Animation recipes (40+ pre-built animations)
-- `animate` prop
-- Low-level drivers exposed
-- `Presence` module with hooks
-- State animations enhanced
-- `makeAnimated` utility
+**Note:** `main` and `next` require pull requests, which blocks the release
+job from pushing a version-bump commit back to those branches (only tags are
+exempt from that rule). So `package.json`'s `version` field and
+`CHANGELOG.md` are *not* auto-updated in git — the npm registry (dist-tags,
+`npm view react-ui-animate versions`) and the GitHub Releases page are the
+source of truth for what's actually shipped. If you want the in-repo
+changelog back, see the "One-time repository setup" note below.
 
-### Bug Fixes
-- Multiple fixes for exit animations, state animations, etc.
+## Commit message format
 
-## Expected Version
+Enforced locally by a `commit-msg` hook (commitlint + husky), so a malformed
+message is rejected before it ever reaches CI:
 
-Given the breaking changes, semantic-release should determine the next version as **6.0.0**.
+- `fix: ...` → patch release
+- `feat: ...` → minor release
+- `feat!: ...` or a footer `BREAKING CHANGE: ...` → major release
+- `chore:`, `docs:`, `refactor:`, `test:`, `ci:`, etc. → no release by
+  themselves, but still fine to use
 
-However, since we're publishing to the `next` tag, the version will be:
-- **6.0.0-next.1** (first prerelease)
-- **6.0.0-next.2** (subsequent prereleases)
-- etc.
+## Promoting a `next` prerelease to `latest`
 
-## Publishing Strategy
+Merge `next` into `main` (via PR, same as any other change). The next push
+to `main` computes and publishes the real release from the accumulated
+`feat`/`fix` commits — there's no separate "promote" command.
 
-### Semantic-Release Configuration
+## One-time repository setup
 
-The `.releaserc.json` is configured to:
-- **`main` branch**: Publishes to `latest` tag (production releases)
-- **`next` branch**: Publishes to `next` tag (prerelease versions)
+The only manual step — it can't be done from inside the codebase, it's an
+account setting:
 
-### How to Publish to 'next' Tag
+- **`NPM_TOKEN`**: create an npm
+  [Automation token](https://docs.npmjs.com/creating-and-viewing-access-tokens)
+  for this package and add it as a repository secret named `NPM_TOKEN`
+  (Settings → Secrets and variables → Actions). `GITHUB_TOKEN` is provided
+  automatically by Actions and needs no setup.
 
-1. **Ensure you're on the `next` branch** (or create it):
-   ```bash
-   git checkout -b next
-   git push origin next
-   ```
+(We looked at giving the release job a PAT to bypass the required-PR rule
+and auto-commit `CHANGELOG.md`/`package.json` back to `main`/`next`, but
+per-actor bypass of required-PR rules is an org/enterprise-only GitHub
+feature — it's not available on a personal-account repo like this one. If
+this repo ever moves under an organization, that option becomes available
+and `@semantic-release/git` can be re-added to `.releaserc.json`.)
 
-2. **Run semantic-release** (or use GitHub Actions workflow):
-   ```bash
-   npx semantic-release
-   ```
+## Local checks
 
-   Semantic-release will:
-   - Analyze commits since last release
-   - Determine version (e.g., 6.0.0-next.1)
-   - Create git tag
-   - Publish to npm with `next` tag
-   - Create GitHub release
-
-3. **Verify the release**:
-   ```bash
-   npm view react-ui-animate@next version
-   ```
-
-### Publishing to 'latest' Tag
-
-When ready to promote a prerelease to production:
-
-1. **Merge `next` into `main`**:
-   ```bash
-   git checkout main
-   git merge next
-   git push origin main
-   ```
-
-2. **Run semantic-release on `main`**:
-   - It will publish to `latest` tag
-   - Version will be determined from commits (e.g., 6.0.0)
-
-## Important Notes
-
-1. **No manual version in package.json**: Semantic-release manages versions automatically. The version in `package.json` is only used as a fallback and will be updated by semantic-release during the release process.
-
-2. **Commit message format**: Use conventional commits for proper version detection:
-   - `feat: add new feature` → minor bump
-   - `fix: fix bug` → patch bump
-   - `feat!: breaking change` or `BREAKING CHANGE: description` → major bump
-
-3. **Pre-release versions**: When on the `next` branch, semantic-release automatically:
-   - Creates prerelease versions (e.g., 6.0.0-next.1)
-   - Publishes to the `next` npm tag
-   - Does NOT affect the `latest` tag
-
-4. **Testing prereleases**: Users can install prereleases with:
-   ```bash
-   npm install react-ui-animate@next
-   ```
-
-## Current Status
-
-- **Current npm version**: 5.2.0 (latest tag)
-- **Expected next version**: 6.0.0-next.1 (next tag)
-- **Breaking changes**: Yes (3 breaking changes identified)
-- **New features**: Yes (multiple new features)
-- **Bug fixes**: Yes (multiple fixes)
-
-## Next Steps
-
-1. ✅ Dependencies updated to latest versions
-2. ✅ peerDependencies fixed
-3. ✅ CHANGELOG.md created
-4. ✅ Semantic-release config updated
-5. ⏳ Ready to publish to `next` tag
-
-To publish, ensure you're on the `next` branch and run semantic-release (or trigger the GitHub Actions workflow).
-
+- `npm run release:dry-run` — runs semantic-release without publishing or
+  pushing anything, to preview what the next version/notes would be.
+- `npm run lint` / `npm run lint:fix`

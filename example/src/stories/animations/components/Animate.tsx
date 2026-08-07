@@ -88,11 +88,12 @@ const Example: React.FC = () => {
   return (
     <ExampleLayout
       title="animate Component"
-      description="The animate component provides declarative animations using the animate prop"
+      tag="Component"
+      description="Declarative animation via the animate prop — describe the end state, and every value that changed animates there automatically."
       onRestart={handleAnimate}
     >
       <Section title="Basic Timing Animation">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -109,7 +110,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Spring Animation">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -126,7 +127,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Multiple Properties">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -145,7 +146,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Sequence Animation">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -161,7 +162,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Loop Animation">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -177,7 +178,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="Combined: Opacity + Transform">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{
@@ -195,7 +196,7 @@ const Example: React.FC = () => {
       </Section>
 
       <Section title="With Initial Style Values">
-        <ExampleCard>
+        <ExampleCard align="center">
           <animate.div
             key={trigger}
             style={{

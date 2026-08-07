@@ -5,13 +5,31 @@ import '../src/index.css';
 
 const preview: Preview = {
   parameters: {
+    backgrounds: {
+      default: 'studio',
+      values: [
+        { name: 'studio', value: '#0a0a0d' },
+        { name: 'light', value: '#f4f4f6' },
+      ],
+    },
     options: {
       storySort: {
         method: 'alphabetical',
         order: [
           'Animations',
-          ['Hooks', ['useValue', 'useMount']],
+          [
+            'Overview',
+            'Components',
+            'Hooks',
+            'Descriptors',
+            'Utilities',
+            'Modules',
+            'State Animations',
+            'Recipes',
+            'Showcases',
+          ],
           'Gestures',
+          ['API', 'Hooks', 'Showcases'],
           '*',
         ],
       },

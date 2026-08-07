@@ -2,8 +2,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "module": "esnext",
-    "target": "es2017",
-    "lib": ["es2017", "dom"],
+    "target": "es2020",
+    "lib": ["es2020", "es2022.error", "dom"],
     "downlevelIteration": false,
     "sourceMap": false,
     "allowJs": false,

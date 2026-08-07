@@ -1,78 +1,35 @@
-// ============================================================================
-// Main entry point - re-export public APIs with named exports for tree-shaking
-// ============================================================================
-
-// Animation APIs
 export {
   animate,
   makeAnimated,
   AnimateValue,
-  isAnimateValue,
-  timing,
-  spring,
-  decay,
-  parallel,
-  sequence,
-  loop,
-  delay,
   Easing,
   combine,
-  to,
+  interpolate,
+  animateTo,
+  isReducedMotionEnabled,
+  setReducedMotion,
   withSpring,
   withTiming,
   withDecay,
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
+  withKeyframes,
+  withParallel,
+  withCustom,
   useValue,
-  Presence,
-  PresenceContext,
-  usePresence,
-  useIsPresent,
+  useTimeline,
+  Unmount,
+  UnmountContext,
+  useUnmount,
+  useIsUnmounting,
   recipes,
-  fadeIn,
-  fadeOut,
-  fadeInUp,
-  fadeInDown,
-  fadeInLeft,
-  fadeInRight,
-  slideInUp,
-  slideInDown,
-  slideInLeft,
-  slideInRight,
-  slideOutUp,
-  slideOutDown,
-  slideOutLeft,
-  slideOutRight,
-  scaleIn,
-  scaleOut,
-  scaleUp,
-  scaleDown,
-  bounceIn,
-  bounceOut,
-  rotateIn,
-  rotateOut,
-  spin,
-  zoomIn,
-  zoomOut,
-  flipX,
-  flipY,
-  slideFadeIn,
-  slideFadeOut,
-  scaleFadeIn,
-  scaleFadeOut,
-  hoverScale,
-  hoverLift,
-  hoverGlow,
-  pressScale,
-  pressDown,
-  exitFade,
-  exitSlideUp,
-  exitSlideDown,
-  exitScale,
+  FlipGroup,
 } from './animation';
 
-// Type exports
+export type { Timeline } from './animation';
+
 export type {
   Primitive,
   ExtrapolateConfig,
@@ -84,7 +41,13 @@ export type {
   SequenceOptions,
   DelayOptions,
   LoopOptions,
-  DriverType,
+  StaggerOptions,
+  KeyframeStep,
+  KeyframeOptions,
+  ParallelOptions,
+  CustomOptions,
+  CustomTickFn,
+  CustomTickContext,
   Descriptor,
   Controls,
   AnimateProp,
@@ -92,32 +55,58 @@ export type {
   AnimateAttributes,
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
-  PresenceProps,
-  PresenceContextValue,
-  AnimateController,
-  AnimateHooks,
+  FlipOptions,
+  FlipGroupProps,
+  UnmountProps,
+  UnmountContextValue,
 } from './animation';
 
-// General hooks
-export { useOutsideClick } from './hooks/events/useOutsideClick';
-export { useInView, type UseInViewOptions } from './hooks/observers/useInView';
+export { useOutsideClick, useInView, type UseInViewOptions } from './shared/hooks';
 
-// Gesture hooks
-export { useDrag } from './gestures/hooks/useDrag';
-export { useMove } from './gestures/hooks/useMove';
-export { useScroll } from './gestures/hooks/useScroll';
 export {
   useScrollProgress,
   type UseScrollProgressOptions,
 } from './gestures/hooks/useScrollProgress';
-export { useWheel } from './gestures/hooks/useWheel';
-export { useRecognizer } from './gestures/hooks/useRecognizer';
 
-// Gesture types
-export type { DragEvent, DragConfig } from './gestures/controllers/DragGesture';
-export type { MoveEvent } from './gestures/controllers/MoveGesture';
-export type { ScrollEvent } from './gestures/controllers/ScrollGesture';
-export type { WheelEvent } from './gestures/controllers/WheelGesture';
+export {
+  useScrollReveal,
+  type UseScrollRevealOptions,
+} from './gestures/hooks/useScrollReveal';
 
-// Utilities
-export { clamp, rubberClamp, snapTo, move } from './utils';
+export {
+  useDrag,
+  type UseDragOptions,
+  type UseDragResult,
+  type DragBounds,
+} from './gestures/hooks/useDrag';
+
+export {
+  Reorder,
+  type ReorderGroupProps,
+  type ReorderItemProps,
+  type ReorderHandleProps,
+  type ReorderContextProps,
+} from './gestures/components/Reorder';
+
+export { Gesture } from './gestures/api/Gesture';
+export { useGesture } from './gestures/hooks/useGesture';
+export type {
+  GestureType,
+  GestureHandlers,
+  BaseGestureConfig,
+  GestureDescriptor,
+  PanEvent,
+  MoveEvent,
+  WheelEvent,
+  ScrollEvent,
+  SwipeEvent,
+  SwipeGestureConfig,
+  SwipeHandlers,
+  HoverEvent,
+  PinchEvent,
+  PinchGestureConfig,
+  RotateEvent,
+  RotateGestureConfig,
+} from './gestures/api/Gesture';
+
+export { clamp, rubberClamp, snapTo, move } from './shared/utils';

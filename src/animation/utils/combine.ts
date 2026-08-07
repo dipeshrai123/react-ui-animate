@@ -1,9 +1,5 @@
 import { AnimateValue } from '../values/AnimateValue';
 
-/**
- * Combines multiple AnimateValue instances into a single AnimateValue
- * using a combiner function.
- */
 export function combine<T extends any[], U>(
   inputs: { [K in keyof T]: AnimateValue<T[K]> },
   combiner: (...values: T) => U

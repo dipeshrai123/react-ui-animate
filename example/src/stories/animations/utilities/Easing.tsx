@@ -1,37 +1,42 @@
 import React, { useState } from 'react';
 import { animate, withTiming, Easing } from 'react-ui-animate';
+import { ExampleLayout, Section, ExampleCard } from '../shared';
+
+const easingFunctions = [
+  { name: 'linear', easing: Easing.linear },
+  { name: 'ease', easing: Easing.ease },
+  { name: 'quad', easing: Easing.quad },
+  { name: 'cubic', easing: Easing.cubic },
+  { name: 'sin', easing: Easing.sin },
+  { name: 'circle', easing: Easing.circle },
+  { name: 'exp', easing: Easing.exp },
+  { name: 'bounce', easing: Easing.bounce },
+  { name: 'in(ease)', easing: Easing.in(Easing.ease) },
+  { name: 'out(ease)', easing: Easing.out(Easing.ease) },
+  { name: 'inOut(ease)', easing: Easing.inOut(Easing.ease) },
+  { name: 'bezier', easing: Easing.bezier(0.68, -0.55, 0.265, 1.55) },
+];
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
 
-  const easingFunctions = [
-    { name: 'linear', easing: Easing.linear },
-    { name: 'ease', easing: Easing.ease },
-    { name: 'quad', easing: Easing.quad },
-    { name: 'cubic', easing: Easing.cubic },
-    { name: 'sin', easing: Easing.sin },
-    { name: 'circle', easing: Easing.circle },
-    { name: 'exp', easing: Easing.exp },
-    { name: 'bounce', easing: Easing.bounce },
-    { name: 'in(ease)', easing: Easing.in(Easing.ease) },
-    { name: 'out(ease)', easing: Easing.out(Easing.ease) },
-    { name: 'inOut(ease)', easing: Easing.inOut(Easing.ease) },
-    { name: 'bezier', easing: Easing.bezier(0.68, -0.55, 0.265, 1.55) },
-  ];
-
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ marginBottom: 30 }}>Easing Functions</h1>
-      <p style={{ marginBottom: 40, color: '#666' }}>
-        Different easing functions for custom animation curves
-      </p>
-
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>All Easing Functions</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+    <ExampleLayout
+      tag="Utility"
+      title="Easing Functions"
+      description="Different easing functions for custom animation curves"
+      onRestart={() => setTrigger((prev) => prev + 1)}
+    >
+      <Section title="All Easing Functions">
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 20,
+          }}
+        >
           {easingFunctions.map(({ name, easing }) => (
-            <div key={name} style={{ marginBottom: 20 }}>
-              <p style={{ marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>{name}</p>
+            <ExampleCard key={name} title={name}>
               <animate.div
                 key={trigger}
                 style={{
@@ -48,16 +53,14 @@ const Example: React.FC = () => {
                   }),
                 }}
               />
-            </div>
+            </ExampleCard>
           ))}
         </div>
-      </div>
+      </Section>
 
-      <div style={{ marginBottom: 40 }}>
-        <h2 style={{ marginBottom: 20 }}>Custom Bezier Curves</h2>
+      <Section title="Custom Bezier Curves">
         <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-          <div>
-            <p style={{ marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>Ease In Out</p>
+          <ExampleCard title="Ease In Out">
             <animate.div
               key={trigger}
               style={{
@@ -74,9 +77,8 @@ const Example: React.FC = () => {
                 }),
               }}
             />
-          </div>
-          <div>
-            <p style={{ marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>Bounce</p>
+          </ExampleCard>
+          <ExampleCard title="Bounce">
             <animate.div
               key={trigger}
               style={{
@@ -93,9 +95,8 @@ const Example: React.FC = () => {
                 }),
               }}
             />
-          </div>
-          <div>
-            <p style={{ marginBottom: 10, fontSize: 14, fontWeight: 'bold' }}>Elastic</p>
+          </ExampleCard>
+          <ExampleCard title="Elastic">
             <animate.div
               key={trigger}
               style={{
@@ -112,29 +113,11 @@ const Example: React.FC = () => {
                 }),
               }}
             />
-          </div>
+          </ExampleCard>
         </div>
-      </div>
-
-      <div style={{ marginTop: 40 }}>
-        <button
-          onClick={() => setTrigger((prev) => prev + 1)}
-          style={{
-            padding: '12px 24px',
-            fontSize: 16,
-            backgroundColor: '#3399ff',
-            color: 'white',
-            border: 'none',
-            borderRadius: 8,
-            cursor: 'pointer',
-          }}
-        >
-          Restart Animations
-        </button>
-      </div>
-    </div>
+      </Section>
+    </ExampleLayout>
   );
 };
 
 export default Example;
-

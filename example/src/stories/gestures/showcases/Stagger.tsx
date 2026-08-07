@@ -1,0 +1,102 @@
+import { Children, useLayoutEffect, useState } from 'react';
+import {
+  Gesture,
+  useGesture,
+  animate,
+  useValue,
+  withStagger,
+  withSpring,
+} from 'react-ui-animate';
+import { ExampleLayout, theme } from '../../animations/shared';
+
+const StaggerItem = ({
+  y,
+  index,
+  content,
+}: {
+  y: number;
+  index: number;
+  content: string;
+}) => {
+  const [top, setTop] = useValue(0);
+
+  useLayoutEffect(() => {
+    setTop(withStagger(index, withSpring(y), { each: 50 }));
+  }, [y, index, setTop]);
+
+  return (
+    <animate.span
+      style={{
+        display: 'inline-block',
+        border: `1px solid ${theme.color.accent}`,
+        backgroundColor: theme.color.accentSoft,
+        padding: '16px 20px',
+        borderRadius: theme.radius.sm,
+        translateY: top,
+        fontSize: 32,
+        fontWeight: 600,
+        color: theme.color.text,
+        marginRight: 8,
+      }}
+    >
+      {content}
+    </animate.span>
+  );
+};
+
+const Stagger = ({ y, children }: any) => {
+  const childs = Children.toArray(children);
+
+  return (
+    <div style={{ display: 'flex', gap: 4 }}>
+      {childs.map((child: any, i) => (
+        <StaggerItem y={y} key={i} index={i} content={child.props.children} />
+      ))}
+    </div>
+  );
+};
+
+function Example() {
+  const [y, setY] = useState(0);
+
+  useGesture(
+    window,
+    Gesture.Scroll().onChange(({ offset }) => {
+      setY(offset.y);
+    })
+  );
+
+  return (
+    <ExampleLayout
+      title="Staggered Scroll Animation"
+      description="Words animate with a staggered delay based on scroll position. Each word has a different delay creating a wave effect."
+      onRestart={() => setY(0)}
+      showRestartButton={false}
+    >
+      <div
+        style={{
+          height: '180vh',
+        }}
+      >
+        <div
+          style={{
+            position: 'fixed',
+            left: 40,
+            top: 40,
+            zIndex: 10,
+          }}
+        >
+          <Stagger y={y}>
+            <span>Hello 👋</span>
+            <span>I'm</span>
+            <span>Dipesh</span>
+            <span>Rai</span>
+            <span>Welcome</span>
+          </Stagger>
+        </div>
+      </div>
+    </ExampleLayout>
+  );
+}
+
+export default Example;

@@ -1,6 +1,9 @@
-// Gesture hooks
-export { useDrag } from './useDrag';
-export { useMove } from './useMove';
-export { useScroll } from './useScroll';
+export { useGesture } from './useGesture';
 export { useScrollProgress, type UseScrollProgressOptions } from './useScrollProgress';
-export { useWheel } from './useWheel';
+export { useScrollReveal, type UseScrollRevealOptions } from './useScrollReveal';
+export {
+  useDrag,
+  type UseDragOptions,
+  type UseDragResult,
+  type DragBounds,
+} from './useDrag';

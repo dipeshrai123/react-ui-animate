@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { animate, recipes, Presence } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { animate, recipes, Unmount } from 'react-ui-animate';
+import { ExampleLayout, Section, ExampleCard, Button, theme } from '../shared';
 
 const Example: React.FC = () => {
   const [mounted, setMounted] = useState(true);
 
   return (
     <ExampleLayout
+      tag="Recipe"
       title="Animation Recipes"
-      description="Pre-built, tested animations for common use cases. Import individual recipes or use the recipes object."
+      description="Pre-built, tested motion presets for the most common patterns — drop them straight onto animate, hover, press, or unmount."
       showRestartButton={false}
     >
       <Section title="Fade Animations" description="Simple opacity-based animations">
@@ -272,23 +273,12 @@ const Example: React.FC = () => {
       <Section title="Exit Animations" description="Animations for elements leaving the DOM">
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
-            <button
-              onClick={() => setMounted(!mounted)}
-              style={{
-                padding: '12px 24px',
-                fontSize: 16,
-                backgroundColor: '#3399ff',
-                color: 'white',
-                border: 'none',
-                borderRadius: 8,
-                cursor: 'pointer',
-              }}
-            >
+            <Button variant="primary" onClick={() => setMounted(!mounted)}>
               {mounted ? 'Hide' : 'Show'} Element
-            </button>
+            </Button>
           </div>
           <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap' }}>
-            <Presence>
+            <Unmount>
               {mounted && (
                 <animate.div
                   style={{
@@ -299,11 +289,11 @@ const Example: React.FC = () => {
                     opacity: 0,
                   }}
                   animate={recipes.fadeIn}
-                  exit={recipes.exitFade}
+                  unmount={recipes.unmountFade}
                 />
               )}
-            </Presence>
-            <Presence>
+            </Unmount>
+            <Unmount>
               {mounted && (
                 <animate.div
                   style={{
@@ -315,10 +305,10 @@ const Example: React.FC = () => {
                     translateY: 20,
                   }}
                   animate={recipes.slideFadeIn}
-                  exit={recipes.exitSlideUp}
+                  unmount={recipes.unmountSlideUp}
                 />
               )}
-            </Presence>
+            </Unmount>
           </div>
         </ExampleCard>
       </Section>
@@ -327,13 +317,16 @@ const Example: React.FC = () => {
         <ExampleCard>
           <pre
             style={{
-              backgroundColor: '#f5f5f5',
+              backgroundColor: theme.color.surfaceRaised,
+              border: `1px solid ${theme.color.border}`,
+              color: theme.color.text,
               padding: 20,
-              borderRadius: 8,
+              borderRadius: theme.radius.sm,
               overflow: 'auto',
               margin: 0,
-              fontSize: 14,
+              fontSize: 13,
               lineHeight: 1.6,
+              fontFamily: theme.font.mono,
             }}
           >
             {`import { fadeIn, slideInUp, hoverScale } from 'react-ui-animate';

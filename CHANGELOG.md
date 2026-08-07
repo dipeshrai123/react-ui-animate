@@ -9,6 +9,91 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🚨 Breaking Changes
 
+- **`layout`/`layoutId`/`LayoutGroup` renamed to `flip`/`flipId`/`FlipGroup`; `Presence` renamed to `Unmount`**: both names were borrowed near-verbatim from framer-motion's vocabulary (`layout`, `layoutId`, `LayoutGroup`, `AnimatePresence`). This library implements its layout system as an actual FLIP (First, Last, Invert, Play) animation, so the prop/component names now say that directly instead of echoing another library's API surface:
+
+  ```tsx
+  // Before
+  import { animate, LayoutGroup, Presence } from 'react-ui-animate';
+
+  <LayoutGroup>
+    <animate.div layout layoutId="card" layoutOptions={withSpring({ stiffness: 400 })} />
+  </LayoutGroup>;
+
+  <Presence>
+    {open && <animate.div exit={{ opacity: 0 }} />}
+  </Presence>;
+
+  // After
+  import { animate, FlipGroup, Unmount } from 'react-ui-animate';
+
+  <FlipGroup>
+    <animate.div flip flipId="card" flipOptions={withSpring({ stiffness: 400 })} />
+  </FlipGroup>;
+
+  <Unmount>
+    {open && <animate.div unmount={{ opacity: 0 }} />}
+  </Unmount>;
+  ```
+
+  The rest of the surface follows the same two renames:
+
+  | Before | After |
+  |---|---|
+  | `layout` / `layoutOptions` / `layoutId` props | `flip` / `flipOptions` / `flipId` |
+  | `LayoutOptions` type | `FlipOptions` |
+  | `Presence` / `PresenceProps` / `PresenceContext` / `PresenceContextValue` | `Unmount` / `UnmountProps` / `UnmountContext` / `UnmountContextValue` |
+  | `usePresence()` | `useUnmount()` (same return shape: `[isPresent, onExitComplete]`) |
+  | `useIsPresent()` | `useIsUnmounting()` — **polarity is inverted**: `useIsPresent()` returned `true` when *not* exiting, `useIsUnmounting()` returns `true` when it *is* exiting |
+  | `exit` prop on `animate.*` | `unmount` |
+  | `recipes.exitFade` / `exitSlideUp` / `exitSlideDown` / `exitScale` | `recipes.unmountFade` / `unmountSlideUp` / `unmountSlideDown` / `unmountScale` |
+
+  `Unmount` is unrelated to the old `Mount`/`useMount` API removed below — that was a different, already-retired design, not a naming precursor to this one.
+
+- **API cleanup — removed unused/leaked exports, one rename**:
+
+  - `isAnimateValue` and `GesturePhase` are no longer exported — both were
+    internal implementation details with no real consumer path. Use `phase`
+    directly off gesture events instead of comparing against `GesturePhase`.
+  - The 40 flat recipe exports (`fadeIn`, `slideInUp`, `scaleIn`, ...) have
+    been removed in favor of the `recipes` namespace object, which already
+    contained the same values:
+
+    ```tsx
+    // Before
+    import { fadeIn, slideInUp } from 'react-ui-animate';
+
+    // After
+    import { recipes } from 'react-ui-animate';
+    // recipes.fadeIn, recipes.slideInUp
+    ```
+
+  - The standalone `to()` interpolation function has been renamed to
+    `interpolate()` to avoid colliding with `Descriptor.to` and
+    `AnimateValue.prototype.to()` (the reactive interpolation method most
+    code should use instead — `to()` is now only for one-off mapping of a
+    plain number):
+
+    ```tsx
+    // Before
+    import { to } from 'react-ui-animate';
+    to(50, [0, 100], [0, 1]);
+
+    // After
+    import { interpolate } from 'react-ui-animate';
+    interpolate(50, [0, 100], [0, 1]);
+    ```
+
+  - `useDrag`'s callbacks have been renamed to match `Gesture.*`'s
+    vocabulary:
+
+    ```tsx
+    // Before
+    useDrag(ref, { onDragStart, onDrag, onDragEnd });
+
+    // After
+    useDrag(ref, { onStart, onChange, onEnd });
+    ```
+
 - **`useMount` hook removed**: The `useMount` hook has been removed. Use the new `Presence` component instead for mount/unmount animations:
 
   ```tsx
@@ -62,6 +147,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Dependency on `@raidipesh78/re-motion` removed**: The library no longer depends on `@raidipesh78/re-motion`. The `animate` and `makeAnimated` APIs are now built-in. While the API should be compatible, there may be subtle differences in behavior. If you encounter issues, please report them.
 
 ### ✨ New Features
+
+- **`Gesture.Pinch()` and `Gesture.Rotate()`**: two-finger pinch/zoom and
+  rotation, built on a new multi-pointer tracking layer. Both can be
+  registered together on the same ref and read from the same two-pointer
+  stream simultaneously — they don't compete with each other, only with
+  single-pointer gestures (a second finger joining mid-drag automatically
+  cancels an in-flight `Pan`, handing off to `Pinch`/`Rotate`):
+
+  ```tsx
+  import { Gesture, useGesture, useValue, withSpring } from 'react-ui-animate';
+
+  const [scale, setScale] = useValue(1);
+  const startScale = useRef(1);
+
+  useGesture(
+    ref,
+    Gesture.Pinch()
+      .threshold(0.02)
+      .onStart(() => { startScale.current = scale.current; })
+      .onUpdate(({ scale: s }) => setScale(startScale.current * s))
+      .onEnd(() => setScale(withSpring(Math.min(Math.max(scale.current, 0.5), 3))))
+  );
+  ```
+
+  `Gesture.Rotate()` follows the same shape, reporting cumulative `rotation`
+  in degrees instead of `scale`.
+
+- **`prefers-reduced-motion` support**: `timing`, `spring`, and `decay` (and everything built on them — `withSpring`, `withTiming`, `withDecay`, recipes, etc.) now check the user's OS-level `prefers-reduced-motion` setting and, when enabled, resolve straight to the animation's end state instead of animating. Use `setReducedMotion(true | false | null)` to override the media query (e.g. for testing, or an in-app "reduce motion" toggle), and `isReducedMotionEnabled()` to read the current effective value:
+
+  ```tsx
+  import { setReducedMotion, isReducedMotionEnabled } from 'react-ui-animate';
+
+  setReducedMotion(true); // force-disable animation everywhere
+  setReducedMotion(null); // go back to following the OS setting
+  ```
+
+- **`withKeyframes`**: Animate a value through a list of intermediate stops in one call, instead of hand-rolling a `withSequence` of `withTiming` steps:
+
+  ```tsx
+  import { useValue, withKeyframes } from 'react-ui-animate';
+
+  const [x, setX] = useValue(0);
+
+  setX(withKeyframes([0, 100, 50, 100], { duration: 600 }));
+
+  // per-step overrides
+  setX(
+    withKeyframes([0, { to: 100, duration: 200, easing: Easing.linear }, 50])
+  );
+  ```
 
 - **Animation Recipes**: Added 40+ pre-built animation recipes for common use cases:
 
@@ -184,6 +319,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### 🐛 Bug Fixes
 
+- Fixed `useValue`'s `set` function and `controls` object being recreated on
+  every render instead of holding a stable identity like `useState`'s
+  setter. A fresh identity each render would spuriously re-run any
+  `useEffect` that (correctly, per `exhaustive-deps`) listed it as a
+  dependency — restarting whatever animation that effect was driving any
+  time an unrelated parent re-render happened.
+- Fixed `Gesture.Pan()` and `Gesture.Swipe()` both firing when registered on
+  the same element for a single fast drag (`onEnd` and `onSwipe` used to
+  both fire for what the user experienced as one gesture) — the first one
+  to actually recognize the gesture now wins for that pointer stream; the
+  other stays quiet instead of firing a contradictory second callback.
 - Fixed exit animation callbacks not firing issue
 - Fixed multiple state animation bug where animations would conflict
 - Fixed animation glitches on re-render

@@ -1,9 +1,20 @@
+import { TextEncoder, TextDecoder } from 'util';
+
+// jsdom's test environment doesn't provide these, but react-dom/server's
+// browser build (what Jest resolves under jsdom) needs them at import time.
+if (typeof (globalThis as any).TextEncoder === 'undefined') {
+  (globalThis as any).TextEncoder = TextEncoder;
+  (globalThis as any).TextDecoder = TextDecoder;
+}
+
 import React, { createRef, act } from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import '@testing-library/jest-dom';
 import { animate } from '../animate';
 import { AnimateValue } from '../../values/AnimateValue';
-import { withTiming, withSpring } from '../../descriptors';
+import { withTiming, withSpring, withSequence, withDelay } from '../../descriptors';
+import { useValue } from '../../hooks/useValue';
 
 describe('〈animate> components', () => {
   it('forwards its ref to the underlying DOM node', () => {
@@ -36,6 +47,29 @@ describe('〈animate> components', () => {
     expect(el.getAttribute('title')).toBe('hello');
   });
 
+  it('renders the AnimateValue resting state into static (SSR) markup, not the default one', () => {
+    // Regression: style/transform props bound directly to an AnimateValue
+    // (the `useValue` + `style={{ opacity }}` pattern) used to be entirely
+    // skipped when building the element's style, relying on a
+    // useLayoutEffect to push `.current` to the DOM after mount. That
+    // effect never runs during server rendering, so the server-rendered
+    // HTML showed the un-animated default (opacity: 1, no transform) until
+    // client JS hydrated and snapped it to the real starting value — a
+    // visible flash on any SSR'd page (e.g. a Docusaurus/Next.js site).
+    const opacity = new AnimateValue(0);
+    const translateY = new AnimateValue(14);
+
+    const html = renderToStaticMarkup(
+      <animate.div
+        data-testid="ssr-div"
+        style={{ opacity, translateY }}
+      />
+    );
+
+    expect(html).toContain('opacity:0');
+    expect(html).toContain('transform:translateY(14px)');
+  });
+
   it('updates style when AnimateValue-driven props change', () => {
     const valueX = new AnimateValue(5);
     const valueOpacity = new AnimateValue(0.5);
@@ -56,6 +90,214 @@ describe('〈animate> components', () => {
 
     expect(el.style.transform).toBe('translateX(25px)');
     expect(el.style.opacity).toBe('0.8');
+  });
+
+  it('sets AnimateValue-driven non-style attributes (e.g. SVG cx/d) without passing the AnimateValue to React', () => {
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const cx = new AnimateValue(50);
+    const d = new AnimateValue('M 0 0 L 10 10');
+
+    render(
+      <svg>
+        <animate.circle data-testid="svg-circle" cx={cx} cy={10} r={5} />
+        <animate.path data-testid="svg-path" d={d} />
+      </svg>
+    );
+
+    const circle = screen.getByTestId('svg-circle');
+    const path = screen.getByTestId('svg-path');
+
+    expect(circle.getAttribute('cx')).toBe('50');
+    expect(path.getAttribute('d')).toBe('M 0 0 L 10 10');
+
+    act(() => {
+      cx.set(75);
+      d.set('M 0 0 L 20 20');
+    });
+
+    expect(circle.getAttribute('cx')).toBe('75');
+    expect(path.getAttribute('d')).toBe('M 0 0 L 20 20');
+
+    // React never received the raw AnimateValue as a DOM attribute value
+    // (would log "Expected length, [object Object]" or similar).
+    expect(errorSpy).not.toHaveBeenCalled();
+    errorSpy.mockRestore();
+  });
+
+  describe('SVG presentation attributes (camelCase JSX prop vs. real hyphenated attribute)', () => {
+    it('sets the real hyphenated attribute, not the literal camelCase prop name, for a static value', () => {
+      render(
+        <svg>
+          <animate.circle
+            data-testid="circle"
+            cx={50}
+            cy={50}
+            r={20}
+            strokeWidth={4}
+            strokeDasharray={100}
+          />
+        </svg>
+      );
+      const circle = screen.getByTestId('circle');
+
+      expect(circle.getAttribute('stroke-width')).toBe('4');
+      expect(circle.getAttribute('stroke-dasharray')).toBe('100');
+      expect(circle.getAttribute('strokeWidth')).toBeNull();
+      expect(circle.getAttribute('strokeDasharray')).toBeNull();
+    });
+
+    it('sets the real hyphenated attribute for an AnimateValue-driven value, and keeps it updated', () => {
+      const dashoffset = new AnimateValue(100);
+      render(
+        <svg>
+          <animate.circle
+            data-testid="circle"
+            cx={50}
+            cy={50}
+            r={20}
+            strokeDasharray={100}
+            strokeDashoffset={dashoffset}
+          />
+        </svg>
+      );
+      const circle = screen.getByTestId('circle');
+
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('100');
+      expect(circle.getAttribute('strokeDashoffset')).toBeNull();
+
+      act(() => {
+        dashoffset.set(40);
+      });
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('40');
+
+      act(() => {
+        dashoffset.set(0);
+      });
+      expect(circle.getAttribute('stroke-dashoffset')).toBe('0');
+      // Never set the wrong-case attribute at any point.
+      expect(circle.getAttribute('strokeDashoffset')).toBeNull();
+    });
+
+    it('leaves genuinely camelCase SVG attributes and plain geometry attributes untouched', () => {
+      const cx = new AnimateValue(10);
+      render(
+        <svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid meet">
+          <animate.circle data-testid="circle" cx={cx} cy={50} r={20} />
+        </svg>
+      );
+      const svg = document.querySelector('svg')!;
+      const circle = screen.getByTestId('circle');
+
+      expect(svg.getAttribute('viewBox')).toBe('0 0 200 200');
+      expect(svg.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
+      expect(circle.getAttribute('cx')).toBe('10');
+      expect(circle.getAttribute('cy')).toBe('50');
+      expect(circle.getAttribute('r')).toBe('20');
+
+      act(() => cx.set(30));
+      expect(circle.getAttribute('cx')).toBe('30');
+    });
+
+    it('real example: a stroke-draw circle actually reveals via stroke-dashoffset as it animates', () => {
+      jest.useFakeTimers();
+
+      const CIRCUMFERENCE = 2 * Math.PI * 70;
+
+      function StrokeDrawCircle() {
+        const [dashoffset, setDashoffset] = useValue(CIRCUMFERENCE);
+        return (
+          <svg>
+            <animate.circle
+              data-testid="draw-circle"
+              cx={100}
+              cy={100}
+              r={70}
+              fill="none"
+              stroke="#3399ff"
+              strokeWidth={8}
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={dashoffset}
+            />
+            <button
+              data-testid="draw-button"
+              onClick={() => setDashoffset(withTiming(0, { duration: 300 }))}
+            />
+          </svg>
+        );
+      }
+
+      render(<StrokeDrawCircle />);
+      const circle = screen.getByTestId('draw-circle');
+      const button = screen.getByTestId('draw-button');
+
+      // Fully hidden at rest: dashoffset equals the whole circumference.
+      expect(circle.getAttribute('stroke-dasharray')).toBe(String(CIRCUMFERENCE));
+      expect(circle.getAttribute('stroke-dashoffset')).toBe(String(CIRCUMFERENCE));
+
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+      const midOffset = Number(circle.getAttribute('stroke-dashoffset'));
+      expect(midOffset).toBeGreaterThan(0);
+      expect(midOffset).toBeLessThan(CIRCUMFERENCE);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(Number(circle.getAttribute('stroke-dashoffset'))).toBeCloseTo(0, 1);
+
+      jest.useRealTimers();
+    });
+
+    it('real example: same-topology path morph updates the real d attribute end to end', () => {
+      jest.useFakeTimers();
+
+      const SQUARE = 'M 40 40 L 160 40 L 160 160 L 40 160 Z';
+      const DIAMOND = 'M 100 20 L 180 100 L 100 180 L 20 100 Z';
+
+      function MorphPath() {
+        const [path, setPath] = useValue(SQUARE);
+        return (
+          <svg>
+            <animate.path data-testid="morph-path" d={path} fill="#845ef7" />
+            <button
+              data-testid="morph-button"
+              onClick={() => setPath(withTiming(DIAMOND, { duration: 200 }))}
+            />
+          </svg>
+        );
+      }
+
+      render(<MorphPath />);
+      const path = screen.getByTestId('morph-path');
+      const button = screen.getByTestId('morph-button');
+
+      expect(path.getAttribute('d')).toBe(SQUARE);
+
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+      const midPath = path.getAttribute('d');
+      expect(midPath).not.toBe(SQUARE);
+      expect(midPath).not.toBe(DIAMOND);
+      // Still a well-formed path with the same number of numeric tokens.
+      expect(midPath?.match(/-?\d+(\.\d+)?/g)).toHaveLength(8);
+
+      act(() => {
+        jest.advanceTimersByTime(300);
+      });
+      expect(path.getAttribute('d')).toBe(DIAMOND);
+
+      jest.useRealTimers();
+    });
   });
 
   it('applies raw transform string when no transformKeys are present', () => {
@@ -153,26 +395,26 @@ describe('〈animate> components', () => {
       jest.useRealTimers();
     });
 
-    it('applies exit animation for opacity when not in initial style', async () => {
-      const { Presence } = await import('../../modules/Presence');
+    it('applies unmount animation for opacity when not in initial style', async () => {
+      const { Unmount } = await import('../../presence/Unmount');
       const onExitComplete = jest.fn();
       let show = true;
 
       function TestComponent() {
         return (
-          <Presence onExitComplete={onExitComplete}>
+          <Unmount onExitComplete={onExitComplete}>
             {show && (
               <animate.div
                 key="test"
                 data-testid="exit-test"
-                exit={{
+                unmount={{
                   opacity: withTiming(0, { duration: 100 }),
                 }}
               >
                 Content
               </animate.div>
             )}
-          </Presence>
+          </Unmount>
         );
       }
 
@@ -184,11 +426,11 @@ describe('〈animate> components', () => {
       const initialOpacityNum = initialOpacity ? parseFloat(initialOpacity) : 1;
       expect(initialOpacityNum).toBe(1);
 
-      // Remove element to trigger exit
+      // Remove element to trigger unmount
       show = false;
       rerender(<TestComponent />);
 
-      // Exit animation should start - opacity should animate to 0
+      // Unmount animation should start - opacity should animate to 0
       act(() => {
         jest.advanceTimersByTime(50);
       });
@@ -201,7 +443,7 @@ describe('〈animate> components', () => {
         jest.advanceTimersByTime(100);
       });
 
-      // After exit completes, opacity should be 0
+      // After unmount completes, opacity should be 0
       await waitFor(() => {
         const finalOpacity = parseFloat(el.style.opacity);
         expect(finalOpacity).toBeCloseTo(0, 1);
@@ -264,6 +506,235 @@ describe('〈animate> components', () => {
       await waitFor(() => {
         const finalOpacity = parseFloat(el.style.opacity);
         expect(finalOpacity).toBeCloseTo(1, 1);
+      });
+    });
+
+    it('keeps a static style value (e.g. backgroundColor) after hover promotes it into an animated value, across a later unrelated re-render', async () => {
+      function Wrapper() {
+        const [, setTick] = React.useState(0);
+        return (
+          <>
+            <animate.div
+              data-testid="promoted-style-test"
+              style={{ backgroundColor: 'rgb(255, 0, 0)' }}
+              hover={{
+                backgroundColor: withTiming('rgb(0, 255, 0)', { duration: 50 }),
+              }}
+            >
+              Hover me
+            </animate.div>
+            <button
+              data-testid="rerender-trigger"
+              onClick={() => setTick((t) => t + 1)}
+            />
+          </>
+        );
+      }
+
+      render(<Wrapper />);
+
+      const el = screen.getByTestId('promoted-style-test') as HTMLElement;
+      expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(100);
+      });
+
+      await waitFor(() => {
+        expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+      });
+
+      // Unrelated re-render used to wipe backgroundColor from the DOM.
+      const button = screen.getByTestId('rerender-trigger');
+      act(() => {
+        fireEvent.click(button);
+      });
+
+      expect(el.style.backgroundColor).toBe('rgb(255, 0, 0)');
+    });
+
+    // Extracts the numeric translateY value out of a computed transform string.
+    const readTranslateY = (transform: string) => {
+      const match = transform.match(/translateY\(([-\d.]+)px\)/);
+      return match ? parseFloat(match[1]) : NaN;
+    };
+
+    it('reverts hover to the current settled value rather than a stale pre-animation value', async () => {
+      // Mirrors a real-world pattern: a static initial style animated in via
+      // `animate`/`view` to a settled value, with `hover` also targeting the
+      // same property. Hovering out must snap back to the *settled* value,
+      // not whatever the property happened to be before the reveal finished.
+      render(
+        <animate.div
+          data-testid="settle-then-hover"
+          style={{ translateY: 40 }}
+          animate={{ translateY: withTiming(0, { duration: 100 }) }}
+          hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+        />
+      );
+      const el = screen.getByTestId('settle-then-hover') as HTMLElement;
+
+      // Let the reveal animation fully settle (40 -> 0) before ever hovering.
+      act(() => {
+        jest.advanceTimersByTime(150);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
+      });
+
+      // Hover in, then out.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Must revert to the settled value (0), never the original static
+      // style value (40) it started from before the reveal animation ran.
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
+      });
+    });
+
+    it('self-corrects on a later hover cycle after the settled value changes again', async () => {
+      function TestComponent({ target }: { target: number }) {
+        return (
+          <animate.div
+            data-testid="racy-hover"
+            style={{ translateY: 40 }}
+            animate={{ translateY: withTiming(target, { duration: 50 }) }}
+            hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+          />
+        );
+      }
+
+      const { rerender } = render(<TestComponent target={0} />);
+      const el = screen.getByTestId('racy-hover') as HTMLElement;
+
+      // Hover fires immediately, before the 40 -> 0 reveal has progressed at
+      // all — its captured revert target is whatever was current then (~40).
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Re-trigger `animate` to a new settled value (e.g. a later `view`
+      // reveal), independent of the earlier hover cycle.
+      rerender(<TestComponent target={10} />);
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(10, 1);
+      });
+
+      // A later hover cycle must revert to *this* settled value (10), not
+      // whatever was captured during the very first, earlier hover.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(10, 1);
+      });
+    });
+
+    it('reverts to the real withSequence/withDelay target even if hover interrupts it mid-spring', async () => {
+      // Mirrors the exact reported pattern: `view`/`animate` staggers in via
+      // withSequence([withDelay(...), withSpring(0, ...)]), and `hover`
+      // targets the same key. `withDelay` is just a plain timer (unrelated
+      // to the AnimateValue itself), so hovering *during the delay* doesn't
+      // actually stop the sequence — the delay still elapses and the spring
+      // step still claims the value afterwards. The real interruption
+      // happens once the spring step has *started*: at that point hovering
+      // cancels it outright, and nothing ever resumes it. Reverting to a
+      // merely *captured* value would then snap back to wherever that
+      // interruption left it (partway between 40 and 0), not its real
+      // destination (0).
+      render(
+        <animate.div
+          data-testid="sequence-hover"
+          style={{ translateY: 40 }}
+          animate={{
+            translateY: withSequence([
+              withDelay(100),
+              withSpring(0, { stiffness: 140, damping: 22 }),
+            ]),
+          }}
+          hover={{ translateY: withTiming(-4, { duration: 50 }) }}
+        />
+      );
+      const el = screen.getByTestId('sequence-hover') as HTMLElement;
+
+      // Let the delay elapse and the spring step start moving, then
+      // interrupt with hover partway through — well before it reaches 0.
+      act(() => {
+        jest.advanceTimersByTime(130);
+      });
+      const midFlightValue = readTranslateY(el.style.transform);
+      expect(midFlightValue).toBeLessThan(40);
+      expect(midFlightValue).toBeGreaterThan(1);
+
+      // Hover in (cancels the in-flight spring) then out.
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(60);
+      });
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(-4, 1);
+      });
+
+      act(() => {
+        el.dispatchEvent(new MouseEvent('mouseleave', { bubbles: true }));
+      });
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+
+      // Must settle at the sequence's real target (0), never the
+      // interrupted starting value (40).
+      await waitFor(() => {
+        expect(readTranslateY(el.style.transform)).toBeCloseTo(0, 1);
       });
     });
 
@@ -482,26 +953,26 @@ describe('〈animate> components', () => {
       }, { timeout: 1000 });
     });
 
-    it('applies string properties like boxShadow in exit state when not in initial style', async () => {
-      const { Presence } = await import('../../modules/Presence');
+    it('applies string properties like boxShadow in unmount state when not in initial style', async () => {
+      const { Unmount } = await import('../../presence/Unmount');
       const onExitComplete = jest.fn();
       let show = true;
 
       function TestComponent() {
         return (
-          <Presence onExitComplete={onExitComplete}>
+          <Unmount onExitComplete={onExitComplete}>
             {show && (
               <animate.div
                 key="test"
                 data-testid="exit-boxshadow"
-                exit={{
+                unmount={{
                   boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
                 }}
               >
                 Content
               </animate.div>
             )}
-          </Presence>
+          </Unmount>
         );
       }
 
@@ -512,7 +983,7 @@ describe('〈animate> components', () => {
       const initialBoxShadow = el.style.boxShadow;
       expect(initialBoxShadow).toBe('');
 
-      // Remove element to trigger exit
+      // Remove element to trigger unmount
       show = false;
       rerender(<TestComponent />);
 
@@ -520,7 +991,7 @@ describe('〈animate> components', () => {
         jest.advanceTimersByTime(200);
       });
 
-      // After exit animation completes, boxShadow should be applied
+      // After unmount animation completes, boxShadow should be applied
       await waitFor(() => {
         const boxShadow = el.style.boxShadow;
         expect(boxShadow).toContain('rgba(0,0,0,0.5)');

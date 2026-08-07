@@ -9,154 +9,88 @@ import {
   withLoop,
   withDelay,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../../shared';
 
 const Example: React.FC = () => {
   const [obj, setObj] = useValue({ x: 0, y: 0, width: 100, height: 100 });
 
   return (
     <ExampleLayout
-      title="useValue Hook - Object Values"
-      description="useValue can animate objects with multiple properties. Each property is animated independently."
+      tag="HOOK"
+      title="useValue — object values"
+      description="useValue also animates plain objects — every property interpolates independently, so you can drive a whole box model from one call."
       showRestartButton={false}
     >
-      <Section title="Basic Object Animation" description="Animate object properties">
+      <Section title="Basic object animation" description="Animate several object properties at once.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button
-                onClick={() =>
-                  setObj(
-                    withSpring(
-                      { x: 100, y: 100, width: 200, height: 200 },
-                      {
-                        onStart: () => console.log('Animation started'),
-                        onComplete: () => console.log('Animation complete'),
-                      }
-                    )
-                  )
-                }
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Spring Animation
-              </button>
-              <button
-                onClick={() =>
-                  setObj(
-                    withTiming(
-                      { x: 0, y: 0, width: 300, height: 100 },
-                      {
-                        onStart: () => console.log('Animation started'),
-                        onComplete: () => console.log('Animation complete'),
-                      }
-                    )
-                  )
-                }
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Timing Animation
-              </button>
-              <button
-                onClick={() => setObj({ x: 0, y: 0, width: 100, height: 100 })}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Reset
-              </button>
-            </div>
-            <animate.div
-              style={{
-                width: obj.width,
-                height: obj.height,
-                backgroundColor: '#3399ff',
-                borderRadius: 8,
-                translateX: obj.x,
-                translateY: obj.y,
-              }}
-            />
-          </div>
+          <ButtonRow>
+            <Button
+              variant="primary"
+              onClick={() => setObj(withSpring({ x: 100, y: 100, width: 200, height: 200 }))}
+            >
+              Spring animation
+            </Button>
+            <Button
+              accent="#51cf66"
+              onClick={() => setObj(withTiming({ x: 0, y: 0, width: 300, height: 100 }))}
+            >
+              Timing animation
+            </Button>
+            <Button variant="ghost" onClick={() => setObj({ x: 0, y: 0, width: 100, height: 100 })}>
+              Reset
+            </Button>
+          </ButtonRow>
+          <animate.div
+            style={{
+              width: obj.width,
+              height: obj.height,
+              backgroundColor: '#3399ff',
+              borderRadius: 8,
+              translateX: obj.x,
+              translateY: obj.y,
+            }}
+          />
         </ExampleCard>
       </Section>
 
-      <Section title="Object with Sequence" description="Chain animations for object properties">
+      <Section title="Object with sequence" description="Chain animations across a mix of object properties.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
+          <ButtonRow>
+            <Button
+              accent="#845ef7"
               onClick={() =>
                 setObj(
-                  withSequence(
-                    [
-                      withSpring({ x: 100, y: 100 }),
-                      withTiming({ width: 200, height: 200 }),
-                      withDelay(1000),
-                      withTiming({ x: 0, y: 0 }, { duration: 3000 }),
-                      withDecay(0.5),
-                    ],
-                    {
-                      onStart() {
-                        console.log('Object sequence started');
-                      },
-                      onComplete() {
-                        console.log('Object sequence completed');
-                      },
-                    }
-                  )
+                  withSequence([
+                    withSpring({ x: 100, y: 100 }),
+                    withTiming({ width: 200, height: 200 }),
+                    withDelay(1000),
+                    withTiming({ x: 0, y: 0 }, { duration: 3000 }),
+                    withDecay(0.5),
+                  ])
                 )
               }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#845ef7',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
             >
               Sequence: Spring → Timing → Delay → Timing → Decay
-            </button>
-            <animate.div
-              style={{
-                width: obj.width,
-                height: obj.height,
-                backgroundColor: '#845ef7',
-                borderRadius: 8,
-                translateX: obj.x,
-                translateY: obj.y,
-              }}
-            />
-          </div>
+            </Button>
+          </ButtonRow>
+          <animate.div
+            style={{
+              width: obj.width,
+              height: obj.height,
+              backgroundColor: '#845ef7',
+              borderRadius: 8,
+              translateX: obj.x,
+              translateY: obj.y,
+            }}
+          />
         </ExampleCard>
       </Section>
 
-      <Section title="Object with Loop" description="Loop animations for object properties">
+      <Section title="Object with loop" description="Loop a chained animation across object properties.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
+          <ButtonRow>
+            <Button
+              accent="#20c997"
               onClick={() =>
                 setObj(
                   withLoop(
@@ -166,42 +100,24 @@ const Example: React.FC = () => {
                       withTiming({ x: 0 }),
                       withTiming({ y: 0 }),
                     ]),
-                    5,
-                    {
-                      onStart() {
-                        console.log('Loop started');
-                      },
-                      onComplete() {
-                        console.log('Loop completed');
-                      },
-                    }
+                    5
                   )
                 )
               }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#20c997',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
             >
-              Loop Sequence (5 times)
-            </button>
-            <animate.div
-              style={{
-                width: obj.width,
-                height: obj.height,
-                backgroundColor: '#20c997',
-                borderRadius: 8,
-                translateX: obj.x,
-                translateY: obj.y,
-              }}
-            />
-          </div>
+              Loop sequence (5 times)
+            </Button>
+          </ButtonRow>
+          <animate.div
+            style={{
+              width: obj.width,
+              height: obj.height,
+              backgroundColor: '#20c997',
+              borderRadius: 8,
+              translateX: obj.x,
+              translateY: obj.y,
+            }}
+          />
         </ExampleCard>
       </Section>
     </ExampleLayout>

@@ -8,9 +8,9 @@ import {
   withSequence,
   withLoop,
   withDelay,
-  Presence,
+  Unmount,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../../shared';
 
 const Example: React.FC = () => {
   const [x, setX] = useValue(0);
@@ -18,293 +18,98 @@ const Example: React.FC = () => {
 
   return (
     <ExampleLayout
-      title="useValue Hook - Basic Setup"
-      description="The useValue hook creates an animated value that can be controlled imperatively. It returns [value, setValue] where setValue accepts descriptors or immediate values."
+      tag="HOOK"
+      title="useValue — basic setup"
+      description="useValue creates an animated value you control imperatively. It returns [value, setValue], where setValue accepts a descriptor (withSpring, withTiming, …) or an immediate value."
       showRestartButton={false}
     >
-      <Section title="Basic Usage" description="Create and animate a numeric value">
+      <Section title="Basic usage" description="Drive one animated value with different descriptors.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button
-                onClick={() => setX(withTiming(0, { duration: 500 }))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Timing to 0
-              </button>
-              <button
-                onClick={() => setX(withSpring(100))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Spring to 100
-              </button>
-              <button
-                onClick={() => setX(0)}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Immediate to 0
-              </button>
-            </div>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#3399ff',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
+          <ButtonRow>
+            <Button variant="primary" onClick={() => setX(withTiming(0, { duration: 500 }))}>
+              Timing to 0
+            </Button>
+            <Button accent="#51cf66" onClick={() => setX(withSpring(100))}>
+              Spring to 100
+            </Button>
+            <Button variant="ghost" onClick={() => setX(0)}>
+              Immediate to 0
+            </Button>
+          </ButtonRow>
+          <animate.div style={{ width: 100, height: 100, backgroundColor: '#3399ff', borderRadius: 8, translateX: x }} />
         </ExampleCard>
       </Section>
 
-      <Section title="Loop Animation" description="Loop animations with callbacks">
+      <Section title="Loop animation" description="Repeat an animation a fixed number of times.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
+          <ButtonRow>
+            <Button accent="#845ef7" onClick={() => setX(withLoop(withSpring(100), 5))}>
+              Loop 0 → 100 (5 times)
+            </Button>
+          </ButtonRow>
+          <animate.div style={{ width: 100, height: 100, backgroundColor: '#845ef7', borderRadius: 8, translateX: x }} />
+        </ExampleCard>
+      </Section>
+
+      <Section title="Explicit from value" description="Force an animation to start from a specific value, regardless of the current one.">
+        <ExampleCard>
+          <ButtonRow>
+            <Button accent="#20c997" onClick={() => setX(withSpring(100, { from: 0 }))}>
+              Spring 0 → 100 (explicit from)
+            </Button>
+            <Button accent="#ffd43b" onClick={() => setX(withTiming(200, { from: 50, duration: 500 }))}>
+              Timing 50 → 200 (explicit from)
+            </Button>
+          </ButtonRow>
+          <animate.div style={{ width: 100, height: 100, backgroundColor: '#20c997', borderRadius: 8, translateX: x }} />
+        </ExampleCard>
+      </Section>
+
+      <Section title="Decay animation" description="Physics-based deceleration, as if the value were given an initial velocity.">
+        <ExampleCard>
+          <ButtonRow>
+            <Button accent="#ff8787" onClick={() => setX(withDecay(1))}>
+              Decay animation
+            </Button>
+          </ButtonRow>
+          <animate.div style={{ width: 100, height: 100, backgroundColor: '#ff8787', borderRadius: 8, translateX: x }} />
+        </ExampleCard>
+      </Section>
+
+      <Section title="Sequence animation" description="Chain several descriptors together into one continuous animation.">
+        <ExampleCard>
+          <ButtonRow>
+            <Button
+              accent="#ff6b6b"
               onClick={() =>
-                setX(
-                  withLoop(withSpring(100), 5, {
-                    onStart() {
-                      console.log('Loop started');
-                    },
-                    onComplete() {
-                      console.log('Loop completed');
-                    },
-                  })
-                )
+                setX(withSequence([withSpring(100), withDelay(2000), withTiming(200), withDecay(1)]))
               }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#845ef7',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
             >
-              Loop 0 to 100 (5 times)
-            </button>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#845ef7',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
+              Sequence: spring → delay → timing → decay
+            </Button>
+          </ButtonRow>
+          <animate.div style={{ width: 100, height: 100, backgroundColor: '#ff6b6b', borderRadius: 8, translateX: x }} />
         </ExampleCard>
       </Section>
 
-      <Section title="Explicit From Value" description="Start animations from a specific value">
+      <Section title="With Unmount" description="useValue works seamlessly inside Unmount for exit animations.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button
-                onClick={() =>
-                  setX(
-                    withSpring(100, {
-                      from: 0, // Explicitly start from 0
-                    })
-                  )
-                }
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#20c997',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Spring 0→100 (explicit from)
-              </button>
-              <button
-                onClick={() =>
-                  setX(
-                    withTiming(200, {
-                      from: 50, // Start from 50, animate to 200
-                      duration: 500,
-                    })
-                  )
-                }
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ffd43b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Timing 50→200 (explicit from)
-              </button>
-            </div>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#20c997',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
-        </ExampleCard>
-      </Section>
-
-      <Section title="Decay Animation" description="Physics-based decay animation">
-        <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
-              onClick={() => setX(withDecay(1))}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#ff8787',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
-            >
-              Decay Animation
-            </button>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#ff8787',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
-        </ExampleCard>
-      </Section>
-
-      <Section title="Sequence Animation" description="Chain multiple animations together">
-        <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
-              onClick={() =>
-                setX(
-                  withSequence(
-                    [
-                      withSpring(100),
-                      withDelay(2000),
-                      withTiming(200),
-                      withDecay(1),
-                    ],
-                    {
-                      onStart() {
-                        console.log('Sequence started');
-                      },
-                      onComplete() {
-                        console.log('Sequence completed');
-                      },
-                    }
-                  )
-                )
-              }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#ff6b6b',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
-            >
-              Sequence: Spring → Delay → Timing → Decay
-            </button>
-            <animate.div
-              style={{
-                width: 100,
-                height: 100,
-                backgroundColor: '#ff6b6b',
-                borderRadius: 8,
-                translateX: x,
-              }}
-            />
-          </div>
-        </ExampleCard>
-      </Section>
-
-      <Section title="With Presence" description="useValue works with Presence for exit animations">
-        <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
-              onClick={() => setMounted(!mounted)}
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#3399ff',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
-            >
-              {mounted ? 'Hide' : 'Show'} Element
-            </button>
-            <Presence>
-              {mounted && (
-                <animate.div
-                  onClick={() => setMounted(false)}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    backgroundColor: '#3399ff',
-                    borderRadius: 8,
-                    cursor: 'pointer',
-                  }}
-                  animate={{
-                    width: 200,
-                    height: 200,
-                    backgroundColor: '#ff6b6b',
-                  }}
-                  exit={{
-                    opacity: withTiming(0, { duration: 1000 }),
-                  }}
-                />
-              )}
-            </Presence>
-          </div>
+          <ButtonRow>
+            <Button variant="primary" onClick={() => setMounted(!mounted)}>
+              {mounted ? 'Hide' : 'Show'} element
+            </Button>
+          </ButtonRow>
+          <Unmount>
+            {mounted && (
+              <animate.div
+                key="box"
+                onClick={() => setMounted(false)}
+                style={{ width: 100, height: 100, backgroundColor: '#3399ff', borderRadius: 8, cursor: 'pointer' }}
+                animate={{ width: 200, height: 200, backgroundColor: '#ff6b6b' }}
+                unmount={{ opacity: withTiming(0, { duration: 1000 }) }}
+              />
+            )}
+          </Unmount>
         </ExampleCard>
       </Section>
     </ExampleLayout>

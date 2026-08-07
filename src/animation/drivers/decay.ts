@@ -1,25 +1,28 @@
 import { AnimateValue } from '../values/AnimateValue';
 import type { AnimateController, AnimateHooks } from './AnimateController';
-import { rubberClamp } from '../../utils';
+import { rubberClamp } from '../../shared/utils';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 
 interface DecayOptions extends AnimateHooks {
   decay?: number;
   clamp?: [number, number];
-  elastic?: boolean | number; // If true, uses default elastic constant (0.15). If number, uses that as the elastic constant.
+  elastic?: boolean | number;
+  bounce?: boolean | number;
   onChange?(value: number): void;
 }
 
 class DecayController implements AnimateController {
-  private startTime: number;
-  private from: number;
-  private frameId: number;
-  private position: number;
+  private startTime!: number;
+  private from!: number;
+  private frameId!: number;
+  private position!: number;
   private readonly restSpeed = 0.01;
   private isPaused = false;
   private isCancelled = false;
   private pausedAt = 0;
   private clampBounds?: [number, number];
   private elasticConstant?: number;
+  private bounceRestitution?: number;
 
   constructor(
     private value: AnimateValue<number>,
@@ -28,11 +31,15 @@ class DecayController implements AnimateController {
     private hooks: DecayOptions
   ) {
     this.clampBounds = hooks.clamp;
-    // Determine elastic constant: if elastic is a number, use it; if true, use default 0.15; if false/undefined, no elastic
     if (hooks.elastic === true) {
       this.elasticConstant = 0.15;
     } else if (typeof hooks.elastic === 'number') {
       this.elasticConstant = hooks.elastic;
+    }
+    if (hooks.bounce === true) {
+      this.bounceRestitution = 0.5;
+    } else if (typeof hooks.bounce === 'number') {
+      this.bounceRestitution = hooks.bounce;
     }
   }
 
@@ -53,6 +60,13 @@ class DecayController implements AnimateController {
     this.from = this.position = this.value.current;
     this.startTime = performance.now();
 
+    if (isReducedMotionEnabled()) {
+      this.value._internalSet(this.position);
+      this.hooks.onChange?.(this.position);
+      this.hooks.onComplete?.();
+      return;
+    }
+
     this.frameId = requestAnimationFrame(this.animate);
   }
 
@@ -61,15 +75,27 @@ class DecayController implements AnimateController {
 
     const elapsed = now - this.startTime;
     const k = 1 - this.deceleration;
-    const currentVelocity = this.velocity * Math.exp(-k * elapsed);
+    let currentVelocity = this.velocity * Math.exp(-k * elapsed);
 
     this.position =
       this.from + (this.velocity / k) * (1 - Math.exp(-k * elapsed));
 
     if (this.clampBounds) {
       const [min, max] = this.clampBounds;
-      if (this.elasticConstant !== undefined) {
-        // Use elastic/rubber clamping
+
+      if (this.bounceRestitution !== undefined) {
+        // Restarts a fresh decay segment at the bound with reflected velocity — the
+        // exponential formula above is only valid for one continuous run.
+        if (this.position < min && currentVelocity < 0) {
+          this.position = this.from = min;
+          this.velocity = currentVelocity = -currentVelocity * this.bounceRestitution;
+          this.startTime = now;
+        } else if (this.position > max && currentVelocity > 0) {
+          this.position = this.from = max;
+          this.velocity = currentVelocity = -currentVelocity * this.bounceRestitution;
+          this.startTime = now;
+        }
+      } else if (this.elasticConstant !== undefined) {
         this.position = rubberClamp(
           this.position,
           min,
@@ -77,7 +103,6 @@ class DecayController implements AnimateController {
           this.elasticConstant
         );
       } else {
-        // Use hard clamping
         if (this.position < min) {
           this.position = min;
         } else if (this.position > max) {

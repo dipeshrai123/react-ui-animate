@@ -1,5 +1,6 @@
 import { Easing } from '../utils/easing';
 import { AnimateValue } from '../values/AnimateValue';
+import { isReducedMotionEnabled } from '../utils/reducedMotion';
 import type { AnimateController, AnimateHooks } from './AnimateController';
 
 interface TimingOptions extends AnimateHooks {
@@ -42,7 +43,8 @@ function withInterpolation(
       return controller;
     } catch (err: any) {
       throw new Error(
-        `[timing] Cannot animate from "${value.current}" to "${target}": ${err.message}`
+        `[timing] Cannot animate from "${value.current}" to "${target}": ${err.message}`,
+        { cause: err }
       );
     }
   }
@@ -53,10 +55,10 @@ function withInterpolation(
 }
 
 class TimingController implements AnimateController {
-  private startTime: number;
-  private frameId: number;
-  private fromValue: number;
-  private position: number;
+  private startTime!: number;
+  private frameId!: number;
+  private fromValue!: number;
+  private position!: number;
   private isPaused = false;
   private isCancelled = false;
   private pausedAt: number | null = null;
@@ -74,13 +76,11 @@ class TimingController implements AnimateController {
   }
 
   start() {
-    // If explicit 'from' is provided, always use it (for loops, sequences, etc.)
     if (this.explicitFrom !== undefined) {
       this.fromValue = this.position = this.explicitFrom;
       this.value._internalSet(this.explicitFrom);
       this.startTime = performance.now();
     } else {
-      // Otherwise, try to inherit from previous controller for smooth chaining
       const previous = this.value.getAnimationController();
 
       if (
@@ -104,6 +104,14 @@ class TimingController implements AnimateController {
     this.isCancelled = false;
     this.pausedAt = null;
     this.elapsedBeforePause = 0;
+
+    if (isReducedMotionEnabled()) {
+      this.position = this.target;
+      this.value._internalSet(this.position);
+      this.hooks.onChange?.(this.position);
+      this.hooks.onComplete?.();
+      return;
+    }
 
     this.frameId = requestAnimationFrame(this.animate);
   }

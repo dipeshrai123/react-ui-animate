@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { animate, useValue, withSpring, withTiming } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow, theme } from '../shared';
 
 const Example: React.FC = () => {
   const [trigger, setTrigger] = useState(0);
@@ -9,28 +9,25 @@ const Example: React.FC = () => {
   const [animatedScroll, setAnimatedScroll] = useValue(0);
   const [animatedScrollValue, setAnimatedScrollValue] = useState(0);
 
-  // Immediate update (no animation) - good for sliders
   useEffect(() => {
     setScroll(scrollValue);
   }, [scrollValue, setScroll]);
 
-  // Animated update - smooth transitions
   useEffect(() => {
     setAnimatedScroll(withSpring(animatedScrollValue));
   }, [animatedScrollValue, setAnimatedScroll]);
 
-  // Interpolate scroll value to different ranges
   const opacity = scroll.to([0, 100], [0, 1]);
   const scale = scroll.to([0, 100], [0.5, 1.5]);
   const color = scroll.to([0, 100], ['#3399ff', '#ff6b6b']);
 
-  // Animated interpolations
   const animatedOpacity = animatedScroll.to([0, 100], [0, 1]);
   const animatedScale = animatedScroll.to([0, 100], [0.5, 1.5]);
   const animatedColor = animatedScroll.to([0, 100], ['#3399ff', '#ff6b6b']);
 
   return (
     <ExampleLayout
+      tag="Utility"
       title="to Interpolation Utility"
       description="Interpolate values from one range to another. The to() method creates a new AnimateValue that maps input ranges to output ranges."
       onRestart={() => setTrigger((prev) => prev + 1)}
@@ -50,7 +47,7 @@ const Example: React.FC = () => {
                 onChange={(e) => setScrollValue(Number(e.target.value))}
                 style={{ width: '100%', maxWidth: 400 }}
               />
-              <p style={{ marginTop: 10, fontSize: 14, color: '#666' }}>
+              <p style={{ marginTop: 10, fontSize: 14, color: '#9a9aa4' }}>
                 Input:{' '}
                 {typeof scroll.current === 'number'
                   ? scroll.current.toFixed(2)
@@ -80,11 +77,11 @@ const Example: React.FC = () => {
               style={{
                 marginTop: 20,
                 padding: 12,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 borderRadius: 6,
               }}
             >
-              <code style={{ fontSize: 12 }}>
+              <code style={{ fontSize: 12, color: theme.color.text, fontFamily: theme.font.mono }}>
                 {`useEffect(() => {
   setScroll(scrollValue); // Immediate update, no animation
 }, [scrollValue, setScroll]);`}
@@ -109,7 +106,7 @@ const Example: React.FC = () => {
                 onChange={(e) => setAnimatedScrollValue(Number(e.target.value))}
                 style={{ width: '100%', maxWidth: 400 }}
               />
-              <p style={{ marginTop: 10, fontSize: 14, color: '#666' }}>
+              <p style={{ marginTop: 10, fontSize: 14, color: '#9a9aa4' }}>
                 Input:{' '}
                 {typeof animatedScroll.current === 'number'
                   ? animatedScroll.current.toFixed(2)
@@ -139,11 +136,11 @@ const Example: React.FC = () => {
               style={{
                 marginTop: 20,
                 padding: 12,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 borderRadius: 6,
               }}
             >
-              <code style={{ fontSize: 12 }}>
+              <code style={{ fontSize: 12, color: theme.color.text, fontFamily: theme.font.mono }}>
                 {`useEffect(() => {
   setAnimatedScroll(withSpring(animatedScrollValue)); // Smooth animation
 }, [animatedScrollValue, setAnimatedScroll]);`}
@@ -235,49 +232,28 @@ const Example: React.FC = () => {
       >
         <ExampleCard>
           <div style={{ marginBottom: 20 }}>
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                flexWrap: 'wrap',
-                marginBottom: 20,
-              }}
-            >
-              <button
+            <ButtonRow>
+              <Button
+                variant="primary"
+                accent="#3399ff"
                 onClick={() => {
                   setAnimatedScrollValue(0);
                   setAnimatedScroll(withTiming(100, { duration: 2000 }));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Animate to 100 (Timing, 2s)
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
+                accent="#51cf66"
                 onClick={() => {
                   setAnimatedScrollValue(0);
                   setAnimatedScroll(withSpring(100));
                 }}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
               >
                 Animate to 100 (Spring)
-              </button>
-            </div>
+              </Button>
+            </ButtonRow>
             <animate.div
               key={trigger}
               style={{
@@ -293,11 +269,11 @@ const Example: React.FC = () => {
               style={{
                 marginTop: 20,
                 padding: 12,
-                backgroundColor: '#f5f5f5',
+                backgroundColor: '#131317',
                 borderRadius: 6,
               }}
             >
-              <code style={{ fontSize: 12 }}>
+              <code style={{ fontSize: 12, color: theme.color.text, fontFamily: theme.font.mono }}>
                 {`// Use withTiming for duration-based animation
 setAnimatedScroll(withTiming(100, { duration: 2000 }));
 

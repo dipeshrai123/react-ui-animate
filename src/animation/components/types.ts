@@ -7,15 +7,14 @@ import type {
 import type { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { transformKeys } from '../utils/apply';
-import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import type { UseInViewOptions } from '../../shared/hooks';
+import type { FlipOptions } from '../layout/flip';
 
-// Helper type to accept any AnimateValue with a compatible type
 export type AnimateValueCompatible =
   | AnimateValue<number>
   | AnimateValue<string>
   | AnimateValue<number | string>;
 
-// Exclude transform keys from CSSProperties to avoid type conflicts
 export type CSSPropertiesWithoutTransforms = Omit<
   CSSProperties,
   (typeof transformKeys)[number]
@@ -50,42 +49,28 @@ export type AnimateAttributes<T extends EventTarget> = Omit<
   AnimateHTMLAttributes<T> & AnimateSVGAttributes<T>,
   | 'style'
   | 'animate'
-  | 'exit'
+  | 'unmount'
   | 'hover'
   | 'press'
   | 'focus'
   | 'view'
   | 'viewOptions'
+  | 'flip'
+  | 'flipOptions'
+  | 'flipId'
 > & {
   style?: AnimateStyle;
-  /**
-   * Declarative animations to run when the component mounts or updates.
-   */
   animate?: AnimateProp;
-  /**
-   * Declarative animations to run when the component exits (inside AnimatePresence).
-   */
-  exit?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is hovered.
-   */
+  unmount?: AnimateProp;
   hover?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is pressed (mouse down or touch start).
-   */
   press?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element is focused.
-   */
   focus?: AnimateProp;
-  /**
-   * Animations or styles to apply when the element enters the viewport.
-   */
   view?: AnimateProp;
-  /**
-   * Options for the IntersectionObserver used by view animations.
-   */
   viewOptions?: UseInViewOptions;
+  flip?: boolean;
+  flipOptions?: FlipOptions;
+  /** Must be unique per active transition group — tracked in a single global registry. */
+  flipId?: string;
 };
 
 export function combineRefs<T>(

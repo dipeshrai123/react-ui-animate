@@ -11,23 +11,29 @@ import {
   isTransformKey,
   applyAttrs,
   applyStyles,
+  applyStyleProp,
   applyTransforms,
   createTransformRenderer,
+  formatTransformString,
 } from '../utils/apply';
 import { AnimateValue } from '../values/AnimateValue';
 import type { Descriptor, Primitive } from '../types';
 import { buildAnimation } from '../drivers/builder';
-import { PresenceContext } from '../modules/Presence';
-import { getInitialValue } from '../utils/initialValues';
+import { UnmountContext } from '../presence/Unmount';
+import { getInitialValue } from './initialValues';
 import {
   applyStateAnimation,
+  extractRestingTarget,
   type StateAnimationContext,
-} from '../utils/stateAnimations';
-import { setupExitAnimations } from '../utils/exitAnimations';
+} from './stateAnimations';
+import { setupUnmountAnimations } from './unmountAnimations';
+import {
+  useFlipAnimations,
+  useFlipIdAnimations,
+} from '../layout';
 import type { AnimateAttributes, AnimateProp } from './types';
 import { combineRefs } from './types';
-import { useInView } from '../../hooks/observers/useInView';
-import type { UseInViewOptions } from '../../hooks/observers/useInView';
+import { useInView, type UseInViewOptions } from '../../shared/hooks';
 
 function serializeAnimateProp(prop: AnimateProp | undefined): string {
   if (!prop) return '';
@@ -97,6 +103,23 @@ function applyStylesToNode(
   ];
 }
 
+function useSyncAnimatedStyles(
+  nodeRef: React.RefObject<HTMLElement>,
+  animateValuesRef: React.MutableRefObject<
+    Record<string, AnimateValue<Primitive>>
+  >
+) {
+  useLayoutEffect(() => {
+    const node = nodeRef.current;
+    if (!node) return;
+
+    for (const [key, value] of Object.entries(animateValuesRef.current)) {
+      if (isTransformKey(key)) continue;
+      applyStyleProp(node, key, value.current);
+    }
+  });
+}
+
 function isFocusable(node: HTMLElement): boolean {
   return (
     node instanceof HTMLInputElement ||
@@ -118,7 +141,7 @@ function useEnterAnimations(
   >,
   controllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
-  const presenceContext = useContext(PresenceContext);
+  const unmountContext = useContext(UnmountContext);
   const cleanupRef = useRef<(() => void)[]>([]);
   const hasMountedRef = useRef(false);
   const prevAnimatePropKeyRef = useRef<string>('');
@@ -126,9 +149,8 @@ function useEnterAnimations(
 
   useLayoutEffect(() => {
     const node = nodeRef.current;
-    const isExiting = presenceContext?.isExiting ?? false;
+    const isExiting = unmountContext?.isExiting ?? false;
 
-    // Track transition from exiting to entering
     const justReEntered = wasExitingRef.current && !isExiting;
     wasExitingRef.current = isExiting;
 
@@ -138,7 +160,6 @@ function useEnterAnimations(
     const currentKey = serializeAnimateProp(animateProp);
     const valuesChanged = prevAnimatePropKeyRef.current !== currentKey;
 
-    // isFirstMount only refers to the literal first mount of this component instance
     const isFirstMount = !hasMountedRef.current;
     const shouldRestart = isFirstMount || valuesChanged || justReEntered;
 
@@ -149,7 +170,6 @@ function useEnterAnimations(
       if (animateProp) {
         const computedStyle = window.getComputedStyle(node);
 
-        // Initialize values if they don't exist
         if (Object.keys(animateValuesRef.current).length === 0) {
           const newAnimateValues: Record<string, AnimateValue<Primitive>> = {};
           for (const key of Object.keys(animateProp)) {
@@ -172,8 +192,6 @@ function useEnterAnimations(
       }
     }
 
-    // Always re-sync subscriptions to handle StrictMode or prop updates
-    // without restarting the animation timeline
     cleanupRef.current.forEach((cleanup) => cleanup());
     cleanupRef.current = applyStylesToNode(
       node,
@@ -189,11 +207,11 @@ function useEnterAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
-    // Removed 'style' from dependencies to prevent re-triggering on parent state changes
-  }, [animateProp, presenceContext?.isExiting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- style omitted intentionally; refs are stable
+  }, [animateProp, unmountContext?.isExiting]);
 }
 
-function useExitAnimations(
+function useUnmountAnimations(
   nodeRef: React.RefObject<HTMLElement>,
   propsRef: React.MutableRefObject<AnimateAttributes<HTMLElement>>,
   isExitingRef: React.MutableRefObject<boolean>,
@@ -202,29 +220,26 @@ function useExitAnimations(
   >,
   enterControllersRef: React.MutableRefObject<Array<{ cancel(): void }>>
 ) {
-  const presenceContext = useContext(PresenceContext);
+  const unmountContext = useContext(UnmountContext);
   const exitControllersRef = useRef<Array<{ cancel(): void }>>([]);
   const exitCleanupRef = useRef<(() => void)[]>([]);
   const onExitCompleteRef = useRef<(() => void) | null>(null);
   const prevIsExitingRef = useRef<boolean>(false);
 
-  // Store the latest onExitComplete callback in a ref so it's always current
   useLayoutEffect(() => {
-    onExitCompleteRef.current = presenceContext?.onExitComplete ?? null;
+    onExitCompleteRef.current = unmountContext?.onExitComplete ?? null;
   });
 
-  // Use useLayoutEffect to ensure this runs in sync with useEnterAnimations
+  // useLayoutEffect (not useEffect) so this runs in sync with useEnterAnimations.
   useLayoutEffect(() => {
-    const { exit: exitProp, style: currentStyle = {} } = propsRef.current;
+    const { unmount: unmountProp, style: currentStyle = {} } = propsRef.current;
     const node = nodeRef.current;
-    const isExiting = presenceContext?.isExiting ?? false;
+    const isExiting = unmountContext?.isExiting ?? false;
     const prevIsExiting = prevIsExitingRef.current;
     prevIsExitingRef.current = isExiting;
 
-    // If not exiting, reset the flag and cancel any ongoing exit animations
     if (!isExiting) {
       if (isExitingRef.current) {
-        // Child was exiting but is now re-entering - cancel exit animations only
         isExitingRef.current = false;
         exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
         exitControllersRef.current = [];
@@ -234,32 +249,25 @@ function useExitAnimations(
       return;
     }
 
-    // If already exiting, don't start another exit animation
-    // Only start if we transitioned from not-exiting to exiting
-    if (isExitingRef.current || !exitProp || !node) {
+    if (isExitingRef.current || !unmountProp || !node) {
       return;
     }
 
-    // Only start exit animation if we just transitioned to exiting state
-    // This prevents cancelling ongoing animations when context object reference changes
     if (!prevIsExiting && isExiting) {
       isExitingRef.current = true;
-      // Cancel enter animations when starting exit
+      unmountContext?.registerExit();
       enterControllersRef.current.forEach((ctrl) => ctrl.cancel());
       enterControllersRef.current = [];
 
-      // Clean up any previous exit subscriptions
       exitCleanupRef.current.forEach((cleanup) => cleanup());
       exitCleanupRef.current = [];
 
-      // Setup exit animations with separate controllers
-      exitCleanupRef.current = setupExitAnimations({
-        exitProp,
+      exitCleanupRef.current = setupUnmountAnimations({
+        exitProp: unmountProp,
         animateValues: animateValuesRef.current,
         controllers: exitControllersRef.current,
         onExitComplete: () => {
-          // Only call onExitComplete if we're still exiting
-          // (child might have been re-added during exit animation)
+          // Guards against a child re-added mid-exit before this fires.
           if (isExitingRef.current && onExitCompleteRef.current) {
             exitCleanupRef.current.forEach((cleanup) => cleanup());
             exitCleanupRef.current = [];
@@ -272,10 +280,7 @@ function useExitAnimations(
       });
     }
 
-    // Cleanup function - only runs when isExiting changes or on unmount
     return () => {
-      // Only clean up if we're actually exiting (prevents cancelling on every render)
-      // This handles the unmount case where we need to clean up
       if (isExitingRef.current) {
         exitControllersRef.current.forEach((ctrl) => ctrl.cancel());
         exitControllersRef.current = [];
@@ -283,7 +288,8 @@ function useExitAnimations(
         exitCleanupRef.current = [];
       }
     };
-  }, [presenceContext?.isExiting]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable
+  }, [unmountContext?.isExiting]);
 }
 
 function useViewAnimations(
@@ -301,22 +307,18 @@ function useViewAnimations(
   const isInView = useInView(nodeRef, viewOptions || {});
   const hasInitializedRef = useRef(false);
 
-  // Initialize view animation values with initial style values before any animation
-  // This ensures that initial values (like opacity: 0) are applied immediately
+  // Applies initial values before any animation runs to avoid a flash of default styles.
   useLayoutEffect(() => {
     if (!view) return;
 
     const node = nodeRef.current;
     if (!node) return;
 
-    // Only initialize once
     if (hasInitializedRef.current) return;
 
     const computedStyle = window.getComputedStyle(node);
     const { style = {} } = propsRef.current;
 
-    // Initialize AnimateValues for all view properties with their initial values
-    // and immediately apply them to the DOM to prevent flash of incorrect styles
     for (const key of Object.keys(view)) {
       if (!animateValuesRef.current[key]) {
         const initial = getInitialValue(key, style, node, computedStyle);
@@ -324,17 +326,13 @@ function useViewAnimations(
         animateValuesRef.current[key] = value;
         initialValuesRef.current[key] = initial;
 
-        // Immediately apply the initial value to the DOM
-        // This prevents the element from showing with default values before animation
         if (isTransformKey(key)) {
-          // For transforms, update the transform property
           const render = createTransformRenderer(
             node,
             animateValuesRef.current
           );
           render();
         } else {
-          // For normal styles, apply immediately
           const css =
             typeof initial === 'number' &&
             !['opacity', 'zIndex', 'fontWeight', 'lineHeight'].includes(key)
@@ -346,6 +344,7 @@ function useViewAnimations(
     }
 
     hasInitializedRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refs are stable
   }, [view]);
 
   const applyViewAnimationWrapper = (isActive: boolean) => {
@@ -354,7 +353,6 @@ function useViewAnimations(
     const node = nodeRef.current;
     if (!node) return;
 
-    // Clean up previous subscriptions
     cleanupRef.current.forEach((cleanup) => cleanup());
     cleanupRef.current = [];
 
@@ -377,7 +375,6 @@ function useViewAnimations(
   useEffect(() => {
     if (!view) return;
 
-    // Apply animation based on view state
     applyViewAnimationWrapper(isInView);
 
     return () => {
@@ -386,6 +383,7 @@ function useViewAnimations(
       cleanupRef.current.forEach((cleanup) => cleanup());
       cleanupRef.current = [];
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- wrapper only closes over view/isActive
   }, [isInView, view]);
 
   useEffect(() => {
@@ -432,7 +430,21 @@ function useStateAnimations(
     if (!node) return;
 
     const computedStyle = window.getComputedStyle(node);
-    const { style = {} } = propsRef.current;
+    const { style = {}, animate: animateProp, view: viewProp } = propsRef.current;
+
+    const restingTargets: Record<string, Primitive> = {};
+    for (const key of Object.keys(stateProp)) {
+      const viewRecord = viewProp as Record<string, Descriptor | Primitive> | undefined;
+      const animateRecord = animateProp as Record<string, Descriptor | Primitive> | undefined;
+      const target =
+        (viewRecord && key in viewRecord
+          ? extractRestingTarget(viewRecord[key])
+          : undefined) ??
+        (animateRecord && key in animateRecord
+          ? extractRestingTarget(animateRecord[key])
+          : undefined);
+      if (target !== undefined) restingTargets[key] = target;
+    }
 
     const context: StateAnimationContext = {
       node,
@@ -442,6 +454,7 @@ function useStateAnimations(
       initialValues: initialValuesRef.current,
       stateControllers: stateControllersRef.current,
       cleanup: [],
+      restingTargets,
     };
 
     applyStateAnimation(stateProp, isActive, context);
@@ -473,7 +486,6 @@ function useStateAnimations(
       if (!stateRef.current.isTapped) return;
       stateRef.current.isTapped = false;
       applyStateAnimationWrapper(pressRef.current, false);
-      // Re-apply hover if still active
       if (stateRef.current.isHovered && hoverRef.current) {
         applyStateAnimationWrapper(hoverRef.current, true);
       }
@@ -483,7 +495,6 @@ function useStateAnimations(
       if (stateRef.current.isTapped) {
         stateRef.current.isTapped = false;
         applyStateAnimationWrapper(pressRef.current, false);
-        // Re-apply hover if still active
         if (stateRef.current.isHovered && hoverRef.current) {
           applyStateAnimationWrapper(hoverRef.current, true);
         }
@@ -521,7 +532,6 @@ function useStateAnimations(
       node.addEventListener('blur', handleBlur);
     }
 
-    // Re-apply active state animations after effect re-runs (e.g. config change)
     if (stateRef.current.isHovered && hoverRef.current) {
       applyStateAnimationWrapper(hoverRef.current, true);
     }
@@ -555,11 +565,13 @@ function useStateAnimations(
       stateControllersRef.current.forEach((ctrl) => ctrl.cancel());
       stateControllersRef.current = [];
     };
+    /* eslint-disable react-hooks/exhaustive-deps -- deps are serialized structural values by design */
   }, [
     serializeAnimateProp(hover),
     serializeAnimateProp(press),
     serializeAnimateProp(focus),
   ]);
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   useEffect(() => {
     return () => {
@@ -586,8 +598,7 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
 
     propsRef.current = props;
 
-    // Run hooks
-    useExitAnimations(
+    useUnmountAnimations(
       nodeRef,
       propsRef,
       isExitingRef,
@@ -620,37 +631,66 @@ export function makeAnimated<Tag extends keyof JSX.IntrinsicElements>(
       animateValuesRef
     );
 
-    // Clean destructuring of props to pass only valid HTML attributes to the DOM
+    useFlipAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useFlipIdAnimations(nodeRef, propsRef, isExitingRef, animateValuesRef);
+    useSyncAnimatedStyles(nodeRef, animateValuesRef);
+
     const {
       animate,
-      exit,
-      hover,
-      press,
-      focus,
-      view,
-      viewOptions,
+      unmount: _unmount,
+      hover: _hover,
+      press: _press,
+      focus: _focus,
+      view: _view,
+      viewOptions: _viewOptions,
+      flip: _flip,
+      flipOptions: _flipOptions,
+      flipId: _flipId,
       style,
       ...restProps
     } = props;
 
-    // Filter style object to prevent conflicts between CSS and JS animations
     const filteredStyle: Record<string, any> = {};
     const animatedKeys = new Set([
       ...Object.keys(animateValuesRef.current),
       ...(animate ? Object.keys(animate) : []),
     ]);
 
+    // Rendering `.current` here (not just imperatively via effect) avoids a flash of the
+    // un-animated default on first paint of server-rendered pages, before hydration runs.
+    const transformStyleProps: Record<string, any> = {};
+
     if (style) {
       for (const [key, value] of Object.entries(style)) {
-        if (isTransformKey(key) || animatedKeys.has(key)) continue;
-        if (value && typeof value === 'object' && 'subscribe' in value)
+        const current =
+          value && typeof (value as AnimateValue<any>).subscribe === 'function'
+            ? (value as AnimateValue<any>).current
+            : value;
+
+        if (isTransformKey(key)) {
+          transformStyleProps[key] = current;
           continue;
-        filteredStyle[key] = value;
+        }
+
+        if (animatedKeys.has(key)) continue;
+        filteredStyle[key] = current;
       }
     }
 
+    if (Object.keys(transformStyleProps).length > 0) {
+      filteredStyle.transform = formatTransformString(transformStyleProps);
+    }
+
+    // AnimateValue-driven attrs are set imperatively by applyAttrs; passing them here
+    // would have React render the raw object (e.g. cx="[object Object]").
+    const filteredRestProps: Record<string, any> = {};
+    for (const [key, value] of Object.entries(restProps)) {
+      if (value instanceof AnimateValue) continue;
+      filteredRestProps[key] = value;
+    }
+
     return createElement(tag, {
-      ...restProps,
+      ...filteredRestProps,
       style: filteredStyle,
       ref: combineRefs(nodeRef, ref),
     });

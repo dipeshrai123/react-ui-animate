@@ -8,140 +8,88 @@ import {
   withSequence,
   withLoop,
 } from 'react-ui-animate';
-import { ExampleLayout, Section, ExampleCard } from '../../shared';
+import { ExampleLayout, Section, ExampleCard, Button, ButtonRow } from '../../shared';
 
 const Example: React.FC = () => {
   const [values, setValues] = useValue([0, 100, 200]);
 
   return (
     <ExampleLayout
-      title="useValue Hook - Array Values"
-      description="useValue can animate arrays of numbers. Each element in the array is animated independently."
+      tag="HOOK"
+      title="useValue — array values"
+      description="useValue animates arrays of numbers directly — each element is interpolated independently on its own timeline."
       showRestartButton={false}
     >
-      <Section title="Basic Array Animation" description="Animate multiple values simultaneously">
+      <Section title="Basic array animation" description="Animate multiple values in one call.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 20 }}>
-              <button
-                onClick={() => setValues(withSpring([0, 100, 200]))}
+          <ButtonRow>
+            <Button variant="primary" onClick={() => setValues(withSpring([0, 100, 200]))}>
+              Spring to [0, 100, 200]
+            </Button>
+            <Button accent="#51cf66" onClick={() => setValues(withTiming([100, 200, 300]))}>
+              Timing to [100, 200, 300]
+            </Button>
+            <Button variant="ghost" onClick={() => setValues([0, 0, 0])}>
+              Reset to [0, 0, 0]
+            </Button>
+          </ButtonRow>
+          <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
+            {values.map((value, index) => (
+              <animate.div
+                key={index}
                 style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#3399ff',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
+                  width: 100,
+                  height: 100,
+                  backgroundColor: ['#3399ff', '#51cf66', '#ff6b6b'][index],
+                  borderRadius: 8,
+                  translateX: value,
                 }}
-              >
-                Spring to [0, 100, 200]
-              </button>
-              <button
-                onClick={() => setValues(withTiming([100, 200, 300]))}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#51cf66',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Timing to [100, 200, 300]
-              </button>
-              <button
-                onClick={() => setValues([0, 0, 0])}
-                style={{
-                  padding: '8px 16px',
-                  fontSize: 14,
-                  backgroundColor: '#ff6b6b',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 6,
-                  cursor: 'pointer',
-                }}
-              >
-                Reset to [0, 0, 0]
-              </button>
-            </div>
-            <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
-              {values.map((value, index) => (
-                <animate.div
-                  key={index}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    backgroundColor: ['#3399ff', '#51cf66', '#ff6b6b'][index],
-                    borderRadius: 8,
-                    translateX: value,
-                  }}
-                />
-              ))}
-            </div>
+              />
+            ))}
           </div>
         </ExampleCard>
       </Section>
 
-      <Section title="Array with Sequence" description="Chain animations for array values">
+      <Section title="Array with sequence" description="Chain animations across every element in the array.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
+          <ButtonRow>
+            <Button
+              accent="#845ef7"
               onClick={() =>
                 setValues(
-                  withSequence(
-                    [
-                      withTiming([100, 200, 300]),
-                      withSpring([0, 0, 0]),
-                      withDecay(0.5),
-                    ],
-                    {
-                      onStart() {
-                        console.log('Array sequence started');
-                      },
-                      onComplete() {
-                        console.log('Array sequence completed');
-                      },
-                    }
-                  )
+                  withSequence([
+                    withTiming([100, 200, 300]),
+                    withSpring([0, 0, 0]),
+                    withDecay(0.5),
+                  ])
                 )
               }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#845ef7',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
             >
               Sequence: Timing → Spring → Decay
-            </button>
-            <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
-              {values.map((value, index) => (
-                <animate.div
-                  key={index}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    backgroundColor: ['#845ef7', '#ff8787', '#20c997'][index],
-                    borderRadius: 8,
-                    translateX: value,
-                  }}
-                />
-              ))}
-            </div>
+            </Button>
+          </ButtonRow>
+          <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
+            {values.map((value, index) => (
+              <animate.div
+                key={index}
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: ['#845ef7', '#ff8787', '#20c997'][index],
+                  borderRadius: 8,
+                  translateX: value,
+                }}
+              />
+            ))}
           </div>
         </ExampleCard>
       </Section>
 
-      <Section title="Array with Loop" description="Loop animations for array values">
+      <Section title="Array with loop" description="Loop a chained animation across every element.">
         <ExampleCard>
-          <div style={{ marginBottom: 20 }}>
-            <button
+          <ButtonRow>
+            <Button
+              accent="#ffd43b"
               onClick={() =>
                 setValues(
                   withLoop(
@@ -150,45 +98,27 @@ const Example: React.FC = () => {
                       withTiming([200, 100, 50]),
                       withDecay(0.5),
                     ]),
-                    3,
-                    {
-                      onStart() {
-                        console.log('Loop started');
-                      },
-                      onComplete() {
-                        console.log('Loop completed');
-                      },
-                    }
+                    3
                   )
                 )
               }
-              style={{
-                padding: '8px 16px',
-                fontSize: 14,
-                backgroundColor: '#ffd43b',
-                color: 'white',
-                border: 'none',
-                borderRadius: 6,
-                cursor: 'pointer',
-                marginBottom: 20,
-              }}
             >
-              Loop Sequence (3 times)
-            </button>
-            <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
-              {values.map((value, index) => (
-                <animate.div
-                  key={index}
-                  style={{
-                    width: 100,
-                    height: 100,
-                    backgroundColor: ['#ffd43b', '#ff6b6b', '#3399ff'][index],
-                    borderRadius: 8,
-                    translateX: value,
-                  }}
-                />
-              ))}
-            </div>
+              Loop sequence (3 times)
+            </Button>
+          </ButtonRow>
+          <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
+            {values.map((value, index) => (
+              <animate.div
+                key={index}
+                style={{
+                  width: 100,
+                  height: 100,
+                  backgroundColor: ['#ffd43b', '#ff6b6b', '#3399ff'][index],
+                  borderRadius: 8,
+                  translateX: value,
+                }}
+              />
+            ))}
           </div>
         </ExampleCard>
       </Section>

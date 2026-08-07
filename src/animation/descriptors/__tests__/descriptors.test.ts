@@ -5,6 +5,10 @@ import {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
+  withKeyframes,
+  withParallel,
+  withCustom,
 } from '../../descriptors';
 import { Easing } from '../../utils/easing';
 
@@ -49,6 +53,23 @@ describe('descriptors', () => {
     it('handles string values', () => {
       const descriptor = withSpring('100px');
       expect(descriptor.to).toBe('100px');
+    });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withSpring({ stiffness: 400, damping: 32 });
+
+      expect(descriptor.type).toBe('spring');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.stiffness).toBe(400);
+      expect(descriptor.options?.damping).toBe(32);
+      expect(descriptor.options?.mass).toBe(1);
+    });
+
+    it('still treats object values as animation targets', () => {
+      const descriptor = withSpring({ x: 10, y: 20 });
+
+      expect(descriptor.to).toEqual({ x: 10, y: 20 });
+      expect(descriptor.options?.stiffness).toBe(158);
     });
   });
 
@@ -95,6 +116,15 @@ describe('descriptors', () => {
       const descriptor = withTiming('rgba(255,0,0,1)');
       expect(descriptor.to).toBe('rgba(255,0,0,1)');
     });
+
+    it('accepts options-only form (no target) for transition configs', () => {
+      const descriptor = withTiming({ duration: 300, easing: Easing.linear });
+
+      expect(descriptor.type).toBe('timing');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.duration).toBe(300);
+      expect(descriptor.options?.easing).toBe(Easing.linear);
+    });
   });
 
   describe('withDecay', () => {
@@ -113,6 +143,8 @@ describe('descriptors', () => {
       const descriptor = withDecay(1.0, {
         clamp: [0, 100],
         elastic: true,
+        decay: 0.9,
+        bounce: 0.6,
         onStart,
         onChange,
         onComplete,
@@ -122,6 +154,8 @@ describe('descriptors', () => {
       expect(descriptor.options?.velocity).toBe(1.0);
       expect(descriptor.options?.clamp).toEqual([0, 100]);
       expect(descriptor.options?.elastic).toBe(true);
+      expect(descriptor.options?.decay).toBe(0.9);
+      expect(descriptor.options?.bounce).toBe(0.6);
       expect(descriptor.options?.onStart).toBe(onStart);
       expect(descriptor.options?.onChange).toBe(onChange);
       expect(descriptor.options?.onComplete).toBe(onComplete);
@@ -231,6 +265,169 @@ describe('descriptors', () => {
       const descriptor = withLoop(sequence, 2);
 
       expect(descriptor.options?.animation).toBe(sequence);
+    });
+
+    it('passes through the yoyo option', () => {
+      const descriptor = withLoop(withTiming(100), 4, { yoyo: true });
+      expect(descriptor.options?.yoyo).toBe(true);
+    });
+
+    it('defaults yoyo to undefined', () => {
+      const descriptor = withLoop(withTiming(100), 4);
+      expect(descriptor.options?.yoyo).toBeUndefined();
+    });
+  });
+
+  describe('withKeyframes', () => {
+    it('builds a sequence of timing steps splitting the total duration evenly', () => {
+      const descriptor = withKeyframes([0, 100, 50], { duration: 300 });
+
+      expect(descriptor.type).toBe('sequence');
+      const animations = descriptor.options?.animations ?? [];
+      expect(animations).toHaveLength(3);
+      animations.forEach((anim, i) => {
+        expect(anim.type).toBe('timing');
+        expect(anim.options?.duration).toBe(100);
+        expect(anim.to).toBe([0, 100, 50][i]);
+      });
+    });
+
+    it('lets individual steps override duration and easing', () => {
+      const customEasing = (t: number) => t;
+      const descriptor = withKeyframes(
+        [0, { to: 100, duration: 500, easing: customEasing }, 50],
+        { duration: 300 }
+      );
+
+      const animations = descriptor.options?.animations ?? [];
+      expect(animations[0].options?.duration).toBe(100);
+      expect(animations[1].options?.duration).toBe(500);
+      expect(animations[1].options?.easing).toBe(customEasing);
+    });
+
+    it('applies onStart/onComplete at the sequence level and onChange to every step', () => {
+      const onStart = jest.fn();
+      const onComplete = jest.fn();
+      const onChange = jest.fn();
+
+      const descriptor = withKeyframes([0, 100], {
+        onStart,
+        onComplete,
+        onChange,
+      });
+
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
+      descriptor.options?.animations?.forEach((anim) => {
+        expect(anim.options?.onChange).toBe(onChange);
+      });
+    });
+
+    it('defaults to a 300ms total duration split across steps', () => {
+      const descriptor = withKeyframes([0, 50, 100, 150]);
+      const animations = descriptor.options?.animations ?? [];
+      animations.forEach((anim) => expect(anim.options?.duration).toBe(75));
+    });
+  });
+
+  describe('withParallel', () => {
+    it('creates a parallel descriptor from a keyed record', () => {
+      const x = withSpring(100);
+      const y = withTiming(50, { duration: 800 });
+      const descriptor = withParallel({ x, y });
+
+      expect(descriptor.type).toBe('parallel');
+      expect(descriptor.options?.parallel).toEqual({ x, y });
+    });
+
+    it('creates a parallel descriptor from an array aligned by index', () => {
+      const first = withSpring(100);
+      const second = withTiming(50);
+      const descriptor = withParallel([first, second]);
+
+      expect(descriptor.type).toBe('parallel');
+      expect(descriptor.options?.parallel).toEqual([first, second]);
+    });
+
+    it('attaches onStart/onComplete but not onChange', () => {
+      const onStart = jest.fn();
+      const onComplete = jest.fn();
+      const descriptor = withParallel({ x: withSpring(1) }, { onStart, onComplete });
+
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
+    });
+  });
+
+  describe('withCustom', () => {
+    it('creates a custom descriptor carrying the tick fn and options', () => {
+      const tick = ({ from }: { from: number }) => from;
+      const onStart = jest.fn();
+      const onChange = jest.fn();
+      const onComplete = jest.fn();
+
+      const descriptor = withCustom(tick, {
+        duration: 500,
+        from: 10,
+        onStart,
+        onChange,
+        onComplete,
+      });
+
+      expect(descriptor.type).toBe('custom');
+      expect(descriptor.to).toBeUndefined();
+      expect(descriptor.options?.tick).toBe(tick);
+      expect(descriptor.options?.duration).toBe(500);
+      expect(descriptor.options?.from).toBe(10);
+      expect(descriptor.options?.onStart).toBe(onStart);
+      expect(descriptor.options?.onChange).toBe(onChange);
+      expect(descriptor.options?.onComplete).toBe(onComplete);
+    });
+
+    it('defaults duration/from/callbacks to undefined when omitted', () => {
+      const descriptor = withCustom(({ from }) => from);
+
+      expect(descriptor.options?.duration).toBeUndefined();
+      expect(descriptor.options?.from).toBeUndefined();
+    });
+  });
+
+  describe('withStagger', () => {
+    it('returns the descriptor unchanged for index 0 with default options', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(0, anim);
+
+      expect(descriptor).toBe(anim);
+    });
+
+    it('wraps the descriptor in a delayed sequence proportional to index', () => {
+      const anim = withTiming(100);
+      const descriptor = withStagger(3, anim, { each: 50 });
+
+      expect(descriptor.type).toBe('sequence');
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(150));
+      expect(descriptor.options?.animations?.[1]).toBe(anim);
+    });
+
+    it('uses a default step of 50ms when `each` is omitted', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(2, anim);
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(100));
+    });
+
+    it('adds a base `delay` before staggering starts', () => {
+      const anim = withTiming(1);
+      const descriptor = withStagger(1, anim, { each: 20, delay: 200 });
+
+      expect(descriptor.options?.animations?.[0]).toEqual(withDelay(220));
+    });
+
+    it('returns the descriptor unchanged when total delay is zero or negative', () => {
+      const anim = withSpring(1);
+      const descriptor = withStagger(0, anim, { each: 50, delay: 0 });
+
+      expect(descriptor).toBe(anim);
     });
   });
 });

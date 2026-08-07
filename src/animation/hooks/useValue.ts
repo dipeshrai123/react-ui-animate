@@ -1,6 +1,6 @@
-import { useMemo, useRef } from 'react';
-import { delay, sequence, loop } from '../drivers';
-import { AnimateValue } from '../values/AnimateValue';
+import { useCallback, useMemo, useRef } from 'react';
+import { delay, sequence, loop, parallel } from '../drivers';
+import { AnimateValue, isAnimateValue } from '../values/AnimateValue';
 
 import { buildAnimation, buildParallel } from '../drivers/builder';
 import { filterCallbackOptions, isDescriptor } from '../helpers';
@@ -18,7 +18,11 @@ type Base = Primitive | Primitive[] | Record<string, Primitive>;
 
 export function useValue<T extends Base>(
   initial: T
-): [ValueReturn<T>, (to: Base | Descriptor) => void, Controls] {
+): [
+  ValueReturn<T>,
+  (to: Base | Descriptor | AnimateValue<Primitive>) => void,
+  Controls,
+] {
   const controllerRef = useRef<Controls | null>(null);
 
   const value = useMemo(() => {
@@ -33,76 +37,153 @@ export function useValue<T extends Base>(
     }
 
     return new AnimateValue(initial);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial is read-once, like useState
   }, []) as ValueReturn<T>;
 
-  function set(to: Base | Descriptor) {
-    let ctrl: Controls | null = null;
+  // Stable identity like useState's setter — a fresh one each render would spuriously
+  // re-run any effect that lists `set` as a dependency.
+  const set = useCallback(
+    (to: Base | Descriptor | AnimateValue<Primitive>) => {
+      let ctrl: Controls | null;
 
-    if (Array.isArray(initial)) {
-      ctrl = handleArray(
-        value as Array<AnimateValue<Primitive>>,
-        to as Primitive[] | Descriptor
-      );
-    } else if (typeof initial === 'object') {
-      ctrl = handleObject(
-        value as Record<string, AnimateValue<Primitive>>,
-        to as Record<string, Primitive> | Descriptor
-      );
-    } else {
-      ctrl = handlePrimitive(
-        value as AnimateValue<Primitive>,
-        to as Primitive | Descriptor
-      );
-    }
+      if (Array.isArray(initial)) {
+        ctrl = handleArray(
+          value as Array<AnimateValue<Primitive>>,
+          to as Primitive[] | Descriptor
+        );
+      } else if (typeof initial === 'object') {
+        ctrl = handleObject(
+          value as Record<string, AnimateValue<Primitive>>,
+          to as Record<string, Primitive> | Descriptor
+        );
+      } else {
+        ctrl = handlePrimitive(
+          value as AnimateValue<Primitive>,
+          to as Primitive | Descriptor | AnimateValue<Primitive>
+        );
+      }
 
-    controllerRef.current = ctrl;
-    if (ctrl) ctrl.start();
-  }
+      controllerRef.current = ctrl;
+      if (ctrl) ctrl.start();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-  const controls = {
-    start: () => controllerRef.current?.start(),
-    pause: () => controllerRef.current?.pause(),
-    resume: () => controllerRef.current?.resume(),
-    cancel: () => controllerRef.current?.cancel(),
-    reset: () => controllerRef.current?.reset(),
-  };
+  const controls = useMemo<Controls>(
+    () => ({
+      start: () => controllerRef.current?.start(),
+      pause: () => controllerRef.current?.pause(),
+      resume: () => controllerRef.current?.resume(),
+      cancel: () => controllerRef.current?.cancel(),
+      reset: () => controllerRef.current?.reset(),
+    }),
+    []
+  );
 
   return [value, set, controls] as const;
 }
 
 function handlePrimitive(
   value: AnimateValue<Primitive>,
-  to: Primitive | Descriptor
+  to: Primitive | Descriptor | AnimateValue<Primitive>
 ) {
-  if (typeof to === 'number' || typeof to === 'string') {
-    value.set(to);
-    return null;
+  if (isAnimateValue(to)) {
+    return followValue(value, to);
   }
 
-  if (to.type === 'sequence') {
-    const animations = to.options?.animations ?? [];
+  if (isDescriptor(to)) {
+    return handleDescriptor(value, to);
+  }
+
+  value.set(to as Primitive);
+  return null;
+}
+
+function handleDescriptor(value: AnimateValue<Primitive>, descriptor: Descriptor) {
+  if (isAnimateValue(descriptor.to)) {
+    return followValue(value, descriptor.to, descriptor);
+  }
+
+  if (descriptor.type === 'sequence') {
+    const animations = descriptor.options?.animations ?? [];
     const controllers = animations.map((step) => buildAnimation(value, step));
-    return sequence(controllers, to.options);
+    return sequence(controllers, descriptor.options);
   }
 
-  if (to.type === 'loop') {
-    const animation = to.options?.animation;
-    if (!animation) return null;
+  return buildAnimation(value, descriptor);
+}
 
-    if (animation.type === 'sequence') {
-      const animations = animation.options?.animations ?? [];
-      const controllers = animations.map((step) => buildAnimation(value, step));
-      return loop(sequence(controllers), to.options?.iterations ?? 0, to.options);
+function followValue(
+  value: AnimateValue<Primitive>,
+  source: AnimateValue<Primitive>,
+  descriptor?: Descriptor
+): Controls {
+  let unsubscribe: (() => void) | undefined;
+  let inner: Controls | null = null;
+
+  const runFor = (current: Primitive) => {
+    if (!descriptor) {
+      value.set(current);
+      return;
     }
 
-    return loop(
-      buildAnimation(value, animation),
-      to.options?.iterations ?? 0,
-      to.options
-    );
-  }
+    inner = buildAnimation(value, { ...descriptor, to: current }) as Controls;
+    inner.start();
+  };
 
-  return buildAnimation(value, to);
+  return {
+    start() {
+      unsubscribe?.();
+      unsubscribe = source.subscribe(runFor);
+    },
+    pause() {
+      inner?.pause();
+    },
+    resume() {
+      inner?.resume();
+    },
+    cancel() {
+      unsubscribe?.();
+      unsubscribe = undefined;
+      inner?.cancel();
+    },
+    reset() {
+      inner?.reset();
+    },
+  };
+}
+
+function buildParallelFromMap(
+  values: Record<string, AnimateValue<Primitive>>,
+  animations: Record<string, Descriptor> | Descriptor[]
+) {
+  const entries = Array.isArray(animations)
+    ? animations.map((d, i) => [i.toString(), d] as const)
+    : Object.entries(animations);
+
+  return entries
+    .filter(([key, desc]) => desc && values[key])
+    .map(([key, desc]) => buildAnimation(values[key], desc));
+}
+
+function buildParallelStep(
+  values: Record<string, AnimateValue<Primitive>>,
+  step: Descriptor
+) {
+  return parallel(
+    buildParallelFromMap(values, step.options?.parallel ?? {}),
+    step.options
+  );
+}
+
+function resolveMultiStep(
+  values: Record<string, AnimateValue<Primitive>>,
+  step: Descriptor
+) {
+  if (step.type === 'delay') return delay(step.options?.delay ?? 0);
+  if (step.type === 'parallel') return buildParallelStep(values, step);
+  return buildParallel(values, step);
 }
 
 function handleArray(
@@ -122,21 +203,22 @@ function handleArray(
     values.map((value, idx) => [idx.toString(), value])
   ) as Record<string, AnimateValue<Primitive>>;
 
+  const resolveArrayStep = (step: Descriptor) => {
+    if (step.type === 'delay') return delay(step.options?.delay ?? 0);
+    if (step.type === 'parallel') return buildParallelStep(valuesRecord, step);
+    return buildParallel(valuesRecord, {
+      ...step,
+      to: Array.isArray(step.to)
+        ? Object.fromEntries(
+            (step.to as Primitive[]).map((v, i) => [i.toString(), v])
+          )
+        : step.to,
+    });
+  };
+
   switch (desc.type) {
     case 'sequence': {
-      const controllers = desc.options!.animations!.map((step) =>
-        step.type === 'delay'
-          ? delay(step.options?.delay ?? 0)
-          : buildParallel(valuesRecord, {
-              ...step,
-              to: Array.isArray(step.to)
-                ? Object.fromEntries(
-                    (step.to as Primitive[]).map((v, i) => [i.toString(), v])
-                  )
-                : step.to,
-            })
-      );
-
+      const controllers = desc.options!.animations!.map(resolveArrayStep);
       return sequence(controllers, desc.options);
     }
 
@@ -144,16 +226,7 @@ function handleArray(
       const inner = desc.options!.animation!;
 
       if (inner.type === 'sequence') {
-        const seqControllers = inner.options!.animations!.map((step) =>
-          buildParallel(valuesRecord, {
-            ...step,
-            to: Array.isArray(step.to)
-              ? Object.fromEntries(
-                  (step.to as Primitive[]).map((v, i) => [i.toString(), v])
-                )
-              : step.to,
-          })
-        );
+        const seqControllers = inner.options!.animations!.map(resolveArrayStep);
 
         const seq = sequence(
           seqControllers,
@@ -167,13 +240,20 @@ function handleArray(
         );
       }
 
-      const parallel = buildParallel(valuesRecord, inner);
+      const innerController =
+        inner.type === 'parallel'
+          ? buildParallelStep(valuesRecord, inner)
+          : buildParallel(valuesRecord, inner);
+
       return loop(
-        parallel,
+        innerController,
         desc.options!.iterations ?? 0,
         filterCallbackOptions(desc.options, true)
       );
     }
+
+    case 'parallel':
+      return buildParallelStep(valuesRecord, desc);
 
     case 'decay':
       return buildParallel(valuesRecord, desc);
@@ -191,9 +271,7 @@ function handleObject(
     switch (to.type) {
       case 'sequence': {
         const controllers = to.options!.animations!.map((step) =>
-          step.type === 'delay'
-            ? delay(step.options!.delay ?? 0)
-            : buildParallel(values, step)
+          resolveMultiStep(values, step)
         );
         return sequence(controllers, to.options);
       }
@@ -202,7 +280,7 @@ function handleObject(
         const inner = to.options!.animation!;
         if (inner.type === 'sequence') {
           const controllers = inner.options!.animations!.map((step) =>
-            buildParallel(values, step)
+            resolveMultiStep(values, step)
           );
           return loop(
             sequence(controllers, filterCallbackOptions(inner.options, true)),
@@ -211,11 +289,14 @@ function handleObject(
           );
         }
         return loop(
-          buildParallel(values, inner),
+          resolveMultiStep(values, inner),
           to.options!.iterations ?? 0,
           filterCallbackOptions(to.options, true)
         );
       }
+
+      case 'parallel':
+        return buildParallelStep(values, to);
 
       case 'decay':
         return buildParallel(values, to);

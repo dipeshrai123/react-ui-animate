@@ -1,6 +1,7 @@
 import { decay } from './decay';
 import { spring } from './spring';
 import { timing } from './timing';
+import { custom } from './custom';
 import { parallel, sequence, loop, delay } from './compose';
 import { AnimateValue } from '../values/AnimateValue';
 import { filterCallbackOptions } from '../helpers';
@@ -19,6 +20,13 @@ export function buildAnimation(
       return decay(value as AnimateValue<number>, options.velocity ?? 0, options);
     case 'delay':
       return delay(options.delay ?? 0);
+    case 'custom': {
+      if (!options.tick) {
+        console.warn('[buildAnimation] custom missing `tick` function');
+        return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
+      }
+      return custom(value as AnimateValue<number>, options.tick, options);
+    }
     case 'sequence': {
       const animations = options.animations ?? [];
       const controllers = animations.map((step) => buildAnimation(value, step));
@@ -32,19 +40,37 @@ export function buildAnimation(
         return { start() {}, pause() {}, resume() {}, cancel() {}, reset() {} };
       }
 
-      let innerController: ReturnType<typeof timing>;
-
-      // For loops, we use the AnimateValue's initial value as the starting point
-      // This ensures loops always animate from the initial value to the target,
-      // regardless of the current value
+      // Each loop iteration restarts from the AnimateValue's initial value
+      // (not its current value) unless a step already sets an explicit `from`.
       const loopFromValue = value.initial as number;
 
+      if (innerDesc.type === 'spring' || innerDesc.type === 'timing') {
+        const target = innerDesc.to as number;
+        const from = innerDesc.options?.from ?? loopFromValue;
+
+        if (options.yoyo) {
+          // `iterations` counts legs, so forward+back = 2 (matches GSAP's `yoyo`).
+          const factory = (iteration: number) => {
+            const reversed = iteration % 2 === 1;
+            return buildAnimation(value, {
+              ...innerDesc,
+              to: reversed ? from : target,
+              options: { ...innerDesc.options, from: reversed ? target : from },
+            });
+          };
+          return loop(factory, options.iterations ?? 0, options);
+        }
+
+        const innerController = buildAnimation(value, {
+          ...innerDesc,
+          options: { ...innerDesc.options, from },
+        });
+        return loop(innerController, options.iterations ?? 0, options);
+      }
+
       if (innerDesc.type === 'sequence') {
-        // For sequences, build each step with `from` support for the first animation
         const animations = innerDesc.options?.animations ?? [];
         const controllers = animations.map((step, index) => {
-          // For the first animation in a sequence within a loop,
-          // use initial value if no explicit `from` is specified
           if (index === 0 && (step.type === 'spring' || step.type === 'timing')) {
             const explicitFrom = step.options?.from;
             return buildAnimation(value, {
@@ -54,20 +80,11 @@ export function buildAnimation(
           }
           return buildAnimation(value, step);
         });
-        innerController = sequence(controllers, innerDesc.options);
-      } else if (innerDesc.type === 'spring' || innerDesc.type === 'timing') {
-        // For single spring/timing animations in a loop,
-        // use initial value if no explicit `from` is specified
-        const explicitFrom = innerDesc.options?.from;
-        innerController = buildAnimation(value, {
-          ...innerDesc,
-          options: { ...innerDesc.options, from: explicitFrom ?? loopFromValue },
-        });
-      } else {
-        innerController = buildAnimation(value, innerDesc);
+        const innerController = sequence(controllers, innerDesc.options);
+        return loop(innerController, options.iterations ?? 0, options);
       }
 
-      return loop(innerController, options.iterations ?? 0, options);
+      return loop(buildAnimation(value, innerDesc), options.iterations ?? 0, options);
     }
 
     default:
@@ -84,6 +101,7 @@ export function buildParallel(
     return (
       step.type === 'decay' ||
       step.type === 'delay' ||
+      step.type === 'custom' ||
       (step.to as Record<string, Primitive>)[key] !== undefined
     );
   });
@@ -92,7 +110,7 @@ export function buildParallel(
     buildAnimation(value, {
       type: step.type,
       to:
-        step.type === 'decay' || step.type === 'delay'
+        step.type === 'decay' || step.type === 'delay' || step.type === 'custom'
           ? (step.to as any)
           : (step.to as Record<string, Primitive>)[key],
       options: filterCallbackOptions(step.options, idx === 0),

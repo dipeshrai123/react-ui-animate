@@ -1,16 +1,7 @@
-// ============================================================================
-// Components
-// ============================================================================
 export { animate, makeAnimated } from './components/animate';
 
-// ============================================================================
-// Core Values
-// ============================================================================
-export { AnimateValue, isAnimateValue } from './values/AnimateValue';
+export { AnimateValue } from './values/AnimateValue';
 
-// ============================================================================
-// Animation Drivers (low-level APIs)
-// ============================================================================
 export type {
   AnimateController,
   AnimateHooks,
@@ -20,20 +11,13 @@ export { spring } from './drivers/spring';
 export { decay } from './drivers/decay';
 export { parallel, sequence, loop, delay } from './drivers/compose';
 
-// ============================================================================
-// Utilities
-// ============================================================================
 export { Easing } from './utils/easing';
 export { combine } from './utils/combine';
+export { isReducedMotionEnabled, setReducedMotion } from './utils/reducedMotion';
 
-// ============================================================================
-// Interpolation
-// ============================================================================
-export { to } from './to';
+export { interpolate } from './to';
+export { animateTo } from './utils/animateTo';
 
-// ============================================================================
-// Animation Descriptors
-// ============================================================================
 export {
   withSpring,
   withTiming,
@@ -41,28 +25,24 @@ export {
   withDelay,
   withSequence,
   withLoop,
+  withStagger,
+  withKeyframes,
+  withParallel,
+  withCustom,
 } from './descriptors';
 
-// ============================================================================
-// React Hooks
-// ============================================================================
 export { useValue } from './hooks/useValue';
+export { useTimeline, type Timeline } from './hooks/useTimeline';
 
-// ============================================================================
-// Modules
-// ============================================================================
 export {
-  Presence,
-  PresenceContext,
-  usePresence,
-  useIsPresent,
-  type PresenceProps,
-  type PresenceContextValue,
-} from './modules/Presence';
+  Unmount,
+  UnmountContext,
+  useUnmount,
+  useIsUnmounting,
+  type UnmountProps,
+  type UnmountContextValue,
+} from './presence/Unmount';
 
-// ============================================================================
-// Types
-// ============================================================================
 export type {
   Primitive,
   ExtrapolateConfig,
@@ -74,6 +54,13 @@ export type {
   SequenceOptions,
   DelayOptions,
   LoopOptions,
+  StaggerOptions,
+  KeyframeStep,
+  KeyframeOptions,
+  ParallelOptions,
+  CustomOptions,
+  CustomTickFn,
+  CustomTickContext,
   DriverType,
   Descriptor,
   Controls,
@@ -85,50 +72,7 @@ export type {
   AnimateHTMLAttributes,
   AnimateSVGAttributes,
 } from './components/types';
+export type { FlipOptions } from './layout';
+export { FlipGroup, type FlipGroupProps } from './layout';
 
-// ============================================================================
-// Animation Recipes
-// ============================================================================
 export { recipes } from './recipes';
-export {
-  fadeIn,
-  fadeOut,
-  fadeInUp,
-  fadeInDown,
-  fadeInLeft,
-  fadeInRight,
-  slideInUp,
-  slideInDown,
-  slideInLeft,
-  slideInRight,
-  slideOutUp,
-  slideOutDown,
-  slideOutLeft,
-  slideOutRight,
-  scaleIn,
-  scaleOut,
-  scaleUp,
-  scaleDown,
-  bounceIn,
-  bounceOut,
-  rotateIn,
-  rotateOut,
-  spin,
-  zoomIn,
-  zoomOut,
-  flipX,
-  flipY,
-  slideFadeIn,
-  slideFadeOut,
-  scaleFadeIn,
-  scaleFadeOut,
-  hoverScale,
-  hoverLift,
-  hoverGlow,
-  pressScale,
-  pressDown,
-  exitFade,
-  exitSlideUp,
-  exitSlideDown,
-  exitScale,
-} from './recipes';
