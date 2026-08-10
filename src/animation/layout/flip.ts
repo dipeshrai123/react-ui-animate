@@ -155,14 +155,23 @@ export type MeasuredRect = {
   height: number;
 };
 
-// Neutralize transform before measuring (getBoundingClientRect reflects it) and add
-// scroll offset for document-relative coords — omitting either reintroduces the FLIP
-// mismeasure-on-scroll/rapid-retrigger bug.
 export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
-  const previousTransform = node.style.transform;
-  node.style.transform = 'none';
+  const cleared: Array<{ el: HTMLElement; transform: string }> = [];
+  let el: HTMLElement | null = node;
+  while (el) {
+    if (el.style.transform) {
+      cleared.push({ el, transform: el.style.transform });
+      el.style.transform = 'none';
+    }
+    el = el.parentElement;
+  }
+
   const rect = node.getBoundingClientRect();
-  node.style.transform = previousTransform;
+
+  for (const { el: clearedEl, transform } of cleared) {
+    clearedEl.style.transform = transform;
+  }
+
   return {
     left: rect.left + window.scrollX,
     top: rect.top + window.scrollY,
@@ -171,9 +180,6 @@ export function measureUntransformedRect(node: HTMLElement): MeasuredRect {
   };
 }
 
-// Detects an interrupted FLIP left off-identity with no controller driving it back;
-// needed to recover from StrictMode's double-invoked mount effects, or the transform
-// sticks at its inverted value.
 export function readStrandedDisplacement(
   animateValues: Record<string, AnimateValue<Primitive>>,
   keys: FlipKeys,
